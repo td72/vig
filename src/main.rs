@@ -1,6 +1,7 @@
 mod app;
 mod event;
 mod git;
+mod syntax;
 mod tui;
 mod ui;
 

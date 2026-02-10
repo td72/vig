@@ -1,5 +1,6 @@
 use crate::app::{App, CursorPos, DiffSide, DiffViewMode, FocusedPane};
 use crate::git::diff::{FileDiff, LineType, SideBySideRow};
+use crate::syntax::HighlightedLine;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -59,6 +60,9 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         return;
     }
 
+    // Get syntax highlights (cached)
+    let (left_hl, right_hl) = app.highlight_file(&file);
+
     // Reserve 1 line at bottom for status line
     let content_area = Rect {
         height: inner.height.saturating_sub(1),
@@ -91,6 +95,8 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         right_width as usize,
         app.diff_scroll_x,
         &selection,
+        &left_hl,
+        &right_hl,
     );
 
     let total_lines = left_lines.len() as u16;
@@ -238,19 +244,32 @@ fn build_selection_info(app: &App) -> Option<SelectionInfo> {
     }
 }
 
+/// Expand a HighlightedLine (Vec<(Color, String)>) into per-character colors.
+fn expand_syntax_colors(hl: &HighlightedLine) -> Vec<Color> {
+    let mut colors = Vec::new();
+    for (color, text) in hl {
+        for _ in text.chars() {
+            colors.push(*color);
+        }
+    }
+    colors
+}
+
 fn build_side_by_side_lines<'a>(
     file: &FileDiff,
     left_width: usize,
     right_width: usize,
     scroll_x: u16,
     selection: &Option<SelectionInfo>,
+    left_hl: &[HighlightedLine],
+    right_hl: &[HighlightedLine],
 ) -> (Vec<Line<'a>>, Vec<Line<'a>>) {
     let mut left_lines = Vec::new();
     let mut right_lines = Vec::new();
     let mut row_idx: usize = 0;
 
     for hunk in &file.hunks {
-        // Hunk header
+        // Hunk header — no syntax highlighting for headers
         let header_style = Style::default()
             .fg(Color::Cyan)
             .add_modifier(Modifier::BOLD);
@@ -268,13 +287,13 @@ fn build_side_by_side_lines<'a>(
             if sel.cursor.side == DiffSide::Left {
                 let idx = left_lines.len() - 1;
                 left_lines[idx] = apply_selection_to_line(
-                    &hunk.header, row_idx, left_width, scroll_x as usize, sel, header_style, true,
+                    &hunk.header, row_idx, left_width, scroll_x as usize, sel, header_style, None,
                 );
             }
             if sel.cursor.side == DiffSide::Right {
                 let idx = right_lines.len() - 1;
                 right_lines[idx] = apply_selection_to_line(
-                    &hunk.header, row_idx, right_width, scroll_x as usize, sel, header_style, false,
+                    &hunk.header, row_idx, right_width, scroll_x as usize, sel, header_style, None,
                 );
             }
         }
@@ -282,7 +301,12 @@ fn build_side_by_side_lines<'a>(
         row_idx += 1;
 
         for row in &hunk.rows {
-            let (left, right) = render_row(row, left_width, right_width, scroll_x as usize, row_idx, selection);
+            let left_syntax = left_hl.get(row_idx).map(|hl| expand_syntax_colors(hl));
+            let right_syntax = right_hl.get(row_idx).map(|hl| expand_syntax_colors(hl));
+            let (left, right) = render_row(
+                row, left_width, right_width, scroll_x as usize, row_idx, selection,
+                left_syntax.as_deref(), right_syntax.as_deref(),
+            );
             left_lines.push(left);
             right_lines.push(right);
             row_idx += 1;
@@ -307,12 +331,16 @@ fn render_row<'a>(
     scroll_x: usize,
     row_idx: usize,
     selection: &Option<SelectionInfo>,
+    left_syntax: Option<&[Color]>,
+    right_syntax: Option<&[Color]>,
 ) -> (Line<'a>, Line<'a>) {
     let left = render_side_with_selection(
         row.left.as_ref(), row.line_type, true, left_width, scroll_x, row_idx, selection,
+        left_syntax,
     );
     let right = render_side_with_selection(
         row.right.as_ref(), row.line_type, false, right_width, scroll_x, row_idx, selection,
+        right_syntax,
     );
     (left, right)
 }
@@ -325,13 +353,14 @@ fn render_side_with_selection<'a>(
     scroll_x: usize,
     row_idx: usize,
     selection: &Option<SelectionInfo>,
+    syntax_colors: Option<&[Color]>,
 ) -> Line<'a> {
     match side {
         Some(line) => {
             let content_width = width.saturating_sub(GUTTER_WIDTH);
             let gutter = format!("{:>4} ", line.line_no);
-            let (fg, bg) = line_colors(line_type, is_left);
-            let base_style = style_for(fg, bg);
+            let (_fg, bg) = line_colors(line_type, is_left);
+            let base_style = style_for(_fg, bg);
 
             let sel_side = selection.as_ref().map(|s| s.cursor.side);
             let on_active_side = match (is_left, sel_side) {
@@ -345,6 +374,7 @@ fn render_side_with_selection<'a>(
                     let content = &line.content;
                     let spans = build_highlighted_spans(
                         content, row_idx, content_width, scroll_x, sel, base_style,
+                        syntax_colors,
                     );
                     let mut all_spans = vec![
                         Span::styled(gutter, Style::default().fg(Color::DarkGray)),
@@ -352,6 +382,18 @@ fn render_side_with_selection<'a>(
                     all_spans.extend(spans);
                     return Line::from(all_spans);
                 }
+            }
+
+            // Non-active side or scroll mode — still apply syntax highlighting
+            if let Some(syn_colors) = syntax_colors {
+                let spans = build_syntax_spans(
+                    &line.content, content_width, scroll_x, base_style, syn_colors,
+                );
+                let mut all_spans = vec![
+                    Span::styled(gutter, Style::default().fg(Color::DarkGray)),
+                ];
+                all_spans.extend(spans);
+                return Line::from(all_spans);
             }
 
             let content = scroll_content(&line.content, scroll_x, content_width);
@@ -376,7 +418,64 @@ fn render_side_with_selection<'a>(
     }
 }
 
-/// Build spans for a content area with cursor/selection highlighting
+/// Build spans with syntax fg colors but no cursor/selection (for scroll mode / inactive side).
+fn build_syntax_spans<'a>(
+    content: &str,
+    content_width: usize,
+    scroll_x: usize,
+    base_style: Style,
+    syntax_colors: &[Color],
+) -> Vec<Span<'a>> {
+    let chars: Vec<char> = content.chars().collect();
+    let start = scroll_x.min(chars.len());
+
+    let mut spans = Vec::new();
+    let mut i = 0;
+    while i < content_width {
+        let content_idx = start + i;
+        let ch = if content_idx < chars.len() {
+            chars[content_idx]
+        } else {
+            ' '
+        };
+        let fg = if content_idx < syntax_colors.len() {
+            syntax_colors[content_idx]
+        } else {
+            base_style.fg.unwrap_or(Color::Reset)
+        };
+
+        // Batch consecutive chars with same fg
+        let mut j = i + 1;
+        let mut run = String::new();
+        run.push(ch);
+        while j < content_width {
+            let cidx = start + j;
+            let next_ch = if cidx < chars.len() { chars[cidx] } else { ' ' };
+            let next_fg = if cidx < syntax_colors.len() {
+                syntax_colors[cidx]
+            } else {
+                base_style.fg.unwrap_or(Color::Reset)
+            };
+            if next_fg != fg {
+                break;
+            }
+            run.push(next_ch);
+            j += 1;
+        }
+
+        let style = if let Some(bg) = base_style.bg {
+            Style::default().fg(fg).bg(bg)
+        } else {
+            Style::default().fg(fg)
+        };
+        spans.push(Span::styled(run, style));
+        i = j;
+    }
+
+    spans
+}
+
+/// Build spans for a content area with cursor/selection highlighting + optional syntax colors
 fn build_highlighted_spans<'a>(
     content: &str,
     row_idx: usize,
@@ -384,6 +483,7 @@ fn build_highlighted_spans<'a>(
     scroll_x: usize,
     sel: &SelectionInfo,
     base_style: Style,
+    syntax_colors: Option<&[Color]>,
 ) -> Vec<Span<'a>> {
     let chars: Vec<char> = content.chars().collect();
     // Pad to content_width
@@ -404,14 +504,17 @@ fn build_highlighted_spans<'a>(
         let content_col = i + scroll_x;
         let is_cursor = sel.cursor.row == row_idx && sel.cursor.col == content_col;
         let is_selected = is_in_selection(row_idx, content_col, sel);
+        // Get syntax fg for this character
+        let syn_fg = syntax_colors.and_then(|sc| sc.get(content_col).copied());
 
-        // Find run of chars with same highlight state
+        // Find run of chars with same highlight state AND same syntax color
         let mut j = i + 1;
         while j < display.len() {
             let cc = j + scroll_x;
             let next_cursor = sel.cursor.row == row_idx && sel.cursor.col == cc;
             let next_selected = is_in_selection(row_idx, cc, sel);
-            if next_cursor != is_cursor || next_selected != is_selected {
+            let next_syn_fg = syntax_colors.and_then(|sc| sc.get(cc).copied());
+            if next_cursor != is_cursor || next_selected != is_selected || next_syn_fg != syn_fg {
                 break;
             }
             j += 1;
@@ -421,9 +524,17 @@ fn build_highlighted_spans<'a>(
         let style = if is_cursor {
             Style::default().fg(CURSOR_FG).bg(CURSOR_BG)
         } else if is_selected {
-            base_style.bg(SELECTION_BG)
+            // Selection: keep syntax fg, override bg
+            let fg = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
+            Style::default().fg(fg).bg(SELECTION_BG)
         } else {
-            base_style
+            // Normal: use syntax fg if available, else base_style fg; keep base_style bg
+            let fg = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
+            if let Some(bg) = base_style.bg {
+                Style::default().fg(fg).bg(bg)
+            } else {
+                Style::default().fg(fg)
+            }
         };
         spans.push(Span::styled(text, style));
         i = j;
@@ -461,9 +572,9 @@ fn apply_selection_to_line<'a>(
     scroll_x: usize,
     sel: &SelectionInfo,
     base_style: Style,
-    _is_left: bool,
+    syntax_colors: Option<&[Color]>,
 ) -> Line<'a> {
-    let spans = build_highlighted_spans(content, row_idx, width, scroll_x, sel, base_style);
+    let spans = build_highlighted_spans(content, row_idx, width, scroll_x, sel, base_style, syntax_colors);
     Line::from(spans)
 }
 

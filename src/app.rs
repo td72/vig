@@ -1,5 +1,6 @@
 use crate::git::diff::{DiffState, FileDiff};
 use crate::git::repository::Repo;
+use crate::syntax::{HighlightedLine, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::collections::HashSet;
@@ -62,6 +63,9 @@ pub struct App {
     pub visual_anchor: Option<CursorPos>,
     pub pending_key: Option<char>,
     pub count: Option<usize>,
+    pub highlighter: SyntaxHighlighter,
+    /// Cache: (file_path, left_lines, right_lines)
+    pub highlight_cache: Option<(String, Vec<HighlightedLine>, Vec<HighlightedLine>)>,
 }
 
 impl App {
@@ -85,6 +89,8 @@ impl App {
             visual_anchor: None,
             pending_key: None,
             count: None,
+            highlighter: SyntaxHighlighter::new(),
+            highlight_cache: None,
         })
     }
 
@@ -95,6 +101,44 @@ impl App {
         } else {
             None
         }
+    }
+
+    /// Get highlighted lines for the current file (cached).
+    /// Returns (left_highlights, right_highlights) where each is a Vec per row.
+    /// Empty vec means no syntax support for this file type.
+    pub fn highlight_file(&mut self, file: &FileDiff) -> (Vec<HighlightedLine>, Vec<HighlightedLine>) {
+        // Check cache
+        if let Some((ref cached_path, ref left, ref right)) = self.highlight_cache {
+            if *cached_path == file.path {
+                return (left.clone(), right.clone());
+            }
+        }
+
+        // Build flat line lists for left and right sides
+        let mut left_lines: Vec<String> = Vec::new();
+        let mut right_lines: Vec<String> = Vec::new();
+        for hunk in &file.hunks {
+            // Hunk header
+            left_lines.push(hunk.header.clone());
+            right_lines.push(hunk.header.clone());
+            for row in &hunk.rows {
+                left_lines.push(
+                    row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                );
+                right_lines.push(
+                    row.right.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                );
+            }
+        }
+
+        let left_refs: Vec<&str> = left_lines.iter().map(|s| s.as_str()).collect();
+        let right_refs: Vec<&str> = right_lines.iter().map(|s| s.as_str()).collect();
+
+        let left_hl = self.highlighter.highlight_lines(&left_refs, &file.path);
+        let right_hl = self.highlighter.highlight_lines(&right_refs, &file.path);
+
+        self.highlight_cache = Some((file.path.clone(), left_hl.clone(), right_hl.clone()));
+        (left_hl, right_hl)
     }
 
     pub fn refresh_diff(&mut self) -> Result<()> {
@@ -115,6 +159,7 @@ impl App {
         self.diff_scroll_y = 0;
         self.diff_scroll_x = 0;
         self.status_message = None;
+        self.highlight_cache = None;
         Ok(())
     }
 
@@ -232,6 +277,12 @@ impl App {
             return Ok(false);
         }
 
+        // Ctrl+c always quits
+        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
+            self.should_quit = true;
+            return Ok(false);
+        }
+
         // In Normal/Visual modes, keys are handled by the mode handler exclusively
         if self.focused_pane == FocusedPane::DiffView
             && self.diff_view_mode != DiffViewMode::Scroll
@@ -298,7 +349,7 @@ impl App {
                     }
                 }
             }
-            KeyCode::Enter => {
+            KeyCode::Char('l') | KeyCode::Right | KeyCode::Enter => {
                 match entries.get(self.selected_tree_idx) {
                     Some(TreeEntry::Dir { path, .. }) => {
                         let path = path.clone();
