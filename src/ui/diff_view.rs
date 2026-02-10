@@ -401,17 +401,7 @@ fn render_side_with_selection<'a>(
             ])
         }
         None => {
-            let bg = match line_type {
-                LineType::Added => Some(Color::Rgb(0, 40, 0)),
-                LineType::Deleted => Some(Color::Rgb(40, 0, 0)),
-                _ => None,
-            };
-            let style = if let Some(bg) = bg {
-                Style::default().bg(bg)
-            } else {
-                Style::default()
-            };
-            Line::from(Span::styled(pad_to_width("", width), style))
+            Line::from(Span::styled(pad_to_width("", width), Style::default()))
         }
     }
 }
@@ -590,7 +580,7 @@ fn line_colors(line_type: LineType, is_left: bool) -> (Color, Option<Color>) {
             if is_left {
                 (Color::Red, Some(Color::Rgb(40, 0, 0)))
             } else {
-                (Color::Reset, Some(Color::Rgb(40, 0, 0)))
+                (Color::Green, Some(Color::Rgb(0, 40, 0)))
             }
         }
         LineType::HunkHeader => (Color::Cyan, None),
