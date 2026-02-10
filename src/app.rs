@@ -351,11 +351,11 @@ impl App {
             KeyCode::Char('G') => {
                 self.diff_scroll_y = max_scroll;
             }
-            KeyCode::Char('h') => {
-                self.focused_pane = FocusedPane::FileTree;
-            }
-            KeyCode::Left => {
+            KeyCode::Char('h') | KeyCode::Left => {
                 self.diff_scroll_x = self.diff_scroll_x.saturating_sub(4);
+            }
+            KeyCode::Esc => {
+                self.focused_pane = FocusedPane::FileTree;
             }
             KeyCode::Char('l') | KeyCode::Right => {
                 self.diff_scroll_x = self.diff_scroll_x.saturating_add(4);
