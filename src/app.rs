@@ -67,6 +67,8 @@ pub struct App {
     pub count: Option<usize>,
     pub highlighter: SyntaxHighlighter,
     pub highlight_cache: Option<HighlightCache>,
+    /// Cached content_lines result: (file_path, side, lines). Invalidated on file/side switch.
+    content_lines_cache: Option<(String, DiffSide, Vec<String>)>,
     /// Pre-computed highlight results from background thread, keyed by file path.
     bg_highlights: HashMap<String, (Vec<Vec<Color>>, Vec<Vec<Color>>)>,
     /// Receiver for background highlight results.
@@ -96,6 +98,7 @@ impl App {
             count: None,
             highlighter: SyntaxHighlighter::new(),
             highlight_cache: None,
+            content_lines_cache: None,
             bg_highlights: HashMap::new(),
             bg_highlight_rx: None,
         };
@@ -175,6 +178,7 @@ impl App {
         self.diff_scroll_x = 0;
         self.status_message = None;
         self.highlight_cache = None;
+        self.content_lines_cache = None;
         self.bg_highlights.clear();
         self.bg_highlight_rx = None; // Drop old receiver, stops old thread
         self.spawn_bg_highlight();
@@ -668,7 +672,22 @@ impl App {
                 }
                 let end = self.cursor_pos;
                 self.cursor_pos = saved;
-                self.extract_range(lines, saved, CursorPos { row: end.row, col: end.col.saturating_sub(1), side: saved.side })
+                // If motion crossed a line boundary, clamp to end of the previous line
+                let adjusted_end = if end.row > saved.row {
+                    let prev_line_len = self.line_len_at(lines, end.row.saturating_sub(1));
+                    CursorPos {
+                        row: end.row - 1,
+                        col: prev_line_len.saturating_sub(1),
+                        side: saved.side,
+                    }
+                } else {
+                    CursorPos {
+                        row: end.row,
+                        col: end.col.saturating_sub(1),
+                        side: saved.side,
+                    }
+                };
+                self.extract_range(lines, saved, adjusted_end)
             }
             // ye — yank from cursor to end of word
             KeyCode::Char('e') => {
@@ -906,18 +925,27 @@ impl App {
         }
     }
 
-    /// Build flat list of content strings for the current side of the diff
-    pub fn content_lines(&self) -> Vec<String> {
+    /// Build flat list of content strings for the current side of the diff.
+    /// Results are cached and reused until the file or side changes.
+    pub fn content_lines(&mut self) -> Vec<String> {
         let file = match self.selected_file() {
             Some(f) => f.clone(),
             None => return Vec::new(),
         };
+        let side = self.cursor_pos.side;
+
+        // Return cached result if still valid
+        if let Some((ref path, cached_side, ref lines)) = self.content_lines_cache {
+            if *path == file.path && cached_side == side {
+                return lines.clone();
+            }
+        }
+
         let mut lines = Vec::new();
         for hunk in &file.hunks {
-            // Hunk header line
             lines.push(hunk.header.clone());
             for row in &hunk.rows {
-                let side_line = match self.cursor_pos.side {
+                let side_line = match side {
                     DiffSide::Left => row.left.as_ref(),
                     DiffSide::Right => row.right.as_ref(),
                 };
@@ -927,6 +955,7 @@ impl App {
                 }
             }
         }
+        self.content_lines_cache = Some((file.path.clone(), side, lines.clone()));
         lines
     }
 

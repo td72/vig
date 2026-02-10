@@ -83,7 +83,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
         ("i", "Normal mode (cursor)"),
         ("v / V", "Visual / Visual Line"),
         ("y", "Yank (copy) selection"),
-        ("Esc", "Back to scroll mode"),
+        ("Esc", "Back to file tree"),
         ("e", "Open in $EDITOR"),
         ("r", "Refresh diff"),
         ("?", "Toggle help"),

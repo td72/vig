@@ -124,7 +124,12 @@ impl SyntaxHighlighter {
         }
         let syntax_set = builder.build();
         let theme_set = ThemeSet::load_defaults();
-        let theme = theme_set.themes["base16-eighties.dark"].clone();
+        let theme = theme_set
+            .themes
+            .get("base16-eighties.dark")
+            .cloned()
+            .or_else(|| theme_set.themes.values().next().cloned())
+            .expect("No themes available in ThemeSet");
         Self { syntax_set, theme }
     }
 

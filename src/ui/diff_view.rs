@@ -357,8 +357,8 @@ fn render_side_with_selection<'a>(
         Some(line) => {
             let content_width = width.saturating_sub(GUTTER_WIDTH);
             let gutter = format!("{:>4} ", line.line_no);
-            let (_fg, bg) = line_colors(line_type, is_left);
-            let base_style = style_for(_fg, bg);
+            let (fg, bg) = line_colors(line_type, is_left);
+            let base_style = style_for(fg, bg);
 
             let sel_side = selection.as_ref().map(|s| s.cursor.side);
             let on_active_side = match (is_left, sel_side) {
@@ -369,16 +369,25 @@ fn render_side_with_selection<'a>(
 
             if on_active_side {
                 if let Some(sel) = selection {
-                    let content = &line.content;
-                    let spans = build_highlighted_spans(
-                        content, row_idx, content_width, scroll_x, sel, base_style,
-                        syntax_colors,
-                    );
-                    let mut all_spans = vec![
-                        Span::styled(gutter, Style::default().fg(Color::DarkGray)),
-                    ];
-                    all_spans.extend(spans);
-                    return Line::from(all_spans);
+                    // In Normal mode, only the cursor row needs per-char spans;
+                    // other rows can use the cheaper syntax-only path.
+                    let needs_highlight = match sel.mode {
+                        DiffViewMode::Normal => sel.cursor.row == row_idx,
+                        DiffViewMode::Visual | DiffViewMode::VisualLine => true,
+                        DiffViewMode::Scroll => false,
+                    };
+                    if needs_highlight {
+                        let content = &line.content;
+                        let spans = build_highlighted_spans(
+                            content, row_idx, content_width, scroll_x, sel, base_style,
+                            syntax_colors,
+                        );
+                        let mut all_spans = vec![
+                            Span::styled(gutter, Style::default().fg(Color::DarkGray)),
+                        ];
+                        all_spans.extend(spans);
+                        return Line::from(all_spans);
+                    }
                 }
             }
 
