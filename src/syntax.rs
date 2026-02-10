@@ -1,14 +1,31 @@
 use ratatui::style::Color;
-use syntect::highlighting::{Theme, ThemeSet};
-use syntect::parsing::{SyntaxDefinition, SyntaxReference, SyntaxSet};
+use syntect::highlighting::{HighlightIterator, HighlightState, Highlighter, Theme, ThemeSet};
+use syntect::parsing::{ParseState, ScopeStack, SyntaxDefinition, SyntaxReference, SyntaxSet};
 
 pub struct SyntaxHighlighter {
     syntax_set: SyntaxSet,
     theme: Theme,
 }
 
-/// A single highlighted line: Vec of (fg_color, text_fragment) pairs.
-pub type HighlightedLine = Vec<(Color, String)>;
+/// Cached highlight state for incremental processing.
+/// Stores pre-expanded per-character colors and syntect parse state
+/// so highlighting can resume where it left off on scroll.
+pub struct HighlightCache {
+    pub file_path: String,
+    /// Pre-expanded per-character fg colors, indexed by row.
+    pub left_colors: Vec<Vec<Color>>,
+    pub right_colors: Vec<Vec<Color>>,
+    /// How many rows have been highlighted so far.
+    processed_up_to: usize,
+    // Syntect state for incremental continuation
+    left_parse_state: ParseState,
+    left_highlight_state: HighlightState,
+    right_parse_state: ParseState,
+    right_highlight_state: HighlightState,
+    // Raw line text (stored once on file switch)
+    left_lines: Vec<String>,
+    right_lines: Vec<String>,
+}
 
 const TOML_SYNTAX: &str = r#"%YAML 1.2
 ---
@@ -90,7 +107,7 @@ impl SyntaxHighlighter {
 
     /// Find the syntax definition for a file path by extension,
     /// falling back to first-line detection.
-    pub fn find_syntax(&self, path: &str, first_line: Option<&str>) -> Option<&SyntaxReference> {
+    fn find_syntax(&self, path: &str, first_line: Option<&str>) -> Option<&SyntaxReference> {
         if let Some(ext) = path.rsplit('.').next() {
             if let Some(syn) = self.syntax_set.find_syntax_by_extension(ext) {
                 return Some(syn);
@@ -105,34 +122,84 @@ impl SyntaxHighlighter {
         None
     }
 
-    /// Highlight all lines of a file, returning per-line color spans.
-    /// Each line produces a Vec<(Color, String)> where Color is the foreground.
-    pub fn highlight_lines(&self, lines: &[&str], path: &str) -> Vec<HighlightedLine> {
-        let first_line = lines.first().copied();
-        let syntax = match self.find_syntax(path, first_line) {
-            Some(s) => s,
-            None => return Vec::new(),
-        };
-
-        let mut highlighter =
-            syntect::easy::HighlightLines::new(syntax, &self.theme);
-
-        lines
-            .iter()
-            .map(|line| {
-                let regions = highlighter
-                    .highlight_line(line, &self.syntax_set)
-                    .unwrap_or_default();
-                regions
-                    .into_iter()
-                    .map(|(style, text)| {
-                        let fg = syntect_to_ratatui_color(style.foreground);
-                        (fg, text.to_string())
-                    })
-                    .collect()
-            })
-            .collect()
+    /// Create a new highlight cache for a file. Returns None if syntax is unsupported.
+    pub fn create_cache(
+        &self,
+        file_path: &str,
+        left_lines: Vec<String>,
+        right_lines: Vec<String>,
+    ) -> Option<HighlightCache> {
+        let first_line = left_lines.first().map(|s| s.as_str());
+        let syntax = self.find_syntax(file_path, first_line)?;
+        let highlighter = Highlighter::new(&self.theme);
+        Some(HighlightCache {
+            file_path: file_path.to_string(),
+            left_colors: Vec::with_capacity(left_lines.len()),
+            right_colors: Vec::with_capacity(right_lines.len()),
+            processed_up_to: 0,
+            left_parse_state: ParseState::new(syntax),
+            left_highlight_state: HighlightState::new(&highlighter, ScopeStack::new()),
+            right_parse_state: ParseState::new(syntax),
+            right_highlight_state: HighlightState::new(&highlighter, ScopeStack::new()),
+            left_lines,
+            right_lines,
+        })
     }
+
+    /// Extend the cache to cover at least `up_to` rows.
+    /// Only processes rows not yet highlighted (incremental).
+    pub fn extend_cache(&self, cache: &mut HighlightCache, up_to: usize) {
+        let target = up_to.min(cache.left_lines.len());
+        if cache.processed_up_to >= target {
+            return;
+        }
+
+        let highlighter = Highlighter::new(&self.theme);
+        for i in cache.processed_up_to..target {
+            // Left side
+            let left = highlight_line_colors(
+                &cache.left_lines[i],
+                &mut cache.left_parse_state,
+                &mut cache.left_highlight_state,
+                &self.syntax_set,
+                &highlighter,
+            );
+            cache.left_colors.push(left);
+
+            // Right side
+            let right = highlight_line_colors(
+                &cache.right_lines[i],
+                &mut cache.right_parse_state,
+                &mut cache.right_highlight_state,
+                &self.syntax_set,
+                &highlighter,
+            );
+            cache.right_colors.push(right);
+        }
+        cache.processed_up_to = target;
+    }
+}
+
+/// Highlight a single line using low-level syntect API, returning per-character colors.
+fn highlight_line_colors(
+    line: &str,
+    parse_state: &mut ParseState,
+    highlight_state: &mut HighlightState,
+    syntax_set: &SyntaxSet,
+    highlighter: &Highlighter,
+) -> Vec<Color> {
+    let ops = match parse_state.parse_line(line, syntax_set) {
+        Ok(ops) => ops,
+        Err(_) => return Vec::new(),
+    };
+    let mut colors = Vec::new();
+    for (style, text) in HighlightIterator::new(highlight_state, &ops, line, highlighter) {
+        let color = syntect_to_ratatui_color(style.foreground);
+        for _ in text.chars() {
+            colors.push(color);
+        }
+    }
+    colors
 }
 
 fn syntect_to_ratatui_color(c: syntect::highlighting::Color) -> Color {

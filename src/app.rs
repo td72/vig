@@ -1,6 +1,6 @@
 use crate::git::diff::{DiffState, FileDiff};
 use crate::git::repository::Repo;
-use crate::syntax::{HighlightedLine, SyntaxHighlighter};
+use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::collections::HashSet;
@@ -64,8 +64,7 @@ pub struct App {
     pub pending_key: Option<char>,
     pub count: Option<usize>,
     pub highlighter: SyntaxHighlighter,
-    /// Cache: (file_path, left_lines, right_lines)
-    pub highlight_cache: Option<(String, Vec<HighlightedLine>, Vec<HighlightedLine>)>,
+    pub highlight_cache: Option<HighlightCache>,
 }
 
 impl App {
@@ -103,42 +102,37 @@ impl App {
         }
     }
 
-    /// Get highlighted lines for the current file (cached).
-    /// Returns (left_highlights, right_highlights) where each is a Vec per row.
-    /// Empty vec means no syntax support for this file type.
-    pub fn highlight_file(&mut self, file: &FileDiff) -> (Vec<HighlightedLine>, Vec<HighlightedLine>) {
-        // Check cache
-        if let Some((ref cached_path, ref left, ref right)) = self.highlight_cache {
-            if *cached_path == file.path {
-                return (left.clone(), right.clone());
+    /// Ensure syntax highlighting is available up to `up_to` rows for the given file.
+    /// Initializes cache on file switch, extends incrementally on scroll.
+    pub fn ensure_file_highlight(&mut self, file: &FileDiff, up_to: usize) {
+        let needs_init = self
+            .highlight_cache
+            .as_ref()
+            .map(|c| c.file_path != file.path)
+            .unwrap_or(true);
+
+        if needs_init {
+            let mut left_lines = Vec::new();
+            let mut right_lines = Vec::new();
+            for hunk in &file.hunks {
+                left_lines.push(hunk.header.clone());
+                right_lines.push(hunk.header.clone());
+                for row in &hunk.rows {
+                    left_lines.push(
+                        row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                    );
+                    right_lines.push(
+                        row.right.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                    );
+                }
             }
+            self.highlight_cache =
+                self.highlighter.create_cache(&file.path, left_lines, right_lines);
         }
 
-        // Build flat line lists for left and right sides
-        let mut left_lines: Vec<String> = Vec::new();
-        let mut right_lines: Vec<String> = Vec::new();
-        for hunk in &file.hunks {
-            // Hunk header
-            left_lines.push(hunk.header.clone());
-            right_lines.push(hunk.header.clone());
-            for row in &hunk.rows {
-                left_lines.push(
-                    row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
-                );
-                right_lines.push(
-                    row.right.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
-                );
-            }
+        if let Some(ref mut cache) = self.highlight_cache {
+            self.highlighter.extend_cache(cache, up_to);
         }
-
-        let left_refs: Vec<&str> = left_lines.iter().map(|s| s.as_str()).collect();
-        let right_refs: Vec<&str> = right_lines.iter().map(|s| s.as_str()).collect();
-
-        let left_hl = self.highlighter.highlight_lines(&left_refs, &file.path);
-        let right_hl = self.highlighter.highlight_lines(&right_refs, &file.path);
-
-        self.highlight_cache = Some((file.path.clone(), left_hl.clone(), right_hl.clone()));
-        (left_hl, right_hl)
     }
 
     pub fn refresh_diff(&mut self) -> Result<()> {

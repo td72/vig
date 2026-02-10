@@ -1,6 +1,5 @@
 use crate::app::{App, CursorPos, DiffSide, DiffViewMode, FocusedPane};
 use crate::git::diff::{FileDiff, LineType, SideBySideRow};
-use crate::syntax::HighlightedLine;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -60,9 +59,6 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         return;
     }
 
-    // Get syntax highlights (cached)
-    let (left_hl, right_hl) = app.highlight_file(&file);
-
     // Reserve 1 line at bottom for status line
     let content_area = Rect {
         height: inner.height.saturating_sub(1),
@@ -73,6 +69,10 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         height: 1.min(inner.height),
         ..inner
     };
+
+    // Ensure syntax highlighting covers the visible range (incremental)
+    let visible_end = (app.diff_scroll_y as usize) + (content_area.height as usize) + 1;
+    app.ensure_file_highlight(&file, visible_end);
 
     // Split content area: left half | separator | right half
     let left_width = (content_area.width.saturating_sub(1)) / 2;
@@ -89,15 +89,23 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     // Build selection info if in visual mode
     let selection = build_selection_info(app);
 
-    let (left_lines, right_lines) = build_side_by_side_lines(
-        &file,
-        left_width as usize,
-        right_width as usize,
-        app.diff_scroll_x,
-        &selection,
-        &left_hl,
-        &right_hl,
-    );
+    // Access cached highlight colors by reference (no clone)
+    let (left_lines, right_lines) = {
+        let empty: Vec<Vec<Color>> = Vec::new();
+        let (lc, rc) = match &app.highlight_cache {
+            Some(c) => (&c.left_colors, &c.right_colors),
+            None => (&empty, &empty),
+        };
+        build_side_by_side_lines(
+            &file,
+            left_width as usize,
+            right_width as usize,
+            app.diff_scroll_x,
+            &selection,
+            lc,
+            rc,
+        )
+    };
 
     let total_lines = left_lines.len() as u16;
     app.diff_total_lines = total_lines;
@@ -244,25 +252,14 @@ fn build_selection_info(app: &App) -> Option<SelectionInfo> {
     }
 }
 
-/// Expand a HighlightedLine (Vec<(Color, String)>) into per-character colors.
-fn expand_syntax_colors(hl: &HighlightedLine) -> Vec<Color> {
-    let mut colors = Vec::new();
-    for (color, text) in hl {
-        for _ in text.chars() {
-            colors.push(*color);
-        }
-    }
-    colors
-}
-
 fn build_side_by_side_lines<'a>(
     file: &FileDiff,
     left_width: usize,
     right_width: usize,
     scroll_x: u16,
     selection: &Option<SelectionInfo>,
-    left_hl: &[HighlightedLine],
-    right_hl: &[HighlightedLine],
+    left_colors: &[Vec<Color>],
+    right_colors: &[Vec<Color>],
 ) -> (Vec<Line<'a>>, Vec<Line<'a>>) {
     let mut left_lines = Vec::new();
     let mut right_lines = Vec::new();
@@ -301,11 +298,12 @@ fn build_side_by_side_lines<'a>(
         row_idx += 1;
 
         for row in &hunk.rows {
-            let left_syntax = left_hl.get(row_idx).map(|hl| expand_syntax_colors(hl));
-            let right_syntax = right_hl.get(row_idx).map(|hl| expand_syntax_colors(hl));
+            // Colors are pre-expanded in cache; just get a slice reference
+            let left_syntax = left_colors.get(row_idx).map(|v| v.as_slice());
+            let right_syntax = right_colors.get(row_idx).map(|v| v.as_slice());
             let (left, right) = render_row(
                 row, left_width, right_width, scroll_x as usize, row_idx, selection,
-                left_syntax.as_deref(), right_syntax.as_deref(),
+                left_syntax, right_syntax,
             );
             left_lines.push(left);
             right_lines.push(right);
