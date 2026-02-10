@@ -673,6 +673,18 @@ impl App {
                 let end = self.cursor_pos;
                 self.cursor_pos = saved;
                 // If motion crossed a line boundary, clamp to end of the previous line
+                // No movement — yank to end of current line
+                if end == saved {
+                    let text = if let Some(line) = lines.get(saved.row) {
+                        let chars: Vec<char> = line.chars().collect();
+                        let col = saved.col.min(chars.len());
+                        chars[col..].iter().collect()
+                    } else {
+                        String::new()
+                    };
+                    self.copy_to_clipboard(&text);
+                    return;
+                }
                 let adjusted_end = if end.row > saved.row {
                     let prev_line_len = self.line_len_at(lines, end.row.saturating_sub(1));
                     CursorPos {

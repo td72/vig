@@ -460,11 +460,7 @@ fn build_syntax_spans<'a>(
             j += 1;
         }
 
-        let style = if let Some(bg) = base_style.bg {
-            Style::default().fg(fg).bg(bg)
-        } else {
-            Style::default().fg(fg)
-        };
+        let style = base_style.fg(fg);
         spans.push(Span::styled(run, style));
         i = j;
     }
@@ -519,19 +515,15 @@ fn build_highlighted_spans<'a>(
 
         let text: String = display[i..j].iter().collect();
         let style = if is_cursor {
-            Style::default().fg(CURSOR_FG).bg(CURSOR_BG)
+            base_style.fg(CURSOR_FG).bg(CURSOR_BG)
         } else if is_selected {
             // Selection: keep syntax fg, override bg
             let fg = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
-            Style::default().fg(fg).bg(SELECTION_BG)
+            base_style.fg(fg).bg(SELECTION_BG)
         } else {
-            // Normal: use syntax fg if available, else base_style fg; keep base_style bg
+            // Normal: use syntax fg if available, else base_style fg
             let fg = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
-            if let Some(bg) = base_style.bg {
-                Style::default().fg(fg).bg(bg)
-            } else {
-                Style::default().fg(fg)
-            }
+            base_style.fg(fg)
         };
         spans.push(Span::styled(text, style));
         i = j;
