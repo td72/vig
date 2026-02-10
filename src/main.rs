@@ -36,6 +36,9 @@ fn main() -> Result<()> {
     let mut terminal = tui::enter()?;
 
     loop {
+        // Collect any completed background highlight results
+        app.drain_bg_highlights();
+
         // Draw
         terminal.draw(|frame| {
             let layout = layout::compute_layout(frame.area());

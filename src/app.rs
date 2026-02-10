@@ -3,7 +3,9 @@ use crate::git::repository::Repo;
 use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use std::collections::HashSet;
+use ratatui::style::Color;
+use std::collections::{HashMap, HashSet};
+use std::sync::mpsc;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FocusedPane {
@@ -65,12 +67,16 @@ pub struct App {
     pub count: Option<usize>,
     pub highlighter: SyntaxHighlighter,
     pub highlight_cache: Option<HighlightCache>,
+    /// Pre-computed highlight results from background thread, keyed by file path.
+    bg_highlights: HashMap<String, (Vec<Vec<Color>>, Vec<Vec<Color>>)>,
+    /// Receiver for background highlight results.
+    bg_highlight_rx: Option<mpsc::Receiver<(String, Vec<Vec<Color>>, Vec<Vec<Color>>)>>,
 }
 
 impl App {
     pub fn new(repo: Repo) -> Result<Self> {
         let diff_state = repo.diff_workdir()?;
-        Ok(Self {
+        let mut app = Self {
             should_quit: false,
             repo,
             diff_state,
@@ -90,7 +96,11 @@ impl App {
             count: None,
             highlighter: SyntaxHighlighter::new(),
             highlight_cache: None,
-        })
+            bg_highlights: HashMap::new(),
+            bg_highlight_rx: None,
+        };
+        app.spawn_bg_highlight();
+        Ok(app)
     }
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
@@ -103,7 +113,7 @@ impl App {
     }
 
     /// Ensure syntax highlighting is available up to `up_to` rows for the given file.
-    /// Initializes cache on file switch, extends incrementally on scroll.
+    /// Uses pre-computed background results if available, otherwise falls back to on-demand.
     pub fn ensure_file_highlight(&mut self, file: &FileDiff, up_to: usize) {
         let needs_init = self
             .highlight_cache
@@ -112,11 +122,21 @@ impl App {
             .unwrap_or(true);
 
         if needs_init {
+            // Check for pre-computed background highlight results first
+            if let Some((lc, rc)) = self.bg_highlights.remove(&file.path) {
+                self.highlight_cache =
+                    Some(HighlightCache::from_precomputed(file.path.clone(), lc, rc));
+                return;
+            }
+
+            // Fall back to on-demand highlighting
             let mut left_lines = Vec::new();
             let mut right_lines = Vec::new();
+            let mut hunk_starts = Vec::new();
             for hunk in &file.hunks {
-                left_lines.push(hunk.header.clone());
-                right_lines.push(hunk.header.clone());
+                hunk_starts.push(left_lines.len());
+                left_lines.push(String::new());
+                right_lines.push(String::new());
                 for row in &hunk.rows {
                     left_lines.push(
                         row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
@@ -127,7 +147,8 @@ impl App {
                 }
             }
             self.highlight_cache =
-                self.highlighter.create_cache(&file.path, left_lines, right_lines);
+                self.highlighter
+                    .create_cache(&file.path, left_lines, right_lines, hunk_starts);
         }
 
         if let Some(ref mut cache) = self.highlight_cache {
@@ -154,7 +175,66 @@ impl App {
         self.diff_scroll_x = 0;
         self.status_message = None;
         self.highlight_cache = None;
+        self.bg_highlights.clear();
+        self.bg_highlight_rx = None; // Drop old receiver, stops old thread
+        self.spawn_bg_highlight();
         Ok(())
+    }
+
+    /// Spawn a background thread to pre-highlight all files.
+    fn spawn_bg_highlight(&mut self) {
+        let mut file_data: Vec<(String, Vec<String>, Vec<String>, Vec<usize>)> = Vec::new();
+        for file in &self.diff_state.files {
+            if file.is_binary {
+                continue;
+            }
+            let mut left_lines = Vec::new();
+            let mut right_lines = Vec::new();
+            let mut hunk_starts = Vec::new();
+            for hunk in &file.hunks {
+                hunk_starts.push(left_lines.len());
+                left_lines.push(String::new());
+                right_lines.push(String::new());
+                for row in &hunk.rows {
+                    left_lines.push(
+                        row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                    );
+                    right_lines.push(
+                        row.right.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                    );
+                }
+            }
+            file_data.push((file.path.clone(), left_lines, right_lines, hunk_starts));
+        }
+
+        if file_data.is_empty() {
+            return;
+        }
+
+        let (tx, rx) = mpsc::channel();
+        self.bg_highlight_rx = Some(rx);
+
+        std::thread::spawn(move || {
+            let highlighter = SyntaxHighlighter::new();
+            for (path, left_lines, right_lines, hunk_starts) in file_data {
+                if let Some((lc, rc)) = highlighter.highlight_all_lines(
+                    &path, &left_lines, &right_lines, &hunk_starts,
+                ) {
+                    if tx.send((path, lc, rc)).is_err() {
+                        break; // Receiver dropped
+                    }
+                }
+            }
+        });
+    }
+
+    /// Drain completed background highlight results into the local cache.
+    pub fn drain_bg_highlights(&mut self) {
+        if let Some(ref rx) = self.bg_highlight_rx {
+            while let Ok((path, left, right)) = rx.try_recv() {
+                self.bg_highlights.insert(path, (left, right));
+            }
+        }
     }
 
     pub fn build_tree_entries(&self) -> Vec<TreeEntry> {

@@ -17,14 +17,37 @@ pub struct HighlightCache {
     pub right_colors: Vec<Vec<Color>>,
     /// How many rows have been highlighted so far.
     processed_up_to: usize,
-    // Syntect state for incremental continuation
+    /// Incremental state for on-demand highlighting. None if pre-computed.
+    incremental: Option<IncrementalState>,
+}
+
+struct IncrementalState {
     left_parse_state: ParseState,
     left_highlight_state: HighlightState,
     right_parse_state: ParseState,
     right_highlight_state: HighlightState,
-    // Raw line text (stored once on file switch)
     left_lines: Vec<String>,
     right_lines: Vec<String>,
+    /// Row indices where hunks start — parser state resets here.
+    hunk_starts: Vec<usize>,
+}
+
+impl HighlightCache {
+    /// Create a cache from pre-computed background highlight results.
+    pub fn from_precomputed(
+        file_path: String,
+        left_colors: Vec<Vec<Color>>,
+        right_colors: Vec<Vec<Color>>,
+    ) -> Self {
+        let processed = left_colors.len();
+        Self {
+            file_path,
+            left_colors,
+            right_colors,
+            processed_up_to: processed,
+            incremental: None,
+        }
+    }
 }
 
 const TOML_SYNTAX: &str = r#"%YAML 1.2
@@ -128,39 +151,70 @@ impl SyntaxHighlighter {
         file_path: &str,
         left_lines: Vec<String>,
         right_lines: Vec<String>,
+        hunk_starts: Vec<usize>,
     ) -> Option<HighlightCache> {
-        let first_line = left_lines.first().map(|s| s.as_str());
-        let syntax = self.find_syntax(file_path, first_line)?;
+        // Use first non-header line for first-line syntax detection
+        let first_content = left_lines
+            .iter()
+            .enumerate()
+            .find(|(i, s)| !hunk_starts.contains(i) && !s.is_empty())
+            .map(|(_, s)| s.as_str());
+        let syntax = self.find_syntax(file_path, first_content)?;
         let highlighter = Highlighter::new(&self.theme);
         Some(HighlightCache {
             file_path: file_path.to_string(),
             left_colors: Vec::with_capacity(left_lines.len()),
             right_colors: Vec::with_capacity(right_lines.len()),
             processed_up_to: 0,
-            left_parse_state: ParseState::new(syntax),
-            left_highlight_state: HighlightState::new(&highlighter, ScopeStack::new()),
-            right_parse_state: ParseState::new(syntax),
-            right_highlight_state: HighlightState::new(&highlighter, ScopeStack::new()),
-            left_lines,
-            right_lines,
+            incremental: Some(IncrementalState {
+                left_parse_state: ParseState::new(syntax),
+                left_highlight_state: HighlightState::new(&highlighter, ScopeStack::new()),
+                right_parse_state: ParseState::new(syntax),
+                right_highlight_state: HighlightState::new(&highlighter, ScopeStack::new()),
+                left_lines,
+                right_lines,
+                hunk_starts,
+            }),
         })
     }
 
     /// Extend the cache to cover at least `up_to` rows.
     /// Only processes rows not yet highlighted (incremental).
+    /// No-op for pre-computed caches.
+    /// Resets parser state at hunk boundaries so unclosed strings/comments
+    /// in one hunk don't corrupt highlighting in the next.
     pub fn extend_cache(&self, cache: &mut HighlightCache, up_to: usize) {
-        let target = up_to.min(cache.left_lines.len());
+        let inc = match &mut cache.incremental {
+            Some(inc) => inc,
+            None => return, // pre-computed, nothing to extend
+        };
+        let target = up_to.min(inc.left_lines.len());
         if cache.processed_up_to >= target {
             return;
         }
 
         let highlighter = Highlighter::new(&self.theme);
         for i in cache.processed_up_to..target {
+            // Reset parser state at hunk boundaries
+            if inc.hunk_starts.contains(&i) {
+                if let Some(syntax) = self.find_syntax(&cache.file_path, None) {
+                    inc.left_parse_state = ParseState::new(syntax);
+                    inc.left_highlight_state =
+                        HighlightState::new(&highlighter, ScopeStack::new());
+                    inc.right_parse_state = ParseState::new(syntax);
+                    inc.right_highlight_state =
+                        HighlightState::new(&highlighter, ScopeStack::new());
+                }
+                cache.left_colors.push(Vec::new());
+                cache.right_colors.push(Vec::new());
+                continue;
+            }
+
             // Left side
             let left = highlight_line_colors(
-                &cache.left_lines[i],
-                &mut cache.left_parse_state,
-                &mut cache.left_highlight_state,
+                &inc.left_lines[i],
+                &mut inc.left_parse_state,
+                &mut inc.left_highlight_state,
                 &self.syntax_set,
                 &highlighter,
             );
@@ -168,15 +222,62 @@ impl SyntaxHighlighter {
 
             // Right side
             let right = highlight_line_colors(
-                &cache.right_lines[i],
-                &mut cache.right_parse_state,
-                &mut cache.right_highlight_state,
+                &inc.right_lines[i],
+                &mut inc.right_parse_state,
+                &mut inc.right_highlight_state,
                 &self.syntax_set,
                 &highlighter,
             );
             cache.right_colors.push(right);
         }
         cache.processed_up_to = target;
+    }
+
+    /// Highlight all lines of a file at once. Used by background thread.
+    /// Resets parser state at each hunk boundary.
+    pub fn highlight_all_lines(
+        &self,
+        file_path: &str,
+        left_lines: &[String],
+        right_lines: &[String],
+        hunk_starts: &[usize],
+    ) -> Option<(Vec<Vec<Color>>, Vec<Vec<Color>>)> {
+        let first_content = left_lines
+            .iter()
+            .enumerate()
+            .find(|(i, s)| !hunk_starts.contains(i) && !s.is_empty())
+            .map(|(_, s)| s.as_str());
+        let syntax = self.find_syntax(file_path, first_content)?;
+        let highlighter = Highlighter::new(&self.theme);
+
+        let mut left_parse = ParseState::new(syntax);
+        let mut left_hl = HighlightState::new(&highlighter, ScopeStack::new());
+        let mut right_parse = ParseState::new(syntax);
+        let mut right_hl = HighlightState::new(&highlighter, ScopeStack::new());
+
+        let mut left_colors = Vec::with_capacity(left_lines.len());
+        let mut right_colors = Vec::with_capacity(right_lines.len());
+
+        for (i, (l, r)) in left_lines.iter().zip(right_lines.iter()).enumerate() {
+            if hunk_starts.contains(&i) {
+                // Reset parser state at hunk boundary
+                left_parse = ParseState::new(syntax);
+                left_hl = HighlightState::new(&highlighter, ScopeStack::new());
+                right_parse = ParseState::new(syntax);
+                right_hl = HighlightState::new(&highlighter, ScopeStack::new());
+                left_colors.push(Vec::new());
+                right_colors.push(Vec::new());
+                continue;
+            }
+            left_colors.push(highlight_line_colors(
+                l, &mut left_parse, &mut left_hl, &self.syntax_set, &highlighter,
+            ));
+            right_colors.push(highlight_line_colors(
+                r, &mut right_parse, &mut right_hl, &self.syntax_set, &highlighter,
+            ));
+        }
+
+        Some((left_colors, right_colors))
     }
 }
 
