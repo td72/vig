@@ -1,0 +1,107 @@
+mod app;
+mod event;
+mod git;
+mod tui;
+mod ui;
+
+use crate::app::App;
+use crate::event::{Event, EventHandler};
+use crate::git::repository::Repo;
+use crate::git::watcher::FsWatcher;
+use crate::ui::{diff_view, file_tree, layout, status_bar};
+use anyhow::Result;
+use std::env;
+use std::process::Command;
+use std::time::Duration;
+
+fn main() -> Result<()> {
+    // Restore terminal on panic
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        let _ = tui::restore();
+        default_hook(info);
+    }));
+
+    let cwd = env::current_dir()?;
+    let repo = Repo::discover(&cwd)?;
+    let workdir = repo.workdir().to_path_buf();
+    let mut app = App::new(repo)?;
+
+    let events = EventHandler::new(Duration::from_millis(250));
+
+    // Start file watcher
+    let _watcher = FsWatcher::new(&workdir, events.tx())?;
+
+    let mut terminal = tui::enter()?;
+
+    loop {
+        // Draw
+        terminal.draw(|frame| {
+            let layout = layout::compute_layout(frame.area());
+            status_bar::render_header(frame, &app, layout.header);
+            file_tree::render(frame, &app, layout.file_tree);
+            diff_view::render(frame, &mut app, layout.diff_pane);
+            status_bar::render_status_bar(frame, &app, layout.status_bar);
+
+            if app.show_help {
+                status_bar::render_help_overlay(frame, frame.area());
+            }
+        })?;
+
+        // Handle events
+        match events.next()? {
+            Event::Key(key) => {
+                // Skip release/repeat events
+                if key.kind != crossterm::event::KeyEventKind::Press {
+                    continue;
+                }
+
+                let open_editor = app.handle_key(key)?;
+
+                if app.should_quit {
+                    break;
+                }
+
+                if open_editor {
+                    if let Some(file) = app.selected_file() {
+                        let file_path = workdir.join(&file.path);
+                        let editor = env::var("EDITOR")
+                            .or_else(|_| env::var("VISUAL"))
+                            .unwrap_or_else(|_| "vi".to_string());
+
+                        // Suspend TUI
+                        tui::restore()?;
+
+                        let status = Command::new(&editor).arg(&file_path).status();
+
+                        // Restore TUI
+                        terminal = tui::enter()?;
+
+                        match status {
+                            Ok(s) if s.success() => {
+                                app.refresh_diff()?;
+                            }
+                            Ok(s) => {
+                                app.status_message =
+                                    Some(format!("Editor exited with: {s}"));
+                            }
+                            Err(e) => {
+                                app.status_message =
+                                    Some(format!("Failed to open editor: {e}"));
+                            }
+                        }
+                    }
+                }
+            }
+            Event::FsChange => {
+                if let Err(e) = app.refresh_diff() {
+                    app.status_message = Some(format!("Refresh error: {e}"));
+                }
+            }
+            Event::Tick | Event::Resize(_, _) => {}
+        }
+    }
+
+    tui::restore()?;
+    Ok(())
+}

@@ -1,0 +1,13 @@
+[package]
+name = "vig"
+version = "0.1.0"
+edition = "2021"
+description = "Git TUI side-by-side diff viewer"
+
+[dependencies]
+anyhow = "1"
+crossterm = "0.28"
+git2 = "0.19"
+notify = "7"
+notify-debouncer-mini = "0.5"
+ratatui = "0.29"
