@@ -4,6 +4,8 @@
 
 A Git TUI side-by-side diff viewer with vim-style keybindings.
 
+![demo](assets/demo.gif)
+
 ## Features
 
 - Side-by-side diff view with syntax highlighting
@@ -57,6 +59,8 @@ vig
 | `Esc` | Back to Scroll mode |
 
 ### Yank (copy)
+
+![yank demo](assets/demo-yank.gif)
 
 | Key | Action |
 |-----|--------|

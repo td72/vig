@@ -1,0 +1,2 @@
+*.tape linguist-language=Elixir
+assets/*.gif filter=lfs diff=lfs merge=lfs -text

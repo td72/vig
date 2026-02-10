@@ -195,15 +195,40 @@ fn render_diff_statusline(f: &mut Frame, app: &App, file_path: &str, total_lines
     // Calculate left part width
     let left_len: usize = spans.iter().map(|s| s.content.chars().count()).sum();
 
-    // Right-aligned position info
+    // Showcmd (pending key sequence)
+    let mut showcmd = String::new();
+    if let Some(c) = app.count {
+        showcmd.push_str(&c.to_string());
+    }
+    if let Some(k) = app.pending_key {
+        if k == 'w' {
+            showcmd.push_str("Ctrl+w");
+        } else {
+            showcmd.push(k);
+        }
+    }
+
+    // Right-aligned showcmd + position info
     let right_part = format!(" {position_info} ");
     let right_len = right_part.chars().count();
-    let gap = width.saturating_sub(left_len + right_len);
+    let showcmd_part = if showcmd.is_empty() {
+        String::new()
+    } else {
+        format!(" {showcmd} ")
+    };
+    let showcmd_len = showcmd_part.chars().count();
+    let gap = width.saturating_sub(left_len + showcmd_len + right_len);
 
     spans.push(Span::styled(
         " ".repeat(gap),
         Style::default().bg(Color::Rgb(30, 30, 30)),
     ));
+    if !showcmd_part.is_empty() {
+        spans.push(Span::styled(
+            showcmd_part,
+            Style::default().fg(Color::Yellow).bg(Color::Rgb(30, 30, 30)),
+        ));
+    }
     spans.push(Span::styled(
         right_part,
         Style::default().fg(Color::White).bg(Color::Rgb(50, 50, 50)),

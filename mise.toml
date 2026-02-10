@@ -1,2 +1,22 @@
 [tools]
 prek = "latest"
+vhs = "latest"
+
+[tasks."demo:build"]
+run = "cargo build --release"
+description = "Build vig for demo recording"
+hide = true
+
+[tasks.demo]
+run = "PATH=$PWD/target/release:$PATH vhs tape/demo.tape"
+depends = ["demo:build"]
+description = "Record demo GIF"
+
+[tasks."demo:yank"]
+run = "PATH=$PWD/target/release:$PATH vhs tape/demo-yank.tape"
+depends = ["demo:build"]
+description = "Record yank demo GIF"
+
+[tasks."demo:all"]
+depends = ["demo", "demo:yank"]
+description = "Record all demo GIFs"
