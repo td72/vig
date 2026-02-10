@@ -28,15 +28,8 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         Color::DarkGray
     };
 
-    let mode_indicator = match app.diff_view_mode {
-        DiffViewMode::Normal => " Diff [NORMAL] ",
-        DiffViewMode::Visual => " Diff [VISUAL] ",
-        DiffViewMode::VisualLine => " Diff [V-LINE] ",
-        DiffViewMode::Scroll => " Diff ",
-    };
-
     let block = Block::default()
-        .title(mode_indicator)
+        .title(" Diff ")
         .borders(Borders::ALL)
         .border_style(Style::default().fg(border_color));
 
@@ -66,9 +59,20 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         return;
     }
 
-    // Split inner area: left half | separator | right half
-    let left_width = (inner.width.saturating_sub(1)) / 2;
-    let right_width = inner.width.saturating_sub(left_width + 1);
+    // Reserve 1 line at bottom for status line
+    let content_area = Rect {
+        height: inner.height.saturating_sub(1),
+        ..inner
+    };
+    let statusline_area = Rect {
+        y: inner.y + content_area.height,
+        height: 1.min(inner.height),
+        ..inner
+    };
+
+    // Split content area: left half | separator | right half
+    let left_width = (content_area.width.saturating_sub(1)) / 2;
+    let right_width = content_area.width.saturating_sub(left_width + 1);
     let panes = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
@@ -76,7 +80,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
             Constraint::Length(1),
             Constraint::Length(right_width),
         ])
-        .split(inner);
+        .split(content_area);
 
     // Build selection info if in visual mode
     let selection = build_selection_info(app);
@@ -91,13 +95,13 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
 
     let total_lines = left_lines.len() as u16;
     app.diff_total_lines = total_lines;
-    app.diff_view_height = inner.height;
+    app.diff_view_height = content_area.height;
 
     let left_para = Paragraph::new(left_lines).scroll((app.diff_scroll_y, 0));
     f.render_widget(left_para, panes[0]);
 
     // Separator
-    let sep_lines: Vec<Line> = (0..inner.height)
+    let sep_lines: Vec<Line> = (0..content_area.height)
         .map(|_| Line::from(Span::styled("│", Style::default().fg(Color::DarkGray))))
         .collect();
     let sep = Paragraph::new(sep_lines).scroll((0, 0));
@@ -105,6 +109,94 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
 
     let right_para = Paragraph::new(right_lines).scroll((app.diff_scroll_y, 0));
     f.render_widget(right_para, panes[2]);
+
+    // Status line
+    render_diff_statusline(f, app, &file.path, total_lines, statusline_area);
+}
+
+fn render_diff_statusline(f: &mut Frame, app: &App, file_path: &str, total_lines: u16, area: Rect) {
+    let width = area.width as usize;
+
+    // Mode badge
+    let (mode_label, mode_style) = match app.diff_view_mode {
+        DiffViewMode::Scroll => ("SCROLL", Style::default().fg(Color::Black).bg(Color::DarkGray)),
+        DiffViewMode::Normal => ("NORMAL", Style::default().fg(Color::Black).bg(Color::Cyan)),
+        DiffViewMode::Visual => ("VISUAL", Style::default().fg(Color::Black).bg(Color::Magenta)),
+        DiffViewMode::VisualLine => ("V-LINE", Style::default().fg(Color::Black).bg(Color::Magenta)),
+    };
+
+    // File type from extension
+    let filetype = file_path
+        .rsplit('.')
+        .next()
+        .filter(|ext| ext.len() < 10 && !ext.contains('/'))
+        .unwrap_or("");
+
+    // Side indicator
+    let side = match app.diff_view_mode {
+        DiffViewMode::Scroll => "",
+        _ => match app.cursor_pos.side {
+            DiffSide::Left => "LEFT",
+            DiffSide::Right => "RIGHT",
+        },
+    };
+
+    // Cursor position / scroll percentage
+    let position_info = match app.diff_view_mode {
+        DiffViewMode::Scroll => {
+            if total_lines == 0 {
+                "Empty".to_string()
+            } else if total_lines <= app.diff_view_height {
+                "All".to_string()
+            } else if app.diff_scroll_y == 0 {
+                "Top".to_string()
+            } else if app.diff_scroll_y >= total_lines.saturating_sub(app.diff_view_height) {
+                "Bot".to_string()
+            } else {
+                format!("{}%", app.diff_scroll_y as u32 * 100 / total_lines.saturating_sub(1) as u32)
+            }
+        }
+        _ => {
+            format!("{}:{}", app.cursor_pos.row + 1, app.cursor_pos.col + 1)
+        }
+    };
+
+    // Build left part: " MODE  filetype  side "
+    let mut spans = vec![
+        Span::styled(format!(" {mode_label} "), mode_style),
+    ];
+    if !filetype.is_empty() {
+        spans.push(Span::styled(
+            format!(" {filetype} "),
+            Style::default().fg(Color::White).bg(Color::Rgb(50, 50, 50)),
+        ));
+    }
+    if !side.is_empty() {
+        spans.push(Span::styled(
+            format!(" {side} "),
+            Style::default().fg(Color::White).bg(Color::Rgb(50, 50, 50)),
+        ));
+    }
+
+    // Calculate left part width
+    let left_len: usize = spans.iter().map(|s| s.content.chars().count()).sum();
+
+    // Right-aligned position info
+    let right_part = format!(" {position_info} ");
+    let right_len = right_part.chars().count();
+    let gap = width.saturating_sub(left_len + right_len);
+
+    spans.push(Span::styled(
+        " ".repeat(gap),
+        Style::default().bg(Color::Rgb(30, 30, 30)),
+    ));
+    spans.push(Span::styled(
+        right_part,
+        Style::default().fg(Color::White).bg(Color::Rgb(50, 50, 50)),
+    ));
+
+    let line = Line::from(spans);
+    f.render_widget(Paragraph::new(line), area);
 }
 
 fn build_selection_info(app: &App) -> Option<SelectionInfo> {
