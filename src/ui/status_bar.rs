@@ -64,7 +64,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
     use ratatui::widgets::{Block, Borders, Clear};
 
     let help_width = 50u16.min(area.width.saturating_sub(4));
-    let help_height = 18u16.min(area.height.saturating_sub(4));
+    let help_height = 22u16.min(area.height.saturating_sub(4));
     let x = (area.width.saturating_sub(help_width)) / 2;
     let y = (area.height.saturating_sub(help_height)) / 2;
     let help_area = Rect::new(x, y, help_width, help_height);
@@ -80,6 +80,10 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
         ("Ctrl+u", "Half page up"),
         ("g / G", "Top / Bottom"),
         ("h / l", "Scroll left / right"),
+        ("i", "Normal mode (cursor)"),
+        ("v / V", "Visual / Visual Line"),
+        ("y", "Yank (copy) selection"),
+        ("Esc", "Back to scroll mode"),
         ("e", "Open in $EDITOR"),
         ("r", "Refresh diff"),
         ("?", "Toggle help"),
