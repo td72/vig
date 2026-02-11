@@ -17,6 +17,11 @@ run = "PATH=$PWD/target/release:$PATH vhs tape/demo-yank.tape"
 depends = ["demo:build"]
 description = "Record yank demo GIF"
 
+[tasks."demo:branch"]
+run = "PATH=$PWD/target/release:$PATH vhs tape/demo-branch.tape"
+depends = ["demo:build"]
+description = "Record branch selector demo GIF"
+
 [tasks."demo:all"]
-depends = ["demo", "demo:yank"]
+depends = ["demo", "demo:yank", "demo:branch"]
 description = "Record all demo GIFs"
