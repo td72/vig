@@ -15,9 +15,10 @@ mise run demo:branch  # record branch selector demo only
 
 When adding or modifying a user-visible feature:
 
-1. Create or update a VHS tape file in `tape/` that demonstrates the feature
-2. Run `mise run demo:all` to re-record the GIFs
-3. Commit both the `.tape` and `.gif` together — the `check-gif-freshness` pre-commit hook enforces this
+1. Update `README.md` and `docs/README.ja.md` (features, keybindings, etc.)
+2. Create or update a VHS tape file in `tape/` that demonstrates the feature
+3. Run `mise run demo:all` to re-record the GIFs
+4. Commit both the `.tape` and `.gif` together — the `check-gif-freshness` pre-commit hook enforces this
 
 Tape files serve as both **visual documentation** (the generated GIFs are embedded in PRs/README) and **integration tests** (VHS replays the exact key sequences against a real vig instance, so a broken feature will produce a visibly wrong GIF or crash during recording).
 

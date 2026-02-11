@@ -9,6 +9,8 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 ## Features
 
 - Side-by-side diff view with syntax highlighting
+- Branch selector with git log preview
+- Compare working directory against any local branch
 - Vim-style modes: Scroll, Normal, Visual, Visual-Line
 - File tree with status indicators (A/D/M/R/?)
 - Yank (copy) to system clipboard with vim motions
@@ -38,16 +40,34 @@ vig
 
 ## Key Bindings
 
+### Pane Navigation
+
+| Key | Action |
+|-----|--------|
+| `Tab` / `Shift+Tab` | Cycle panes: Files → Branches → Diff |
+| `h` / `l` | Switch between Files and Branches |
+| `i` | Enter Diff view from upper panes |
+
 ### Navigation
 
 | Key | Action |
 |-----|--------|
 | `j` / `k` | Scroll down / up |
-| `h` / `l` | Scroll left / right |
+| `h` / `l` | Scroll left / right (in Diff view) |
 | `gg` | Jump to top |
 | `G` | Jump to bottom |
 | `Ctrl+d` / `Ctrl+u` | Half page down / up |
-| `Tab` / `Shift+Tab` | Switch pane |
+
+### Branch Selector
+
+![branch demo](assets/demo-branch.gif)
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` | Navigate branches (git log preview updates) |
+| `Enter` | Set branch as diff comparison base |
+| `Esc` | Reset comparison to HEAD |
+| `Ctrl+d` / `Ctrl+u` | Scroll git log |
 
 ### Modes
 
@@ -77,7 +97,7 @@ Text objects are also supported: `iw`, `aw`, `i"`, `a"`, `i(`, `a(`, `i{`, `a{`
 |-----|--------|
 | `Enter` / `Space` | Open file / Toggle directory |
 | `e` | Open in external editor |
-| `r` | Refresh diff |
+| `r` | Refresh diff and branches |
 | `?` | Show help |
 | `q` / `Ctrl+c` | Quit |
 
@@ -97,6 +117,7 @@ Managed by [prek](https://github.com/j178/prek):
 - `cargo fmt --check`
 - `cargo clippy`
 - Trailing whitespace, EOF fixer, TOML/YAML check, merge conflict check, large file check
+- GIF freshness check (tape modified → gif must be re-recorded)
 
 ### CI
 
