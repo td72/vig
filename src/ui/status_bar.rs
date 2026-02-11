@@ -8,7 +8,7 @@ use ratatui::{
 };
 
 pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
-    let title = Line::from(vec![
+    let mut spans = vec![
         Span::styled(
             " vig ",
             Style::default()
@@ -19,13 +19,29 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
         Span::raw(" "),
         Span::styled(
             format!(" {} ", app.diff_state.branch_name),
-            Style::default()
-                .fg(Color::Black)
-                .bg(Color::Magenta),
+            Style::default().fg(Color::Black).bg(Color::Magenta),
         ),
-        Span::raw("  "),
-        Span::styled("? help", Style::default().fg(Color::DarkGray)),
-    ]);
+    ];
+
+    {
+        let base_label = match &app.diff_base_ref {
+            Some(base) => format!(" vs {base} "),
+            None => " vs HEAD ".to_string(),
+        };
+        spans.push(Span::raw(" "));
+        spans.push(Span::styled(
+            base_label,
+            Style::default().fg(Color::Black).bg(Color::Yellow),
+        ));
+    }
+
+    spans.push(Span::raw("  "));
+    spans.push(Span::styled(
+        "? help",
+        Style::default().fg(Color::DarkGray),
+    ));
+
+    let title = Line::from(spans);
     f.render_widget(Paragraph::new(title), area);
 }
 
@@ -64,7 +80,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
     use ratatui::widgets::{Block, Borders, Clear};
 
     let help_width = 50u16.min(area.width.saturating_sub(4));
-    let help_height = 22u16.min(area.height.saturating_sub(4));
+    let help_height = 26u16.min(area.height.saturating_sub(4));
     let x = (area.width.saturating_sub(help_width)) / 2;
     let y = (area.height.saturating_sub(help_height)) / 2;
     let help_area = Rect::new(x, y, help_width, help_height);
@@ -72,10 +88,11 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
     f.render_widget(Clear, help_area);
 
     let keybindings = vec![
-        ("j / ↓", "Next file / Scroll down"),
-        ("k / ↑", "Prev file / Scroll up"),
-        ("Enter", "Select file → Diff"),
-        ("Tab", "Switch pane"),
+        ("j / ↓", "Next item / Scroll down"),
+        ("k / ↑", "Prev item / Scroll up"),
+        ("Enter", "Select file/branch"),
+        ("Tab", "Next pane"),
+        ("Shift+Tab", "Prev pane"),
         ("Ctrl+d", "Half page down"),
         ("Ctrl+u", "Half page up"),
         ("g / G", "Top / Bottom"),
@@ -85,9 +102,12 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
         ("y", "Yank (copy) selection"),
         ("Esc", "Back to file tree"),
         ("e", "Open in $EDITOR"),
-        ("r", "Refresh diff"),
+        ("r", "Refresh diff + branches"),
         ("?", "Toggle help"),
         ("q", "Quit"),
+        ("", ""),
+        ("", "── Branch List ──"),
+        ("Enter", "Set diff base"),
     ];
 
     let lines: Vec<Line> = keybindings

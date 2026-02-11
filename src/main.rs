@@ -5,11 +5,11 @@ mod syntax;
 mod tui;
 mod ui;
 
-use crate::app::App;
+use crate::app::{App, FocusedPane};
 use crate::event::{Event, EventHandler};
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
-use crate::ui::{diff_view, file_tree, layout, status_bar};
+use crate::ui::{branch_selector, commit_log, diff_view, file_tree, layout, status_bar};
 use anyhow::Result;
 use std::env;
 use std::process::Command;
@@ -44,7 +44,17 @@ fn main() -> Result<()> {
             let layout = layout::compute_layout(frame.area());
             status_bar::render_header(frame, &app, layout.header);
             file_tree::render(frame, &app, layout.file_tree);
-            diff_view::render(frame, &mut app, layout.diff_pane);
+            branch_selector::render(frame, &app, layout.branch_list);
+
+            match app.focused_pane {
+                FocusedPane::BranchList => {
+                    commit_log::render(frame, &app, layout.main_pane);
+                }
+                _ => {
+                    diff_view::render(frame, &mut app, layout.main_pane);
+                }
+            }
+
             status_bar::render_status_bar(frame, &app, layout.status_bar);
 
             if app.show_help {
