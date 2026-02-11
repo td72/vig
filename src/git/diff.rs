@@ -1,4 +1,4 @@
-use git2::{Delta, DiffDelta, DiffLine, DiffOptions, Patch, Repository};
+use git2::{Delta, DiffDelta, DiffLine, DiffOptions, ObjectType, Patch, Repository};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FileStatus {
@@ -87,8 +87,23 @@ struct RawHunkLine {
     content: String,
 }
 
-pub fn parse_diff(repo: &Repository) -> anyhow::Result<Vec<FileDiff>> {
-    let head = repo.head().ok().and_then(|r| r.peel_to_tree().ok());
+pub fn parse_diff(repo: &Repository, base_ref: Option<&str>) -> anyhow::Result<Vec<FileDiff>> {
+    let head = match base_ref {
+        Some(r) => {
+            let obj = repo
+                .revparse_single(r)
+                .map_err(|e| anyhow::anyhow!("Cannot resolve '{}': {}", r, e))?;
+            let tree_obj = obj
+                .peel(ObjectType::Tree)
+                .map_err(|e| anyhow::anyhow!("Cannot peel to tree: {}", e))?;
+            Some(
+                tree_obj
+                    .into_tree()
+                    .map_err(|_| anyhow::anyhow!("Not a tree"))?,
+            )
+        }
+        None => repo.head().ok().and_then(|r| r.peel_to_tree().ok()),
+    };
     let mut opts = DiffOptions::new();
     opts.include_untracked(true);
     opts.recurse_untracked_dirs(true);

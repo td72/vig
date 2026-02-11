@@ -1,5 +1,5 @@
 use crate::git::diff::{DiffState, FileDiff};
-use crate::git::repository::Repo;
+use crate::git::repository::{BranchInfo, CommitInfo, Repo};
 use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -10,7 +10,15 @@ use std::sync::mpsc;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FocusedPane {
     FileTree,
+    BranchList,
     DiffView,
+}
+
+pub struct BranchSelectorState {
+    pub branches: Vec<BranchInfo>,
+    pub selected_idx: usize,
+    pub log_cache: Vec<CommitInfo>,
+    pub log_scroll: u16,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,11 +81,13 @@ pub struct App {
     bg_highlights: HashMap<String, (Vec<Vec<Color>>, Vec<Vec<Color>>)>,
     /// Receiver for background highlight results.
     bg_highlight_rx: Option<mpsc::Receiver<(String, Vec<Vec<Color>>, Vec<Vec<Color>>)>>,
+    pub diff_base_ref: Option<String>,
+    pub branch_selector: BranchSelectorState,
 }
 
 impl App {
     pub fn new(repo: Repo) -> Result<Self> {
-        let diff_state = repo.diff_workdir()?;
+        let diff_state = repo.diff_workdir(None)?;
         let mut app = Self {
             should_quit: false,
             repo,
@@ -101,7 +111,15 @@ impl App {
             content_lines_cache: None,
             bg_highlights: HashMap::new(),
             bg_highlight_rx: None,
+            diff_base_ref: None,
+            branch_selector: BranchSelectorState {
+                branches: Vec::new(),
+                selected_idx: 0,
+                log_cache: Vec::new(),
+                log_scroll: 0,
+            },
         };
+        app.load_branches();
         app.spawn_bg_highlight();
         Ok(app)
     }
@@ -161,7 +179,14 @@ impl App {
 
     pub fn refresh_diff(&mut self) -> Result<()> {
         let old_path = self.selected_file().map(|f| f.path.clone());
-        self.diff_state = self.repo.diff_workdir()?;
+        match self.repo.diff_workdir(self.diff_base_ref.as_deref()) {
+            Ok(state) => self.diff_state = state,
+            Err(e) => {
+                self.diff_base_ref = None;
+                self.diff_state = self.repo.diff_workdir(None)?;
+                self.status_message = Some(format!("Invalid ref, fell back to HEAD: {e}"));
+            }
+        }
         // Preserve selection by path
         if let Some(path) = old_path {
             let entries = self.build_tree_entries();
@@ -238,6 +263,83 @@ impl App {
             while let Ok((path, left, right)) = rx.try_recv() {
                 self.bg_highlights.insert(path, (left, right));
             }
+        }
+    }
+
+    pub fn load_branches(&mut self) {
+        self.branch_selector.branches = self.repo.list_local_branches();
+        if self.branch_selector.selected_idx >= self.branch_selector.branches.len() {
+            self.branch_selector.selected_idx = 0;
+        }
+        self.update_branch_log();
+    }
+
+    pub fn update_branch_log(&mut self) {
+        if let Some(branch) = self
+            .branch_selector
+            .branches
+            .get(self.branch_selector.selected_idx)
+        {
+            self.branch_selector.log_cache = self.repo.log_for_ref(&branch.name, 100);
+            self.branch_selector.log_scroll = 0;
+        } else {
+            self.branch_selector.log_cache.clear();
+        }
+    }
+
+    fn select_branch(&mut self) {
+        if let Some(branch) = self
+            .branch_selector
+            .branches
+            .get(self.branch_selector.selected_idx)
+        {
+            if branch.is_head {
+                self.diff_base_ref = None;
+            } else {
+                self.diff_base_ref = Some(branch.name.clone());
+            }
+            if let Err(e) = self.refresh_diff() {
+                self.status_message = Some(format!("Diff error: {e}"));
+            }
+        }
+    }
+
+    fn handle_branch_list_key(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Char('j') | KeyCode::Down => {
+                if !self.branch_selector.branches.is_empty()
+                    && self.branch_selector.selected_idx + 1
+                        < self.branch_selector.branches.len()
+                {
+                    self.branch_selector.selected_idx += 1;
+                    self.update_branch_log();
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if self.branch_selector.selected_idx > 0 {
+                    self.branch_selector.selected_idx -= 1;
+                    self.update_branch_log();
+                }
+            }
+            KeyCode::Enter => {
+                self.select_branch();
+            }
+            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.branch_selector.log_scroll =
+                    self.branch_selector.log_scroll.saturating_add(10);
+            }
+            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.branch_selector.log_scroll =
+                    self.branch_selector.log_scroll.saturating_sub(10);
+            }
+            KeyCode::Char('g') => {
+                self.branch_selector.log_scroll = 0;
+            }
+            KeyCode::Char('G') => {
+                let total = self.branch_selector.log_cache.len() as u16;
+                self.branch_selector.log_scroll = total.saturating_sub(10);
+            }
+            _ => {}
         }
     }
 
@@ -379,18 +481,28 @@ impl App {
             }
             KeyCode::Char('r') => {
                 self.refresh_diff()?;
+                self.load_branches();
             }
             KeyCode::Char('e') => {
                 return Ok(true); // Signal to open editor
             }
-            KeyCode::Tab | KeyCode::BackTab => {
+            KeyCode::Tab => {
+                self.focused_pane = match self.focused_pane {
+                    FocusedPane::FileTree => FocusedPane::BranchList,
+                    FocusedPane::BranchList => FocusedPane::DiffView,
+                    FocusedPane::DiffView => FocusedPane::FileTree,
+                };
+            }
+            KeyCode::BackTab => {
                 self.focused_pane = match self.focused_pane {
                     FocusedPane::FileTree => FocusedPane::DiffView,
-                    FocusedPane::DiffView => FocusedPane::FileTree,
+                    FocusedPane::BranchList => FocusedPane::FileTree,
+                    FocusedPane::DiffView => FocusedPane::BranchList,
                 };
             }
             _ => match self.focused_pane {
                 FocusedPane::FileTree => self.handle_file_tree_key(key),
+                FocusedPane::BranchList => self.handle_branch_list_key(key),
                 FocusedPane::DiffView => self.handle_diff_view_key(key),
             },
         }
