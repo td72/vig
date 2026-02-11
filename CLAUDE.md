@@ -30,6 +30,10 @@ When adding or modifying a user-visible feature:
 
 Tape files serve as both **visual documentation** (the generated GIFs are embedded in PRs/README) and **integration tests** (VHS replays the exact key sequences against a real vig instance, so a broken feature will produce a visibly wrong GIF or crash during recording).
 
+### Issue / Pull Request
+
+Issue や PR を作成する際は、まず日本語でタイトル・本文をユーザーに提示して確認を取る。承認後、英語に翻訳して `gh` コマンドで作成する。
+
 ### Commit Messages
 
 Use gitmoji prefix: `✨` new feature, `🐛` bug fix, `🩹` minor fix, `♻️` refactor, `🔧` config, `📝` docs, etc.
