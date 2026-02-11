@@ -91,6 +91,16 @@ vig
 
 Text objects are also supported: `iw`, `aw`, `i"`, `a"`, `i(`, `a(`, `i{`, `a{`
 
+### Search
+
+| Key | Action |
+|-----|--------|
+| `/` | Start search |
+| `n` | Next match |
+| `N` | Previous match |
+
+Search works in all panes (DiffView, FileTree, CommitLog). Case-insensitive.
+
 ### Other
 
 | Key | Action |

@@ -9,6 +9,14 @@ mise run demo:all     # record all demo GIFs (requires vhs)
 mise run demo:branch  # record branch selector demo only
 ```
 
+## Branch Workflow
+
+コードを修正する時は必ずフィーチャーブランチを作成して作業する。`main` ブランチに直接コミットしないこと。
+
+```bash
+git checkout -b feat/<feature-name>  # ブランチを切って作業開始
+```
+
 ## Conventions
 
 ### Demo Tapes as Documentation & Tests
@@ -21,6 +29,10 @@ When adding or modifying a user-visible feature:
 4. Commit both the `.tape` and `.gif` together — the `check-gif-freshness` pre-commit hook enforces this
 
 Tape files serve as both **visual documentation** (the generated GIFs are embedded in PRs/README) and **integration tests** (VHS replays the exact key sequences against a real vig instance, so a broken feature will produce a visibly wrong GIF or crash during recording).
+
+### Issue / Pull Request
+
+Issue や PR を作成する際は、まず日本語でタイトル・本文をユーザーに提示して確認を取る。承認後、英語に翻訳して `gh` コマンドで作成する。
 
 ### Commit Messages
 

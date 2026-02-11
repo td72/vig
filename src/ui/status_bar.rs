@@ -46,6 +46,16 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
 }
 
 pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
+    if app.search.active {
+        let prompt = format!("/{}\u{2588}", app.search.input);
+        let line = Line::from(Span::styled(
+            format!(" {prompt}"),
+            Style::default().fg(Color::White),
+        ));
+        f.render_widget(Paragraph::new(line), area);
+        return;
+    }
+
     let file_count = app.diff_state.files.len();
     let adds = app.diff_state.stats.additions;
     let dels = app.diff_state.stats.deletions;
@@ -80,7 +90,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
     use ratatui::widgets::{Block, Borders, Clear};
 
     let help_width = 50u16.min(area.width.saturating_sub(4));
-    let help_height = 26u16.min(area.height.saturating_sub(4));
+    let help_height = 28u16.min(area.height.saturating_sub(4));
     let x = (area.width.saturating_sub(help_width)) / 2;
     let y = (area.height.saturating_sub(help_height)) / 2;
     let help_area = Rect::new(x, y, help_width, help_height);
@@ -100,7 +110,9 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
         ("i", "Normal mode (cursor)"),
         ("v / V", "Visual / Visual Line"),
         ("y", "Yank (copy) selection"),
-        ("Esc", "Back to file tree"),
+        ("/", "Search"),
+        ("n / N", "Next / Prev match"),
+        ("Esc", "Clear search / Back"),
         ("e", "Open in $EDITOR"),
         ("r", "Refresh diff + branches"),
         ("?", "Toggle help"),
