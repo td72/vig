@@ -30,6 +30,72 @@ pub enum DiffViewMode {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SearchOrigin {
+    DiffView,
+    FileTree,
+    CommitLog,
+}
+
+#[derive(Debug, Clone)]
+pub enum SearchMatch {
+    DiffLine {
+        row: usize,
+        col_start: usize,
+        col_end: usize,
+        side: DiffSide,
+    },
+    TreeEntry(usize),
+    CommitEntry(usize),
+}
+
+#[derive(Debug, Clone)]
+pub struct SearchState {
+    pub active: bool,
+    pub input: String,
+    pub query: Option<String>,
+    pub origin: SearchOrigin,
+    pub matches: Vec<SearchMatch>,
+    pub current_match_idx: Option<usize>,
+}
+
+impl SearchState {
+    pub fn new() -> Self {
+        Self {
+            active: false,
+            input: String::new(),
+            query: None,
+            origin: SearchOrigin::DiffView,
+            matches: Vec::new(),
+            current_match_idx: None,
+        }
+    }
+
+    pub fn start(origin: SearchOrigin) -> Self {
+        Self {
+            active: true,
+            input: String::new(),
+            query: None,
+            origin,
+            matches: Vec::new(),
+            current_match_idx: None,
+        }
+    }
+
+    pub fn reset_matches(&mut self) {
+        self.matches.clear();
+        self.current_match_idx = None;
+    }
+
+    pub fn clear(&mut self) {
+        self.active = false;
+        self.input.clear();
+        self.query = None;
+        self.matches.clear();
+        self.current_match_idx = None;
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DiffSide {
     Left,
     Right,
@@ -83,6 +149,7 @@ pub struct App {
     bg_highlight_rx: Option<mpsc::Receiver<(String, Vec<Vec<Color>>, Vec<Vec<Color>>)>>,
     pub diff_base_ref: Option<String>,
     pub branch_selector: BranchSelectorState,
+    pub search: SearchState,
 }
 
 impl App {
@@ -118,6 +185,7 @@ impl App {
                 log_cache: Vec::new(),
                 log_scroll: 0,
             },
+            search: SearchState::new(),
         };
         app.load_branches();
         app.spawn_bg_highlight();
@@ -206,6 +274,7 @@ impl App {
         self.content_lines_cache = None;
         self.bg_highlights.clear();
         self.bg_highlight_rx = None; // Drop old receiver, stops old thread
+        self.search.reset_matches();
         self.spawn_bg_highlight();
         Ok(())
     }
@@ -313,7 +382,9 @@ impl App {
                 self.focused_pane = FocusedPane::DiffView;
             }
             KeyCode::Esc => {
-                if self.diff_base_ref.is_some() {
+                if self.search.query.is_some() {
+                    self.search.clear();
+                } else if self.diff_base_ref.is_some() {
                     self.diff_base_ref = None;
                     if let Err(e) = self.refresh_diff() {
                         self.status_message = Some(format!("Diff error: {e}"));
@@ -352,6 +423,15 @@ impl App {
             KeyCode::Char('G') => {
                 let total = self.branch_selector.log_cache.len() as u16;
                 self.branch_selector.log_scroll = total.saturating_sub(10);
+            }
+            KeyCode::Char('/') => {
+                self.search = SearchState::start(SearchOrigin::CommitLog);
+            }
+            KeyCode::Char('n') => {
+                self.jump_to_match(true);
+            }
+            KeyCode::Char('N') => {
+                self.jump_to_match(false);
             }
             _ => {}
         }
@@ -471,6 +551,12 @@ impl App {
             return Ok(false);
         }
 
+        // Search input mode intercepts all keys
+        if self.search.active {
+            self.handle_search_input_key(key);
+            return Ok(false);
+        }
+
         // Ctrl+c always quits
         if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
             self.should_quit = true;
@@ -492,6 +578,20 @@ impl App {
             }
             KeyCode::Char('?') => {
                 self.show_help = true;
+            }
+            KeyCode::Char('/') => {
+                let origin = match self.focused_pane {
+                    FocusedPane::DiffView => SearchOrigin::DiffView,
+                    FocusedPane::FileTree => SearchOrigin::FileTree,
+                    FocusedPane::BranchList => SearchOrigin::CommitLog,
+                };
+                self.search = SearchState::start(origin);
+            }
+            KeyCode::Char('n') => {
+                self.jump_to_match(true);
+            }
+            KeyCode::Char('N') => {
+                self.jump_to_match(false);
             }
             KeyCode::Char('r') => {
                 self.refresh_diff()?;
@@ -534,6 +634,7 @@ impl App {
                     self.selected_tree_idx += 1;
                     self.diff_scroll_y = 0;
                     self.diff_scroll_x = 0;
+                    self.re_search_on_file_change();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
@@ -541,6 +642,7 @@ impl App {
                     self.selected_tree_idx -= 1;
                     self.diff_scroll_y = 0;
                     self.diff_scroll_x = 0;
+                    self.re_search_on_file_change();
                 }
             }
             KeyCode::Char(' ') => {
@@ -575,6 +677,20 @@ impl App {
                         self.diff_scroll_x = 0;
                     }
                     None => {}
+                }
+            }
+            KeyCode::Char('/') => {
+                self.search = SearchState::start(SearchOrigin::FileTree);
+            }
+            KeyCode::Char('n') => {
+                self.jump_to_match(true);
+            }
+            KeyCode::Char('N') => {
+                self.jump_to_match(false);
+            }
+            KeyCode::Esc => {
+                if self.search.query.is_some() {
+                    self.search.clear();
                 }
             }
             _ => {}
@@ -616,10 +732,24 @@ impl App {
                 self.diff_scroll_x = self.diff_scroll_x.saturating_sub(4);
             }
             KeyCode::Esc => {
-                self.focused_pane = FocusedPane::FileTree;
+                if self.search.query.is_some() {
+                    self.search.clear();
+                } else {
+                    self.focused_pane = FocusedPane::FileTree;
+                }
             }
             KeyCode::Char('l') | KeyCode::Right => {
                 self.diff_scroll_x = self.diff_scroll_x.saturating_add(4);
+            }
+            KeyCode::Char('/') => {
+                self.search = SearchState::start(SearchOrigin::DiffView);
+                self.pending_key = None;
+            }
+            KeyCode::Char('n') => {
+                self.jump_to_match(true);
+            }
+            KeyCode::Char('N') => {
+                self.jump_to_match(false);
             }
             KeyCode::Char('i') => {
                 // Enter Normal mode with cursor at top-left of visible area
@@ -772,10 +902,25 @@ impl App {
                 self.diff_view_mode = DiffViewMode::VisualLine;
                 self.visual_anchor = Some(self.cursor_pos);
             }
-            KeyCode::Esc => {
-                self.diff_view_mode = DiffViewMode::Scroll;
+            KeyCode::Char('/') => {
+                self.search = SearchState::start(SearchOrigin::DiffView);
                 self.pending_key = None;
                 self.count = None;
+            }
+            KeyCode::Char('n') => {
+                self.jump_to_match(true);
+            }
+            KeyCode::Char('N') => {
+                self.jump_to_match(false);
+            }
+            KeyCode::Esc => {
+                if self.search.query.is_some() {
+                    self.search.clear();
+                } else {
+                    self.diff_view_mode = DiffViewMode::Scroll;
+                    self.pending_key = None;
+                    self.count = None;
+                }
             }
             _ => {}
         }
@@ -1035,6 +1180,17 @@ impl App {
                     self.diff_view_mode = DiffViewMode::VisualLine;
                     self.visual_anchor = Some(self.cursor_pos);
                 }
+            }
+            KeyCode::Char('/') => {
+                self.search = SearchState::start(SearchOrigin::DiffView);
+                self.pending_key = None;
+                self.count = None;
+            }
+            KeyCode::Char('n') => {
+                self.jump_to_match(true);
+            }
+            KeyCode::Char('N') => {
+                self.jump_to_match(false);
             }
             KeyCode::Esc => {
                 self.diff_view_mode = DiffViewMode::Normal;
@@ -1359,5 +1515,200 @@ impl App {
                 }
             }
         }
+    }
+
+    // ── Search ──────────────────────────────────────────────
+
+    /// Re-execute DiffView search when file selection changes (preserves query)
+    fn re_search_on_file_change(&mut self) {
+        if self.search.origin == SearchOrigin::DiffView && self.search.query.is_some() {
+            self.search.reset_matches();
+            self.content_lines_cache = None;
+            let query = self.search.query.clone().unwrap();
+            self.search_diff_view(&query);
+        }
+    }
+
+    fn handle_search_input_key(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Enter => {
+                let query = self.search.input.clone();
+                if query.is_empty() {
+                    self.search.active = false;
+                    return;
+                }
+                self.search.active = false;
+                self.search.query = Some(query);
+                self.execute_search();
+                self.jump_to_match(true);
+            }
+            KeyCode::Esc => {
+                self.search.active = false;
+                self.search.input.clear();
+            }
+            KeyCode::Backspace => {
+                self.search.input.pop();
+            }
+            KeyCode::Char(c) => {
+                self.search.input.push(c);
+            }
+            _ => {}
+        }
+    }
+
+    fn execute_search(&mut self) {
+        self.search.matches.clear();
+        self.search.current_match_idx = None;
+        let query = match &self.search.query {
+            Some(q) => q.clone(),
+            None => return,
+        };
+        match self.search.origin {
+            SearchOrigin::DiffView => self.search_diff_view(&query),
+            SearchOrigin::FileTree => self.search_file_tree(&query),
+            SearchOrigin::CommitLog => self.search_commit_log(&query),
+        }
+    }
+
+    fn search_diff_view(&mut self, query: &str) {
+        let query_lower = query.to_lowercase();
+        let file = match self.selected_file() {
+            Some(f) => f.clone(),
+            None => return,
+        };
+        let mut row_idx: usize = 0;
+        for hunk in &file.hunks {
+            // Search hunk header
+            for (col_start, _) in hunk.header.to_lowercase().match_indices(&query_lower) {
+                let col_end = col_start + query.len();
+                self.search.matches.push(SearchMatch::DiffLine {
+                    row: row_idx,
+                    col_start,
+                    col_end,
+                    side: DiffSide::Left,
+                });
+            }
+            row_idx += 1;
+
+            for row in &hunk.rows {
+                // Search left side
+                if let Some(ref side_line) = row.left {
+                    for (col_start, _) in side_line.content.to_lowercase().match_indices(&query_lower) {
+                        let col_end = col_start + query.len();
+                        self.search.matches.push(SearchMatch::DiffLine {
+                            row: row_idx,
+                            col_start,
+                            col_end,
+                            side: DiffSide::Left,
+                        });
+                    }
+                }
+                // Search right side
+                if let Some(ref side_line) = row.right {
+                    for (col_start, _) in side_line.content.to_lowercase().match_indices(&query_lower) {
+                        let col_end = col_start + query.len();
+                        self.search.matches.push(SearchMatch::DiffLine {
+                            row: row_idx,
+                            col_start,
+                            col_end,
+                            side: DiffSide::Right,
+                        });
+                    }
+                }
+                row_idx += 1;
+            }
+        }
+    }
+
+    fn search_file_tree(&mut self, query: &str) {
+        let query_lower = query.to_lowercase();
+        let entries = self.build_tree_entries();
+        for (idx, entry) in entries.iter().enumerate() {
+            let name = match entry {
+                TreeEntry::Dir { path, .. } => path.clone(),
+                TreeEntry::File { file_idx, .. } => {
+                    match self.diff_state.files.get(*file_idx) {
+                        Some(f) => f.path.clone(),
+                        None => continue,
+                    }
+                }
+            };
+            if name.to_lowercase().contains(&query_lower) {
+                self.search.matches.push(SearchMatch::TreeEntry(idx));
+            }
+        }
+    }
+
+    fn search_commit_log(&mut self, query: &str) {
+        let query_lower = query.to_lowercase();
+        for (idx, commit) in self.branch_selector.log_cache.iter().enumerate() {
+            let text = format!(
+                "{} {} {} {}",
+                commit.short_hash,
+                commit.author,
+                commit.date,
+                commit.message
+            );
+            if text.to_lowercase().contains(&query_lower) {
+                self.search.matches.push(SearchMatch::CommitEntry(idx));
+            }
+        }
+    }
+
+    fn jump_to_match(&mut self, forward: bool) {
+        if self.search.matches.is_empty() {
+            if self.search.query.is_some() {
+                self.status_message = Some("Pattern not found".to_string());
+            }
+            return;
+        }
+
+        let total = self.search.matches.len();
+        let new_idx = match self.search.current_match_idx {
+            Some(idx) => {
+                if forward {
+                    (idx + 1) % total
+                } else {
+                    (idx + total - 1) % total
+                }
+            }
+            None => {
+                if forward {
+                    0
+                } else {
+                    total - 1
+                }
+            }
+        };
+        self.search.current_match_idx = Some(new_idx);
+
+        match &self.search.matches[new_idx] {
+            SearchMatch::DiffLine { row, col_start, side, .. } => {
+                let row = *row;
+                let col_start = *col_start;
+                let side = *side;
+                if self.diff_view_mode == DiffViewMode::Scroll {
+                    // In scroll mode, just scroll to the row
+                    self.diff_scroll_y = row.saturating_sub(
+                        (self.diff_view_height / 3) as usize,
+                    ) as u16;
+                } else {
+                    // In Normal/Visual mode, move cursor
+                    self.cursor_pos.row = row;
+                    self.cursor_pos.col = col_start;
+                    self.cursor_pos.side = side;
+                    self.content_lines_cache = None; // side may have changed
+                    self.scroll_to_cursor();
+                }
+            }
+            SearchMatch::TreeEntry(idx) => {
+                self.selected_tree_idx = *idx;
+            }
+            SearchMatch::CommitEntry(idx) => {
+                self.branch_selector.log_scroll = *idx as u16;
+            }
+        }
+
+        self.status_message = Some(format!("[{}/{}]", new_idx + 1, total));
     }
 }

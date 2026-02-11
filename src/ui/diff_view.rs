@@ -1,5 +1,6 @@
-use crate::app::{App, CursorPos, DiffSide, DiffViewMode, FocusedPane};
+use crate::app::{App, CursorPos, DiffSide, DiffViewMode, FocusedPane, SearchMatch};
 use crate::git::diff::{FileDiff, LineType, SideBySideRow};
+use std::collections::HashMap;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -12,6 +13,59 @@ const GUTTER_WIDTH: usize = 5; // "1234 "
 const SELECTION_BG: Color = Color::Rgb(60, 60, 100);
 const CURSOR_FG: Color = Color::Black;
 const CURSOR_BG: Color = Color::White;
+const SEARCH_MATCH_BG: Color = Color::Rgb(60, 60, 0);
+const SEARCH_CURRENT_BG: Color = Color::Rgb(200, 120, 0);
+const SEARCH_CURRENT_FG: Color = Color::Black;
+
+/// Pre-computed search highlight info for the current file
+struct SearchHighlightInfo {
+    /// row_idx → Vec<(col_start, col_end, is_current, side)>
+    row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>>,
+}
+
+impl SearchHighlightInfo {
+    fn from_app(app: &App) -> Option<Self> {
+        let query = app.search.query.as_ref()?;
+        if query.is_empty() || app.search.matches.is_empty() {
+            return None;
+        }
+
+        let current_idx = app.search.current_match_idx;
+        let mut row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>> = HashMap::new();
+
+        for (i, m) in app.search.matches.iter().enumerate() {
+            if let SearchMatch::DiffLine {
+                row,
+                col_start,
+                col_end,
+                side,
+            } = m
+            {
+                let is_current = current_idx == Some(i);
+                row_matches
+                    .entry(*row)
+                    .or_default()
+                    .push((*col_start, *col_end, is_current, *side));
+            }
+        }
+
+        Some(Self { row_matches })
+    }
+
+    /// Check if a character at (row, col) on the given side has a search highlight.
+    /// Returns Some(is_current) if highlighted, None otherwise.
+    fn get_highlight(&self, row_idx: usize, col: usize, is_left: bool) -> Option<bool> {
+        let side = if is_left { DiffSide::Left } else { DiffSide::Right };
+        if let Some(matches) = self.row_matches.get(&row_idx) {
+            for &(col_start, col_end, is_current, match_side) in matches {
+                if match_side == side && col >= col_start && col < col_end {
+                    return Some(is_current);
+                }
+            }
+        }
+        None
+    }
+}
 
 /// Selection range info passed to rendering functions
 struct SelectionInfo {
@@ -89,6 +143,9 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     // Build selection info if in visual mode
     let selection = build_selection_info(app);
 
+    // Build search highlight info
+    let search_hl = SearchHighlightInfo::from_app(app);
+
     // Access cached highlight colors by reference (no clone)
     let (left_lines, right_lines) = {
         let empty: Vec<Vec<Color>> = Vec::new();
@@ -104,6 +161,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
             &selection,
             lc,
             rc,
+            &search_hl,
         )
     };
 
@@ -285,6 +343,7 @@ fn build_side_by_side_lines<'a>(
     selection: &Option<SelectionInfo>,
     left_colors: &[Vec<Color>],
     right_colors: &[Vec<Color>],
+    search_hl: &Option<SearchHighlightInfo>,
 ) -> (Vec<Line<'a>>, Vec<Line<'a>>) {
     let mut left_lines = Vec::new();
     let mut right_lines = Vec::new();
@@ -304,20 +363,34 @@ fn build_side_by_side_lines<'a>(
             header_style,
         )));
 
-        // Apply selection to hunk header if needed
+        // Apply selection/search to hunk header if needed
         if let Some(sel) = selection {
             if sel.cursor.side == DiffSide::Left {
                 let idx = left_lines.len() - 1;
                 left_lines[idx] = apply_selection_to_line(
                     &hunk.header, row_idx, left_width, scroll_x as usize, sel, header_style, None,
+                    search_hl, true,
                 );
             }
             if sel.cursor.side == DiffSide::Right {
                 let idx = right_lines.len() - 1;
                 right_lines[idx] = apply_selection_to_line(
                     &hunk.header, row_idx, right_width, scroll_x as usize, sel, header_style, None,
+                    search_hl, false,
                 );
             }
+        } else if search_hl.is_some() {
+            // No selection but search highlights may apply
+            let idx = left_lines.len() - 1;
+            left_lines[idx] = apply_search_to_line(
+                &hunk.header, row_idx, left_width, scroll_x as usize, header_style, None,
+                search_hl, true,
+            );
+            let idx = right_lines.len() - 1;
+            right_lines[idx] = apply_search_to_line(
+                &hunk.header, row_idx, right_width, scroll_x as usize, header_style, None,
+                search_hl, false,
+            );
         }
 
         row_idx += 1;
@@ -328,7 +401,7 @@ fn build_side_by_side_lines<'a>(
             let right_syntax = right_colors.get(row_idx).map(|v| v.as_slice());
             let (left, right) = render_row(
                 row, left_width, right_width, scroll_x as usize, row_idx, selection,
-                left_syntax, right_syntax,
+                left_syntax, right_syntax, search_hl,
             );
             left_lines.push(left);
             right_lines.push(right);
@@ -356,14 +429,15 @@ fn render_row<'a>(
     selection: &Option<SelectionInfo>,
     left_syntax: Option<&[Color]>,
     right_syntax: Option<&[Color]>,
+    search_hl: &Option<SearchHighlightInfo>,
 ) -> (Line<'a>, Line<'a>) {
     let left = render_side_with_selection(
         row.left.as_ref(), row.line_type, true, left_width, scroll_x, row_idx, selection,
-        left_syntax,
+        left_syntax, search_hl,
     );
     let right = render_side_with_selection(
         row.right.as_ref(), row.line_type, false, right_width, scroll_x, row_idx, selection,
-        right_syntax,
+        right_syntax, search_hl,
     );
     (left, right)
 }
@@ -377,6 +451,7 @@ fn render_side_with_selection<'a>(
     row_idx: usize,
     selection: &Option<SelectionInfo>,
     syntax_colors: Option<&[Color]>,
+    search_hl: &Option<SearchHighlightInfo>,
 ) -> Line<'a> {
     match side {
         Some(line) => {
@@ -395,17 +470,18 @@ fn render_side_with_selection<'a>(
             if on_active_side {
                 if let Some(sel) = selection {
                     // In Normal mode, only the cursor row needs per-char spans;
-                    // other rows can use the cheaper syntax-only path.
+                    // other rows can use the cheaper syntax-only path (unless search highlights exist).
                     let needs_highlight = match sel.mode {
                         DiffViewMode::Normal => sel.cursor.row == row_idx,
                         DiffViewMode::Visual | DiffViewMode::VisualLine => true,
                         DiffViewMode::Scroll => false,
                     };
-                    if needs_highlight {
+                    let has_search = search_hl.as_ref().is_some_and(|sh| sh.row_matches.contains_key(&row_idx));
+                    if needs_highlight || has_search {
                         let content = &line.content;
                         let spans = build_highlighted_spans(
                             content, row_idx, content_width, scroll_x, sel, base_style,
-                            syntax_colors,
+                            syntax_colors, search_hl, is_left,
                         );
                         let mut all_spans = vec![
                             Span::styled(gutter, Style::default().fg(Color::DarkGray)),
@@ -416,10 +492,13 @@ fn render_side_with_selection<'a>(
                 }
             }
 
-            // Non-active side or scroll mode — still apply syntax highlighting
-            if let Some(syn_colors) = syntax_colors {
+            // Non-active side or scroll mode — still apply syntax highlighting + search
+            let has_search = search_hl.as_ref().is_some_and(|sh| sh.row_matches.contains_key(&row_idx));
+            if syntax_colors.is_some() || has_search {
+                let syn_colors = syntax_colors.unwrap_or(&[]);
                 let spans = build_syntax_spans(
                     &line.content, content_width, scroll_x, base_style, syn_colors,
+                    search_hl, row_idx, is_left,
                 );
                 let mut all_spans = vec![
                     Span::styled(gutter, Style::default().fg(Color::DarkGray)),
@@ -447,6 +526,9 @@ fn build_syntax_spans<'a>(
     scroll_x: usize,
     base_style: Style,
     syntax_colors: &[Color],
+    search_hl: &Option<SearchHighlightInfo>,
+    row_idx: usize,
+    is_left: bool,
 ) -> Vec<Span<'a>> {
     let chars: Vec<char> = content.chars().collect();
     let start = scroll_x.min(chars.len());
@@ -465,8 +547,9 @@ fn build_syntax_spans<'a>(
         } else {
             base_style.fg.unwrap_or(Color::Reset)
         };
+        let search_highlight = search_hl.as_ref().and_then(|sh| sh.get_highlight(row_idx, content_idx, is_left));
 
-        // Batch consecutive chars with same fg
+        // Batch consecutive chars with same fg and same search state
         let mut j = i + 1;
         let mut run = String::new();
         run.push(ch);
@@ -478,14 +561,23 @@ fn build_syntax_spans<'a>(
             } else {
                 base_style.fg.unwrap_or(Color::Reset)
             };
-            if next_fg != fg {
+            let next_search = search_hl.as_ref().and_then(|sh| sh.get_highlight(row_idx, cidx, is_left));
+            if next_fg != fg || next_search != search_highlight {
                 break;
             }
             run.push(next_ch);
             j += 1;
         }
 
-        let style = base_style.fg(fg);
+        let style = if let Some(is_current) = search_highlight {
+            if is_current {
+                base_style.fg(SEARCH_CURRENT_FG).bg(SEARCH_CURRENT_BG)
+            } else {
+                base_style.fg(fg).bg(SEARCH_MATCH_BG)
+            }
+        } else {
+            base_style.fg(fg)
+        };
         spans.push(Span::styled(run, style));
         i = j;
     }
@@ -502,6 +594,8 @@ fn build_highlighted_spans<'a>(
     sel: &SelectionInfo,
     base_style: Style,
     syntax_colors: Option<&[Color]>,
+    search_hl: &Option<SearchHighlightInfo>,
+    is_left: bool,
 ) -> Vec<Span<'a>> {
     let chars: Vec<char> = content.chars().collect();
     // Pad to content_width
@@ -522,6 +616,7 @@ fn build_highlighted_spans<'a>(
         let content_col = i + scroll_x;
         let is_cursor = sel.cursor.row == row_idx && sel.cursor.col == content_col;
         let is_selected = is_in_selection(row_idx, content_col, sel);
+        let search_highlight = search_hl.as_ref().and_then(|sh| sh.get_highlight(row_idx, content_col, is_left));
         // Get syntax fg for this character
         let syn_fg = syntax_colors.and_then(|sc| sc.get(content_col).copied());
 
@@ -531,24 +626,28 @@ fn build_highlighted_spans<'a>(
             let cc = j + scroll_x;
             let next_cursor = sel.cursor.row == row_idx && sel.cursor.col == cc;
             let next_selected = is_in_selection(row_idx, cc, sel);
+            let next_search = search_hl.as_ref().and_then(|sh| sh.get_highlight(row_idx, cc, is_left));
             let next_syn_fg = syntax_colors.and_then(|sc| sc.get(cc).copied());
-            if next_cursor != is_cursor || next_selected != is_selected || next_syn_fg != syn_fg {
+            if next_cursor != is_cursor || next_selected != is_selected || next_syn_fg != syn_fg || next_search != search_highlight {
                 break;
             }
             j += 1;
         }
 
         let text: String = display[i..j].iter().collect();
+        let syn_fg_or_default = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
         let style = if is_cursor {
             base_style.fg(CURSOR_FG).bg(CURSOR_BG)
+        } else if let Some(is_current) = search_highlight {
+            if is_current {
+                base_style.fg(SEARCH_CURRENT_FG).bg(SEARCH_CURRENT_BG)
+            } else {
+                base_style.fg(syn_fg_or_default).bg(SEARCH_MATCH_BG)
+            }
         } else if is_selected {
-            // Selection: keep syntax fg, override bg
-            let fg = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
-            base_style.fg(fg).bg(SELECTION_BG)
+            base_style.fg(syn_fg_or_default).bg(SELECTION_BG)
         } else {
-            // Normal: use syntax fg if available, else base_style fg
-            let fg = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
-            base_style.fg(fg)
+            base_style.fg(syn_fg_or_default)
         };
         spans.push(Span::styled(text, style));
         i = j;
@@ -587,8 +686,26 @@ fn apply_selection_to_line<'a>(
     sel: &SelectionInfo,
     base_style: Style,
     syntax_colors: Option<&[Color]>,
+    search_hl: &Option<SearchHighlightInfo>,
+    is_left: bool,
 ) -> Line<'a> {
-    let spans = build_highlighted_spans(content, row_idx, width, scroll_x, sel, base_style, syntax_colors);
+    let spans = build_highlighted_spans(content, row_idx, width, scroll_x, sel, base_style, syntax_colors, search_hl, is_left);
+    Line::from(spans)
+}
+
+/// Apply search highlighting to a line without selection
+fn apply_search_to_line<'a>(
+    content: &str,
+    row_idx: usize,
+    width: usize,
+    scroll_x: usize,
+    base_style: Style,
+    syntax_colors: Option<&[Color]>,
+    search_hl: &Option<SearchHighlightInfo>,
+    is_left: bool,
+) -> Line<'a> {
+    let syn_colors = syntax_colors.unwrap_or(&[]);
+    let spans = build_syntax_spans(content, width, scroll_x, base_style, syn_colors, search_hl, row_idx, is_left);
     Line::from(spans)
 }
 
