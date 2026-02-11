@@ -56,6 +56,14 @@ pub struct SearchState {
     pub origin: SearchOrigin,
     pub matches: Vec<SearchMatch>,
     pub current_match_idx: Option<usize>,
+    /// Last confirmed query — preserved across clear() for n/N reuse
+    pub last_query: Option<String>,
+    /// Search history (oldest first)
+    pub history: Vec<String>,
+    /// Current position in history during input (None = editing new input)
+    history_idx: Option<usize>,
+    /// Saved input before browsing history
+    saved_input: String,
 }
 
 impl SearchState {
@@ -67,18 +75,22 @@ impl SearchState {
             origin: SearchOrigin::DiffView,
             matches: Vec::new(),
             current_match_idx: None,
+            last_query: None,
+            history: Vec::new(),
+            history_idx: None,
+            saved_input: String::new(),
         }
     }
 
-    pub fn start(origin: SearchOrigin) -> Self {
-        Self {
-            active: true,
-            input: String::new(),
-            query: None,
-            origin,
-            matches: Vec::new(),
-            current_match_idx: None,
-        }
+    pub fn start(&mut self, origin: SearchOrigin) {
+        self.active = true;
+        self.input.clear();
+        self.query = None;
+        self.origin = origin;
+        self.matches.clear();
+        self.current_match_idx = None;
+        self.history_idx = None;
+        self.saved_input.clear();
     }
 
     pub fn reset_matches(&mut self) {
@@ -86,12 +98,65 @@ impl SearchState {
         self.current_match_idx = None;
     }
 
+    /// Clear highlights but preserve last_query and history for n/N reuse
     pub fn clear(&mut self) {
         self.active = false;
         self.input.clear();
-        self.query = None;
+        if self.query.is_some() {
+            self.last_query = self.query.take();
+        }
         self.matches.clear();
         self.current_match_idx = None;
+    }
+
+    /// Navigate to previous history entry
+    pub fn history_prev(&mut self) {
+        if self.history.is_empty() {
+            return;
+        }
+        match self.history_idx {
+            None => {
+                // Save current input, jump to most recent history
+                self.saved_input = self.input.clone();
+                let idx = self.history.len() - 1;
+                self.history_idx = Some(idx);
+                self.input = self.history[idx].clone();
+            }
+            Some(idx) if idx > 0 => {
+                let new_idx = idx - 1;
+                self.history_idx = Some(new_idx);
+                self.input = self.history[new_idx].clone();
+            }
+            _ => {}
+        }
+    }
+
+    /// Navigate to next history entry (or back to saved input)
+    pub fn history_next(&mut self) {
+        match self.history_idx {
+            Some(idx) => {
+                if idx + 1 < self.history.len() {
+                    let new_idx = idx + 1;
+                    self.history_idx = Some(new_idx);
+                    self.input = self.history[new_idx].clone();
+                } else {
+                    // Back to the input the user was typing
+                    self.history_idx = None;
+                    self.input = self.saved_input.clone();
+                }
+            }
+            None => {}
+        }
+    }
+
+    /// Add query to history (deduplicates consecutive)
+    pub fn push_history(&mut self, query: &str) {
+        if query.is_empty() {
+            return;
+        }
+        if self.history.last().map(|s| s.as_str()) != Some(query) {
+            self.history.push(query.to_string());
+        }
     }
 }
 
@@ -425,7 +490,7 @@ impl App {
                 self.branch_selector.log_scroll = total.saturating_sub(10);
             }
             KeyCode::Char('/') => {
-                self.search = SearchState::start(SearchOrigin::CommitLog);
+                self.search.start(SearchOrigin::CommitLog);
             }
             KeyCode::Char('n') => {
                 self.jump_to_match(true);
@@ -585,7 +650,7 @@ impl App {
                     FocusedPane::FileTree => SearchOrigin::FileTree,
                     FocusedPane::BranchList => SearchOrigin::CommitLog,
                 };
-                self.search = SearchState::start(origin);
+                self.search.start(origin);
             }
             KeyCode::Char('n') => {
                 self.jump_to_match(true);
@@ -680,7 +745,7 @@ impl App {
                 }
             }
             KeyCode::Char('/') => {
-                self.search = SearchState::start(SearchOrigin::FileTree);
+                self.search.start(SearchOrigin::FileTree);
             }
             KeyCode::Char('n') => {
                 self.jump_to_match(true);
@@ -742,7 +807,7 @@ impl App {
                 self.diff_scroll_x = self.diff_scroll_x.saturating_add(4);
             }
             KeyCode::Char('/') => {
-                self.search = SearchState::start(SearchOrigin::DiffView);
+                self.search.start(SearchOrigin::DiffView);
                 self.pending_key = None;
             }
             KeyCode::Char('n') => {
@@ -903,7 +968,7 @@ impl App {
                 self.visual_anchor = Some(self.cursor_pos);
             }
             KeyCode::Char('/') => {
-                self.search = SearchState::start(SearchOrigin::DiffView);
+                self.search.start(SearchOrigin::DiffView);
                 self.pending_key = None;
                 self.count = None;
             }
@@ -1182,7 +1247,7 @@ impl App {
                 }
             }
             KeyCode::Char('/') => {
-                self.search = SearchState::start(SearchOrigin::DiffView);
+                self.search.start(SearchOrigin::DiffView);
                 self.pending_key = None;
                 self.count = None;
             }
@@ -1537,6 +1602,7 @@ impl App {
                     self.search.active = false;
                     return;
                 }
+                self.search.push_history(&query);
                 self.search.active = false;
                 self.search.query = Some(query);
                 self.execute_search();
@@ -1548,9 +1614,17 @@ impl App {
             }
             KeyCode::Backspace => {
                 self.search.input.pop();
+                self.search.history_idx = None;
+            }
+            KeyCode::Up | KeyCode::Char('p') if key.code == KeyCode::Up || key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.search.history_prev();
+            }
+            KeyCode::Down | KeyCode::Char('n') if key.code == KeyCode::Down || key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.search.history_next();
             }
             KeyCode::Char(c) => {
                 self.search.input.push(c);
+                self.search.history_idx = None;
             }
             _ => {}
         }
@@ -1656,10 +1730,18 @@ impl App {
     }
 
     fn jump_to_match(&mut self, forward: bool) {
-        if self.search.matches.is_empty() {
-            if self.search.query.is_some() {
-                self.status_message = Some("Pattern not found".to_string());
+        // If no active query but last_query exists, re-execute search
+        if self.search.query.is_none() {
+            if let Some(last) = self.search.last_query.clone() {
+                self.search.query = Some(last);
+                self.execute_search();
+            } else {
+                return;
             }
+        }
+
+        if self.search.matches.is_empty() {
+            self.status_message = Some("Pattern not found".to_string());
             return;
         }
 
