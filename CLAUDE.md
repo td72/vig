@@ -9,6 +9,14 @@ mise run demo:all     # record all demo GIFs (requires vhs)
 mise run demo:branch  # record branch selector demo only
 ```
 
+## Branch Workflow
+
+コードを修正する時は必ずフィーチャーブランチを作成して作業する。`main` ブランチに直接コミットしないこと。
+
+```bash
+git checkout -b feat/<feature-name>  # ブランチを切って作業開始
+```
+
 ## Conventions
 
 ### Demo Tapes as Documentation & Tests
