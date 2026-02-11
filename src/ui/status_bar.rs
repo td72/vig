@@ -23,10 +23,14 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
         ),
     ];
 
-    if let Some(ref base) = app.diff_base_ref {
+    {
+        let base_label = match &app.diff_base_ref {
+            Some(base) => format!(" vs {base} "),
+            None => " vs HEAD ".to_string(),
+        };
         spans.push(Span::raw(" "));
         spans.push(Span::styled(
-            format!(" vs {base} "),
+            base_label,
             Style::default().fg(Color::Black).bg(Color::Yellow),
         ));
     }

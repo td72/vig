@@ -34,7 +34,6 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         .branches
         .iter()
         .map(|branch| {
-            let is_diff_base = app.diff_base_ref.as_deref() == Some(branch.name.as_str());
             let mut spans = vec![Span::raw(" ")];
 
             if branch.is_head {
@@ -53,14 +52,6 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
             } else {
                 spans.push(Span::raw("  "));
                 spans.push(Span::raw(branch.name.clone()));
-            }
-
-            if is_diff_base {
-                spans.push(Span::raw(" "));
-                spans.push(Span::styled(
-                    " diff ",
-                    Style::default().fg(Color::Black).bg(Color::Yellow),
-                ));
             }
 
             ListItem::new(Line::from(spans))

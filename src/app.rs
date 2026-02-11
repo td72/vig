@@ -306,6 +306,20 @@ impl App {
 
     fn handle_branch_list_key(&mut self, key: KeyEvent) {
         match key.code {
+            KeyCode::Char('h') => {
+                self.focused_pane = FocusedPane::FileTree;
+            }
+            KeyCode::Char('i') => {
+                self.focused_pane = FocusedPane::DiffView;
+            }
+            KeyCode::Esc => {
+                if self.diff_base_ref.is_some() {
+                    self.diff_base_ref = None;
+                    if let Err(e) = self.refresh_diff() {
+                        self.status_message = Some(format!("Diff error: {e}"));
+                    }
+                }
+            }
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.branch_selector.branches.is_empty()
                     && self.branch_selector.selected_idx + 1
@@ -539,7 +553,13 @@ impl App {
                     }
                 }
             }
-            KeyCode::Char('l') | KeyCode::Right | KeyCode::Enter => {
+            KeyCode::Char('l') => {
+                self.focused_pane = FocusedPane::BranchList;
+            }
+            KeyCode::Char('i') => {
+                self.focused_pane = FocusedPane::DiffView;
+            }
+            KeyCode::Right | KeyCode::Enter => {
                 match entries.get(self.selected_tree_idx) {
                     Some(TreeEntry::Dir { path, .. }) => {
                         let path = path.clone();
