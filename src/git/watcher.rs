@@ -17,7 +17,10 @@ impl FsWatcher {
                     let dominated_by_git_internal = events.iter().all(|e| {
                         let in_git = e.path.components().any(|c| c.as_os_str() == ".git");
                         let is_index = e.path.ends_with(".git/index");
-                        in_git && !is_index
+                        let is_refs = e.path.components().zip(e.path.components().skip(1))
+                            .any(|(a, b)| a.as_os_str() == ".git" && b.as_os_str() == "refs");
+                        let is_packed_refs = e.path.ends_with("packed-refs");
+                        in_git && !is_index && !is_refs && !is_packed_refs
                     });
                     // Skip if ALL events are .git-internal (except index changes)
                     if !dominated_by_git_internal {

@@ -108,6 +108,7 @@ fn main() -> Result<()> {
                 }
             }
             Event::FsChange => {
+                app.load_branches();
                 if let Err(e) = app.refresh_diff() {
                     app.status_message = Some(format!("Refresh error: {e}"));
                 }
