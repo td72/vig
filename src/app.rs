@@ -878,6 +878,25 @@ impl App {
     }
 
     fn handle_file_tree_key(&mut self, key: KeyEvent) {
+        // Pane navigation must work even when file list is empty
+        match key.code {
+            KeyCode::Char('l') => {
+                self.focused_pane = FocusedPane::BranchList;
+                return;
+            }
+            KeyCode::Char('i') => {
+                self.focused_pane = FocusedPane::DiffView;
+                return;
+            }
+            KeyCode::Esc => {
+                if self.search.query.is_some() {
+                    self.search.clear();
+                }
+                return;
+            }
+            _ => {}
+        }
+
         let entries = self.build_tree_entries();
         if entries.is_empty() {
             return;
@@ -909,12 +928,6 @@ impl App {
                     }
                 }
             }
-            KeyCode::Char('l') => {
-                self.focused_pane = FocusedPane::BranchList;
-            }
-            KeyCode::Char('i') => {
-                self.focused_pane = FocusedPane::DiffView;
-            }
             KeyCode::Right | KeyCode::Enter => {
                 match entries.get(self.selected_tree_idx) {
                     Some(TreeEntry::Dir { path, .. }) => {
@@ -941,11 +954,6 @@ impl App {
             }
             KeyCode::Char('N') => {
                 self.jump_to_match(false);
-            }
-            KeyCode::Esc => {
-                if self.search.query.is_some() {
-                    self.search.clear();
-                }
             }
             _ => {}
         }
