@@ -47,8 +47,9 @@ vig
 | Key | Action |
 |-----|--------|
 | `Tab` / `Shift+Tab` | Cycle panes: Files → Branches → Reflog → GitLog → Diff |
-| `h` / `l` | Move between adjacent panes |
-| `i` | Enter next pane |
+| `h` / `l` | Move between adjacent upper panes (Files, Branches, Reflog) |
+| `i` | Jump from upper pane to main pane (GitLog / Diff) |
+| `Esc` | Return from main pane to previous upper pane |
 
 ### Navigation
 
@@ -90,7 +91,7 @@ vig
 | `g` / `G` | Top / Bottom |
 | `Enter` | Set as diff base |
 | `/` | Search reflog |
-| `Esc` | Clear search / Back to Git Log |
+| `Esc` | Clear search / Back to Branches |
 
 ### Modes
 

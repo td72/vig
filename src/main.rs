@@ -48,7 +48,7 @@ fn main() -> Result<()> {
             status_bar::render_header(frame, &app, layout.header);
             file_tree::render(frame, &app, layout.file_tree);
             branch_selector::render(frame, &app, layout.branch_list);
-            reflog::render(frame, &app, layout.reflog);
+            reflog::render(frame, &mut app, layout.reflog);
 
             match app.focused_pane {
                 FocusedPane::BranchList | FocusedPane::GitLog | FocusedPane::Reflog => {

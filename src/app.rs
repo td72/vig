@@ -30,6 +30,7 @@ pub struct GitLogState {
 pub struct ReflogState {
     pub entries: Vec<ReflogEntry>,
     pub selected_idx: usize,
+    pub view_height: u16,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -319,6 +320,7 @@ impl App {
             reflog: ReflogState {
                 entries: Vec::new(),
                 selected_idx: 0,
+                view_height: 0,
             },
             branch_action_menu: None,
             error_dialog: None,
@@ -648,12 +650,14 @@ impl App {
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let new_idx = self.reflog.selected_idx.saturating_add(10);
+                let half = (self.reflog.view_height / 2).max(1) as usize;
+                let new_idx = self.reflog.selected_idx.saturating_add(half);
                 self.reflog.selected_idx =
                     new_idx.min(self.reflog.entries.len().saturating_sub(1));
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.reflog.selected_idx = self.reflog.selected_idx.saturating_sub(10);
+                let half = (self.reflog.view_height / 2).max(1) as usize;
+                self.reflog.selected_idx = self.reflog.selected_idx.saturating_sub(half);
             }
             KeyCode::Char('g') => {
                 self.reflog.selected_idx = 0;
@@ -2058,11 +2062,11 @@ impl App {
     fn search_reflog(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
         for (idx, entry) in self.reflog.entries.iter().enumerate() {
-            let text = format!(
-                "{} {} {} {}",
-                entry.short_hash, entry.selector, entry.action, entry.message
-            );
-            if text.to_lowercase().contains(&query_lower) {
+            if entry.short_hash.to_lowercase().contains(&query_lower)
+                || entry.selector.to_lowercase().contains(&query_lower)
+                || entry.action.to_lowercase().contains(&query_lower)
+                || entry.message.to_lowercase().contains(&query_lower)
+            {
                 self.search.matches.push(SearchMatch::ReflogEntry(idx));
             }
         }

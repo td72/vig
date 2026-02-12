@@ -8,7 +8,8 @@ use ratatui::{
     Frame,
 };
 
-pub fn render(f: &mut Frame, app: &App, area: Rect) {
+pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
+    app.reflog.view_height = area.height.saturating_sub(2); // minus borders
     let border_color = if app.focused_pane == FocusedPane::Reflog {
         Color::Cyan
     } else {

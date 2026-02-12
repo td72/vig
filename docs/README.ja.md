@@ -47,8 +47,9 @@ vig
 | キー | 操作 |
 |------|------|
 | `Tab` / `Shift+Tab` | ペイン切り替え: Files → Branches → Reflog → GitLog → Diff |
-| `h` / `l` | 隣接ペインへ移動 |
-| `i` | 次のペインへ移動 |
+| `h` / `l` | 上部ペイン間の移動（Files, Branches, Reflog） |
+| `i` | 上部ペインからメインペインへ移動（GitLog / Diff） |
+| `Esc` | メインペインから直前の上部ペインへ戻る |
 
 ### ナビゲーション
 
@@ -90,7 +91,7 @@ vig
 | `g` / `G` | 先頭 / 末尾 |
 | `Enter` | diff base として設定 |
 | `/` | reflog 検索 |
-| `Esc` | 検索クリア / Git Log へ戻る |
+| `Esc` | 検索クリア / Branches へ戻る |
 
 ### モード
 
