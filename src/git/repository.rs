@@ -15,6 +15,14 @@ pub struct CommitInfo {
     pub message: String,
 }
 
+pub struct ReflogEntry {
+    pub short_hash: String,
+    pub full_hash: String,
+    pub selector: String,
+    pub action: String,
+    pub message: String,
+}
+
 pub struct Repo {
     inner: Repository,
 }
@@ -155,6 +163,36 @@ impl Repo {
             anyhow::bail!("git branch -d failed: {}", stderr.trim());
         }
         Ok(())
+    }
+
+    pub fn reflog(&self, limit: usize) -> Vec<ReflogEntry> {
+        let reflog = match self.inner.reflog("HEAD") {
+            Ok(r) => r,
+            Err(_) => return Vec::new(),
+        };
+        reflog
+            .iter()
+            .take(limit)
+            .enumerate()
+            .map(|(i, entry)| {
+                let oid = entry.id_new();
+                let full_hash = oid.to_string();
+                let short_hash = full_hash[..7.min(full_hash.len())].to_string();
+                let selector = format!("HEAD@{{{i}}}");
+                let raw_message = entry.message().unwrap_or("").to_string();
+                let (action, message) = match raw_message.split_once(": ") {
+                    Some((a, m)) => (a.to_string(), m.to_string()),
+                    None => (raw_message.clone(), raw_message),
+                };
+                ReflogEntry {
+                    short_hash,
+                    full_hash,
+                    selector,
+                    action,
+                    message,
+                }
+            })
+            .collect()
     }
 
     #[allow(dead_code)]
