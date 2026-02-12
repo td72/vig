@@ -9,7 +9,9 @@ use crate::app::{App, FocusedPane};
 use crate::event::{Event, EventHandler};
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
-use crate::ui::{branch_selector, commit_log, diff_view, file_tree, layout, status_bar};
+use crate::ui::{
+    branch_action_menu, branch_selector, commit_log, diff_view, file_tree, layout, status_bar,
+};
 use anyhow::Result;
 use std::env;
 use std::process::Command;
@@ -47,7 +49,7 @@ fn main() -> Result<()> {
             branch_selector::render(frame, &app, layout.branch_list);
 
             match app.focused_pane {
-                FocusedPane::BranchList => {
+                FocusedPane::BranchList | FocusedPane::GitLog => {
                     commit_log::render(frame, &app, layout.main_pane);
                 }
                 _ => {
@@ -56,6 +58,10 @@ fn main() -> Result<()> {
             }
 
             status_bar::render_status_bar(frame, &app, layout.status_bar);
+
+            if app.branch_action_menu.is_some() {
+                branch_action_menu::render(frame, &app, frame.area());
+            }
 
             if app.show_help {
                 status_bar::render_help_overlay(frame, frame.area());

@@ -4,6 +4,8 @@
 
 Git の差分をサイドバイサイドで表示する TUI ビューア。vim スタイルのキーバインドで操作できます。
 
+> **安全設計** — vig は読み取り操作と安全な git コマンド（`git switch`、`git branch -d`）のみを実行します。merge、rebase、force delete などの破壊的操作は意図的に除外しています。
+
 ![demo](../assets/demo.gif)
 
 ## 特徴
@@ -44,9 +46,9 @@ vig
 
 | キー | 操作 |
 |------|------|
-| `Tab` / `Shift+Tab` | ペイン切り替え: Files → Branches → Diff |
-| `h` / `l` | Files ↔ Branches 間の移動 |
-| `i` | 上部ペインから Diff ビューに入る |
+| `Tab` / `Shift+Tab` | ペイン切り替え: Files → Branches → GitLog → Diff |
+| `h` / `l` | 隣接ペインへ移動 |
+| `i` | 次のペインへ移動 |
 
 ### ナビゲーション
 
@@ -58,16 +60,26 @@ vig
 | `G` | 末尾にジャンプ |
 | `Ctrl+d` / `Ctrl+u` | 半ページ下 / 上 |
 
-### ブランチセレクタ
+### ブランチリスト
 
 ![branch demo](../assets/demo-branch.gif)
 
 | キー | 操作 |
 |------|------|
 | `j` / `k` | ブランチ移動（git log プレビューが更新） |
-| `Enter` | ブランチを diff の比較対象に設定 |
-| `Esc` | 比較対象を HEAD にリセット |
-| `Ctrl+d` / `Ctrl+u` | git log をスクロール |
+| `Enter` | アクションメニュー（switch / delete / view log） |
+| `/` | ブランチ検索 |
+| `Esc` | 検索クリア / 比較対象を HEAD にリセット |
+
+### Git Log
+
+| キー | 操作 |
+|------|------|
+| `j` / `k` | ログをスクロール |
+| `Ctrl+d` / `Ctrl+u` | 半ページスクロール |
+| `g` / `G` | 先頭 / 末尾 |
+| `/` | コミット検索 |
+| `Esc` | 検索クリア / ブランチリストへ戻る |
 
 ### モード
 

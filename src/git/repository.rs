@@ -124,6 +124,39 @@ impl Repo {
         commits
     }
 
+    /// Switch to the given branch using `git switch`.
+    pub fn switch_branch(&self, name: &str) -> Result<()> {
+        let workdir = self.workdir();
+        let output = std::process::Command::new("git")
+            .arg("switch")
+            .arg(name)
+            .current_dir(workdir)
+            .output()
+            .context("Failed to run git switch")?;
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            anyhow::bail!("git switch failed: {}", stderr.trim());
+        }
+        Ok(())
+    }
+
+    /// Delete the given branch using `git branch -d` (safe delete only).
+    pub fn delete_branch(&self, name: &str) -> Result<()> {
+        let workdir = self.workdir();
+        let output = std::process::Command::new("git")
+            .arg("branch")
+            .arg("-d")
+            .arg(name)
+            .current_dir(workdir)
+            .output()
+            .context("Failed to run git branch -d")?;
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            anyhow::bail!("git branch -d failed: {}", stderr.trim());
+        }
+        Ok(())
+    }
+
     #[allow(dead_code)]
     pub fn inner(&self) -> &Repository {
         &self.inner

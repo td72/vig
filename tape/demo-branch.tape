@@ -79,7 +79,7 @@ Sleep 500ms
 
 # --- Create feature branch with changes ---
 
-Type@1ms "git checkout -q -b feature"
+Type@1ms "git checkout -q -b feature/login"
 Enter
 Sleep 300ms
 
@@ -143,6 +143,19 @@ Type@1ms "git add -A && git commit -q -m 'update greet and add farewell'"
 Enter
 Sleep 500ms
 
+# --- Create another feature branch ---
+
+Type@1ms "git checkout -q main"
+Enter
+Sleep 300ms
+
+Type@1ms "git checkout -q -b feature/signup"
+Enter
+Sleep 300ms
+Type@1ms "git commit -q --allow-empty -m 'scaffold signup page'"
+Enter
+Sleep 500ms
+
 # --- Back to main, create working directory changes ---
 
 Type@1ms "git checkout -q main"
@@ -197,38 +210,49 @@ Type "vig"
 Enter
 Sleep 3s
 
-# Navigate files with j/k
-Type "j"
-Sleep 500ms
-Type "j"
-Sleep 500ms
-
-# Switch to BranchList with l
-Type "l"
+# Switch to BranchList with Tab
+Tab
 Sleep 1.5s
 
-# Navigate to feature branch
+# Navigate branches with j/k
 Type "j"
-Sleep 2s
-
-# Select feature branch → diff recalculates, header shows "vs feature"
-Enter
-Sleep 2.5s
-
-# Go back to FileTree with h
-Type "h"
+Sleep 1s
+Type "j"
 Sleep 1s
 
-# Enter DiffView with i
-Type "i"
+# Search branches with /
+Type "/login"
+Enter
+Sleep 2s
+
+# Clear search
+Escape
+Sleep 1s
+
+# Open action menu with Enter
+Enter
+Sleep 2s
+
+# Select "View log" with l
+Type "l"
+Sleep 2.5s
+
+# Move to GitLog pane with Tab
+Tab
 Sleep 1.5s
 
-# Scroll down in diff
+# Scroll log with j/k
+Type "jjj"
+Sleep 1s
+Type "kk"
+Sleep 1s
+
+# Move to DiffView with Tab
+Tab
+Sleep 1.5s
+
+# Scroll diff
 Type "jjjjj"
-Sleep 1.5s
-
-# Scroll back up
-Type "kkk"
 Sleep 1.5s
 
 # Go back to FileTree

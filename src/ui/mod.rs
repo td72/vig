@@ -1,3 +1,4 @@
+pub mod branch_action_menu;
 pub mod branch_selector;
 pub mod commit_log;
 pub mod diff_view;

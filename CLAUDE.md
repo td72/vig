@@ -1,5 +1,13 @@
 # CLAUDE.md
 
+## Concept
+
+vig is a **read-only / safe-operations-only** Git TUI viewer:
+- Allowed: `git switch`, `git branch -d` (safe delete), read operations
+- **Not** allowed: merge, rebase, force delete (`-D`), push, or any destructive operation
+
+This is a deliberate design choice — vig helps you *inspect*, not *mutate* your repository in dangerous ways.
+
 ## Build & Test
 
 ```bash

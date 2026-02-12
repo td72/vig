@@ -4,6 +4,8 @@
 
 A Git TUI side-by-side diff viewer with vim-style keybindings.
 
+> **Safe by design** — vig only performs read operations and safe git commands (`git switch`, `git branch -d`). Destructive operations like merge, rebase, or force delete are intentionally excluded.
+
 ![demo](assets/demo.gif)
 
 ## Features
@@ -44,9 +46,9 @@ vig
 
 | Key | Action |
 |-----|--------|
-| `Tab` / `Shift+Tab` | Cycle panes: Files → Branches → Diff |
-| `h` / `l` | Switch between Files and Branches |
-| `i` | Enter Diff view from upper panes |
+| `Tab` / `Shift+Tab` | Cycle panes: Files → Branches → GitLog → Diff |
+| `h` / `l` | Move between adjacent panes |
+| `i` | Enter next pane |
 
 ### Navigation
 
@@ -58,16 +60,26 @@ vig
 | `G` | Jump to bottom |
 | `Ctrl+d` / `Ctrl+u` | Half page down / up |
 
-### Branch Selector
+### Branch List
 
 ![branch demo](assets/demo-branch.gif)
 
 | Key | Action |
 |-----|--------|
 | `j` / `k` | Navigate branches (git log preview updates) |
-| `Enter` | Set branch as diff comparison base |
-| `Esc` | Reset comparison to HEAD |
-| `Ctrl+d` / `Ctrl+u` | Scroll git log |
+| `Enter` | Open action menu (switch / delete / view log) |
+| `/` | Search branches |
+| `Esc` | Clear search / Reset comparison to HEAD |
+
+### Git Log
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` | Scroll log |
+| `Ctrl+d` / `Ctrl+u` | Half page scroll |
+| `g` / `G` | Top / Bottom |
+| `/` | Search commits |
+| `Esc` | Clear search / Back to Branch List |
 
 ### Modes
 

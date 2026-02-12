@@ -11,14 +11,56 @@ use std::sync::mpsc;
 pub enum FocusedPane {
     FileTree,
     BranchList,
+    GitLog,
     DiffView,
 }
 
-pub struct BranchSelectorState {
+pub struct BranchListState {
     pub branches: Vec<BranchInfo>,
     pub selected_idx: usize,
-    pub log_cache: Vec<CommitInfo>,
-    pub log_scroll: u16,
+}
+
+pub struct GitLogState {
+    pub commits: Vec<CommitInfo>,
+    pub scroll: u16,
+    pub ref_name: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BranchAction {
+    Switch,
+    Delete,
+    ViewLog,
+}
+
+impl BranchAction {
+    pub const ALL: [BranchAction; 3] = [
+        BranchAction::Switch,
+        BranchAction::Delete,
+        BranchAction::ViewLog,
+    ];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            BranchAction::Switch => "Switch",
+            BranchAction::Delete => "Delete",
+            BranchAction::ViewLog => "View log",
+        }
+    }
+
+    pub fn key(self) -> char {
+        match self {
+            BranchAction::Switch => 's',
+            BranchAction::Delete => 'd',
+            BranchAction::ViewLog => 'l',
+        }
+    }
+}
+
+pub struct BranchActionMenuState {
+    pub branch_name: String,
+    pub is_head: bool,
+    pub selected_idx: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,6 +76,7 @@ pub enum SearchOrigin {
     DiffView,
     FileTree,
     CommitLog,
+    BranchList,
 }
 
 #[derive(Debug, Clone)]
@@ -46,6 +89,7 @@ pub enum SearchMatch {
     },
     TreeEntry(usize),
     CommitEntry(usize),
+    BranchEntry(usize),
 }
 
 #[derive(Debug, Clone)]
@@ -213,7 +257,9 @@ pub struct App {
     /// Receiver for background highlight results.
     bg_highlight_rx: Option<mpsc::Receiver<(String, Vec<Vec<Color>>, Vec<Vec<Color>>)>>,
     pub diff_base_ref: Option<String>,
-    pub branch_selector: BranchSelectorState,
+    pub branch_list: BranchListState,
+    pub git_log: GitLogState,
+    pub branch_action_menu: Option<BranchActionMenuState>,
     pub search: SearchState,
 }
 
@@ -244,12 +290,16 @@ impl App {
             bg_highlights: HashMap::new(),
             bg_highlight_rx: None,
             diff_base_ref: None,
-            branch_selector: BranchSelectorState {
+            branch_list: BranchListState {
                 branches: Vec::new(),
                 selected_idx: 0,
-                log_cache: Vec::new(),
-                log_scroll: 0,
             },
+            git_log: GitLogState {
+                commits: Vec::new(),
+                scroll: 0,
+                ref_name: String::new(),
+            },
+            branch_action_menu: None,
             search: SearchState::new(),
         };
         app.load_branches();
@@ -401,31 +451,33 @@ impl App {
     }
 
     pub fn load_branches(&mut self) {
-        self.branch_selector.branches = self.repo.list_local_branches();
-        if self.branch_selector.selected_idx >= self.branch_selector.branches.len() {
-            self.branch_selector.selected_idx = 0;
+        self.branch_list.branches = self.repo.list_local_branches();
+        if self.branch_list.selected_idx >= self.branch_list.branches.len() {
+            self.branch_list.selected_idx = 0;
         }
         self.update_branch_log();
     }
 
     pub fn update_branch_log(&mut self) {
         if let Some(branch) = self
-            .branch_selector
+            .branch_list
             .branches
-            .get(self.branch_selector.selected_idx)
+            .get(self.branch_list.selected_idx)
         {
-            self.branch_selector.log_cache = self.repo.log_for_ref(&branch.name, 100);
-            self.branch_selector.log_scroll = 0;
+            self.git_log.ref_name = branch.name.clone();
+            self.git_log.commits = self.repo.log_for_ref(&branch.name, 100);
+            self.git_log.scroll = 0;
         } else {
-            self.branch_selector.log_cache.clear();
+            self.git_log.commits.clear();
+            self.git_log.ref_name.clear();
         }
     }
 
     fn select_branch(&mut self) {
         if let Some(branch) = self
-            .branch_selector
+            .branch_list
             .branches
-            .get(self.branch_selector.selected_idx)
+            .get(self.branch_list.selected_idx)
         {
             if branch.is_head {
                 self.diff_base_ref = None;
@@ -443,8 +495,8 @@ impl App {
             KeyCode::Char('h') => {
                 self.focused_pane = FocusedPane::FileTree;
             }
-            KeyCode::Char('i') => {
-                self.focused_pane = FocusedPane::DiffView;
+            KeyCode::Char('l') | KeyCode::Char('i') => {
+                self.focused_pane = FocusedPane::GitLog;
             }
             KeyCode::Esc => {
                 if self.search.query.is_some() {
@@ -457,37 +509,68 @@ impl App {
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                if !self.branch_selector.branches.is_empty()
-                    && self.branch_selector.selected_idx + 1
-                        < self.branch_selector.branches.len()
+                if !self.branch_list.branches.is_empty()
+                    && self.branch_list.selected_idx + 1 < self.branch_list.branches.len()
                 {
-                    self.branch_selector.selected_idx += 1;
+                    self.branch_list.selected_idx += 1;
                     self.update_branch_log();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if self.branch_selector.selected_idx > 0 {
-                    self.branch_selector.selected_idx -= 1;
+                if self.branch_list.selected_idx > 0 {
+                    self.branch_list.selected_idx -= 1;
                     self.update_branch_log();
                 }
             }
             KeyCode::Enter => {
-                self.select_branch();
+                self.open_branch_action_menu();
+            }
+            KeyCode::Char('/') => {
+                self.search.start(SearchOrigin::BranchList);
+            }
+            KeyCode::Char('n') => {
+                self.jump_to_match(true);
+            }
+            KeyCode::Char('N') => {
+                self.jump_to_match(false);
+            }
+            _ => {}
+        }
+    }
+
+    fn handle_git_log_key(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Char('h') => {
+                self.focused_pane = FocusedPane::BranchList;
+            }
+            KeyCode::Char('l') | KeyCode::Char('i') => {
+                self.focused_pane = FocusedPane::DiffView;
+            }
+            KeyCode::Esc => {
+                if self.search.query.is_some() {
+                    self.search.clear();
+                } else {
+                    self.focused_pane = FocusedPane::BranchList;
+                }
+            }
+            KeyCode::Char('j') | KeyCode::Down => {
+                self.git_log.scroll = self.git_log.scroll.saturating_add(1);
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                self.git_log.scroll = self.git_log.scroll.saturating_sub(1);
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.branch_selector.log_scroll =
-                    self.branch_selector.log_scroll.saturating_add(10);
+                self.git_log.scroll = self.git_log.scroll.saturating_add(10);
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.branch_selector.log_scroll =
-                    self.branch_selector.log_scroll.saturating_sub(10);
+                self.git_log.scroll = self.git_log.scroll.saturating_sub(10);
             }
             KeyCode::Char('g') => {
-                self.branch_selector.log_scroll = 0;
+                self.git_log.scroll = 0;
             }
             KeyCode::Char('G') => {
-                let total = self.branch_selector.log_cache.len() as u16;
-                self.branch_selector.log_scroll = total.saturating_sub(10);
+                let total = self.git_log.commits.len() as u16;
+                self.git_log.scroll = total.saturating_sub(10);
             }
             KeyCode::Char('/') => {
                 self.search.start(SearchOrigin::CommitLog);
@@ -499,6 +582,102 @@ impl App {
                 self.jump_to_match(false);
             }
             _ => {}
+        }
+    }
+
+    fn open_branch_action_menu(&mut self) {
+        if let Some(branch) = self.branch_list.branches.get(self.branch_list.selected_idx) {
+            self.branch_action_menu = Some(BranchActionMenuState {
+                branch_name: branch.name.clone(),
+                is_head: branch.is_head,
+                selected_idx: 0,
+            });
+        }
+    }
+
+    fn handle_branch_action_menu_key(&mut self, key: KeyEvent) {
+        let menu = match self.branch_action_menu.as_mut() {
+            Some(m) => m,
+            None => return,
+        };
+
+        match key.code {
+            KeyCode::Esc | KeyCode::Char('q') => {
+                self.branch_action_menu = None;
+            }
+            KeyCode::Char('j') | KeyCode::Down => {
+                if menu.selected_idx + 1 < BranchAction::ALL.len() {
+                    menu.selected_idx += 1;
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if menu.selected_idx > 0 {
+                    menu.selected_idx -= 1;
+                }
+            }
+            KeyCode::Enter => {
+                let action = BranchAction::ALL[menu.selected_idx];
+                self.execute_branch_action(action);
+            }
+            KeyCode::Char('s') => {
+                self.execute_branch_action(BranchAction::Switch);
+            }
+            KeyCode::Char('d') => {
+                self.execute_branch_action(BranchAction::Delete);
+            }
+            KeyCode::Char('l') => {
+                self.execute_branch_action(BranchAction::ViewLog);
+            }
+            _ => {}
+        }
+    }
+
+    fn execute_branch_action(&mut self, action: BranchAction) {
+        let menu = match self.branch_action_menu.take() {
+            Some(m) => m,
+            None => return,
+        };
+
+        match action {
+            BranchAction::Switch => {
+                if menu.is_head {
+                    self.status_message = Some("Already on this branch".to_string());
+                    return;
+                }
+                match self.repo.switch_branch(&menu.branch_name) {
+                    Ok(()) => {
+                        self.status_message =
+                            Some(format!("Switched to {}", menu.branch_name));
+                        self.load_branches();
+                        if let Err(e) = self.refresh_diff() {
+                            self.status_message = Some(format!("Diff error: {e}"));
+                        }
+                    }
+                    Err(e) => {
+                        self.status_message = Some(format!("Switch failed: {e}"));
+                    }
+                }
+            }
+            BranchAction::Delete => {
+                if menu.is_head {
+                    self.status_message =
+                        Some("Cannot delete the current branch".to_string());
+                    return;
+                }
+                match self.repo.delete_branch(&menu.branch_name) {
+                    Ok(()) => {
+                        self.status_message =
+                            Some(format!("Deleted {}", menu.branch_name));
+                        self.load_branches();
+                    }
+                    Err(e) => {
+                        self.status_message = Some(format!("Delete failed: {e}"));
+                    }
+                }
+            }
+            BranchAction::ViewLog => {
+                self.select_branch();
+            }
         }
     }
 
@@ -616,6 +795,12 @@ impl App {
             return Ok(false);
         }
 
+        // Action menu intercepts all keys when open
+        if self.branch_action_menu.is_some() {
+            self.handle_branch_action_menu_key(key);
+            return Ok(false);
+        }
+
         // Search input mode intercepts all keys
         if self.search.active {
             self.handle_search_input_key(key);
@@ -648,7 +833,8 @@ impl App {
                 let origin = match self.focused_pane {
                     FocusedPane::DiffView => SearchOrigin::DiffView,
                     FocusedPane::FileTree => SearchOrigin::FileTree,
-                    FocusedPane::BranchList => SearchOrigin::CommitLog,
+                    FocusedPane::BranchList => SearchOrigin::BranchList,
+                    FocusedPane::GitLog => SearchOrigin::CommitLog,
                 };
                 self.search.start(origin);
             }
@@ -668,7 +854,8 @@ impl App {
             KeyCode::Tab => {
                 self.focused_pane = match self.focused_pane {
                     FocusedPane::FileTree => FocusedPane::BranchList,
-                    FocusedPane::BranchList => FocusedPane::DiffView,
+                    FocusedPane::BranchList => FocusedPane::GitLog,
+                    FocusedPane::GitLog => FocusedPane::DiffView,
                     FocusedPane::DiffView => FocusedPane::FileTree,
                 };
             }
@@ -676,12 +863,14 @@ impl App {
                 self.focused_pane = match self.focused_pane {
                     FocusedPane::FileTree => FocusedPane::DiffView,
                     FocusedPane::BranchList => FocusedPane::FileTree,
-                    FocusedPane::DiffView => FocusedPane::BranchList,
+                    FocusedPane::GitLog => FocusedPane::BranchList,
+                    FocusedPane::DiffView => FocusedPane::GitLog,
                 };
             }
             _ => match self.focused_pane {
                 FocusedPane::FileTree => self.handle_file_tree_key(key),
                 FocusedPane::BranchList => self.handle_branch_list_key(key),
+                FocusedPane::GitLog => self.handle_git_log_key(key),
                 FocusedPane::DiffView => self.handle_diff_view_key(key),
             },
         }
@@ -1641,6 +1830,7 @@ impl App {
             SearchOrigin::DiffView => self.search_diff_view(&query),
             SearchOrigin::FileTree => self.search_file_tree(&query),
             SearchOrigin::CommitLog => self.search_commit_log(&query),
+            SearchOrigin::BranchList => self.search_branch_list(&query),
         }
     }
 
@@ -1715,7 +1905,7 @@ impl App {
 
     fn search_commit_log(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
-        for (idx, commit) in self.branch_selector.log_cache.iter().enumerate() {
+        for (idx, commit) in self.git_log.commits.iter().enumerate() {
             let text = format!(
                 "{} {} {} {}",
                 commit.short_hash,
@@ -1725,6 +1915,15 @@ impl App {
             );
             if text.to_lowercase().contains(&query_lower) {
                 self.search.matches.push(SearchMatch::CommitEntry(idx));
+            }
+        }
+    }
+
+    fn search_branch_list(&mut self, query: &str) {
+        let query_lower = query.to_lowercase();
+        for (idx, branch) in self.branch_list.branches.iter().enumerate() {
+            if branch.name.to_lowercase().contains(&query_lower) {
+                self.search.matches.push(SearchMatch::BranchEntry(idx));
             }
         }
     }
@@ -1787,7 +1986,11 @@ impl App {
                 self.selected_tree_idx = *idx;
             }
             SearchMatch::CommitEntry(idx) => {
-                self.branch_selector.log_scroll = *idx as u16;
+                self.git_log.scroll = *idx as u16;
+            }
+            SearchMatch::BranchEntry(idx) => {
+                self.branch_list.selected_idx = *idx;
+                self.update_branch_log();
             }
         }
 
