@@ -67,7 +67,7 @@ vig
 | キー | 操作 |
 |------|------|
 | `j` / `k` | ブランチ移動（git log プレビューが更新） |
-| `Enter` | アクションメニュー（switch / delete / view log） |
+| `Enter` | アクションメニュー（switch / delete / diff base 設定） |
 | `/` | ブランチ検索 |
 | `Esc` | 検索クリア / 比較対象を HEAD にリセット |
 

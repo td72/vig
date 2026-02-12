@@ -233,8 +233,8 @@ Sleep 1s
 Enter
 Sleep 2s
 
-# Select "View log" with l
-Type "l"
+# Select "Set as diff base" with b
+Type "b"
 Sleep 2.5s
 
 # Move to GitLog pane with Tab

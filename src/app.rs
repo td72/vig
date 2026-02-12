@@ -30,21 +30,21 @@ pub struct GitLogState {
 pub enum BranchAction {
     Switch,
     Delete,
-    ViewLog,
+    DiffBase,
 }
 
 impl BranchAction {
     pub const ALL: [BranchAction; 3] = [
         BranchAction::Switch,
         BranchAction::Delete,
-        BranchAction::ViewLog,
+        BranchAction::DiffBase,
     ];
 
     pub fn label(self) -> &'static str {
         match self {
             BranchAction::Switch => "Switch",
             BranchAction::Delete => "Delete",
-            BranchAction::ViewLog => "View log",
+            BranchAction::DiffBase => "Set as diff base",
         }
     }
 
@@ -52,7 +52,7 @@ impl BranchAction {
         match self {
             BranchAction::Switch => 's',
             BranchAction::Delete => 'd',
-            BranchAction::ViewLog => 'l',
+            BranchAction::DiffBase => 'b',
         }
     }
 }
@@ -61,6 +61,11 @@ pub struct BranchActionMenuState {
     pub branch_name: String,
     pub is_head: bool,
     pub selected_idx: usize,
+}
+
+pub struct ErrorDialogState {
+    pub title: String,
+    pub message: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -260,6 +265,7 @@ pub struct App {
     pub branch_list: BranchListState,
     pub git_log: GitLogState,
     pub branch_action_menu: Option<BranchActionMenuState>,
+    pub error_dialog: Option<ErrorDialogState>,
     pub search: SearchState,
 }
 
@@ -300,6 +306,7 @@ impl App {
                 ref_name: String::new(),
             },
             branch_action_menu: None,
+            error_dialog: None,
             search: SearchState::new(),
         };
         app.load_branches();
@@ -625,8 +632,8 @@ impl App {
             KeyCode::Char('d') => {
                 self.execute_branch_action(BranchAction::Delete);
             }
-            KeyCode::Char('l') => {
-                self.execute_branch_action(BranchAction::ViewLog);
+            KeyCode::Char('b') => {
+                self.execute_branch_action(BranchAction::DiffBase);
             }
             _ => {}
         }
@@ -654,7 +661,10 @@ impl App {
                         }
                     }
                     Err(e) => {
-                        self.status_message = Some(format!("Switch failed: {e}"));
+                        self.error_dialog = Some(ErrorDialogState {
+                            title: "Switch failed".to_string(),
+                            message: format!("{e}"),
+                        });
                     }
                 }
             }
@@ -671,11 +681,14 @@ impl App {
                         self.load_branches();
                     }
                     Err(e) => {
-                        self.status_message = Some(format!("Delete failed: {e}"));
+                        self.error_dialog = Some(ErrorDialogState {
+                            title: "Delete failed".to_string(),
+                            message: format!("{e}"),
+                        });
                     }
                 }
             }
-            BranchAction::ViewLog => {
+            BranchAction::DiffBase => {
                 self.select_branch();
             }
         }
@@ -792,6 +805,12 @@ impl App {
     pub fn handle_key(&mut self, key: KeyEvent) -> Result<bool> {
         if self.show_help {
             self.show_help = false;
+            return Ok(false);
+        }
+
+        // Error dialog: any key dismisses
+        if self.error_dialog.is_some() {
+            self.error_dialog = None;
             return Ok(false);
         }
 

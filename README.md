@@ -67,7 +67,7 @@ vig
 | Key | Action |
 |-----|--------|
 | `j` / `k` | Navigate branches (git log preview updates) |
-| `Enter` | Open action menu (switch / delete / view log) |
+| `Enter` | Action menu (switch / delete / set as diff base) |
 | `/` | Search branches |
 | `Esc` | Clear search / Reset comparison to HEAD |
 

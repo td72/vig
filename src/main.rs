@@ -10,7 +10,8 @@ use crate::event::{Event, EventHandler};
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
 use crate::ui::{
-    branch_action_menu, branch_selector, commit_log, diff_view, file_tree, layout, status_bar,
+    branch_action_menu, branch_selector, commit_log, confirm_dialog, diff_view, file_tree, layout,
+    status_bar,
 };
 use anyhow::Result;
 use std::env;
@@ -61,6 +62,10 @@ fn main() -> Result<()> {
 
             if app.branch_action_menu.is_some() {
                 branch_action_menu::render(frame, &app, frame.area());
+            }
+
+            if app.error_dialog.is_some() {
+                confirm_dialog::render(frame, &app, frame.area());
             }
 
             if app.show_help {
