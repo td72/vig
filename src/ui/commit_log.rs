@@ -1,4 +1,4 @@
-use crate::app::{App, SearchMatch, SearchOrigin};
+use crate::app::{App, FocusedPane, SearchMatch, SearchOrigin};
 use std::collections::HashSet;
 use ratatui::{
     layout::Rect,
@@ -9,12 +9,18 @@ use ratatui::{
 };
 
 pub fn render(f: &mut Frame, app: &App, area: Rect) {
+    let border_color = if app.focused_pane == FocusedPane::GitLog {
+        Color::Cyan
+    } else {
+        Color::DarkGray
+    };
+
     let block = Block::default()
         .title(" Git Log ")
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::Cyan));
+        .border_style(Style::default().fg(border_color));
 
-    if app.branch_selector.log_cache.is_empty() {
+    if app.git_log.commits.is_empty() {
         let msg = Paragraph::new(Line::from(Span::styled(
             "  No commits",
             Style::default().fg(Color::DarkGray),
@@ -47,8 +53,8 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let lines: Vec<Line> = app
-        .branch_selector
-        .log_cache
+        .git_log
+        .commits
         .iter()
         .enumerate()
         .map(|(idx, commit)| {
@@ -96,6 +102,6 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
 
     let para = Paragraph::new(lines)
         .block(block)
-        .scroll((app.branch_selector.log_scroll, 0));
+        .scroll((app.git_log.scroll, 0));
     f.render_widget(para, area);
 }
