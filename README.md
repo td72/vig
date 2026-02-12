@@ -46,9 +46,10 @@ vig
 
 | Key | Action |
 |-----|--------|
-| `Tab` / `Shift+Tab` | Cycle panes: Files → Branches → GitLog → Diff |
-| `h` / `l` | Move between adjacent panes |
-| `i` | Enter next pane |
+| `Tab` / `Shift+Tab` | Cycle panes: Files → Branches → Reflog → GitLog → Diff |
+| `h` / `l` | Move between adjacent upper panes (Files, Branches, Reflog) |
+| `i` | Jump from upper pane to main pane (GitLog / Diff) |
+| `Esc` | Return from main pane to previous upper pane |
 
 ### Navigation
 
@@ -81,6 +82,17 @@ vig
 | `/` | Search commits |
 | `Esc` | Clear search / Back to Branch List |
 
+### Reflog
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` | Navigate entries |
+| `Ctrl+d` / `Ctrl+u` | Half page scroll |
+| `g` / `G` | Top / Bottom |
+| `Enter` | Set as diff base |
+| `/` | Search reflog |
+| `Esc` | Clear search / Back to Branches |
+
 ### Modes
 
 | Key | Action |
@@ -111,7 +123,7 @@ Text objects are also supported: `iw`, `aw`, `i"`, `a"`, `i(`, `a(`, `i{`, `a{`
 | `n` | Next match |
 | `N` | Previous match |
 
-Search works in all panes (DiffView, FileTree, CommitLog). Case-insensitive.
+Search works in all panes (DiffView, FileTree, CommitLog, Reflog). Case-insensitive.
 
 ### Other
 

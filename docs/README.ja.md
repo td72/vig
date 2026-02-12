@@ -46,9 +46,10 @@ vig
 
 | キー | 操作 |
 |------|------|
-| `Tab` / `Shift+Tab` | ペイン切り替え: Files → Branches → GitLog → Diff |
-| `h` / `l` | 隣接ペインへ移動 |
-| `i` | 次のペインへ移動 |
+| `Tab` / `Shift+Tab` | ペイン切り替え: Files → Branches → Reflog → GitLog → Diff |
+| `h` / `l` | 上部ペイン間の移動（Files, Branches, Reflog） |
+| `i` | 上部ペインからメインペインへ移動（GitLog / Diff） |
+| `Esc` | メインペインから直前の上部ペインへ戻る |
 
 ### ナビゲーション
 
@@ -81,6 +82,17 @@ vig
 | `/` | コミット検索 |
 | `Esc` | 検索クリア / ブランチリストへ戻る |
 
+### Reflog
+
+| キー | 操作 |
+|------|------|
+| `j` / `k` | エントリ移動 |
+| `Ctrl+d` / `Ctrl+u` | 半ページスクロール |
+| `g` / `G` | 先頭 / 末尾 |
+| `Enter` | diff base として設定 |
+| `/` | reflog 検索 |
+| `Esc` | 検索クリア / Branches へ戻る |
+
 ### モード
 
 | キー | 操作 |
@@ -111,7 +123,7 @@ vig
 | `n` | 次のマッチへ |
 | `N` | 前のマッチへ |
 
-全ペイン（DiffView、FileTree、CommitLog）で検索可能。大文字小文字を区別しない。
+全ペイン（DiffView、FileTree、CommitLog、Reflog）で検索可能。大文字小文字を区別しない。
 
 ### その他
 

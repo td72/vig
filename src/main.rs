@@ -11,7 +11,7 @@ use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
 use crate::ui::{
     branch_action_menu, branch_selector, commit_log, confirm_dialog, diff_view, file_tree, layout,
-    status_bar,
+    reflog, status_bar,
 };
 use anyhow::Result;
 use std::env;
@@ -48,9 +48,10 @@ fn main() -> Result<()> {
             status_bar::render_header(frame, &app, layout.header);
             file_tree::render(frame, &app, layout.file_tree);
             branch_selector::render(frame, &app, layout.branch_list);
+            reflog::render(frame, &mut app, layout.reflog);
 
             match app.focused_pane {
-                FocusedPane::BranchList | FocusedPane::GitLog => {
+                FocusedPane::BranchList | FocusedPane::GitLog | FocusedPane::Reflog => {
                     commit_log::render(frame, &app, layout.main_pane);
                 }
                 _ => {
@@ -120,6 +121,7 @@ fn main() -> Result<()> {
             }
             Event::FsChange => {
                 app.load_branches();
+                app.load_reflog();
                 if let Err(e) = app.refresh_diff() {
                     app.status_message = Some(format!("Refresh error: {e}"));
                 }

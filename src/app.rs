@@ -1,5 +1,5 @@
 use crate::git::diff::{DiffState, FileDiff};
-use crate::git::repository::{BranchInfo, CommitInfo, Repo};
+use crate::git::repository::{BranchInfo, CommitInfo, ReflogEntry, Repo};
 use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -12,6 +12,7 @@ pub enum FocusedPane {
     FileTree,
     BranchList,
     GitLog,
+    Reflog,
     DiffView,
 }
 
@@ -24,6 +25,12 @@ pub struct GitLogState {
     pub commits: Vec<CommitInfo>,
     pub scroll: u16,
     pub ref_name: String,
+}
+
+pub struct ReflogState {
+    pub entries: Vec<ReflogEntry>,
+    pub selected_idx: usize,
+    pub view_height: u16,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -82,6 +89,7 @@ pub enum SearchOrigin {
     FileTree,
     CommitLog,
     BranchList,
+    Reflog,
 }
 
 #[derive(Debug, Clone)]
@@ -95,6 +103,7 @@ pub enum SearchMatch {
     TreeEntry(usize),
     CommitEntry(usize),
     BranchEntry(usize),
+    ReflogEntry(usize),
 }
 
 #[derive(Debug, Clone)]
@@ -242,6 +251,7 @@ pub struct App {
     pub collapsed_dirs: HashSet<String>,
     pub selected_tree_idx: usize,
     pub focused_pane: FocusedPane,
+    pub previous_pane: FocusedPane,
     pub diff_scroll_y: u16,
     pub diff_scroll_x: u16,
     pub diff_total_lines: u16,
@@ -264,6 +274,7 @@ pub struct App {
     pub diff_base_ref: Option<String>,
     pub branch_list: BranchListState,
     pub git_log: GitLogState,
+    pub reflog: ReflogState,
     pub branch_action_menu: Option<BranchActionMenuState>,
     pub error_dialog: Option<ErrorDialogState>,
     pub search: SearchState,
@@ -279,6 +290,7 @@ impl App {
             collapsed_dirs: HashSet::new(),
             selected_tree_idx: 0,
             focused_pane: FocusedPane::FileTree,
+            previous_pane: FocusedPane::FileTree,
             diff_scroll_y: 0,
             diff_scroll_x: 0,
             diff_total_lines: 0,
@@ -305,11 +317,17 @@ impl App {
                 scroll: 0,
                 ref_name: String::new(),
             },
+            reflog: ReflogState {
+                entries: Vec::new(),
+                selected_idx: 0,
+                view_height: 0,
+            },
             branch_action_menu: None,
             error_dialog: None,
             search: SearchState::new(),
         };
         app.load_branches();
+        app.load_reflog();
         app.spawn_bg_highlight();
         Ok(app)
     }
@@ -465,6 +483,11 @@ impl App {
         self.update_branch_log();
     }
 
+    fn set_focus(&mut self, pane: FocusedPane) {
+        self.previous_pane = self.focused_pane;
+        self.focused_pane = pane;
+    }
+
     pub fn update_branch_log(&mut self) {
         if let Some(branch) = self
             .branch_list
@@ -477,6 +500,13 @@ impl App {
         } else {
             self.git_log.commits.clear();
             self.git_log.ref_name.clear();
+        }
+    }
+
+    pub fn load_reflog(&mut self) {
+        self.reflog.entries = self.repo.reflog(500);
+        if self.reflog.selected_idx >= self.reflog.entries.len() {
+            self.reflog.selected_idx = 0;
         }
     }
 
@@ -500,10 +530,13 @@ impl App {
     fn handle_branch_list_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('h') => {
-                self.focused_pane = FocusedPane::FileTree;
+                self.set_focus(FocusedPane::FileTree);
             }
-            KeyCode::Char('l') | KeyCode::Char('i') => {
-                self.focused_pane = FocusedPane::GitLog;
+            KeyCode::Char('l') => {
+                self.set_focus(FocusedPane::Reflog);
+            }
+            KeyCode::Char('i') => {
+                self.set_focus(FocusedPane::GitLog);
             }
             KeyCode::Esc => {
                 if self.search.query.is_some() {
@@ -548,16 +581,13 @@ impl App {
     fn handle_git_log_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('h') => {
-                self.focused_pane = FocusedPane::BranchList;
-            }
-            KeyCode::Char('l') | KeyCode::Char('i') => {
-                self.focused_pane = FocusedPane::DiffView;
+                self.set_focus(FocusedPane::Reflog);
             }
             KeyCode::Esc => {
                 if self.search.query.is_some() {
                     self.search.clear();
                 } else {
-                    self.focused_pane = FocusedPane::BranchList;
+                    self.set_focus(self.previous_pane);
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
@@ -581,6 +611,72 @@ impl App {
             }
             KeyCode::Char('/') => {
                 self.search.start(SearchOrigin::CommitLog);
+            }
+            KeyCode::Char('n') => {
+                self.jump_to_match(true);
+            }
+            KeyCode::Char('N') => {
+                self.jump_to_match(false);
+            }
+            _ => {}
+        }
+    }
+
+    fn handle_reflog_key(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Char('h') => {
+                self.set_focus(FocusedPane::BranchList);
+            }
+            KeyCode::Char('i') => {
+                self.set_focus(FocusedPane::GitLog);
+            }
+            KeyCode::Esc => {
+                if self.search.query.is_some() {
+                    self.search.clear();
+                } else {
+                    self.set_focus(FocusedPane::BranchList);
+                }
+            }
+            KeyCode::Char('j') | KeyCode::Down => {
+                if !self.reflog.entries.is_empty()
+                    && self.reflog.selected_idx + 1 < self.reflog.entries.len()
+                {
+                    self.reflog.selected_idx += 1;
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if self.reflog.selected_idx > 0 {
+                    self.reflog.selected_idx -= 1;
+                }
+            }
+            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                let half = (self.reflog.view_height / 2).max(1) as usize;
+                let new_idx = self.reflog.selected_idx.saturating_add(half);
+                self.reflog.selected_idx =
+                    new_idx.min(self.reflog.entries.len().saturating_sub(1));
+            }
+            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                let half = (self.reflog.view_height / 2).max(1) as usize;
+                self.reflog.selected_idx = self.reflog.selected_idx.saturating_sub(half);
+            }
+            KeyCode::Char('g') => {
+                self.reflog.selected_idx = 0;
+            }
+            KeyCode::Char('G') => {
+                if !self.reflog.entries.is_empty() {
+                    self.reflog.selected_idx = self.reflog.entries.len() - 1;
+                }
+            }
+            KeyCode::Enter => {
+                if let Some(entry) = self.reflog.entries.get(self.reflog.selected_idx) {
+                    self.diff_base_ref = Some(entry.full_hash.clone());
+                    if let Err(e) = self.refresh_diff() {
+                        self.status_message = Some(format!("Diff error: {e}"));
+                    }
+                }
+            }
+            KeyCode::Char('/') => {
+                self.search.start(SearchOrigin::Reflog);
             }
             KeyCode::Char('n') => {
                 self.jump_to_match(true);
@@ -854,6 +950,7 @@ impl App {
                     FocusedPane::FileTree => SearchOrigin::FileTree,
                     FocusedPane::BranchList => SearchOrigin::BranchList,
                     FocusedPane::GitLog => SearchOrigin::CommitLog,
+                    FocusedPane::Reflog => SearchOrigin::Reflog,
                 };
                 self.search.start(origin);
             }
@@ -866,30 +963,36 @@ impl App {
             KeyCode::Char('r') => {
                 self.refresh_diff()?;
                 self.load_branches();
+                self.load_reflog();
             }
             KeyCode::Char('e') => {
                 return Ok(true); // Signal to open editor
             }
             KeyCode::Tab => {
-                self.focused_pane = match self.focused_pane {
+                let next = match self.focused_pane {
                     FocusedPane::FileTree => FocusedPane::BranchList,
-                    FocusedPane::BranchList => FocusedPane::GitLog,
+                    FocusedPane::BranchList => FocusedPane::Reflog,
+                    FocusedPane::Reflog => FocusedPane::GitLog,
                     FocusedPane::GitLog => FocusedPane::DiffView,
                     FocusedPane::DiffView => FocusedPane::FileTree,
                 };
+                self.set_focus(next);
             }
             KeyCode::BackTab => {
-                self.focused_pane = match self.focused_pane {
+                let prev = match self.focused_pane {
                     FocusedPane::FileTree => FocusedPane::DiffView,
                     FocusedPane::BranchList => FocusedPane::FileTree,
-                    FocusedPane::GitLog => FocusedPane::BranchList,
+                    FocusedPane::Reflog => FocusedPane::BranchList,
+                    FocusedPane::GitLog => FocusedPane::Reflog,
                     FocusedPane::DiffView => FocusedPane::GitLog,
                 };
+                self.set_focus(prev);
             }
             _ => match self.focused_pane {
                 FocusedPane::FileTree => self.handle_file_tree_key(key),
                 FocusedPane::BranchList => self.handle_branch_list_key(key),
                 FocusedPane::GitLog => self.handle_git_log_key(key),
+                FocusedPane::Reflog => self.handle_reflog_key(key),
                 FocusedPane::DiffView => self.handle_diff_view_key(key),
             },
         }
@@ -900,11 +1003,11 @@ impl App {
         // Pane navigation must work even when file list is empty
         match key.code {
             KeyCode::Char('l') => {
-                self.focused_pane = FocusedPane::BranchList;
+                self.set_focus(FocusedPane::BranchList);
                 return;
             }
             KeyCode::Char('i') => {
-                self.focused_pane = FocusedPane::DiffView;
+                self.set_focus(FocusedPane::DiffView);
                 return;
             }
             KeyCode::Esc => {
@@ -958,7 +1061,7 @@ impl App {
                         }
                     }
                     Some(TreeEntry::File { .. }) => {
-                        self.focused_pane = FocusedPane::DiffView;
+                        self.set_focus(FocusedPane::DiffView);
                         self.diff_scroll_y = 0;
                         self.diff_scroll_x = 0;
                     }
@@ -1016,7 +1119,7 @@ impl App {
                 if self.search.query.is_some() {
                     self.search.clear();
                 } else {
-                    self.focused_pane = FocusedPane::FileTree;
+                    self.set_focus(self.previous_pane);
                 }
             }
             KeyCode::Char('l') | KeyCode::Right => {
@@ -1858,6 +1961,7 @@ impl App {
             SearchOrigin::FileTree => self.search_file_tree(&query),
             SearchOrigin::CommitLog => self.search_commit_log(&query),
             SearchOrigin::BranchList => self.search_branch_list(&query),
+            SearchOrigin::Reflog => self.search_reflog(&query),
         }
     }
 
@@ -1955,6 +2059,19 @@ impl App {
         }
     }
 
+    fn search_reflog(&mut self, query: &str) {
+        let query_lower = query.to_lowercase();
+        for (idx, entry) in self.reflog.entries.iter().enumerate() {
+            if entry.short_hash.to_lowercase().contains(&query_lower)
+                || entry.selector.to_lowercase().contains(&query_lower)
+                || entry.action.to_lowercase().contains(&query_lower)
+                || entry.message.to_lowercase().contains(&query_lower)
+            {
+                self.search.matches.push(SearchMatch::ReflogEntry(idx));
+            }
+        }
+    }
+
     fn jump_to_match(&mut self, forward: bool) {
         // If no active query but last_query exists, re-execute search
         if self.search.query.is_none() {
@@ -2018,6 +2135,9 @@ impl App {
             SearchMatch::BranchEntry(idx) => {
                 self.branch_list.selected_idx = *idx;
                 self.update_branch_log();
+            }
+            SearchMatch::ReflogEntry(idx) => {
+                self.reflog.selected_idx = *idx;
             }
         }
 

@@ -89,14 +89,6 @@ pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
 pub fn render_help_overlay(f: &mut Frame, area: Rect) {
     use ratatui::widgets::{Block, Borders, Clear};
 
-    let help_width = 50u16.min(area.width.saturating_sub(4));
-    let help_height = 36u16.min(area.height.saturating_sub(4));
-    let x = (area.width.saturating_sub(help_width)) / 2;
-    let y = (area.height.saturating_sub(help_height)) / 2;
-    let help_area = Rect::new(x, y, help_width, help_height);
-
-    f.render_widget(Clear, help_area);
-
     let keybindings = vec![
         ("j / ↓", "Next item / Scroll down"),
         ("k / ↑", "Prev item / Scroll up"),
@@ -127,7 +119,22 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect) {
         ("Ctrl+d/u", "Half page scroll"),
         ("g / G", "Top / Bottom"),
         ("/", "Search commits"),
+        ("", ""),
+        ("", "── Reflog ──"),
+        ("j / k", "Navigate entries"),
+        ("Ctrl+d/u", "Half page scroll"),
+        ("g / G", "Top / Bottom"),
+        ("Enter", "Set as diff base"),
+        ("/", "Search reflog"),
     ];
+
+    let help_width = 50u16.min(area.width.saturating_sub(4));
+    let help_height = ((keybindings.len() as u16) + 2).min(area.height.saturating_sub(4));
+    let x = (area.width.saturating_sub(help_width)) / 2;
+    let y = (area.height.saturating_sub(help_height)) / 2;
+    let help_area = Rect::new(x, y, help_width, help_height);
+
+    f.render_widget(Clear, help_area);
 
     let lines: Vec<Line> = keybindings
         .into_iter()
