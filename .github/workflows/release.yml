@@ -153,8 +153,7 @@ jobs:
             end
 
             test do
-              assert_predicate bin/"vig", :exist?
-              assert_predicate bin/"vig", :executable?
+              assert_match version.to_s, shell_output("#{bin}/vig --version")
             end
           end
           FORMULA
