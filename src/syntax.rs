@@ -294,17 +294,22 @@ fn highlight_line_colors(
     syntax_set: &SyntaxSet,
     highlighter: &Highlighter,
 ) -> Vec<Color> {
-    let ops = match parse_state.parse_line(line, syntax_set) {
+    // Append '\n' so that single-line comment scopes (matching `$`) close properly.
+    let line_with_nl = format!("{}\n", line);
+    let ops = match parse_state.parse_line(&line_with_nl, syntax_set) {
         Ok(ops) => ops,
         Err(_) => return Vec::new(),
     };
     let mut colors = Vec::new();
-    for (style, text) in HighlightIterator::new(highlight_state, &ops, line, highlighter) {
+    for (style, text) in HighlightIterator::new(highlight_state, &ops, &line_with_nl, highlighter)
+    {
         let color = syntect_to_ratatui_color(style.foreground);
         for _ in text.chars() {
             colors.push(color);
         }
     }
+    // Remove the trailing color entry produced by the appended '\n'.
+    colors.pop();
     colors
 }
 

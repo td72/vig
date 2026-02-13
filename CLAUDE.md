@@ -42,6 +42,8 @@ Tape files serve as both **visual documentation** (the generated GIFs are embedd
 
 Issue や PR を作成する際は、まず日本語でタイトル・本文をユーザーに提示して確認を取る。承認後、英語に翻訳して `gh` コマンドで作成する。
 
+Always assign appropriate labels when creating issues (e.g., `enhancement`, `bug`, `documentation`).
+
 ### Commit Messages
 
 Use gitmoji prefix: `✨` new feature, `🐛` bug fix, `🩹` minor fix, `♻️` refactor, `🔧` config, `📝` docs, etc.
