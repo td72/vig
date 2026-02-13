@@ -1,6 +1,6 @@
 [package]
 name = "vig"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Git TUI side-by-side diff viewer"
 authors = ["td72"]
