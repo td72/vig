@@ -44,7 +44,6 @@ jobs:
         run: |
           cp target/${{ matrix.target }}/release/vig .
           tar czf vig-${{ matrix.target }}.tar.gz vig LICENSE THIRDPARTY.yml
-          shasum -a 256 vig-${{ matrix.target }}.tar.gz > vig-${{ matrix.target }}.tar.gz.sha256
 
       - name: Sign archive
         env:
@@ -53,6 +52,7 @@ jobs:
           echo "$ZIPSIGN_PRIVATE_KEY" | base64 -d > /tmp/zipsign.key
           zipsign sign tar vig-${{ matrix.target }}.tar.gz /tmp/zipsign.key
           rm /tmp/zipsign.key
+          shasum -a 256 vig-${{ matrix.target }}.tar.gz > vig-${{ matrix.target }}.tar.gz.sha256
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6
