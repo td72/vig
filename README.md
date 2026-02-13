@@ -22,6 +22,12 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 
 ## Installation
 
+### Homebrew
+
+```bash
+brew install td72/tap/vig
+```
+
 ### Pre-built binaries
 
 Download a pre-built binary from the [GitHub Releases](https://github.com/td72/vig/releases) page:

@@ -93,3 +93,76 @@ jobs:
 
       - name: Publish to crates.io
         run: cargo publish
+
+  homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
+        with:
+          merge-multiple: true
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v6
+        with:
+          repository: td72/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update Homebrew formula
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          SHA_LINUX_X86=$(cut -d ' ' -f 1 vig-x86_64-unknown-linux-gnu.tar.gz.sha256)
+          SHA_LINUX_ARM=$(cut -d ' ' -f 1 vig-aarch64-unknown-linux-gnu.tar.gz.sha256)
+          SHA_MACOS_ARM=$(cut -d ' ' -f 1 vig-aarch64-apple-darwin.tar.gz.sha256)
+          SHA_MACOS_X86=$(cut -d ' ' -f 1 vig-x86_64-apple-darwin.tar.gz.sha256)
+
+          cat > homebrew-tap/Formula/vig.rb <<FORMULA
+          class Vig < Formula
+            desc "Git TUI side-by-side diff viewer with vim-style keybindings"
+            homepage "https://github.com/td72/vig"
+            license "MIT"
+            version "${VERSION}"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/td72/vig/releases/download/v#{version}/vig-aarch64-apple-darwin.tar.gz"
+                sha256 "${SHA_MACOS_ARM}"
+              end
+              on_intel do
+                url "https://github.com/td72/vig/releases/download/v#{version}/vig-x86_64-apple-darwin.tar.gz"
+                sha256 "${SHA_MACOS_X86}"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "https://github.com/td72/vig/releases/download/v#{version}/vig-aarch64-unknown-linux-gnu.tar.gz"
+                sha256 "${SHA_LINUX_ARM}"
+              end
+              on_intel do
+                url "https://github.com/td72/vig/releases/download/v#{version}/vig-x86_64-unknown-linux-gnu.tar.gz"
+                sha256 "${SHA_LINUX_X86}"
+              end
+            end
+
+            def install
+              bin.install "vig"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/vig --version", 2)
+            end
+          end
+          FORMULA
+
+      - name: Push formula update
+        run: |
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/vig.rb
+          git commit -m "vig ${GITHUB_REF_NAME}"
+          git push

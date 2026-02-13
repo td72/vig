@@ -22,6 +22,12 @@ Git の差分をサイドバイサイドで表示する TUI ビューア。vim �
 
 ## インストール
 
+### Homebrew
+
+```bash
+brew install td72/tap/vig
+```
+
 ### ビルド済みバイナリ
 
 [GitHub Releases](https://github.com/td72/vig/releases) ページからビルド済みバイナリをダウンロードできます:
