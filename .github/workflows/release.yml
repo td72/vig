@@ -4,12 +4,34 @@ on:
   push:
     tags:
       - "v*"
+  pull_request:
+    types: [closed]
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
+  create-tag:
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Extract version from branch name
+        id: version
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          VERSION="${BRANCH#release/}"
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        run: gh release create ${{ steps.version.outputs.tag }} --target main --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build:
+    if: github.event_name == 'push'
     strategy:
       matrix:
         include:
