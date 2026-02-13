@@ -18,6 +18,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - Yank (copy) to system clipboard with vim motions
 - Live file watching with auto-refresh
 - Open files in external editor (`$EDITOR`)
+- **GitHub View** — Browse Issues and Pull Requests (body, comments, reviews, CI status) via `gh` CLI
 
 ## Installation
 
@@ -41,6 +42,13 @@ vig
 ```
 
 ## Key Bindings
+
+### View Switching
+
+| Key | Action |
+|-----|--------|
+| `1` | Switch to Git View |
+| `2` | Switch to GitHub View |
 
 ### Pane Navigation
 
@@ -124,6 +132,20 @@ Text objects are also supported: `iw`, `aw`, `i"`, `a"`, `i(`, `a(`, `i{`, `a{`
 | `N` | Previous match |
 
 Search works in all panes (DiffView, FileTree, CommitLog, Reflog). Case-insensitive.
+
+### GitHub View
+
+Browse GitHub Issues and Pull Requests directly within vig. Requires [GitHub CLI (`gh`)](https://cli.github.com/) to be installed and authenticated.
+
+| Key | Action |
+|-----|--------|
+| `h` / `l` | Switch between Issue List and PR List |
+| `j` / `k` | Navigate list |
+| `i` / `Enter` | Open detail view |
+| `Esc` | Back to list |
+| `Ctrl+d` / `Ctrl+u` | Half page scroll (detail view) |
+| `g` / `G` | Top / Bottom |
+| `r` | Refresh data |
 
 ### Other
 

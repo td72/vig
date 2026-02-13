@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::app::{App, ViewMode};
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -6,6 +6,31 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
+
+fn view_tab_spans(active: ViewMode) -> Vec<Span<'static>> {
+    let git_style = if active == ViewMode::Git {
+        Style::default()
+            .fg(Color::Black)
+            .bg(Color::White)
+            .add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(Color::DarkGray)
+    };
+    let gh_style = if active == ViewMode::GitHub {
+        Style::default()
+            .fg(Color::Black)
+            .bg(Color::White)
+            .add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(Color::DarkGray)
+    };
+    vec![
+        Span::raw("  "),
+        Span::styled(" 1:Git ", git_style),
+        Span::raw(" "),
+        Span::styled(" 2:GitHub ", gh_style),
+    ]
+}
 
 pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
     let mut spans = vec![
@@ -34,6 +59,38 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
             Style::default().fg(Color::Black).bg(Color::Yellow),
         ));
     }
+
+    spans.extend(view_tab_spans(app.view_mode));
+
+    spans.push(Span::raw("  "));
+    spans.push(Span::styled(
+        "? help",
+        Style::default().fg(Color::DarkGray),
+    ));
+
+    let title = Line::from(spans);
+    f.render_widget(Paragraph::new(title), area);
+}
+
+pub fn render_gh_header(f: &mut Frame, app: &App, area: Rect) {
+    let mut spans = vec![
+        Span::styled(
+            " vig ",
+            Style::default()
+                .fg(Color::Black)
+                .bg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::raw(" "),
+        Span::styled(
+            " GitHub ",
+            Style::default()
+                .fg(Color::Black)
+                .bg(Color::Rgb(36, 41, 47)),
+        ),
+    ];
+
+    spans.extend(view_tab_spans(app.view_mode));
 
     spans.push(Span::raw("  "));
     spans.push(Span::styled(
@@ -86,47 +143,102 @@ pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(Paragraph::new(status), area);
 }
 
-pub fn render_help_overlay(f: &mut Frame, area: Rect) {
+pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
+    if let Some(ref err) = app.github.gh_error {
+        let line = Line::from(Span::styled(
+            format!(" {err}"),
+            Style::default().fg(Color::Red),
+        ));
+        f.render_widget(Paragraph::new(line), area);
+        return;
+    }
+
+    let issue_count = app.github.issues.len();
+    let pr_count = app.github.prs.len();
+
+    let mut spans = Vec::new();
+    if app.github.issues_loading || app.github.prs_loading {
+        spans.push(Span::styled(
+            " Loading...",
+            Style::default().fg(Color::DarkGray),
+        ));
+    } else {
+        spans.push(Span::styled(
+            format!(
+                " {} issue{}",
+                issue_count,
+                if issue_count == 1 { "" } else { "s" }
+            ),
+            Style::default().fg(Color::White),
+        ));
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            format!("{} PR{}", pr_count, if pr_count == 1 { "" } else { "s" }),
+            Style::default().fg(Color::White),
+        ));
+    }
+
+    let line = Line::from(spans);
+    f.render_widget(Paragraph::new(line), area);
+}
+
+pub fn render_help_overlay(f: &mut Frame, area: Rect, view_mode: ViewMode) {
     use ratatui::widgets::{Block, Borders, Clear};
 
-    let keybindings = vec![
-        ("j / ↓", "Next item / Scroll down"),
-        ("k / ↑", "Prev item / Scroll up"),
-        ("Enter", "Select file/branch"),
-        ("Tab", "Next pane"),
-        ("Shift+Tab", "Prev pane"),
-        ("Ctrl+d", "Half page down"),
-        ("Ctrl+u", "Half page up"),
-        ("g / G", "Top / Bottom"),
-        ("h / l", "Scroll left / right"),
-        ("i", "Normal mode (cursor)"),
-        ("v / V", "Visual / Visual Line"),
-        ("y", "Yank (copy) selection"),
-        ("/", "Search"),
-        ("n / N", "Next / Prev match"),
-        ("Esc", "Clear search / Back"),
-        ("e", "Open in $EDITOR"),
-        ("r", "Refresh diff + branches"),
-        ("?", "Toggle help"),
-        ("q", "Quit"),
-        ("", ""),
-        ("", "── Branch List ──"),
-        ("/", "Search branches"),
-        ("Enter", "Action menu"),
-        ("", ""),
-        ("", "── Git Log ──"),
-        ("j / k", "Scroll log"),
-        ("Ctrl+d/u", "Half page scroll"),
-        ("g / G", "Top / Bottom"),
-        ("/", "Search commits"),
-        ("", ""),
-        ("", "── Reflog ──"),
-        ("j / k", "Navigate entries"),
-        ("Ctrl+d/u", "Half page scroll"),
-        ("g / G", "Top / Bottom"),
-        ("Enter", "Set as diff base"),
-        ("/", "Search reflog"),
-    ];
+    let keybindings = match view_mode {
+        ViewMode::Git => vec![
+            ("1 / 2", "Switch to Git / GitHub"),
+            ("j / ↓", "Next item / Scroll down"),
+            ("k / ↑", "Prev item / Scroll up"),
+            ("Enter", "Select file/branch"),
+            ("Tab", "Next pane"),
+            ("Shift+Tab", "Prev pane"),
+            ("Ctrl+d", "Half page down"),
+            ("Ctrl+u", "Half page up"),
+            ("g / G", "Top / Bottom"),
+            ("h / l", "Scroll left / right"),
+            ("i", "Normal mode (cursor)"),
+            ("v / V", "Visual / Visual Line"),
+            ("y", "Yank (copy) selection"),
+            ("/", "Search"),
+            ("n / N", "Next / Prev match"),
+            ("Esc", "Clear search / Back"),
+            ("e", "Open in $EDITOR"),
+            ("r", "Refresh diff + branches"),
+            ("?", "Toggle help"),
+            ("q", "Quit"),
+            ("", ""),
+            ("", "── Branch List ──"),
+            ("/", "Search branches"),
+            ("Enter", "Action menu"),
+            ("", ""),
+            ("", "── Git Log ──"),
+            ("j / k", "Scroll log"),
+            ("Ctrl+d/u", "Half page scroll"),
+            ("g / G", "Top / Bottom"),
+            ("/", "Search commits"),
+            ("", ""),
+            ("", "── Reflog ──"),
+            ("j / k", "Navigate entries"),
+            ("Ctrl+d/u", "Half page scroll"),
+            ("g / G", "Top / Bottom"),
+            ("Enter", "Set as diff base"),
+            ("/", "Search reflog"),
+        ],
+        ViewMode::GitHub => vec![
+            ("1 / 2", "Switch to Git / GitHub"),
+            ("h / l", "Issues ↔ PRs"),
+            ("j / k", "Navigate list"),
+            ("i / Enter", "Open detail"),
+            ("Esc", "Back to list"),
+            ("Ctrl+d", "Half page down (detail)"),
+            ("Ctrl+u", "Half page up (detail)"),
+            ("g / G", "Top / Bottom"),
+            ("r", "Refresh data"),
+            ("?", "Toggle help"),
+            ("q", "Quit"),
+        ],
+    };
 
     let help_width = 50u16.min(area.width.saturating_sub(4));
     let help_height = ((keybindings.len() as u16) + 2).min(area.height.saturating_sub(4));

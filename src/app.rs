@@ -1,11 +1,18 @@
 use crate::git::diff::{DiffState, FileDiff};
 use crate::git::repository::{BranchInfo, CommitInfo, ReflogEntry, Repo};
+use crate::github::state::{GhFocusedPane, GitHubState};
 use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::style::Color;
 use std::collections::{HashMap, HashSet};
 use std::sync::mpsc;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ViewMode {
+    Git,
+    GitHub,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FocusedPane {
@@ -246,6 +253,7 @@ pub enum TreeEntry {
 
 pub struct App {
     pub should_quit: bool,
+    pub view_mode: ViewMode,
     pub repo: Repo,
     pub diff_state: DiffState,
     pub collapsed_dirs: HashSet<String>,
@@ -278,6 +286,7 @@ pub struct App {
     pub branch_action_menu: Option<BranchActionMenuState>,
     pub error_dialog: Option<ErrorDialogState>,
     pub search: SearchState,
+    pub github: GitHubState,
 }
 
 impl App {
@@ -285,6 +294,7 @@ impl App {
         let diff_state = repo.diff_workdir(None)?;
         let mut app = Self {
             should_quit: false,
+            view_mode: ViewMode::Git,
             repo,
             diff_state,
             collapsed_dirs: HashSet::new(),
@@ -325,6 +335,7 @@ impl App {
             branch_action_menu: None,
             error_dialog: None,
             search: SearchState::new(),
+            github: GitHubState::new(),
         };
         app.load_branches();
         app.load_reflog();
@@ -929,13 +940,101 @@ impl App {
         }
 
         // In Normal/Visual modes, keys are handled by the mode handler exclusively
-        if self.focused_pane == FocusedPane::DiffView
+        if self.view_mode == ViewMode::Git
+            && self.focused_pane == FocusedPane::DiffView
             && self.diff_view_mode != DiffViewMode::Scroll
         {
             self.handle_diff_view_key(key);
             return Ok(false);
         }
 
+        // View switching (Scroll mode only — Normal/Visual already returned above)
+        match key.code {
+            KeyCode::Char('1') => {
+                self.view_mode = ViewMode::Git;
+                return Ok(false);
+            }
+            KeyCode::Char('2') => {
+                self.view_mode = ViewMode::GitHub;
+                self.github.initialize();
+                return Ok(false);
+            }
+            _ => {}
+        }
+
+        match self.view_mode {
+            ViewMode::Git => {
+                match key.code {
+                    KeyCode::Char('q') => {
+                        self.should_quit = true;
+                        return Ok(false);
+                    }
+                    KeyCode::Char('?') => {
+                        self.show_help = true;
+                    }
+                    KeyCode::Char('/') => {
+                        let origin = match self.focused_pane {
+                            FocusedPane::DiffView => SearchOrigin::DiffView,
+                            FocusedPane::FileTree => SearchOrigin::FileTree,
+                            FocusedPane::BranchList => SearchOrigin::BranchList,
+                            FocusedPane::GitLog => SearchOrigin::CommitLog,
+                            FocusedPane::Reflog => SearchOrigin::Reflog,
+                        };
+                        self.search.start(origin);
+                    }
+                    KeyCode::Char('n') => {
+                        self.jump_to_match(true);
+                    }
+                    KeyCode::Char('N') => {
+                        self.jump_to_match(false);
+                    }
+                    KeyCode::Char('r') => {
+                        self.refresh_diff()?;
+                        self.load_branches();
+                        self.load_reflog();
+                    }
+                    KeyCode::Char('e') => {
+                        return Ok(true); // Signal to open editor
+                    }
+                    KeyCode::Tab => {
+                        let next = match self.focused_pane {
+                            FocusedPane::FileTree => FocusedPane::BranchList,
+                            FocusedPane::BranchList => FocusedPane::Reflog,
+                            FocusedPane::Reflog => FocusedPane::GitLog,
+                            FocusedPane::GitLog => FocusedPane::DiffView,
+                            FocusedPane::DiffView => FocusedPane::FileTree,
+                        };
+                        self.set_focus(next);
+                    }
+                    KeyCode::BackTab => {
+                        let prev = match self.focused_pane {
+                            FocusedPane::FileTree => FocusedPane::DiffView,
+                            FocusedPane::BranchList => FocusedPane::FileTree,
+                            FocusedPane::Reflog => FocusedPane::BranchList,
+                            FocusedPane::GitLog => FocusedPane::Reflog,
+                            FocusedPane::DiffView => FocusedPane::GitLog,
+                        };
+                        self.set_focus(prev);
+                    }
+                    _ => match self.focused_pane {
+                        FocusedPane::FileTree => self.handle_file_tree_key(key),
+                        FocusedPane::BranchList => self.handle_branch_list_key(key),
+                        FocusedPane::GitLog => self.handle_git_log_key(key),
+                        FocusedPane::Reflog => self.handle_reflog_key(key),
+                        FocusedPane::DiffView => self.handle_diff_view_key(key),
+                    },
+                }
+            }
+            ViewMode::GitHub => {
+                return self.handle_github_key(key);
+            }
+        }
+        Ok(false)
+    }
+
+    // ── GitHub View key handlers ──────────────────────────────
+
+    fn handle_github_key(&mut self, key: KeyEvent) -> Result<bool> {
         match key.code {
             KeyCode::Char('q') => {
                 self.should_quit = true;
@@ -943,60 +1042,132 @@ impl App {
             }
             KeyCode::Char('?') => {
                 self.show_help = true;
-            }
-            KeyCode::Char('/') => {
-                let origin = match self.focused_pane {
-                    FocusedPane::DiffView => SearchOrigin::DiffView,
-                    FocusedPane::FileTree => SearchOrigin::FileTree,
-                    FocusedPane::BranchList => SearchOrigin::BranchList,
-                    FocusedPane::GitLog => SearchOrigin::CommitLog,
-                    FocusedPane::Reflog => SearchOrigin::Reflog,
-                };
-                self.search.start(origin);
-            }
-            KeyCode::Char('n') => {
-                self.jump_to_match(true);
-            }
-            KeyCode::Char('N') => {
-                self.jump_to_match(false);
+                return Ok(false);
             }
             KeyCode::Char('r') => {
-                self.refresh_diff()?;
-                self.load_branches();
-                self.load_reflog();
+                self.github.refresh();
+                return Ok(false);
             }
-            KeyCode::Char('e') => {
-                return Ok(true); // Signal to open editor
-            }
-            KeyCode::Tab => {
-                let next = match self.focused_pane {
-                    FocusedPane::FileTree => FocusedPane::BranchList,
-                    FocusedPane::BranchList => FocusedPane::Reflog,
-                    FocusedPane::Reflog => FocusedPane::GitLog,
-                    FocusedPane::GitLog => FocusedPane::DiffView,
-                    FocusedPane::DiffView => FocusedPane::FileTree,
-                };
-                self.set_focus(next);
-            }
-            KeyCode::BackTab => {
-                let prev = match self.focused_pane {
-                    FocusedPane::FileTree => FocusedPane::DiffView,
-                    FocusedPane::BranchList => FocusedPane::FileTree,
-                    FocusedPane::Reflog => FocusedPane::BranchList,
-                    FocusedPane::GitLog => FocusedPane::Reflog,
-                    FocusedPane::DiffView => FocusedPane::GitLog,
-                };
-                self.set_focus(prev);
-            }
-            _ => match self.focused_pane {
-                FocusedPane::FileTree => self.handle_file_tree_key(key),
-                FocusedPane::BranchList => self.handle_branch_list_key(key),
-                FocusedPane::GitLog => self.handle_git_log_key(key),
-                FocusedPane::Reflog => self.handle_reflog_key(key),
-                FocusedPane::DiffView => self.handle_diff_view_key(key),
-            },
+            _ => {}
+        }
+        match self.github.focused_pane {
+            GhFocusedPane::IssueList => self.handle_gh_issue_list_key(key),
+            GhFocusedPane::PrList => self.handle_gh_pr_list_key(key),
+            GhFocusedPane::Detail => self.handle_gh_detail_key(key),
         }
         Ok(false)
+    }
+
+    fn handle_gh_issue_list_key(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Char('j') | KeyCode::Down => {
+                if !self.github.issues.is_empty()
+                    && self.github.issue_selected_idx + 1 < self.github.issues.len()
+                {
+                    self.github.issue_selected_idx += 1;
+                    self.github.load_selected_issue_detail();
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if self.github.issue_selected_idx > 0 {
+                    self.github.issue_selected_idx -= 1;
+                    self.github.load_selected_issue_detail();
+                }
+            }
+            KeyCode::Char('g') => {
+                self.github.issue_selected_idx = 0;
+                self.github.load_selected_issue_detail();
+            }
+            KeyCode::Char('G') => {
+                if !self.github.issues.is_empty() {
+                    self.github.issue_selected_idx = self.github.issues.len() - 1;
+                    self.github.load_selected_issue_detail();
+                }
+            }
+            KeyCode::Char('l') | KeyCode::Tab => {
+                self.github.focused_pane = GhFocusedPane::PrList;
+                self.github.load_selected_pr_detail();
+            }
+            KeyCode::Char('i') | KeyCode::Enter => {
+                if !self.github.issues.is_empty() {
+                    self.github.previous_pane = GhFocusedPane::IssueList;
+                    self.github.focused_pane = GhFocusedPane::Detail;
+                    self.github.load_selected_issue_detail();
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn handle_gh_pr_list_key(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Char('j') | KeyCode::Down => {
+                if !self.github.prs.is_empty()
+                    && self.github.pr_selected_idx + 1 < self.github.prs.len()
+                {
+                    self.github.pr_selected_idx += 1;
+                    self.github.load_selected_pr_detail();
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if self.github.pr_selected_idx > 0 {
+                    self.github.pr_selected_idx -= 1;
+                    self.github.load_selected_pr_detail();
+                }
+            }
+            KeyCode::Char('g') => {
+                self.github.pr_selected_idx = 0;
+                self.github.load_selected_pr_detail();
+            }
+            KeyCode::Char('G') => {
+                if !self.github.prs.is_empty() {
+                    self.github.pr_selected_idx = self.github.prs.len() - 1;
+                    self.github.load_selected_pr_detail();
+                }
+            }
+            KeyCode::Char('h') | KeyCode::BackTab => {
+                self.github.focused_pane = GhFocusedPane::IssueList;
+                self.github.load_selected_issue_detail();
+            }
+            KeyCode::Char('i') | KeyCode::Enter => {
+                if !self.github.prs.is_empty() {
+                    self.github.previous_pane = GhFocusedPane::PrList;
+                    self.github.focused_pane = GhFocusedPane::Detail;
+                    self.github.load_selected_pr_detail();
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn handle_gh_detail_key(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Char('j') | KeyCode::Down => {
+                self.github.detail_scroll = self.github.detail_scroll.saturating_add(1);
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                self.github.detail_scroll = self.github.detail_scroll.saturating_sub(1);
+            }
+            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                let half = (self.github.detail_view_height / 2).max(1);
+                self.github.detail_scroll = self.github.detail_scroll.saturating_add(half);
+            }
+            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                let half = (self.github.detail_view_height / 2).max(1);
+                self.github.detail_scroll = self.github.detail_scroll.saturating_sub(half);
+            }
+            KeyCode::Char('g') => {
+                self.github.detail_scroll = 0;
+            }
+            KeyCode::Char('G') => {
+                // Scroll to a large value — rendering will cap it
+                self.github.detail_scroll = u16::MAX / 2;
+            }
+            KeyCode::Esc => {
+                self.github.focused_pane = self.github.previous_pane;
+            }
+            _ => {}
+        }
     }
 
     fn handle_file_tree_key(&mut self, key: KeyEvent) {
