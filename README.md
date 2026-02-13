@@ -40,6 +40,12 @@ curl -sL https://github.com/td72/vig/releases/latest/download/vig-aarch64-apple-
 curl -sL https://github.com/td72/vig/releases/latest/download/vig-x86_64-apple-darwin.tar.gz | tar xz -C ~/.local/bin/
 ```
 
+### crates.io
+
+```bash
+cargo install vig
+```
+
 ### Build from source
 
 Requires: Rust toolchain, libgit2, libssl, pkg-config

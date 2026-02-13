@@ -10,6 +10,7 @@ homepage = "https://github.com/td72/vig"
 readme = "README.md"
 keywords = ["git", "tui", "diff", "viewer", "terminal"]
 categories = ["command-line-utilities", "development-tools"]
+exclude = ["assets/", "tape/", ".github/", "docs/"]
 
 [dependencies]
 anyhow = "1"
