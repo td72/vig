@@ -1,17 +1,18 @@
 mod app;
 mod event;
 mod git;
+mod github;
 mod syntax;
 mod tui;
 mod ui;
 
-use crate::app::{App, FocusedPane};
+use crate::app::{App, FocusedPane, ViewMode};
 use crate::event::{Event, EventHandler};
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
 use crate::ui::{
-    branch_action_menu, branch_selector, commit_log, confirm_dialog, diff_view, file_tree, layout,
-    reflog, status_bar,
+    branch_action_menu, branch_selector, commit_log, confirm_dialog, diff_view, file_tree,
+    github as gh_ui, layout, reflog, status_bar,
 };
 use anyhow::Result;
 use std::env;
@@ -41,36 +42,49 @@ fn main() -> Result<()> {
     loop {
         // Collect any completed background highlight results
         app.drain_bg_highlights();
+        app.github.drain_bg_messages();
 
         // Draw
         terminal.draw(|frame| {
-            let layout = layout::compute_layout(frame.area());
-            status_bar::render_header(frame, &app, layout.header);
-            file_tree::render(frame, &app, layout.file_tree);
-            branch_selector::render(frame, &app, layout.branch_list);
-            reflog::render(frame, &mut app, layout.reflog);
+            match app.view_mode {
+                ViewMode::Git => {
+                    let layout = layout::compute_layout(frame.area());
+                    status_bar::render_header(frame, &app, layout.header);
+                    file_tree::render(frame, &app, layout.file_tree);
+                    branch_selector::render(frame, &app, layout.branch_list);
+                    reflog::render(frame, &mut app, layout.reflog);
 
-            match app.focused_pane {
-                FocusedPane::BranchList | FocusedPane::GitLog | FocusedPane::Reflog => {
-                    commit_log::render(frame, &app, layout.main_pane);
+                    match app.focused_pane {
+                        FocusedPane::BranchList | FocusedPane::GitLog | FocusedPane::Reflog => {
+                            commit_log::render(frame, &app, layout.main_pane);
+                        }
+                        _ => {
+                            diff_view::render(frame, &mut app, layout.main_pane);
+                        }
+                    }
+
+                    status_bar::render_status_bar(frame, &app, layout.status_bar);
+
+                    if app.branch_action_menu.is_some() {
+                        branch_action_menu::render(frame, &app, frame.area());
+                    }
+
+                    if app.error_dialog.is_some() {
+                        confirm_dialog::render(frame, &app, frame.area());
+                    }
                 }
-                _ => {
-                    diff_view::render(frame, &mut app, layout.main_pane);
+                ViewMode::GitHub => {
+                    let gl = gh_ui::layout::compute_gh_layout(frame.area());
+                    status_bar::render_gh_header(frame, &app, gl.header);
+                    gh_ui::issue_list::render(frame, &app, gl.issue_list);
+                    gh_ui::pr_list::render(frame, &app, gl.pr_list);
+                    gh_ui::detail_view::render(frame, &mut app, gl.main_pane);
+                    status_bar::render_gh_status_bar(frame, &app, gl.status_bar);
                 }
-            }
-
-            status_bar::render_status_bar(frame, &app, layout.status_bar);
-
-            if app.branch_action_menu.is_some() {
-                branch_action_menu::render(frame, &app, frame.area());
-            }
-
-            if app.error_dialog.is_some() {
-                confirm_dialog::render(frame, &app, frame.area());
             }
 
             if app.show_help {
-                status_bar::render_help_overlay(frame, frame.area());
+                status_bar::render_help_overlay(frame, frame.area(), app.view_mode);
             }
         })?;
 
