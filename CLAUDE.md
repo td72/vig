@@ -19,10 +19,10 @@ mise run demo:branch  # record branch selector demo only
 
 ## Branch Workflow
 
-コードを修正する時は必ずフィーチャーブランチを作成して作業する。`main` ブランチに直接コミットしないこと。
+Always create a feature branch before making changes. Never commit directly to `main`.
 
 ```bash
-git checkout -b feat/<feature-name>  # ブランチを切って作業開始
+git checkout -b feat/<feature-name>  # create a branch and start working
 ```
 
 ## Conventions
@@ -40,7 +40,7 @@ Tape files serve as both **visual documentation** (the generated GIFs are embedd
 
 ### Issue / Pull Request
 
-Issue や PR を作成する際は、まず日本語でタイトル・本文をユーザーに提示して確認を取る。承認後、英語に翻訳して `gh` コマンドで作成する。
+When creating an issue or PR, first present the title and body in Japanese for user review. After approval, translate to English and create via `gh` command.
 
 Always assign appropriate labels when creating issues (e.g., `enhancement`, `bug`, `documentation`).
 

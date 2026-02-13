@@ -5,6 +5,7 @@ mod github;
 mod syntax;
 mod tui;
 mod ui;
+mod update;
 
 use crate::app::{App, FocusedPane, ViewMode};
 use crate::event::{Event, EventHandler};
@@ -15,11 +16,36 @@ use crate::ui::{
     github as gh_ui, layout, reflog, status_bar,
 };
 use anyhow::Result;
+use clap::{Parser, Subcommand};
 use std::env;
 use std::process::Command;
 use std::time::Duration;
 
+#[derive(Parser)]
+#[command(version)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Update vig to the latest version
+    Update,
+}
+
 fn main() -> Result<()> {
+    let cli = Cli::parse();
+
+    match cli.command {
+        Some(Commands::Update) => update::run()?,
+        None => run_tui()?,
+    }
+
+    Ok(())
+}
+
+fn run_tui() -> Result<()> {
     // Restore terminal on panic
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
