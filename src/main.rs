@@ -109,13 +109,20 @@ fn main() -> Result<()> {
                             .or_else(|_| env::var("VISUAL"))
                             .unwrap_or_else(|_| "vi".to_string());
 
-                        // Suspend TUI
+                        // Pause event polling — blocks until the background
+                        // thread has stopped calling crossterm::event::poll()
+                        events.pause();
                         tui::restore()?;
 
                         let status = Command::new(&editor).arg(&file_path).status();
 
-                        // Restore TUI
                         terminal = tui::enter()?;
+                        // Flush stale terminal data before resuming the event thread
+                        while crossterm::event::poll(Duration::ZERO)? {
+                            let _ = crossterm::event::read();
+                        }
+                        events.drain();
+                        events.resume();
 
                         match status {
                             Ok(s) if s.success() => {
