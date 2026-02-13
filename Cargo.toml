@@ -3,6 +3,14 @@ name = "vig"
 version = "0.1.0"
 edition = "2021"
 description = "Git TUI side-by-side diff viewer"
+authors = ["td72"]
+license = "MIT"
+repository = "https://github.com/td72/vig"
+homepage = "https://github.com/td72/vig"
+readme = "README.md"
+keywords = ["git", "tui", "diff", "viewer", "terminal"]
+categories = ["command-line-utilities", "development-tools"]
+exclude = ["assets/", "tape/", ".github/", "docs/"]
 
 [dependencies]
 anyhow = "1"
@@ -15,3 +23,10 @@ arboard = "3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 syntect = { version = "5", default-features = false, features = ["default-fancy"] }
+
+[features]
+vendored = ["git2/vendored-libgit2", "git2/vendored-openssl"]
+
+[profile.release]
+strip = true
+lto = true

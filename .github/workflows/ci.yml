@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  ci:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -15,14 +15,38 @@ jobs:
         with:
           components: clippy, rustfmt
 
-      - uses: awalsh128/cache-apt-pkgs-action@latest
+      - uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: libgit2-dev libssl-dev pkg-config
 
       - uses: j178/prek-action@v1
 
+  test:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+          - target: x86_64-apple-darwin
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: libgit2-dev libssl-dev pkg-config
+
       - name: cargo test
-        run: cargo test
+        run: cargo test --target ${{ matrix.target }}
 
       - name: cargo build
-        run: cargo build
+        run: cargo build --target ${{ matrix.target }}

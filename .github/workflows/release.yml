@@ -1,0 +1,169 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-latest
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+          - target: x86_64-apple-darwin
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build
+        uses: houseabsolute/actions-rust-cross@v1
+        with:
+          command: build
+          target: ${{ matrix.target }}
+          args: "--locked --release --features vendored"
+
+      - name: Generate third-party licenses
+        run: |
+          cargo install cargo-bundle-licenses --locked
+          cargo bundle-licenses --format yaml --output THIRDPARTY.yml
+
+      - name: Package
+        run: |
+          cp target/${{ matrix.target }}/release/vig .
+          tar czf vig-${{ matrix.target }}.tar.gz vig LICENSE THIRDPARTY.yml
+          shasum -a 256 vig-${{ matrix.target }}.tar.gz > vig-${{ matrix.target }}.tar.gz.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: vig-${{ matrix.target }}
+          path: |
+            vig-${{ matrix.target }}.tar.gz
+            vig-${{ matrix.target }}.tar.gz.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
+        with:
+          merge-multiple: true
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            vig-*.tar.gz
+            vig-*.tar.gz.sha256
+
+  publish:
+    needs: release
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Authenticate with crates.io
+        uses: rust-lang/crates-io-auth-action@v1
+
+      - name: Publish to crates.io
+        run: cargo publish
+
+  homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: td72
+          repositories: homebrew-tap
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
+        with:
+          merge-multiple: true
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v6
+        with:
+          repository: td72/homebrew-tap
+          token: ${{ steps.app-token.outputs.token }}
+          path: homebrew-tap
+
+      - name: Update Homebrew formula
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          SHA_LINUX_X86=$(cut -d ' ' -f 1 vig-x86_64-unknown-linux-gnu.tar.gz.sha256)
+          SHA_LINUX_ARM=$(cut -d ' ' -f 1 vig-aarch64-unknown-linux-gnu.tar.gz.sha256)
+          SHA_MACOS_ARM=$(cut -d ' ' -f 1 vig-aarch64-apple-darwin.tar.gz.sha256)
+          SHA_MACOS_X86=$(cut -d ' ' -f 1 vig-x86_64-apple-darwin.tar.gz.sha256)
+
+          cat > homebrew-tap/Formula/vig.rb <<FORMULA
+          class Vig < Formula
+            desc "Git TUI side-by-side diff viewer with vim-style keybindings"
+            homepage "https://github.com/td72/vig"
+            license "MIT"
+            version "${VERSION}"
+
+            on_macos do
+              on_arm do
+                url "https://github.com/td72/vig/releases/download/v#{version}/vig-aarch64-apple-darwin.tar.gz"
+                sha256 "${SHA_MACOS_ARM}"
+              end
+              on_intel do
+                url "https://github.com/td72/vig/releases/download/v#{version}/vig-x86_64-apple-darwin.tar.gz"
+                sha256 "${SHA_MACOS_X86}"
+              end
+            end
+
+            on_linux do
+              on_arm do
+                url "https://github.com/td72/vig/releases/download/v#{version}/vig-aarch64-unknown-linux-gnu.tar.gz"
+                sha256 "${SHA_LINUX_ARM}"
+              end
+              on_intel do
+                url "https://github.com/td72/vig/releases/download/v#{version}/vig-x86_64-unknown-linux-gnu.tar.gz"
+                sha256 "${SHA_LINUX_X86}"
+              end
+            end
+
+            def install
+              bin.install "vig"
+            end
+
+            test do
+              assert_predicate bin/"vig", :exist?
+              assert_predicate bin/"vig", :executable?
+            end
+          end
+          FORMULA
+
+      - name: Push formula update
+        run: |
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/vig.rb
+          git commit -m "vig ${GITHUB_REF_NAME}"
+          git push
