@@ -37,11 +37,22 @@ jobs:
           cargo install cargo-bundle-licenses --locked
           cargo bundle-licenses --format yaml --output THIRDPARTY.yml
 
+      - name: Install zipsign
+        run: cargo install zipsign --locked
+
       - name: Package
         run: |
           cp target/${{ matrix.target }}/release/vig .
           tar czf vig-${{ matrix.target }}.tar.gz vig LICENSE THIRDPARTY.yml
           shasum -a 256 vig-${{ matrix.target }}.tar.gz > vig-${{ matrix.target }}.tar.gz.sha256
+
+      - name: Sign archive
+        env:
+          ZIPSIGN_PRIVATE_KEY: ${{ secrets.ZIPSIGN_PRIVATE_KEY }}
+        run: |
+          echo "$ZIPSIGN_PRIVATE_KEY" | base64 -d > /tmp/zipsign.key
+          zipsign sign tar vig-${{ matrix.target }}.tar.gz /tmp/zipsign.key
+          rm /tmp/zipsign.key
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6
