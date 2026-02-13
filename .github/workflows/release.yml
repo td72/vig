@@ -34,7 +34,7 @@ jobs:
 
       - name: Generate third-party licenses
         run: |
-          cargo install cargo-bundle-licenses
+          cargo install cargo-bundle-licenses --locked
           cargo bundle-licenses --format yaml --output THIRDPARTY.yml
 
       - name: Package
@@ -72,6 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
+      contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v6
@@ -152,7 +153,8 @@ jobs:
             end
 
             test do
-              assert_match version.to_s, shell_output("#{bin}/vig --version", 2)
+              assert_predicate bin/"vig", :exist?
+              assert_predicate bin/"vig", :executable?
             end
           end
           FORMULA

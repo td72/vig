@@ -34,16 +34,16 @@ brew install td72/tap/vig
 
 ```bash
 # Linux x86_64
-curl -sL https://github.com/td72/vig/releases/latest/download/vig-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ~/.local/bin/
+curl -sL https://github.com/td72/vig/releases/latest/download/vig-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ~/.local/bin vig
 
 # Linux aarch64
-curl -sL https://github.com/td72/vig/releases/latest/download/vig-aarch64-unknown-linux-gnu.tar.gz | tar xz -C ~/.local/bin/
+curl -sL https://github.com/td72/vig/releases/latest/download/vig-aarch64-unknown-linux-gnu.tar.gz | tar xz -C ~/.local/bin vig
 
 # macOS Apple Silicon
-curl -sL https://github.com/td72/vig/releases/latest/download/vig-aarch64-apple-darwin.tar.gz | tar xz -C ~/.local/bin/
+curl -sL https://github.com/td72/vig/releases/latest/download/vig-aarch64-apple-darwin.tar.gz | tar xz -C ~/.local/bin vig
 
 # macOS Intel
-curl -sL https://github.com/td72/vig/releases/latest/download/vig-x86_64-apple-darwin.tar.gz | tar xz -C ~/.local/bin/
+curl -sL https://github.com/td72/vig/releases/latest/download/vig-x86_64-apple-darwin.tar.gz | tar xz -C ~/.local/bin vig
 ```
 
 ### crates.io
