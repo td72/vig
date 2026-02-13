@@ -230,6 +230,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect, view_mode: ViewMode) {
             ("h / l", "Issues ↔ PRs"),
             ("j / k", "Navigate list"),
             ("i / Enter", "Open detail"),
+            ("o", "Open in browser"),
             ("Esc", "Back to list"),
             ("Ctrl+d", "Half page down (detail)"),
             ("Ctrl+u", "Half page up (detail)"),
