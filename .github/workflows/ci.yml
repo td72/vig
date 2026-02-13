@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  ci:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -21,8 +21,49 @@ jobs:
 
       - uses: j178/prek-action@v1
 
-      - name: cargo test
-        run: cargo test
+  test:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-latest
+            cross: true
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+          - target: x86_64-apple-darwin
+            runner: macos-13
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
 
-      - name: cargo build
-        run: cargo build
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux' && !matrix.cross
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libgit2-dev libssl-dev pkg-config
+
+      - name: Install cross
+        if: matrix.cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Test (cross)
+        if: matrix.cross
+        run: cross test --features vendored --target ${{ matrix.target }}
+
+      - name: Build (cross)
+        if: matrix.cross
+        run: cross build --features vendored --target ${{ matrix.target }}
+
+      - name: Test (cargo)
+        if: ${{ !matrix.cross }}
+        run: cargo test --target ${{ matrix.target }}
+
+      - name: Build (cargo)
+        if: ${{ !matrix.cross }}
+        run: cargo build --target ${{ matrix.target }}

@@ -22,12 +22,27 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 
 ## Installation
 
-### Requirements
+### Pre-built binaries
 
-- Rust toolchain
-- libgit2, libssl, pkg-config
+Download a pre-built binary from the [GitHub Releases](https://github.com/td72/vig/releases) page:
+
+```bash
+# Linux x86_64
+curl -sL https://github.com/td72/vig/releases/latest/download/vig-x86_64-unknown-linux-gnu.tar.gz | tar xz -C ~/.local/bin/
+
+# Linux aarch64
+curl -sL https://github.com/td72/vig/releases/latest/download/vig-aarch64-unknown-linux-gnu.tar.gz | tar xz -C ~/.local/bin/
+
+# macOS Apple Silicon
+curl -sL https://github.com/td72/vig/releases/latest/download/vig-aarch64-apple-darwin.tar.gz | tar xz -C ~/.local/bin/
+
+# macOS Intel
+curl -sL https://github.com/td72/vig/releases/latest/download/vig-x86_64-apple-darwin.tar.gz | tar xz -C ~/.local/bin/
+```
 
 ### Build from source
+
+Requires: Rust toolchain, libgit2, libssl, pkg-config
 
 ```bash
 cargo install --path .

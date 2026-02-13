@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-latest
+            cross: true
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+          - target: x86_64-apple-darwin
+            runner: macos-13
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Install cross
+        if: matrix.cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build (cross)
+        if: matrix.cross
+        run: cross build --release --features vendored --target ${{ matrix.target }}
+
+      - name: Build (cargo)
+        if: ${{ !matrix.cross }}
+        run: cargo build --release --features vendored --target ${{ matrix.target }}
+
+      - name: Generate third-party licenses
+        run: |
+          cargo install cargo-bundle-licenses
+          cargo bundle-licenses --format yaml --output THIRDPARTY.yml
+
+      - name: Package
+        run: |
+          cp target/${{ matrix.target }}/release/vig .
+          tar czf vig-${{ matrix.target }}.tar.gz vig LICENSE THIRDPARTY.yml
+          shasum -a 256 vig-${{ matrix.target }}.tar.gz > vig-${{ matrix.target }}.tar.gz.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: vig-${{ matrix.target }}
+          path: |
+            vig-${{ matrix.target }}.tar.gz
+            vig-${{ matrix.target }}.tar.gz.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
+        with:
+          merge-multiple: true
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            vig-*.tar.gz
+            vig-*.tar.gz.sha256
