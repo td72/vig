@@ -142,6 +142,7 @@ GitHub の Issue と Pull Request を vig 内で閲覧可能。[GitHub CLI (`gh`
 | `h` / `l` | Issue 一覧 ↔ PR 一覧 |
 | `j` / `k` | リスト内ナビゲーション |
 | `i` / `Enter` | 詳細ビューを開く |
+| `o` | ブラウザで開く |
 | `Esc` | 一覧に戻る |
 | `Ctrl+d` / `Ctrl+u` | 半ページスクロール（詳細ビュー） |
 | `g` / `G` | 先頭 / 末尾 |

@@ -142,6 +142,7 @@ Browse GitHub Issues and Pull Requests directly within vig. Requires [GitHub CLI
 | `h` / `l` | Switch between Issue List and PR List |
 | `j` / `k` | Navigate list |
 | `i` / `Enter` | Open detail view |
+| `o` | Open in browser |
 | `Esc` | Back to list |
 | `Ctrl+d` / `Ctrl+u` | Half page scroll (detail view) |
 | `g` / `G` | Top / Bottom |

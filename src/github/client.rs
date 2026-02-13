@@ -70,6 +70,28 @@ pub fn get_issue(number: u64) -> Result<GhIssueDetail, String> {
     serde_json::from_slice(&output.stdout).map_err(|e| format!("JSON parse error: {e}"))
 }
 
+pub fn open_issue_in_browser(number: u64) -> Result<(), String> {
+    Command::new("gh")
+        .args(["issue", "view", &number.to_string(), "--web"])
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .map_err(|e| format!("Failed to open issue in browser: {e}"))?;
+    Ok(())
+}
+
+pub fn open_pr_in_browser(number: u64) -> Result<(), String> {
+    Command::new("gh")
+        .args(["pr", "view", &number.to_string(), "--web"])
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .map_err(|e| format!("Failed to open PR in browser: {e}"))?;
+    Ok(())
+}
+
 pub fn get_pr(number: u64) -> Result<GhPrDetail, String> {
     let output = Command::new("gh")
         .args([

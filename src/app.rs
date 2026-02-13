@@ -1095,6 +1095,20 @@ impl App {
                     self.github.load_selected_issue_detail();
                 }
             }
+            KeyCode::Char('o') => {
+                if let Some(issue) = self.github.issues.get(self.github.issue_selected_idx) {
+                    let number = issue.number;
+                    match crate::github::client::open_issue_in_browser(number) {
+                        Ok(()) => {
+                            self.status_message =
+                                Some(format!("Opening issue #{number} in browser..."));
+                        }
+                        Err(e) => {
+                            self.status_message = Some(format!("Failed to open browser: {e}"));
+                        }
+                    }
+                }
+            }
             _ => {}
         }
     }
@@ -1136,6 +1150,20 @@ impl App {
                     self.github.load_selected_pr_detail();
                 }
             }
+            KeyCode::Char('o') => {
+                if let Some(pr) = self.github.prs.get(self.github.pr_selected_idx) {
+                    let number = pr.number;
+                    match crate::github::client::open_pr_in_browser(number) {
+                        Ok(()) => {
+                            self.status_message =
+                                Some(format!("Opening PR #{number} in browser..."));
+                        }
+                        Err(e) => {
+                            self.status_message = Some(format!("Failed to open browser: {e}"));
+                        }
+                    }
+                }
+            }
             _ => {}
         }
     }
@@ -1162,6 +1190,28 @@ impl App {
             KeyCode::Char('G') => {
                 // Scroll to a large value — rendering will cap it
                 self.github.detail_scroll = u16::MAX / 2;
+            }
+            KeyCode::Char('o') => {
+                let result = match &self.github.detail {
+                    crate::github::state::GhDetailContent::Issue(issue) => {
+                        let n = issue.number;
+                        crate::github::client::open_issue_in_browser(n)
+                            .map(|()| format!("Opening issue #{n} in browser..."))
+                    }
+                    crate::github::state::GhDetailContent::Pr(pr) => {
+                        let n = pr.number;
+                        crate::github::client::open_pr_in_browser(n)
+                            .map(|()| format!("Opening PR #{n} in browser..."))
+                    }
+                    _ => Err(String::new()),
+                };
+                match result {
+                    Ok(msg) => self.status_message = Some(msg),
+                    Err(e) if !e.is_empty() => {
+                        self.status_message = Some(format!("Failed to open browser: {e}"));
+                    }
+                    _ => {}
+                }
             }
             KeyCode::Esc => {
                 self.github.focused_pane = self.github.previous_pane;
