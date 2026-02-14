@@ -20,8 +20,10 @@ mise run demo:branch  # record branch selector demo only
 ## Branch Workflow
 
 Always create a feature branch before making changes. Never commit directly to `main`.
+When starting work on an issue, always pull the latest `main` first, then create the branch from it.
 
 ```bash
+git checkout main && git pull        # update main first
 git checkout -b feat/<feature-name>  # create a branch and start working
 ```
 
@@ -43,6 +45,16 @@ Tape files serve as both **visual documentation** (the generated GIFs are embedd
 When creating an issue or PR, first present the title and body in Japanese for user review. After approval, translate to English and create via `gh` command.
 
 Always assign appropriate labels when creating issues (e.g., `enhancement`, `bug`, `documentation`).
+
+### Copilot Review
+
+After creating a PR or pushing changes (except when pushing fixes for Copilot review comments), request a Copilot review:
+
+```bash
+gh pr edit <number> --add-reviewer "copilot"
+```
+
+After requesting a review, use `/review-copilot-comments` to check and address the review comments.
 
 ### Commit Messages
 

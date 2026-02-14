@@ -309,6 +309,34 @@ impl GitHubState {
         }
     }
 
+    /// Refresh only the currently displayed detail item (cache-bust + re-fetch).
+    pub fn refresh_detail(&mut self) {
+        let (kind, number) = match &self.detail {
+            GhDetailContent::Issue(detail) => (GhDetailKind::Issue, detail.number),
+            GhDetailContent::Pr(detail) => (GhDetailKind::Pr, detail.number),
+            GhDetailContent::Loading { kind, number } => (*kind, *number),
+            GhDetailContent::Error(_) => {
+                match self.previous_pane {
+                    GhFocusedPane::IssueList => self.load_selected_issue_detail(),
+                    GhFocusedPane::PrList => self.load_selected_pr_detail(),
+                    _ => {}
+                }
+                return;
+            }
+            _ => return,
+        };
+        match kind {
+            GhDetailKind::Issue => {
+                self.issue_cache.remove(&number);
+                self.load_issue_detail(number);
+            }
+            GhDetailKind::Pr => {
+                self.pr_cache.remove(&number);
+                self.load_pr_detail(number);
+            }
+        }
+    }
+
     /// Refresh: re-fetch issue and PR lists, clear caches.
     pub fn refresh(&mut self) {
         self.issues_loading = true;
