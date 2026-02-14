@@ -82,7 +82,7 @@ fn run_tui() -> Result<()> {
 
                     match app.focused_pane {
                         FocusedPane::BranchList | FocusedPane::GitLog | FocusedPane::Reflog => {
-                            commit_log::render(frame, &app, layout.main_pane);
+                            commit_log::render(frame, &mut app, layout.main_pane);
                         }
                         _ => {
                             diff_view::render(frame, &mut app, layout.main_pane);

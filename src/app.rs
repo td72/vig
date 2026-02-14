@@ -30,7 +30,8 @@ pub struct BranchListState {
 
 pub struct GitLogState {
     pub commits: Vec<CommitInfo>,
-    pub scroll: u16,
+    pub selected_idx: usize,
+    pub view_height: u16,
     pub ref_name: String,
 }
 
@@ -324,7 +325,8 @@ impl App {
             },
             git_log: GitLogState {
                 commits: Vec::new(),
-                scroll: 0,
+                selected_idx: 0,
+                view_height: 0,
                 ref_name: String::new(),
             },
             reflog: ReflogState {
@@ -507,7 +509,7 @@ impl App {
         {
             self.git_log.ref_name = branch.name.clone();
             self.git_log.commits = self.repo.log_for_ref(&branch.name, 100);
-            self.git_log.scroll = 0;
+            self.git_log.selected_idx = 0;
         } else {
             self.git_log.commits.clear();
             self.git_log.ref_name.clear();
@@ -602,23 +604,61 @@ impl App {
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                self.git_log.scroll = self.git_log.scroll.saturating_add(1);
+                if !self.git_log.commits.is_empty()
+                    && self.git_log.selected_idx + 1 < self.git_log.commits.len()
+                {
+                    self.git_log.selected_idx += 1;
+                }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                self.git_log.scroll = self.git_log.scroll.saturating_sub(1);
+                if self.git_log.selected_idx > 0 {
+                    self.git_log.selected_idx -= 1;
+                }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.git_log.scroll = self.git_log.scroll.saturating_add(10);
+                let half = (self.git_log.view_height / 2).max(1) as usize;
+                let new_idx = self.git_log.selected_idx.saturating_add(half);
+                self.git_log.selected_idx =
+                    new_idx.min(self.git_log.commits.len().saturating_sub(1));
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.git_log.scroll = self.git_log.scroll.saturating_sub(10);
+                let half = (self.git_log.view_height / 2).max(1) as usize;
+                self.git_log.selected_idx = self.git_log.selected_idx.saturating_sub(half);
             }
             KeyCode::Char('g') => {
-                self.git_log.scroll = 0;
+                self.git_log.selected_idx = 0;
             }
             KeyCode::Char('G') => {
-                let total = self.git_log.commits.len() as u16;
-                self.git_log.scroll = total.saturating_sub(10);
+                if !self.git_log.commits.is_empty() {
+                    self.git_log.selected_idx = self.git_log.commits.len() - 1;
+                }
+            }
+            KeyCode::Char('y') => {
+                if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
+                    let hash = commit.full_hash.clone();
+                    self.copy_to_clipboard(&hash);
+                }
+            }
+            KeyCode::Char('o') => {
+                if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
+                    let hash = commit.full_hash.clone();
+                    if let Some(nwo) = crate::github::client::repo_nwo() {
+                        let url = format!("https://github.com/{nwo}/commit/{hash}");
+                        match crate::github::client::open_url(&url) {
+                            Ok(()) => {
+                                self.status_message =
+                                    Some("Opening in browser...".to_string());
+                            }
+                            Err(e) => {
+                                self.status_message =
+                                    Some(format!("Failed to open URL: {e}"));
+                            }
+                        }
+                    } else {
+                        self.status_message =
+                            Some("Could not determine GitHub repository".to_string());
+                    }
+                }
             }
             KeyCode::Char('/') => {
                 self.search.start(SearchOrigin::CommitLog);
@@ -2536,7 +2576,7 @@ impl App {
                 self.selected_tree_idx = *idx;
             }
             SearchMatch::CommitEntry(idx) => {
-                self.git_log.scroll = *idx as u16;
+                self.git_log.selected_idx = *idx;
             }
             SearchMatch::BranchEntry(idx) => {
                 self.branch_list.selected_idx = *idx;
