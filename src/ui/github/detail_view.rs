@@ -100,12 +100,14 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     match &app.github.detail {
         GhDetailContent::Issue(detail) => {
             // Issue: single Comments pane on the right
+            let count = detail.comments.len();
+            let title = format!("Comments ({count})");
             let comments_lines = build_comments_lines(&detail.comments);
             app.github.detail_view_height = cols[1].height;
             render_pane(
                 f,
                 cols[1],
-                "Comments",
+                &title,
                 comments_lines,
                 active_pane == GhDetailPane::Comments,
                 is_focused,
@@ -115,27 +117,31 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         GhDetailContent::Pr(detail) => {
             // PR: split right into Status (top) and Comments (bottom)
             let right_rows =
-                Layout::vertical([Constraint::Percentage(50), Constraint::Percentage(50)])
+                Layout::vertical([Constraint::Percentage(30), Constraint::Percentage(70)])
                     .split(cols[1]);
 
             app.github.detail_view_height = right_rows[0].height;
 
+            let status_count = status_item_count(detail);
+            let status_title = format!("Status ({status_count})");
             let status_lines = build_status_lines(detail);
             render_pane(
                 f,
                 right_rows[0],
-                "Status",
+                &status_title,
                 status_lines,
                 active_pane == GhDetailPane::Status,
                 is_focused,
                 app.github.detail_scroll_status,
             );
 
+            let comments_count = detail.comments.len();
+            let comments_title = format!("Comments ({comments_count})");
             let comments_lines = build_comments_lines(&detail.comments);
             render_pane(
                 f,
                 right_rows[1],
-                "Comments",
+                &comments_title,
                 comments_lines,
                 active_pane == GhDetailPane::Comments,
                 is_focused,
@@ -355,18 +361,25 @@ fn build_body_lines(body: &str) -> Vec<Line<'static>> {
     body.lines().map(|line| Line::from(format!("  {line}"))).collect()
 }
 
+fn status_item_count(detail: &GhPrDetail) -> usize {
+    let checks = detail
+        .status_check_rollup
+        .as_ref()
+        .map_or(0, |c| c.len());
+    let reviews = detail
+        .reviews
+        .iter()
+        .filter(|r| !r.body.is_empty() || r.state != "COMMENTED")
+        .count();
+    checks + reviews
+}
+
 fn build_status_lines(detail: &GhPrDetail) -> Vec<Line<'static>> {
     let mut lines = Vec::new();
 
     // CI Status
     if let Some(ref checks) = detail.status_check_rollup {
         if !checks.is_empty() {
-            lines.push(Line::from(Span::styled(
-                format!("  ─── CI Status ({}) ───", checks.len()),
-                Style::default()
-                    .fg(Color::DarkGray)
-                    .add_modifier(Modifier::BOLD),
-            )));
             for check in checks {
                 let (icon, color) = match check.conclusion.as_deref() {
                     Some("SUCCESS") => ("✓", Color::Green),
@@ -405,12 +418,6 @@ fn build_status_lines(detail: &GhPrDetail) -> Vec<Line<'static>> {
             if !lines.is_empty() {
                 lines.push(Line::from(""));
             }
-            lines.push(Line::from(Span::styled(
-                format!("  ─── Reviews ({}) ───", meaningful_reviews.len()),
-                Style::default()
-                    .fg(Color::DarkGray)
-                    .add_modifier(Modifier::BOLD),
-            )));
             for review in meaningful_reviews {
                 lines.push(Line::from(""));
                 let author = review
@@ -472,12 +479,6 @@ fn build_comments_lines(comments: &[GhComment]) -> Vec<Line<'static>> {
 }
 
 fn append_comments_lines(lines: &mut Vec<Line<'static>>, comments: &[GhComment]) {
-    lines.push(Line::from(Span::styled(
-        format!("  ─── Comments ({}) ───", comments.len()),
-        Style::default()
-            .fg(Color::DarkGray)
-            .add_modifier(Modifier::BOLD),
-    )));
     for (i, comment) in comments.iter().enumerate() {
         if i > 0 {
             lines.push(Line::from(""));
