@@ -390,7 +390,7 @@ fn build_body_lines(body: &str) -> Vec<Line<'static>> {
             Style::default().fg(Color::DarkGray),
         ))];
     }
-    body.lines().map(|line| Line::from(format!("  {line}"))).collect()
+    markdown_to_lines(body, "  ")
 }
 
 /// Sort checks by workflow_name then name. Used for both rendering and key handling.
@@ -615,9 +615,7 @@ fn build_reviews_lines(reviews: &[GhReview], selected_idx: usize) -> (Vec<Line<'
         }
         lines.push(header);
         if !review.body.is_empty() {
-            for line in review.body.lines() {
-                lines.push(Line::from(format!("  {line}")));
-            }
+            lines.extend(markdown_to_lines(&review.body, "    "));
         }
     }
     (lines, sel_offset)
@@ -659,9 +657,157 @@ fn build_comments_lines(comments: &[GhComment], selected_idx: usize) -> (Vec<Lin
             header = header.style(sel_bg);
         }
         lines.push(header);
-        for line in comment.body.lines() {
-            lines.push(Line::from(format!("  {line}")));
-        }
+        lines.extend(markdown_to_lines(&comment.body, "    "));
     }
     (lines, sel_offset)
+}
+
+fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
+    use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, HeadingLevel};
+
+    let opts = Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS;
+    let parser = Parser::new_ext(text, opts);
+
+    let mut lines: Vec<Line<'static>> = Vec::new();
+    let mut current_spans: Vec<Span<'static>> = Vec::new();
+    let mut style_stack: Vec<Style> = Vec::new();
+    let mut in_code_block = false;
+    let mut in_heading = false;
+    let mut heading_style = Style::default();
+    let code_style = Style::default().fg(Color::DarkGray);
+
+    let flush_line = |lines: &mut Vec<Line<'static>>,
+                      spans: &mut Vec<Span<'static>>,
+                      padding: &str,
+                      line_style: Style| {
+        spans.insert(0, Span::raw(padding.to_string()));
+        lines.push(Line::from(std::mem::take(spans)).style(line_style));
+    };
+
+    let current_style = |stack: &[Style]| -> Style {
+        stack.iter().copied().fold(Style::default(), |acc, s| acc.patch(s))
+    };
+
+    for event in parser {
+        match event {
+            Event::Start(Tag::Heading { level, .. }) => {
+                if !lines.is_empty() {
+                    flush_line(&mut lines, &mut current_spans, padding, Style::default());
+                }
+                in_heading = true;
+                heading_style = match level {
+                    HeadingLevel::H1 => Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+                    HeadingLevel::H2 => Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+                    HeadingLevel::H3 => Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD | Modifier::ITALIC),
+                    _ => Style::default().fg(Color::Cyan).add_modifier(Modifier::ITALIC),
+                };
+                let prefix = match level {
+                    HeadingLevel::H1 => "# ",
+                    HeadingLevel::H2 => "## ",
+                    HeadingLevel::H3 => "### ",
+                    HeadingLevel::H4 => "#### ",
+                    HeadingLevel::H5 => "##### ",
+                    HeadingLevel::H6 => "###### ",
+                };
+                current_spans.push(Span::raw(prefix.to_string()));
+            }
+            Event::End(TagEnd::Heading(_)) => {
+                flush_line(&mut lines, &mut current_spans, padding, heading_style);
+                in_heading = false;
+                heading_style = Style::default();
+            }
+            Event::Start(Tag::Paragraph) => {
+                if !lines.is_empty() && !in_code_block {
+                    flush_line(&mut lines, &mut current_spans, padding, Style::default());
+                }
+            }
+            Event::End(TagEnd::Paragraph) => {
+                let style = if in_heading { heading_style } else { Style::default() };
+                flush_line(&mut lines, &mut current_spans, padding, style);
+            }
+            Event::Start(Tag::CodeBlock(_)) => {
+                in_code_block = true;
+                flush_line(&mut lines, &mut current_spans, padding, Style::default());
+            }
+            Event::End(TagEnd::CodeBlock) => {
+                if !current_spans.is_empty() {
+                    flush_line(&mut lines, &mut current_spans, padding, Style::default());
+                }
+                in_code_block = false;
+            }
+            Event::Start(Tag::Emphasis) => {
+                style_stack.push(Style::default().add_modifier(Modifier::ITALIC));
+            }
+            Event::End(TagEnd::Emphasis) => { style_stack.pop(); }
+            Event::Start(Tag::Strong) => {
+                style_stack.push(Style::default().add_modifier(Modifier::BOLD));
+            }
+            Event::End(TagEnd::Strong) => { style_stack.pop(); }
+            Event::Start(Tag::Strikethrough) => {
+                style_stack.push(Style::default().add_modifier(Modifier::CROSSED_OUT));
+            }
+            Event::End(TagEnd::Strikethrough) => { style_stack.pop(); }
+            Event::Start(Tag::List(_)) | Event::End(TagEnd::List(_)) => {}
+            Event::Start(Tag::Item) => {
+                if !current_spans.is_empty() {
+                    flush_line(&mut lines, &mut current_spans, padding, Style::default());
+                }
+                current_spans.push(Span::raw("- "));
+            }
+            Event::End(TagEnd::Item) => {
+                flush_line(&mut lines, &mut current_spans, padding, Style::default());
+            }
+            Event::Start(Tag::Link { dest_url, .. }) => {
+                style_stack.push(Style::default().fg(Color::Blue).add_modifier(Modifier::UNDERLINED));
+                let _ = dest_url;
+            }
+            Event::End(TagEnd::Link) => { style_stack.pop(); }
+            Event::Start(Tag::BlockQuote(_)) => {
+                style_stack.push(Style::default().fg(Color::DarkGray));
+            }
+            Event::End(TagEnd::BlockQuote(_)) => { style_stack.pop(); }
+            Event::Text(t) => {
+                if in_code_block {
+                    for line in t.as_ref().lines() {
+                        if !current_spans.is_empty() {
+                            flush_line(&mut lines, &mut current_spans, padding, Style::default());
+                        }
+                        current_spans.push(Span::styled(line.to_string(), code_style));
+                    }
+                } else {
+                    let style = current_style(&style_stack);
+                    current_spans.push(Span::styled(t.into_string(), style));
+                }
+            }
+            Event::Code(code) => {
+                let style = Style::default().fg(Color::Yellow).bg(Color::Rgb(50, 50, 50));
+                current_spans.push(Span::styled(format!(" {} ", code.as_ref()), style));
+            }
+            Event::SoftBreak => {
+                current_spans.push(Span::raw(" "));
+            }
+            Event::HardBreak => {
+                let style = if in_heading { heading_style } else { Style::default() };
+                flush_line(&mut lines, &mut current_spans, padding, style);
+            }
+            Event::Rule => {
+                flush_line(&mut lines, &mut current_spans, padding, Style::default());
+                current_spans.push(Span::styled("───", Style::default().fg(Color::DarkGray)));
+                flush_line(&mut lines, &mut current_spans, padding, Style::default());
+            }
+            Event::TaskListMarker(checked) => {
+                let marker = if checked { "[x] " } else { "[ ] " };
+                if let Some(last) = current_spans.last_mut() {
+                    if last.content.as_ref() == "- " {
+                        *last = Span::raw(format!("- {marker}"));
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    if !current_spans.is_empty() {
+        flush_line(&mut lines, &mut current_spans, padding, Style::default());
+    }
+    lines
 }
