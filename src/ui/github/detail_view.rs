@@ -673,6 +673,7 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
     let mut style_stack: Vec<Style> = Vec::new();
     let mut in_code_block = false;
     let mut in_heading = false;
+    let mut in_list_item = false;
     let mut heading_style = Style::default();
     let code_style = Style::default().fg(Color::DarkGray);
 
@@ -717,7 +718,7 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
                 heading_style = Style::default();
             }
             Event::Start(Tag::Paragraph) => {
-                if !lines.is_empty() && !in_code_block {
+                if !lines.is_empty() && !in_code_block && !in_list_item {
                     flush_line(&mut lines, &mut current_spans, padding, Style::default());
                 }
             }
@@ -752,10 +753,14 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
                 if !current_spans.is_empty() {
                     flush_line(&mut lines, &mut current_spans, padding, Style::default());
                 }
+                in_list_item = true;
                 current_spans.push(Span::raw("- "));
             }
             Event::End(TagEnd::Item) => {
-                flush_line(&mut lines, &mut current_spans, padding, Style::default());
+                if !current_spans.is_empty() {
+                    flush_line(&mut lines, &mut current_spans, padding, Style::default());
+                }
+                in_list_item = false;
             }
             Event::Start(Tag::Link { dest_url, .. }) => {
                 style_stack.push(Style::default().fg(Color::Blue).add_modifier(Modifier::UNDERLINED));
