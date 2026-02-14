@@ -1232,13 +1232,8 @@ impl App {
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.github.detail_view_height / 2).max(1);
-                if selectable {
-                    let scroll = self.github.active_detail_scroll_mut();
-                    *scroll = scroll.saturating_add(half);
-                } else {
-                    let scroll = self.github.active_detail_scroll_mut();
-                    *scroll = scroll.saturating_add(half);
-                }
+                let scroll = self.github.active_detail_scroll_mut();
+                *scroll = scroll.saturating_add(half);
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.github.detail_view_height / 2).max(1);
@@ -1254,7 +1249,8 @@ impl App {
             KeyCode::Char('G') => {
                 if selectable && item_count > 0 {
                     *self.github.active_selected_idx_mut() = item_count - 1;
-                } else if !selectable {
+                }
+                if !selectable || item_count > 0 {
                     *self.github.active_detail_scroll_mut() = u16::MAX / 2;
                 }
             }
@@ -1262,13 +1258,24 @@ impl App {
                 self.github.detail_pane = GhDetailPane::Body;
             }
             KeyCode::Char('l') => {
-                // Move to right side: default to Status for PR, Comments for Issue
-                if self.github.detail_pane == GhDetailPane::Body {
-                    if self.github.is_pr() {
-                        self.github.detail_pane = GhDetailPane::Status;
-                    } else {
-                        self.github.detail_pane = GhDetailPane::Comments;
+                match self.github.detail_pane {
+                    GhDetailPane::Body => {
+                        if self.github.is_pr() {
+                            self.github.detail_pane = GhDetailPane::Status;
+                        } else {
+                            self.github.detail_pane = GhDetailPane::Comments;
+                        }
                     }
+                    _ if self.github.is_pr() => {
+                        // Cycle right panes like Tab
+                        self.github.detail_pane = match self.github.detail_pane {
+                            GhDetailPane::Status => GhDetailPane::Reviews,
+                            GhDetailPane::Reviews => GhDetailPane::Comments,
+                            GhDetailPane::Comments => GhDetailPane::Status,
+                            other => other,
+                        };
+                    }
+                    _ => {}
                 }
             }
             KeyCode::Tab => {

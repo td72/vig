@@ -105,7 +105,9 @@ impl GitHubState {
             GhDetailPane::Status => &mut self.detail_check_idx,
             GhDetailPane::Reviews => &mut self.detail_review_idx,
             GhDetailPane::Comments => &mut self.detail_comment_idx,
-            GhDetailPane::Body => unreachable!(),
+            GhDetailPane::Body => {
+                panic!("active_selected_idx_mut called with Body pane which has no selection")
+            }
         }
     }
 

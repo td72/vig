@@ -102,7 +102,11 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
             // Issue: single Comments pane on the right
             let count = detail.comments.len();
             let title = format!("Comments ({count})");
-            app.github.detail_view_height = cols[1].height;
+            if active_pane == GhDetailPane::Body {
+                app.github.detail_view_height = cols[0].height;
+            } else {
+                app.github.detail_view_height = cols[1].height;
+            }
             let (comments_lines, sel_scroll) = build_comments_lines(&detail.comments, app.github.detail_comment_idx);
             render_pane(
                 f,
@@ -123,7 +127,12 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
             ])
             .split(cols[1]);
 
-            app.github.detail_view_height = right_rows[0].height;
+            app.github.detail_view_height = match active_pane {
+                GhDetailPane::Body => cols[0].height,
+                GhDetailPane::Status => right_rows[0].height,
+                GhDetailPane::Reviews => right_rows[1].height,
+                GhDetailPane::Comments => right_rows[2].height,
+            };
 
             let checks_count = detail
                 .status_check_rollup
@@ -468,7 +477,7 @@ fn render_status_table(
         .row_highlight_style(highlight_style);
 
     let mut state = TableState::default();
-    if is_active || is_detail_focused {
+    if is_active && is_detail_focused {
         state.select(Some(selected_idx));
     }
     f.render_stateful_widget(table, area, &mut state);
@@ -479,9 +488,8 @@ fn format_duration(started: Option<&str>, completed: Option<&str>) -> String {
     let (Some(s), Some(c)) = (started, completed) else {
         return String::new();
     };
-    // Parse "2024-01-02T03:04:05Z" — compare as seconds
+    // Parse "2024-01-02T03:04:05Z" to seconds since epoch (UTC)
     let parse = |iso: &str| -> Option<i64> {
-        // Minimal ISO 8601 parse: YYYY-MM-DDTHH:MM:SSZ
         if iso.len() < 19 {
             return None;
         }
@@ -491,7 +499,19 @@ fn format_duration(started: Option<&str>, completed: Option<&str>) -> String {
         let h: i64 = iso[11..13].parse().ok()?;
         let mi: i64 = iso[14..16].parse().ok()?;
         let se: i64 = iso[17..19].parse().ok()?;
-        Some(((y * 365 + mo * 30 + d) * 86400) + h * 3600 + mi * 60 + se)
+        // Days from year 0 to start of year y (accounting for leap years)
+        let mut days = 365 * y + y / 4 - y / 100 + y / 400;
+        // Add days for each completed month
+        const MONTH_DAYS: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        for m in 1..mo {
+            days += MONTH_DAYS[(m - 1) as usize];
+        }
+        // Leap day for current year if past February
+        if mo > 2 && (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) {
+            days += 1;
+        }
+        days += d;
+        Some(days * 86400 + h * 3600 + mi * 60 + se)
     };
     let Some(start_secs) = parse(s) else {
         return String::new();
