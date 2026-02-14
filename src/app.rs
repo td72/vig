@@ -644,8 +644,15 @@ impl App {
                     let hash = commit.full_hash.clone();
                     if let Some(nwo) = crate::github::client::repo_nwo() {
                         let url = format!("https://github.com/{nwo}/commit/{hash}");
-                        if let Err(e) = crate::github::client::open_url(&url) {
-                            self.status_message = Some(format!("Failed to open URL: {e}"));
+                        match crate::github::client::open_url(&url) {
+                            Ok(()) => {
+                                self.status_message =
+                                    Some("Opening in browser...".to_string());
+                            }
+                            Err(e) => {
+                                self.status_message =
+                                    Some(format!("Failed to open URL: {e}"));
+                            }
                         }
                     } else {
                         self.status_message =

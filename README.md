@@ -111,9 +111,11 @@ vig
 
 | Key | Action |
 |-----|--------|
-| `j` / `k` | Scroll log |
+| `j` / `k` | Navigate commits |
 | `Ctrl+d` / `Ctrl+u` | Half page scroll |
 | `g` / `G` | Top / Bottom |
+| `y` | Copy commit hash |
+| `o` | Open in GitHub |
 | `/` | Search commits |
 | `Esc` | Clear search / Back to Branch List |
 
