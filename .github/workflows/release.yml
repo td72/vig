@@ -1,12 +1,12 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
   pull_request:
     types: [closed]
     branches: [main]
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
 
 permissions:
   contents: write
@@ -32,6 +32,8 @@ jobs:
         run: |
           BRANCH="${{ github.event.pull_request.head.ref }}"
           VERSION="${BRANCH#release/}"
+          # Ensure v prefix for tag
+          VERSION="v${VERSION#v}"
           echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create release
@@ -39,76 +41,8 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
-  build:
-    if: github.event_name == 'push'
-    strategy:
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-gnu
-            runner: ubuntu-latest
-          - target: aarch64-unknown-linux-gnu
-            runner: ubuntu-24.04-arm
-          - target: aarch64-apple-darwin
-            runner: macos-latest
-          - target: x86_64-apple-darwin
-            runner: macos-15-intel
-    runs-on: ${{ matrix.runner }}
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-
-      - name: Build
-        run: cargo build --locked --release --features vendored
-
-      - name: Generate third-party licenses
-        run: |
-          cargo install cargo-bundle-licenses --locked
-          cargo bundle-licenses --format yaml --output THIRDPARTY.yml
-
-      - name: Install zipsign
-        run: cargo install zipsign --locked
-
-      - name: Package
-        run: |
-          cp target/release/vig .
-          tar czf vig-${{ matrix.target }}.tar.gz vig LICENSE THIRDPARTY.yml
-
-      - name: Sign archive
-        env:
-          ZIPSIGN_PRIVATE_KEY: ${{ secrets.ZIPSIGN_PRIVATE_KEY }}
-        run: |
-          echo "$ZIPSIGN_PRIVATE_KEY" | base64 -d > /tmp/zipsign.key
-          zipsign sign tar vig-${{ matrix.target }}.tar.gz /tmp/zipsign.key
-          rm /tmp/zipsign.key
-          shasum -a 256 vig-${{ matrix.target }}.tar.gz > vig-${{ matrix.target }}.tar.gz.sha256
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: vig-${{ matrix.target }}
-          path: |
-            vig-${{ matrix.target }}.tar.gz
-            vig-${{ matrix.target }}.tar.gz.sha256
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v7
-        with:
-          merge-multiple: true
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            vig-*.tar.gz
-            vig-*.tar.gz.sha256
-
   publish:
-    needs: release
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v')
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -116,6 +50,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
@@ -126,8 +62,10 @@ jobs:
         run: cargo publish
 
   homebrew:
-    needs: release
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v')
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
     steps:
       - name: Generate token
         id: app-token
@@ -141,6 +79,8 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v7
         with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           merge-multiple: true
 
       - name: Checkout homebrew-tap
@@ -153,7 +93,8 @@ jobs:
       - name: Update Homebrew formula
         shell: bash
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ github.event.workflow_run.head_branch }}"
+          VERSION="${VERSION#v}"
           SHA_LINUX_X86=$(cut -d ' ' -f 1 vig-x86_64-unknown-linux-gnu.tar.gz.sha256)
           SHA_LINUX_ARM=$(cut -d ' ' -f 1 vig-aarch64-unknown-linux-gnu.tar.gz.sha256)
           SHA_MACOS_ARM=$(cut -d ' ' -f 1 vig-aarch64-apple-darwin.tar.gz.sha256)
@@ -204,5 +145,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/vig.rb
-          git commit -m "vig ${GITHUB_REF_NAME}"
+          git commit -m "vig v${VERSION}"
           git push
