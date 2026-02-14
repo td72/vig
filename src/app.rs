@@ -1196,10 +1196,31 @@ impl App {
                 *self.github.active_detail_scroll_mut() = u16::MAX / 2;
             }
             KeyCode::Char('h') => {
-                self.github.detail_pane = crate::github::state::GhDetailPane::Left;
+                self.github.detail_pane = crate::github::state::GhDetailPane::Body;
             }
             KeyCode::Char('l') => {
-                self.github.detail_pane = crate::github::state::GhDetailPane::Right;
+                // Move to right side: default to Status for PR, Comments for Issue
+                if self.github.detail_pane == crate::github::state::GhDetailPane::Body {
+                    if self.github.is_pr() {
+                        self.github.detail_pane = crate::github::state::GhDetailPane::Status;
+                    } else {
+                        self.github.detail_pane = crate::github::state::GhDetailPane::Comments;
+                    }
+                }
+            }
+            KeyCode::Tab | KeyCode::BackTab => {
+                // Toggle between Status and Comments on the right side (PR only)
+                if self.github.is_pr() {
+                    self.github.detail_pane = match self.github.detail_pane {
+                        crate::github::state::GhDetailPane::Status => {
+                            crate::github::state::GhDetailPane::Comments
+                        }
+                        crate::github::state::GhDetailPane::Comments => {
+                            crate::github::state::GhDetailPane::Status
+                        }
+                        other => other,
+                    };
+                }
             }
             KeyCode::Char('o') => {
                 let result = match &self.github.detail {

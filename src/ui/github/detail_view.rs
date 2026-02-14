@@ -78,47 +78,92 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     let cols = Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(vert[1]);
 
-    app.github.detail_view_height = cols[0].height;
-
     let active_pane = app.github.detail_pane;
 
     // Left pane: Body
-    let left_title = pane_title("Body", active_pane == GhDetailPane::Left, is_focused);
     let body_lines = match &app.github.detail {
         GhDetailContent::Issue(detail) => build_body_lines(&detail.body),
         GhDetailContent::Pr(detail) => build_body_lines(&detail.body),
         _ => unreachable!(),
     };
-    let left_block = Block::default()
-        .title(left_title)
-        .borders(Borders::ALL)
-        .border_style(pane_border_style(active_pane == GhDetailPane::Left, is_focused));
-    let left_para = Paragraph::new(body_lines)
-        .block(left_block)
-        .wrap(Wrap { trim: false })
-        .scroll((app.github.detail_scroll_left, 0));
-    f.render_widget(left_para, cols[0]);
+    render_pane(
+        f,
+        cols[0],
+        "Body",
+        body_lines,
+        active_pane == GhDetailPane::Body,
+        is_focused,
+        app.github.detail_scroll_body,
+    );
 
-    // Right pane: Status + Comments (PR) or Comments only (Issue)
-    let right_title = match &app.github.detail {
-        GhDetailContent::Pr(_) => "Status / Comments",
-        _ => "Comments",
-    };
-    let right_title = pane_title(right_title, active_pane == GhDetailPane::Right, is_focused);
-    let right_lines = match &app.github.detail {
-        GhDetailContent::Issue(detail) => build_comments_lines(&detail.comments),
-        GhDetailContent::Pr(detail) => build_right_pane_lines(detail),
+    // Right side
+    match &app.github.detail {
+        GhDetailContent::Issue(detail) => {
+            // Issue: single Comments pane on the right
+            let comments_lines = build_comments_lines(&detail.comments);
+            app.github.detail_view_height = cols[1].height;
+            render_pane(
+                f,
+                cols[1],
+                "Comments",
+                comments_lines,
+                active_pane == GhDetailPane::Comments,
+                is_focused,
+                app.github.detail_scroll_comments,
+            );
+        }
+        GhDetailContent::Pr(detail) => {
+            // PR: split right into Status (top) and Comments (bottom)
+            let right_rows =
+                Layout::vertical([Constraint::Percentage(50), Constraint::Percentage(50)])
+                    .split(cols[1]);
+
+            app.github.detail_view_height = right_rows[0].height;
+
+            let status_lines = build_status_lines(detail);
+            render_pane(
+                f,
+                right_rows[0],
+                "Status",
+                status_lines,
+                active_pane == GhDetailPane::Status,
+                is_focused,
+                app.github.detail_scroll_status,
+            );
+
+            let comments_lines = build_comments_lines(&detail.comments);
+            render_pane(
+                f,
+                right_rows[1],
+                "Comments",
+                comments_lines,
+                active_pane == GhDetailPane::Comments,
+                is_focused,
+                app.github.detail_scroll_comments,
+            );
+        }
         _ => unreachable!(),
-    };
-    let right_block = Block::default()
-        .title(right_title)
+    }
+}
+
+fn render_pane(
+    f: &mut Frame,
+    area: Rect,
+    title: &str,
+    lines: Vec<Line<'static>>,
+    is_active: bool,
+    is_detail_focused: bool,
+    scroll: u16,
+) {
+    let block = Block::default()
+        .title(pane_title(title, is_active, is_detail_focused))
         .borders(Borders::ALL)
-        .border_style(pane_border_style(active_pane == GhDetailPane::Right, is_focused));
-    let right_para = Paragraph::new(right_lines)
-        .block(right_block)
+        .border_style(pane_border_style(is_active, is_detail_focused));
+    let para = Paragraph::new(lines)
+        .block(block)
         .wrap(Wrap { trim: false })
-        .scroll((app.github.detail_scroll_right, 0));
-    f.render_widget(right_para, cols[1]);
+        .scroll((scroll, 0));
+    f.render_widget(para, area);
 }
 
 fn pane_title(label: &str, is_active: bool, is_detail_focused: bool) -> Line<'static> {
@@ -310,7 +355,7 @@ fn build_body_lines(body: &str) -> Vec<Line<'static>> {
     body.lines().map(|line| Line::from(format!("  {line}"))).collect()
 }
 
-fn build_right_pane_lines(detail: &GhPrDetail) -> Vec<Line<'static>> {
+fn build_status_lines(detail: &GhPrDetail) -> Vec<Line<'static>> {
     let mut lines = Vec::new();
 
     // CI Status
@@ -403,17 +448,9 @@ fn build_right_pane_lines(detail: &GhPrDetail) -> Vec<Line<'static>> {
         }
     }
 
-    // Comments
-    if !detail.comments.is_empty() {
-        if !lines.is_empty() {
-            lines.push(Line::from(""));
-        }
-        append_comments_lines(&mut lines, &detail.comments);
-    }
-
     if lines.is_empty() {
         lines.push(Line::from(Span::styled(
-            "  (no status, reviews, or comments)",
+            "  (no status checks or reviews)",
             Style::default().fg(Color::DarkGray),
         )));
     }
