@@ -232,7 +232,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect, view_mode: ViewMode) {
             ("i / Enter", "Open detail"),
             ("o", "Open in browser"),
             ("Esc", "Back to list"),
-            ("Tab / S-Tab", "Switch pane (detail)"),
+            ("h / l", "Switch pane (detail)"),
             ("Ctrl+d", "Half page down (detail)"),
             ("Ctrl+u", "Half page up (detail)"),
             ("g / G", "Top / Bottom"),

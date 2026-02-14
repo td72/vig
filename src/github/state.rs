@@ -95,13 +95,6 @@ impl GitHubState {
         }
     }
 
-    pub fn toggle_detail_pane(&mut self) {
-        self.detail_pane = match self.detail_pane {
-            GhDetailPane::Left => GhDetailPane::Right,
-            GhDetailPane::Right => GhDetailPane::Left,
-        };
-    }
-
     fn reset_detail_panes(&mut self) {
         self.detail_pane = GhDetailPane::Left;
         self.detail_scroll_left = 0;

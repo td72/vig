@@ -1195,8 +1195,11 @@ impl App {
                 // Scroll to a large value — rendering will cap it
                 *self.github.active_detail_scroll_mut() = u16::MAX / 2;
             }
-            KeyCode::Tab | KeyCode::BackTab => {
-                self.github.toggle_detail_pane();
+            KeyCode::Char('h') => {
+                self.github.detail_pane = crate::github::state::GhDetailPane::Left;
+            }
+            KeyCode::Char('l') => {
+                self.github.detail_pane = crate::github::state::GhDetailPane::Right;
             }
             KeyCode::Char('o') => {
                 let result = match &self.github.detail {
