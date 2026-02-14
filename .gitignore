@@ -1,3 +1,2 @@
 /target
-vig-release.key
-vig-release.pub
+*.key
