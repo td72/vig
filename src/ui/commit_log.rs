@@ -2,13 +2,14 @@ use crate::app::{App, FocusedPane, SearchMatch, SearchOrigin};
 use std::collections::HashSet;
 use ratatui::{
     layout::Rect,
-    style::{Color, Style},
+    style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState},
     Frame,
 };
 
-pub fn render(f: &mut Frame, app: &App, area: Rect) {
+pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
+    app.git_log.view_height = area.height.saturating_sub(2); // minus borders
     let border_color = if app.focused_pane == FocusedPane::GitLog {
         Color::Cyan
     } else {
@@ -21,12 +22,12 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         .border_style(Style::default().fg(border_color));
 
     if app.git_log.commits.is_empty() {
-        let msg = Paragraph::new(Line::from(Span::styled(
+        let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
             "  No commits",
             Style::default().fg(Color::DarkGray),
-        )))
-        .block(block);
-        f.render_widget(msg, area);
+        )))];
+        let list = List::new(items).block(block);
+        f.render_widget(list, area);
         return;
     }
 
@@ -52,7 +53,7 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         (HashSet::new(), None)
     };
 
-    let lines: Vec<Line> = app
+    let items: Vec<ListItem> = app
         .git_log
         .commits
         .iter()
@@ -91,17 +92,29 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
                 s
             };
 
-            Line::from(vec![
+            ListItem::new(Line::from(vec![
                 Span::styled(format!(" {} ", commit.short_hash), hash_style),
                 Span::styled(format!("{} ", commit.date), date_style),
                 Span::styled(format!("{:<12} ", commit.author), author_style),
                 Span::styled(commit.message.clone(), msg_style),
-            ])
+            ]))
         })
         .collect();
 
-    let para = Paragraph::new(lines)
-        .block(block)
-        .scroll((app.git_log.scroll, 0));
-    f.render_widget(para, area);
+    let selected = app.git_log.selected_idx;
+    let selected_is_match = match_set.contains(&selected);
+
+    let highlight_style = if selected_is_match {
+        Style::default().add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+            .bg(Color::DarkGray)
+            .add_modifier(Modifier::BOLD)
+    };
+
+    let list = List::new(items).block(block).highlight_style(highlight_style);
+
+    let mut state = ListState::default();
+    state.select(Some(selected));
+    f.render_stateful_widget(list, area, &mut state);
 }
