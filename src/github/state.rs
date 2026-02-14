@@ -176,6 +176,7 @@ impl GitHubState {
         };
 
         let mut issue_list_arrived = false;
+        let mut pr_list_arrived = false;
         for msg in messages {
             match msg {
                 GhBgMessage::AuthStatus(result) => match result {
@@ -207,7 +208,10 @@ impl GitHubState {
                 GhBgMessage::PrList(result) => {
                     self.prs_loading = false;
                     match result {
-                        Ok(prs) => self.prs = prs,
+                        Ok(prs) => {
+                            self.prs = prs;
+                            pr_list_arrived = true;
+                        }
                         Err(e) => {
                             if self.gh_error.is_none() {
                                 self.gh_error = Some(e);
@@ -232,8 +236,15 @@ impl GitHubState {
             }
         }
 
-        // Auto-load detail for the first issue when the list arrives
-        if issue_list_arrived {
+        // Auto-load detail for the currently focused/selected list
+        let on_pr = self.focused_pane == GhFocusedPane::PrList
+            || (self.focused_pane == GhFocusedPane::Detail
+                && self.previous_pane == GhFocusedPane::PrList);
+        if on_pr {
+            if pr_list_arrived {
+                self.load_selected_pr_detail();
+            }
+        } else if issue_list_arrived {
             self.load_selected_issue_detail();
         }
     }
