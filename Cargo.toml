@@ -15,7 +15,7 @@ exclude = ["assets/", "tape/", ".github/", "docs/"]
 [dependencies]
 anyhow = "1"
 crossterm = "0.28"
-git2 = "0.19"
+git2 = "0.20"
 notify = "7"
 notify-debouncer-mini = "0.5"
 ratatui = "0.30"
