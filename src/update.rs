@@ -1,5 +1,7 @@
 use self_update::cargo_crate_version;
 
+const _: () = assert!(include_bytes!("../zipsign.pub").len() == 32);
+
 pub fn run() -> anyhow::Result<()> {
     let updater = self_update::backends::github::Update::configure()
         .repo_owner("td72")
