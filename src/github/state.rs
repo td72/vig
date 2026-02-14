@@ -315,6 +315,14 @@ impl GitHubState {
             GhDetailContent::Issue(detail) => (GhDetailKind::Issue, detail.number),
             GhDetailContent::Pr(detail) => (GhDetailKind::Pr, detail.number),
             GhDetailContent::Loading { kind, number } => (*kind, *number),
+            GhDetailContent::Error(_) => {
+                match self.previous_pane {
+                    GhFocusedPane::IssueList => self.load_selected_issue_detail(),
+                    GhFocusedPane::PrList => self.load_selected_pr_detail(),
+                    _ => {}
+                }
+                return;
+            }
             _ => return,
         };
         match kind {
