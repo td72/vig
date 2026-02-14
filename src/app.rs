@@ -1045,7 +1045,11 @@ impl App {
                 return Ok(false);
             }
             KeyCode::Char('r') => {
-                self.github.refresh();
+                if self.github.focused_pane == GhFocusedPane::Detail {
+                    self.github.refresh_detail();
+                } else {
+                    self.github.refresh();
+                }
                 return Ok(false);
             }
             _ => {}
