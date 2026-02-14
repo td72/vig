@@ -178,6 +178,14 @@ pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
         ));
     }
 
+    if app.github.watch_mode {
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            "\u{23f1} Watch",
+            Style::default().fg(Color::Yellow),
+        ));
+    }
+
     let line = Line::from(spans);
     f.render_widget(Paragraph::new(line), area);
 }
@@ -240,6 +248,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect, view_mode: ViewMode) {
             ("Ctrl+u", "Half page up (detail)"),
             ("g / G", "Top / Bottom"),
             ("r", "Refresh data"),
+            ("w", "Toggle watch mode (detail)"),
             ("?", "Toggle help"),
             ("q", "Quit"),
         ],

@@ -173,7 +173,10 @@ fn run_tui() -> Result<()> {
                     app.status_message = Some(format!("Refresh error: {e}"));
                 }
             }
-            Event::Tick | Event::Resize(_, _) => {}
+            Event::Tick => {
+                app.github.handle_watch_tick();
+            }
+            Event::Resize(_, _) => {}
         }
     }
 

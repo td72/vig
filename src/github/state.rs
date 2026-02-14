@@ -2,6 +2,7 @@ use crate::github::client;
 use crate::github::types::*;
 use std::collections::HashMap;
 use std::sync::mpsc;
+use std::time::Instant;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GhFocusedPane {
@@ -67,6 +68,8 @@ pub struct GitHubState {
     bg_rx: Option<mpsc::Receiver<GhBgMessage>>,
     bg_tx: Option<mpsc::Sender<GhBgMessage>>,
     pub initialized: bool,
+    pub watch_mode: bool,
+    watch_last_refresh: Option<Instant>,
 }
 
 impl GitHubState {
@@ -97,6 +100,8 @@ impl GitHubState {
             bg_rx: None,
             bg_tx: None,
             initialized: false,
+            watch_mode: false,
+            watch_last_refresh: None,
         }
     }
 
@@ -333,6 +338,35 @@ impl GitHubState {
             GhDetailKind::Pr => {
                 self.pr_cache.remove(&number);
                 self.load_pr_detail(number);
+            }
+        }
+    }
+
+    /// Toggle watch mode (auto-refresh checks every 10s). Only activates on PR detail.
+    pub fn toggle_watch_mode(&mut self) {
+        if !matches!(&self.detail, GhDetailContent::Pr(_)) {
+            return;
+        }
+        self.watch_mode = !self.watch_mode;
+        if self.watch_mode {
+            self.watch_last_refresh = Some(Instant::now());
+        }
+    }
+
+    /// Called on every tick. If watch mode is active and 10s have elapsed, refresh the detail.
+    pub fn handle_watch_tick(&mut self) {
+        if !self.watch_mode {
+            return;
+        }
+        // Auto-disable if no longer on PR detail
+        if !matches!(&self.detail, GhDetailContent::Pr(_)) {
+            self.watch_mode = false;
+            return;
+        }
+        if let Some(last) = self.watch_last_refresh {
+            if last.elapsed() >= std::time::Duration::from_secs(10) {
+                self.watch_last_refresh = Some(Instant::now());
+                self.refresh_detail();
             }
         }
     }
