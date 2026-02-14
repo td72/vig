@@ -16,6 +16,15 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
     steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: td72
+          repositories: vig
+
       - uses: actions/checkout@v6
 
       - name: Extract version from branch name
@@ -28,7 +37,7 @@ jobs:
       - name: Create release
         run: gh release create ${{ steps.version.outputs.tag }} --target main --generate-notes
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
   build:
     if: github.event_name == 'push'
