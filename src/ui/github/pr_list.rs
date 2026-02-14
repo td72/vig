@@ -97,7 +97,10 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         .highlight_style(highlight_style);
 
     let mut state = ListState::default();
-    if is_focused || app.github.focused_pane == GhFocusedPane::Detail {
+    if is_focused
+        || (app.github.focused_pane == GhFocusedPane::Detail
+            && app.github.previous_pane == GhFocusedPane::PrList)
+    {
         state.select(Some(app.github.pr_selected_idx));
     }
     f.render_stateful_widget(list, area, &mut state);

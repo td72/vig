@@ -25,6 +25,14 @@ pub enum GhDetailKind {
     Pr,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GhDetailPane {
+    Body,
+    Status,
+    Reviews,
+    Comments,
+}
+
 pub enum GhBgMessage {
     AuthStatus(Result<(), String>),
     IssueList(Result<Vec<GhIssueListItem>, String>),
@@ -45,7 +53,14 @@ pub struct GitHubState {
     pub focused_pane: GhFocusedPane,
     pub previous_pane: GhFocusedPane,
     pub detail: GhDetailContent,
-    pub detail_scroll: u16,
+    pub detail_pane: GhDetailPane,
+    pub detail_scroll_body: u16,
+    pub detail_scroll_status: u16,
+    pub detail_scroll_reviews: u16,
+    pub detail_scroll_comments: u16,
+    pub detail_check_idx: usize,
+    pub detail_review_idx: usize,
+    pub detail_comment_idx: usize,
     pub detail_view_height: u16,
     issue_cache: HashMap<u64, GhIssueDetail>,
     pr_cache: HashMap<u64, GhPrDetail>,
@@ -68,7 +83,14 @@ impl GitHubState {
             focused_pane: GhFocusedPane::IssueList,
             previous_pane: GhFocusedPane::IssueList,
             detail: GhDetailContent::None,
-            detail_scroll: 0,
+            detail_pane: GhDetailPane::Body,
+            detail_scroll_body: 0,
+            detail_scroll_status: 0,
+            detail_scroll_reviews: 0,
+            detail_scroll_comments: 0,
+            detail_check_idx: 0,
+            detail_review_idx: 0,
+            detail_comment_idx: 0,
             detail_view_height: 0,
             issue_cache: HashMap::new(),
             pr_cache: HashMap::new(),
@@ -76,6 +98,41 @@ impl GitHubState {
             bg_tx: None,
             initialized: false,
         }
+    }
+
+    pub fn active_selected_idx_mut(&mut self) -> &mut usize {
+        match self.detail_pane {
+            GhDetailPane::Status => &mut self.detail_check_idx,
+            GhDetailPane::Reviews => &mut self.detail_review_idx,
+            GhDetailPane::Comments => &mut self.detail_comment_idx,
+            GhDetailPane::Body => {
+                panic!("active_selected_idx_mut called with Body pane which has no selection")
+            }
+        }
+    }
+
+    pub fn active_detail_scroll_mut(&mut self) -> &mut u16 {
+        match self.detail_pane {
+            GhDetailPane::Body => &mut self.detail_scroll_body,
+            GhDetailPane::Status => &mut self.detail_scroll_status,
+            GhDetailPane::Reviews => &mut self.detail_scroll_reviews,
+            GhDetailPane::Comments => &mut self.detail_scroll_comments,
+        }
+    }
+
+    pub fn is_pr(&self) -> bool {
+        matches!(&self.detail, GhDetailContent::Pr(_))
+    }
+
+    fn reset_detail_panes(&mut self) {
+        self.detail_pane = GhDetailPane::Body;
+        self.detail_scroll_body = 0;
+        self.detail_scroll_status = 0;
+        self.detail_scroll_reviews = 0;
+        self.detail_scroll_comments = 0;
+        self.detail_check_idx = 0;
+        self.detail_review_idx = 0;
+        self.detail_comment_idx = 0;
     }
 
     /// Initialize on first switch to GitHub View.
@@ -121,6 +178,7 @@ impl GitHubState {
         };
 
         let mut issue_list_arrived = false;
+        let mut pr_list_arrived = false;
         for msg in messages {
             match msg {
                 GhBgMessage::AuthStatus(result) => match result {
@@ -152,7 +210,10 @@ impl GitHubState {
                 GhBgMessage::PrList(result) => {
                     self.prs_loading = false;
                     match result {
-                        Ok(prs) => self.prs = prs,
+                        Ok(prs) => {
+                            self.prs = prs;
+                            pr_list_arrived = true;
+                        }
                         Err(e) => {
                             if self.gh_error.is_none() {
                                 self.gh_error = Some(e);
@@ -177,8 +238,15 @@ impl GitHubState {
             }
         }
 
-        // Auto-load detail for the first issue when the list arrives
-        if issue_list_arrived {
+        // Auto-load detail for the currently focused/selected list
+        let on_pr = self.focused_pane == GhFocusedPane::PrList
+            || (self.focused_pane == GhFocusedPane::Detail
+                && self.previous_pane == GhFocusedPane::PrList);
+        if on_pr {
+            if pr_list_arrived {
+                self.load_selected_pr_detail();
+            }
+        } else if issue_list_arrived {
             self.load_selected_issue_detail();
         }
     }
@@ -187,14 +255,14 @@ impl GitHubState {
     pub fn load_issue_detail(&mut self, number: u64) {
         if let Some(cached) = self.issue_cache.get(&number) {
             self.detail = GhDetailContent::Issue(Box::new(cached.clone()));
-            self.detail_scroll = 0;
+            self.reset_detail_panes();
             return;
         }
         self.detail = GhDetailContent::Loading {
             kind: GhDetailKind::Issue,
             number,
         };
-        self.detail_scroll = 0;
+        self.reset_detail_panes();
         if let Some(tx) = &self.bg_tx {
             let tx = tx.clone();
             std::thread::spawn(move || {
@@ -208,14 +276,14 @@ impl GitHubState {
     pub fn load_pr_detail(&mut self, number: u64) {
         if let Some(cached) = self.pr_cache.get(&number) {
             self.detail = GhDetailContent::Pr(Box::new(cached.clone()));
-            self.detail_scroll = 0;
+            self.reset_detail_panes();
             return;
         }
         self.detail = GhDetailContent::Loading {
             kind: GhDetailKind::Pr,
             number,
         };
-        self.detail_scroll = 0;
+        self.reset_detail_panes();
         if let Some(tx) = &self.bg_tx {
             let tx = tx.clone();
             std::thread::spawn(move || {

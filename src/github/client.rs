@@ -92,6 +92,37 @@ pub fn open_pr_in_browser(number: u64) -> Result<(), String> {
     Ok(())
 }
 
+/// Get the "owner/repo" string for the current repository using `gh`.
+pub fn repo_nwo() -> Option<String> {
+    let output = Command::new("gh")
+        .args(["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"])
+        .output()
+        .ok()?;
+    if output.status.success() {
+        Some(String::from_utf8_lossy(&output.stdout).trim().to_string())
+    } else {
+        None
+    }
+}
+
+pub fn open_url(url: &str) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    let cmd = "open";
+    #[cfg(target_os = "linux")]
+    let cmd = "xdg-open";
+    #[cfg(target_os = "windows")]
+    let cmd = "start";
+
+    Command::new(cmd)
+        .arg(url)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .map_err(|e| format!("Failed to open URL: {e}"))?;
+    Ok(())
+}
+
 pub fn get_pr(number: u64) -> Result<GhPrDetail, String> {
     let output = Command::new("gh")
         .args([
