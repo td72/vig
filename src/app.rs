@@ -1171,25 +1171,32 @@ impl App {
     fn handle_gh_detail_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                self.github.detail_scroll = self.github.detail_scroll.saturating_add(1);
+                let scroll = self.github.active_detail_scroll_mut();
+                *scroll = scroll.saturating_add(1);
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                self.github.detail_scroll = self.github.detail_scroll.saturating_sub(1);
+                let scroll = self.github.active_detail_scroll_mut();
+                *scroll = scroll.saturating_sub(1);
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.github.detail_view_height / 2).max(1);
-                self.github.detail_scroll = self.github.detail_scroll.saturating_add(half);
+                let scroll = self.github.active_detail_scroll_mut();
+                *scroll = scroll.saturating_add(half);
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.github.detail_view_height / 2).max(1);
-                self.github.detail_scroll = self.github.detail_scroll.saturating_sub(half);
+                let scroll = self.github.active_detail_scroll_mut();
+                *scroll = scroll.saturating_sub(half);
             }
             KeyCode::Char('g') => {
-                self.github.detail_scroll = 0;
+                *self.github.active_detail_scroll_mut() = 0;
             }
             KeyCode::Char('G') => {
                 // Scroll to a large value — rendering will cap it
-                self.github.detail_scroll = u16::MAX / 2;
+                *self.github.active_detail_scroll_mut() = u16::MAX / 2;
+            }
+            KeyCode::Tab | KeyCode::BackTab => {
+                self.github.toggle_detail_pane();
             }
             KeyCode::Char('o') => {
                 let result = match &self.github.detail {
