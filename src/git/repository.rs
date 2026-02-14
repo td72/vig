@@ -10,6 +10,7 @@ pub struct BranchInfo {
 
 pub struct CommitInfo {
     pub short_hash: String,
+    pub full_hash: String,
     pub author: String,
     pub date: String,
     pub message: String,
@@ -124,6 +125,7 @@ impl Repo {
             let message = commit.summary().unwrap_or("").to_string();
             commits.push(CommitInfo {
                 short_hash,
+                full_hash: hash_str,
                 author,
                 date,
                 message,
