@@ -4,6 +4,8 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+  release:
+    types: [created]
   workflow_run:
     workflows: [Build]
     types: [completed]
@@ -42,7 +44,7 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
 
   publish:
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v')
+    if: github.event_name == 'release'
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -51,7 +53,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.release.tag_name }}
 
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
