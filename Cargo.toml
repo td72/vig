@@ -31,4 +31,4 @@ vendored = ["git2/vendored-libgit2", "git2/vendored-openssl"]
 
 [profile.release]
 strip = true
-lto = true
+lto = "thin"

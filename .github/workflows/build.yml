@@ -1,0 +1,86 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+          - target: x86_64-apple-darwin
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Build
+        run: cargo build --locked --release --features vendored
+
+      - name: Generate third-party licenses
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cargo install cargo-bundle-licenses --locked
+          cargo bundle-licenses --format yaml --output THIRDPARTY.yml
+
+      - name: Install zipsign
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: cargo install zipsign --locked
+
+      - name: Package
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          cp target/release/vig .
+          tar czf vig-${{ matrix.target }}.tar.gz vig LICENSE THIRDPARTY.yml
+
+      - name: Sign archive
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          ZIPSIGN_PRIVATE_KEY: ${{ secrets.ZIPSIGN_PRIVATE_KEY }}
+        run: |
+          echo "$ZIPSIGN_PRIVATE_KEY" | base64 -d > /tmp/zipsign.key
+          zipsign sign tar vig-${{ matrix.target }}.tar.gz /tmp/zipsign.key
+          rm /tmp/zipsign.key
+          shasum -a 256 vig-${{ matrix.target }}.tar.gz > vig-${{ matrix.target }}.tar.gz.sha256
+
+      - name: Upload artifact
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v6
+        with:
+          name: vig-${{ matrix.target }}
+          path: |
+            vig-${{ matrix.target }}.tar.gz
+            vig-${{ matrix.target }}.tar.gz.sha256
+
+  upload:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v7
+        with:
+          merge-multiple: true
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            vig-*.tar.gz
+            vig-*.tar.gz.sha256
