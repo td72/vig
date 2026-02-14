@@ -29,6 +29,7 @@ pub enum GhDetailKind {
 pub enum GhDetailPane {
     Body,
     Status,
+    Reviews,
     Comments,
 }
 
@@ -55,7 +56,11 @@ pub struct GitHubState {
     pub detail_pane: GhDetailPane,
     pub detail_scroll_body: u16,
     pub detail_scroll_status: u16,
+    pub detail_scroll_reviews: u16,
     pub detail_scroll_comments: u16,
+    pub detail_check_idx: usize,
+    pub detail_review_idx: usize,
+    pub detail_comment_idx: usize,
     pub detail_view_height: u16,
     issue_cache: HashMap<u64, GhIssueDetail>,
     pr_cache: HashMap<u64, GhPrDetail>,
@@ -81,7 +86,11 @@ impl GitHubState {
             detail_pane: GhDetailPane::Body,
             detail_scroll_body: 0,
             detail_scroll_status: 0,
+            detail_scroll_reviews: 0,
             detail_scroll_comments: 0,
+            detail_check_idx: 0,
+            detail_review_idx: 0,
+            detail_comment_idx: 0,
             detail_view_height: 0,
             issue_cache: HashMap::new(),
             pr_cache: HashMap::new(),
@@ -91,10 +100,20 @@ impl GitHubState {
         }
     }
 
+    pub fn active_selected_idx_mut(&mut self) -> &mut usize {
+        match self.detail_pane {
+            GhDetailPane::Status => &mut self.detail_check_idx,
+            GhDetailPane::Reviews => &mut self.detail_review_idx,
+            GhDetailPane::Comments => &mut self.detail_comment_idx,
+            GhDetailPane::Body => unreachable!(),
+        }
+    }
+
     pub fn active_detail_scroll_mut(&mut self) -> &mut u16 {
         match self.detail_pane {
             GhDetailPane::Body => &mut self.detail_scroll_body,
             GhDetailPane::Status => &mut self.detail_scroll_status,
+            GhDetailPane::Reviews => &mut self.detail_scroll_reviews,
             GhDetailPane::Comments => &mut self.detail_scroll_comments,
         }
     }
@@ -107,7 +126,11 @@ impl GitHubState {
         self.detail_pane = GhDetailPane::Body;
         self.detail_scroll_body = 0;
         self.detail_scroll_status = 0;
+        self.detail_scroll_reviews = 0;
         self.detail_scroll_comments = 0;
+        self.detail_check_idx = 0;
+        self.detail_review_idx = 0;
+        self.detail_comment_idx = 0;
     }
 
     /// Initialize on first switch to GitHub View.

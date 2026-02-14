@@ -17,6 +17,7 @@ pub struct GhComment {
     pub body: String,
     #[serde(rename = "createdAt")]
     pub created_at: String,
+    pub url: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -24,8 +25,7 @@ pub struct GhReview {
     pub author: Option<GhAuthor>,
     pub body: String,
     pub state: String,
-    #[serde(rename = "submittedAt")]
-    pub submitted_at: Option<String>,
+    pub id: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -35,6 +35,12 @@ pub struct GhStatusCheck {
     pub conclusion: Option<String>,
     #[serde(rename = "workflowName")]
     pub workflow_name: Option<String>,
+    #[serde(rename = "startedAt")]
+    pub started_at: Option<String>,
+    #[serde(rename = "completedAt")]
+    pub completed_at: Option<String>,
+    #[serde(rename = "detailsUrl")]
+    pub details_url: Option<String>,
 }
 
 // Issue list item — some fields populated by serde only
