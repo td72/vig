@@ -24,7 +24,7 @@ fn parse_github_nwo(url: &str) -> Option<String> {
     let path = if let Some(rest) = url.strip_prefix("git@github.com:") {
         rest
     } else {
-        url.split("github.com/").nth(1)?
+        url.split("://github.com/").nth(1)?
     };
     let path = path.strip_suffix(".git").unwrap_or(path);
     // Validate it looks like "owner/repo"
@@ -150,6 +150,7 @@ mod tests {
     #[test]
     fn test_parse_github_nwo_invalid_url() {
         assert_eq!(parse_github_nwo("https://gitlab.com/foo/bar"), None);
+        assert_eq!(parse_github_nwo("https://notgithub.com/foo/bar"), None);
         assert_eq!(parse_github_nwo("not-a-url"), None);
     }
 
@@ -161,10 +162,14 @@ mod tests {
 
     #[test]
     fn test_repo_nwo_resolves() {
-        // Running within the vig repo, so this should succeed
         let nwo = repo_nwo();
         assert!(nwo.is_some(), "repo_nwo() returned None");
-        assert_eq!(nwo.unwrap(), "td72/vig");
+        let nwo = nwo.unwrap();
+        // Verify "owner/repo" format without hardcoding specific values
+        let parts: Vec<&str> = nwo.split('/').collect();
+        assert_eq!(parts.len(), 2, "expected owner/repo format, got: {nwo}");
+        assert!(!parts[0].is_empty(), "owner is empty");
+        assert!(!parts[1].is_empty(), "repo is empty");
     }
 
     #[test]
@@ -172,8 +177,10 @@ mod tests {
         let dir = cache_dir();
         assert!(dir.is_some(), "cache_dir() returned None");
         let dir = dir.unwrap();
+        // Verify path contains versioned cache structure
+        let dir_str = dir.to_string_lossy();
         assert!(
-            dir.ends_with("vig/v1/td72/vig"),
+            dir_str.contains(&format!("vig/{CACHE_VERSION}/")),
             "unexpected cache dir: {}",
             dir.display()
         );
