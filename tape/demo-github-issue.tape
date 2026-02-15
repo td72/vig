@@ -1,4 +1,4 @@
-Output assets/demo-github.gif
+Output assets/demo-github-issue.gif
 
 Require vig
 Require gh
@@ -34,7 +34,7 @@ Sleep 300ms
 
 Show
 
-# --- Demo: GitHub View ---
+# --- Demo: GitHub View — Issues ---
 
 Type "vig"
 Enter
@@ -50,11 +50,11 @@ Sleep 800ms
 Type "j"
 Sleep 800ms
 
-# Open issue detail
+# Open issue detail (markdown rendered body)
 Enter
 Sleep 3s
 
-# Scroll detail with j
+# Scroll detail body with j
 Type "j"
 Sleep 500ms
 Type "j"
@@ -62,29 +62,23 @@ Sleep 500ms
 Type "j"
 Sleep 500ms
 
-# Back to list
-Escape
-Sleep 1.5s
-
-# Move to PR list with l
+# Switch to Comments pane with l
 Type "l"
-Sleep 1.5s
+Sleep 2s
 
-# Navigate PR list
+# Scroll comments
+Type "j"
+Sleep 800ms
 Type "j"
 Sleep 800ms
 
-# Open PR detail
-Enter
-Sleep 3s
-
-# Scroll through PR detail
-Ctrl+d
+# Back to body with h
+Type "h"
 Sleep 1.5s
 
 # Back to list
 Escape
-Sleep 1s
+Sleep 1.5s
 
 # Switch back to Git View with '1'
 Type "1"

@@ -32,11 +32,16 @@ run = "PATH=$PWD/target/release:$PATH vhs tape/demo-reflog.tape"
 depends = ["demo:build"]
 description = "Record reflog demo GIF"
 
-[tasks."demo:github"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-github.tape"
+[tasks."demo:github-issue"]
+run = "PATH=$PWD/target/release:$PATH vhs tape/demo-github-issue.tape"
 depends = ["demo:build"]
-description = "Record GitHub View demo GIF"
+description = "Record GitHub Issue demo GIF"
+
+[tasks."demo:github-pr"]
+run = "PATH=$PWD/target/release:$PATH vhs tape/demo-github-pr.tape"
+depends = ["demo:build"]
+description = "Record GitHub PR demo GIF"
 
 [tasks."demo:all"]
-depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github"]
+depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr"]
 description = "Record all demo GIFs"
