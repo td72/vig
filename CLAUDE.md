@@ -38,6 +38,8 @@ When adding or modifying a user-visible feature:
 3. Run `mise run demo:all` to re-record the GIFs
 4. Commit both the `.tape` and `.gif` together — the `check-gif-freshness` pre-commit hook enforces this
 
+**Important:** Feature PRs must include tape updates. If the feature changes UI or keybindings, update the relevant tape's key sequences. Even if no key sequences change, re-record the GIFs so they reflect the current UI. Do not defer tape updates to a separate PR.
+
 Tape files serve as both **visual documentation** (the generated GIFs are embedded in PRs/README) and **integration tests** (VHS replays the exact key sequences against a real vig instance, so a broken feature will produce a visibly wrong GIF or crash during recording).
 
 ### Issue / Pull Request
@@ -48,13 +50,11 @@ Always assign appropriate labels when creating issues (e.g., `enhancement`, `bug
 
 ### Copilot Review
 
-After creating a PR or pushing changes (except when pushing fixes for Copilot review comments), request a Copilot review:
+After creating a PR or pushing changes (except when pushing fixes for Copilot review comments), request a Copilot review.
 
-```bash
-gh pr edit <number> --add-reviewer "copilot"
-```
+**Note:** Copilot cannot be added as a reviewer via CLI/API. The user must add it manually from the GitHub Web UI (PR → Reviewers → Copilot), or configure automatic Copilot review in the repository's Rulesets settings.
 
-After requesting a review, use `/review-copilot-comments` to check and address the review comments.
+After the review completes, use `/review-copilot-comments` to check and address the review comments.
 
 ### Commit Messages
 

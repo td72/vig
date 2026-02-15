@@ -50,17 +50,25 @@ Sleep 800ms
 Type "j"
 Sleep 800ms
 
-# Open issue detail
+# Open issue detail (markdown rendered body)
 Enter
 Sleep 3s
 
-# Scroll detail with j
+# Scroll detail body with j
 Type "j"
 Sleep 500ms
 Type "j"
 Sleep 500ms
 Type "j"
 Sleep 500ms
+
+# Switch to Comments pane with l
+Type "l"
+Sleep 2s
+
+# Scroll comments
+Type "j"
+Sleep 800ms
 
 # Back to list
 Escape
@@ -78,7 +86,23 @@ Sleep 800ms
 Enter
 Sleep 3s
 
-# Scroll through PR detail
+# Show Status (Checks) pane — default right pane for PR
+Type "l"
+Sleep 2s
+
+# Cycle to Reviews pane with Tab
+Tab
+Sleep 2s
+
+# Cycle to Comments pane with Tab
+Tab
+Sleep 2s
+
+# Back to body pane with h
+Type "h"
+Sleep 1.5s
+
+# Scroll through body
 Ctrl+d
 Sleep 1.5s
 
