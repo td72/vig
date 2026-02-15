@@ -1,17 +1,17 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhAuthor {
     pub login: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhLabel {
     pub name: String,
     pub color: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhComment {
     pub author: Option<GhAuthor>,
     pub body: String,
@@ -20,7 +20,7 @@ pub struct GhComment {
     pub url: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhReview {
     pub author: Option<GhAuthor>,
     pub body: String,
@@ -28,7 +28,7 @@ pub struct GhReview {
     pub id: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhStatusCheck {
     pub name: String,
     pub status: String,
@@ -45,7 +45,7 @@ pub struct GhStatusCheck {
 
 // Issue list item — some fields populated by serde only
 #[allow(dead_code)]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhIssueListItem {
     pub number: u64,
     pub title: String,
@@ -57,7 +57,7 @@ pub struct GhIssueListItem {
 }
 
 // Issue detail
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhIssueDetail {
     pub number: u64,
     pub title: String,
@@ -72,7 +72,7 @@ pub struct GhIssueDetail {
 
 // PR list item — some fields populated by serde only
 #[allow(dead_code)]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhPrListItem {
     pub number: u64,
     pub title: String,
@@ -90,7 +90,7 @@ pub struct GhPrListItem {
 }
 
 // PR detail
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GhPrDetail {
     pub number: u64,
     pub title: String,
