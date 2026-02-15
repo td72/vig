@@ -1092,6 +1092,10 @@ impl App {
                 }
                 return Ok(false);
             }
+            KeyCode::Char('w') => {
+                self.github.toggle_watch_mode();
+                return Ok(false);
+            }
             _ => {}
         }
         match self.github.focused_pane {
@@ -1349,6 +1353,7 @@ impl App {
             }
             KeyCode::Esc => {
                 self.github.focused_pane = self.github.previous_pane;
+                self.github.watch_mode = false;
             }
             _ => {}
         }
