@@ -4,6 +4,9 @@ use std::path::Path;
 use std::sync::mpsc::Sender;
 use std::time::Duration;
 
+/// Debounce interval for filesystem change notifications.
+const FS_DEBOUNCE: Duration = Duration::from_millis(500);
+
 pub struct FsWatcher {
     _debouncer: notify_debouncer_mini::Debouncer<notify::RecommendedWatcher>,
 }
@@ -11,7 +14,7 @@ pub struct FsWatcher {
 impl FsWatcher {
     pub fn new(watch_path: &Path, tx: Sender<Event>) -> Result<Self> {
         let debouncer = notify_debouncer_mini::new_debouncer(
-            Duration::from_millis(500),
+            FS_DEBOUNCE,
             move |events: Result<Vec<notify_debouncer_mini::DebouncedEvent>, notify::Error>| {
                 if let Ok(events) = events {
                     let dominated_by_git_internal = events.iter().all(|e| {

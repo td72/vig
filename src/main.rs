@@ -13,6 +13,9 @@ use clap::{Parser, Subcommand};
 use std::process::Command;
 use std::time::Duration;
 
+/// Interval between tick events driving periodic UI updates (e.g. watch mode).
+const TICK_INTERVAL: Duration = Duration::from_millis(250);
+
 #[derive(Parser)]
 #[command(version)]
 struct Cli {
@@ -62,7 +65,7 @@ fn run_tui() -> Result<()> {
     };
     let mut app = App::new(ctx, pages);
 
-    let events = EventHandler::new(Duration::from_millis(250));
+    let events = EventHandler::new(TICK_INTERVAL);
 
     // Start file watcher
     let _watcher = FsWatcher::new(&workdir, events.tx())?;
