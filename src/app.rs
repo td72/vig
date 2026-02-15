@@ -1,5 +1,6 @@
 use crate::git::diff::{DiffState, FileDiff};
-use crate::git::repository::{BranchInfo, CommitInfo, ReflogEntry, Repo};
+use crate::git::graph::{self, GraphRow};
+use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
 use crate::github::state::{GhFocusedPane, GitHubState};
 use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
@@ -33,6 +34,10 @@ pub struct GitLogState {
     pub selected_idx: usize,
     pub view_height: u16,
     pub ref_name: String,
+    pub graph: Vec<GraphRow>,
+    pub detail_scroll: u16,
+    pub detail_view_height: u16,
+    pub detail_changed_files: Vec<CommitFileChange>,
 }
 
 pub struct ReflogState {
@@ -328,6 +333,10 @@ impl App {
                 selected_idx: 0,
                 view_height: 0,
                 ref_name: String::new(),
+                graph: Vec::new(),
+                detail_scroll: 0,
+                detail_view_height: 0,
+                detail_changed_files: Vec::new(),
             },
             reflog: ReflogState {
                 entries: Vec::new(),
@@ -509,10 +518,26 @@ impl App {
         {
             self.git_log.ref_name = branch.name.clone();
             self.git_log.commits = self.repo.log_for_ref(&branch.name, 100);
+            self.git_log.graph = graph::build_graph(&self.git_log.commits);
             self.git_log.selected_idx = 0;
+            self.git_log.detail_scroll = 0;
+            self.git_log.detail_changed_files.clear();
+            self.load_commit_detail();
         } else {
             self.git_log.commits.clear();
+            self.git_log.graph.clear();
             self.git_log.ref_name.clear();
+            self.git_log.detail_changed_files.clear();
+        }
+    }
+
+    pub fn load_commit_detail(&mut self) {
+        if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
+            self.git_log.detail_changed_files =
+                self.repo.commit_changed_files(&commit.full_hash);
+            self.git_log.detail_scroll = 0;
+        } else {
+            self.git_log.detail_changed_files.clear();
         }
     }
 
@@ -608,11 +633,13 @@ impl App {
                     && self.git_log.selected_idx + 1 < self.git_log.commits.len()
                 {
                     self.git_log.selected_idx += 1;
+                    self.load_commit_detail();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.git_log.selected_idx > 0 {
                     self.git_log.selected_idx -= 1;
+                    self.load_commit_detail();
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
@@ -620,17 +647,21 @@ impl App {
                 let new_idx = self.git_log.selected_idx.saturating_add(half);
                 self.git_log.selected_idx =
                     new_idx.min(self.git_log.commits.len().saturating_sub(1));
+                self.load_commit_detail();
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.git_log.view_height / 2).max(1) as usize;
                 self.git_log.selected_idx = self.git_log.selected_idx.saturating_sub(half);
+                self.load_commit_detail();
             }
             KeyCode::Char('g') => {
                 self.git_log.selected_idx = 0;
+                self.load_commit_detail();
             }
             KeyCode::Char('G') => {
                 if !self.git_log.commits.is_empty() {
                     self.git_log.selected_idx = self.git_log.commits.len() - 1;
+                    self.load_commit_detail();
                 }
             }
             KeyCode::Char('y') => {
@@ -672,6 +703,8 @@ impl App {
             _ => {}
         }
     }
+
+
 
     fn handle_reflog_key(&mut self, key: KeyEvent) {
         match key.code {

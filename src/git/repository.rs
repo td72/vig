@@ -14,6 +14,13 @@ pub struct CommitInfo {
     pub author: String,
     pub date: String,
     pub message: String,
+    pub full_message: String,
+    pub parent_ids: Vec<String>,
+}
+
+pub struct CommitFileChange {
+    pub path: String,
+    pub status: char,
 }
 
 pub struct ReflogEntry {
@@ -123,12 +130,19 @@ impl Repo {
                 .to_string();
             let date = epoch_to_date(commit.time().seconds());
             let message = commit.summary().unwrap_or("").to_string();
+            let full_message = commit.message().unwrap_or("").to_string();
+            let parent_ids = commit
+                .parent_ids()
+                .map(|oid| oid.to_string())
+                .collect();
             commits.push(CommitInfo {
                 short_hash,
                 full_hash: hash_str,
                 author,
                 date,
                 message,
+                full_message,
+                parent_ids,
             });
         }
         commits
@@ -195,6 +209,49 @@ impl Repo {
                 }
             })
             .collect()
+    }
+
+    pub fn commit_changed_files(&self, commit_hash: &str) -> Vec<CommitFileChange> {
+        let oid = match git2::Oid::from_str(commit_hash) {
+            Ok(o) => o,
+            Err(_) => return Vec::new(),
+        };
+        let commit = match self.inner.find_commit(oid) {
+            Ok(c) => c,
+            Err(_) => return Vec::new(),
+        };
+        let commit_tree = match commit.tree() {
+            Ok(t) => t,
+            Err(_) => return Vec::new(),
+        };
+        let parent_tree = commit.parent(0).ok().and_then(|p| p.tree().ok());
+        let diff = match self.inner.diff_tree_to_tree(
+            parent_tree.as_ref(),
+            Some(&commit_tree),
+            None,
+        ) {
+            Ok(d) => d,
+            Err(_) => return Vec::new(),
+        };
+        let mut changes = Vec::new();
+        for delta in diff.deltas() {
+            let status = match delta.status() {
+                git2::Delta::Added => 'A',
+                git2::Delta::Deleted => 'D',
+                git2::Delta::Modified => 'M',
+                git2::Delta::Renamed => 'R',
+                git2::Delta::Copied => 'C',
+                _ => 'M',
+            };
+            let path = delta
+                .new_file()
+                .path()
+                .or_else(|| delta.old_file().path())
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_default();
+            changes.push(CommitFileChange { path, status });
+        }
+        changes
     }
 
     #[allow(dead_code)]
