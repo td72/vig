@@ -17,7 +17,7 @@ pub fn render(f: &mut Frame, app: &App, area: Rect) {
         .borders(Borders::ALL)
         .border_style(Style::default().fg(border_color));
 
-    if app.github.issues_loading {
+    if app.github.issues_loading && app.github.issues.is_empty() {
         let items = vec![ListItem::new(Line::from(Span::styled(
             "  Loading...",
             Style::default().fg(Color::DarkGray),

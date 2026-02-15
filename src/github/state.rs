@@ -1,4 +1,5 @@
 use crate::github::client;
+use crate::github::disk_cache;
 use crate::github::types::*;
 use std::collections::HashMap;
 use std::sync::mpsc;
@@ -153,9 +154,23 @@ impl GitHubState {
             return;
         }
         self.initialized = true;
+
         let (tx, rx) = mpsc::channel();
         self.bg_tx = Some(tx.clone());
         self.bg_rx = Some(rx);
+
+        // Load cached lists from disk (instant display, will be refreshed in background)
+        if let Some(issues) = disk_cache::load_issue_list() {
+            self.issues = issues;
+        }
+        if let Some(prs) = disk_cache::load_pr_list() {
+            self.prs = prs;
+        }
+
+        // Auto-load detail for the first item from disk cache
+        if !self.issues.is_empty() {
+            self.load_selected_issue_detail();
+        }
 
         self.issues_loading = true;
         self.prs_loading = true;
@@ -208,6 +223,7 @@ impl GitHubState {
                     self.issues_loading = false;
                     match result {
                         Ok(issues) => {
+                            disk_cache::save_issue_list(&issues);
                             self.issues = issues;
                             issue_list_arrived = true;
                         }
@@ -222,6 +238,7 @@ impl GitHubState {
                     self.prs_loading = false;
                     match result {
                         Ok(prs) => {
+                            disk_cache::save_pr_list(&prs);
                             self.prs = prs;
                             pr_list_arrived = true;
                         }
@@ -234,6 +251,7 @@ impl GitHubState {
                 }
                 GhBgMessage::IssueDetail(result) => match result {
                     Ok(detail) => {
+                        disk_cache::save_issue_detail(&detail);
                         self.issue_cache.insert(detail.number, detail.clone());
                         self.detail = GhDetailContent::Issue(Box::new(detail));
                     }
@@ -244,6 +262,7 @@ impl GitHubState {
                     match result {
                         Ok(detail) => {
                             self.watch_error = None;
+                            disk_cache::save_pr_detail(&detail);
                             self.pr_cache.insert(detail.number, detail.clone());
                             self.detail = GhDetailContent::Pr(Box::new(detail));
                         }
@@ -280,6 +299,13 @@ impl GitHubState {
             self.reset_detail_panes();
             return;
         }
+        // Disk cache fallback
+        if let Some(cached) = disk_cache::load_issue_detail(number) {
+            self.issue_cache.insert(number, cached.clone());
+            self.detail = GhDetailContent::Issue(Box::new(cached));
+            self.reset_detail_panes();
+            return;
+        }
         self.detail = GhDetailContent::Loading {
             kind: GhDetailKind::Issue,
             number,
@@ -298,6 +324,13 @@ impl GitHubState {
     pub fn load_pr_detail(&mut self, number: u64) {
         if let Some(cached) = self.pr_cache.get(&number) {
             self.detail = GhDetailContent::Pr(Box::new(cached.clone()));
+            self.reset_detail_panes();
+            return;
+        }
+        // Disk cache fallback
+        if let Some(cached) = disk_cache::load_pr_detail(number) {
+            self.pr_cache.insert(number, cached.clone());
+            self.detail = GhDetailContent::Pr(Box::new(cached));
             self.reset_detail_panes();
             return;
         }

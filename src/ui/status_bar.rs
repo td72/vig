@@ -156,8 +156,12 @@ pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
     let issue_count = app.github.issues.len();
     let pr_count = app.github.prs.len();
 
+    let loading = app.github.issues_loading || app.github.prs_loading;
+    let has_data = issue_count > 0 || pr_count > 0;
+
     let mut spans = Vec::new();
-    if app.github.issues_loading || app.github.prs_loading {
+    if loading && !has_data {
+        // Initial load (no cache) — show Loading...
         spans.push(Span::styled(
             " Loading...",
             Style::default().fg(Color::DarkGray),
@@ -176,6 +180,14 @@ pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
             format!("{} PR{}", pr_count, if pr_count == 1 { "" } else { "s" }),
             Style::default().fg(Color::White),
         ));
+        if loading {
+            // Background refresh with cached data visible
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(
+                "↻ Updating...",
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
     }
 
     if let Some(time) = app.github.watch_last_update_time() {
