@@ -180,10 +180,17 @@ pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
 
     if let Some(time) = app.github.watch_last_update_time() {
         spans.push(Span::raw("  "));
-        spans.push(Span::styled(
-            format!("\u{23f1} Watch (last: {time})"),
-            Style::default().fg(Color::Yellow),
-        ));
+        if let Some(ref err) = app.github.watch_error {
+            spans.push(Span::styled(
+                format!("\u{23f1} Watch (err: {err})"),
+                Style::default().fg(Color::Red),
+            ));
+        } else {
+            spans.push(Span::styled(
+                format!("\u{23f1} Watch (last: {time})"),
+                Style::default().fg(Color::Yellow),
+            ));
+        }
     }
 
     let line = Line::from(spans);
@@ -248,7 +255,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect, view_mode: ViewMode) {
             ("Ctrl+u", "Half page up (detail)"),
             ("g / G", "Top / Bottom"),
             ("r", "Refresh data"),
-            ("w", "Toggle watch mode (detail)"),
+            ("w", "Toggle watch mode (PR)"),
             ("?", "Toggle help"),
             ("q", "Quit"),
         ],

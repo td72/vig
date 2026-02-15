@@ -174,7 +174,9 @@ fn run_tui() -> Result<()> {
                 }
             }
             Event::Tick => {
-                app.github.handle_watch_tick();
+                if app.view_mode == ViewMode::GitHub {
+                    app.github.handle_watch_tick();
+                }
             }
             Event::Resize(_, _) => {}
         }

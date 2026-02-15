@@ -71,6 +71,8 @@ pub struct GitHubState {
     pub watch_mode: bool,
     watch_last_refresh: Option<Instant>,
     watch_last_update: Option<SystemTime>,
+    watch_in_flight_since: Option<Instant>,
+    pub watch_error: Option<String>,
 }
 
 impl GitHubState {
@@ -104,6 +106,8 @@ impl GitHubState {
             watch_mode: false,
             watch_last_refresh: None,
             watch_last_update: None,
+            watch_in_flight_since: None,
+            watch_error: None,
         }
     }
 
@@ -235,12 +239,23 @@ impl GitHubState {
                     }
                     Err(e) => self.detail = GhDetailContent::Error(e),
                 },
-                GhBgMessage::PrDetail(result) => match result {
-                    Ok(detail) => {
-                        self.pr_cache.insert(detail.number, detail.clone());
-                        self.detail = GhDetailContent::Pr(Box::new(detail));
+                GhBgMessage::PrDetail(result) => {
+                    self.watch_in_flight_since = None;
+                    match result {
+                        Ok(detail) => {
+                            self.watch_error = None;
+                            self.pr_cache.insert(detail.number, detail.clone());
+                            self.detail = GhDetailContent::Pr(Box::new(detail));
+                        }
+                        Err(e) => {
+                            if self.watch_mode {
+                                // Keep current detail visible, show error in status bar
+                                self.watch_error = Some(e);
+                            } else {
+                                self.detail = GhDetailContent::Error(e);
+                            }
+                        }
                     }
-                    Err(e) => self.detail = GhDetailContent::Error(e),
                 },
             }
         }
@@ -372,6 +387,11 @@ impl GitHubState {
         if self.watch_mode {
             self.watch_last_refresh = Some(Instant::now());
             self.watch_last_update = Some(SystemTime::now());
+        } else {
+            self.watch_last_refresh = None;
+            self.watch_last_update = None;
+            self.watch_in_flight_since = None;
+            self.watch_error = None;
         }
     }
 
@@ -380,13 +400,23 @@ impl GitHubState {
         if !self.watch_mode {
             return;
         }
-        // Auto-disable if no longer on PR detail (but allow Loading state during fetch)
+        // Auto-disable if no longer on PR detail (but allow PR Loading state during fetch)
         if !matches!(
             &self.detail,
-            GhDetailContent::Pr(_) | GhDetailContent::Loading { .. }
+            GhDetailContent::Pr(_)
+                | GhDetailContent::Loading {
+                    kind: GhDetailKind::Pr,
+                    ..
+                }
         ) {
             self.watch_mode = false;
             return;
+        }
+        // Skip if a refresh is already in flight (timeout after 30s to self-heal)
+        if let Some(since) = self.watch_in_flight_since {
+            if since.elapsed() < std::time::Duration::from_secs(30) {
+                return;
+            }
         }
         if let Some(last) = self.watch_last_refresh {
             if last.elapsed() >= std::time::Duration::from_secs(10) {
@@ -406,6 +436,7 @@ impl GitHubState {
             _ => return,
         };
         self.pr_cache.remove(&number);
+        self.watch_in_flight_since = Some(Instant::now());
         if let Some(tx) = &self.bg_tx {
             let tx = tx.clone();
             std::thread::spawn(move || {
