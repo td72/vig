@@ -358,16 +358,37 @@ impl GitHubState {
         if !self.watch_mode {
             return;
         }
-        // Auto-disable if no longer on PR detail
-        if !matches!(&self.detail, GhDetailContent::Pr(_)) {
+        // Auto-disable if no longer on PR detail (but allow Loading state during fetch)
+        if !matches!(
+            &self.detail,
+            GhDetailContent::Pr(_) | GhDetailContent::Loading { .. }
+        ) {
             self.watch_mode = false;
             return;
         }
         if let Some(last) = self.watch_last_refresh {
             if last.elapsed() >= std::time::Duration::from_secs(10) {
                 self.watch_last_refresh = Some(Instant::now());
-                self.refresh_detail();
+                self.refresh_detail_silent();
             }
+        }
+    }
+
+    /// Silently re-fetch the current PR detail in the background.
+    /// Unlike `refresh_detail()`, this keeps the current detail visible (no Loading state)
+    /// and preserves scroll/selection positions.
+    fn refresh_detail_silent(&mut self) {
+        let number = match &self.detail {
+            GhDetailContent::Pr(detail) => detail.number,
+            _ => return,
+        };
+        self.pr_cache.remove(&number);
+        if let Some(tx) = &self.bg_tx {
+            let tx = tx.clone();
+            std::thread::spawn(move || {
+                let result = client::get_pr(number);
+                let _ = tx.send(GhBgMessage::PrDetail(result));
+            });
         }
     }
 
