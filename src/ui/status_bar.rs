@@ -178,10 +178,10 @@ pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
         ));
     }
 
-    if app.github.watch_mode {
+    if let Some(time) = app.github.watch_last_update_time() {
         spans.push(Span::raw("  "));
         spans.push(Span::styled(
-            "\u{23f1} Watch",
+            format!("\u{23f1} Watch (last: {time})"),
             Style::default().fg(Color::Yellow),
         ));
     }

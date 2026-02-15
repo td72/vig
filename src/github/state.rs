@@ -2,7 +2,7 @@ use crate::github::client;
 use crate::github::types::*;
 use std::collections::HashMap;
 use std::sync::mpsc;
-use std::time::Instant;
+use std::time::{Instant, SystemTime};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GhFocusedPane {
@@ -70,6 +70,7 @@ pub struct GitHubState {
     pub initialized: bool,
     pub watch_mode: bool,
     watch_last_refresh: Option<Instant>,
+    watch_last_update: Option<SystemTime>,
 }
 
 impl GitHubState {
@@ -102,6 +103,7 @@ impl GitHubState {
             initialized: false,
             watch_mode: false,
             watch_last_refresh: None,
+            watch_last_update: None,
         }
     }
 
@@ -342,6 +344,25 @@ impl GitHubState {
         }
     }
 
+    /// Returns the wall-clock time of the last watch refresh as "HH:MM:SS", if active.
+    pub fn watch_last_update_time(&self) -> Option<String> {
+        if !self.watch_mode {
+            return None;
+        }
+        self.watch_last_update.map(|t| {
+            let secs = t
+                .duration_since(std::time::SystemTime::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs();
+            let local_secs = secs as i64 + local_utc_offset_secs();
+            let time_of_day = local_secs.rem_euclid(86400);
+            let h = time_of_day / 3600;
+            let m = (time_of_day % 3600) / 60;
+            let s = time_of_day % 60;
+            format!("{h:02}:{m:02}:{s:02}")
+        })
+    }
+
     /// Toggle watch mode (auto-refresh checks every 10s). Only activates on PR detail.
     pub fn toggle_watch_mode(&mut self) {
         if !matches!(&self.detail, GhDetailContent::Pr(_)) {
@@ -350,6 +371,7 @@ impl GitHubState {
         self.watch_mode = !self.watch_mode;
         if self.watch_mode {
             self.watch_last_refresh = Some(Instant::now());
+            self.watch_last_update = Some(SystemTime::now());
         }
     }
 
@@ -369,6 +391,7 @@ impl GitHubState {
         if let Some(last) = self.watch_last_refresh {
             if last.elapsed() >= std::time::Duration::from_secs(10) {
                 self.watch_last_refresh = Some(Instant::now());
+                self.watch_last_update = Some(SystemTime::now());
                 self.refresh_detail_silent();
             }
         }
@@ -413,4 +436,27 @@ impl GitHubState {
             });
         }
     }
+}
+
+/// Get local UTC offset in seconds, cached after first call.
+fn local_utc_offset_secs() -> i64 {
+    use std::sync::OnceLock;
+    static OFFSET: OnceLock<i64> = OnceLock::new();
+    *OFFSET.get_or_init(|| {
+        std::process::Command::new("date")
+            .arg("+%z")
+            .output()
+            .ok()
+            .and_then(|o| {
+                let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
+                if s.len() < 5 {
+                    return None;
+                }
+                let sign: i64 = if s.starts_with('-') { -1 } else { 1 };
+                let hours: i64 = s[1..3].parse().ok()?;
+                let mins: i64 = s[3..5].parse().ok()?;
+                Some(sign * (hours * 3600 + mins * 60))
+            })
+            .unwrap_or(0)
+    })
 }
