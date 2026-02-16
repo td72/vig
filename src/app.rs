@@ -2,6 +2,7 @@ use crate::git::diff::{DiffState, FileDiff};
 use crate::git::graph::{self, GraphRow};
 use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
 use crate::github::state::{GhFocusedPane, GitHubState};
+use crate::pane::{self, DetailPane as _, SelectPane as _};
 use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -505,7 +506,7 @@ impl App {
         self.update_branch_log();
     }
 
-    fn set_focus(&mut self, pane: FocusedPane) {
+    pub(crate) fn set_focus(&mut self, pane: FocusedPane) {
         self.previous_pane = self.focused_pane;
         self.focused_pane = pane;
     }
@@ -565,7 +566,7 @@ impl App {
         }
     }
 
-    fn handle_branch_list_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_branch_list_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('h') => {
                 self.set_focus(FocusedPane::FileTree);
@@ -616,7 +617,7 @@ impl App {
         }
     }
 
-    fn handle_git_log_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_git_log_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('h') => {
                 self.set_focus(FocusedPane::Reflog);
@@ -704,7 +705,7 @@ impl App {
         }
     }
 
-    fn handle_reflog_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_reflog_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('h') => {
                 self.set_focus(FocusedPane::BranchList);
@@ -1068,31 +1069,15 @@ impl App {
                         return Ok(true); // Signal to open editor
                     }
                     KeyCode::Tab => {
-                        let next = match self.focused_pane {
-                            FocusedPane::FileTree => FocusedPane::BranchList,
-                            FocusedPane::BranchList => FocusedPane::Reflog,
-                            FocusedPane::Reflog => FocusedPane::GitLog,
-                            FocusedPane::GitLog => FocusedPane::DiffView,
-                            FocusedPane::DiffView => FocusedPane::FileTree,
-                        };
-                        self.set_focus(next);
+                        self.set_focus(pane::next_git_tab(self.focused_pane));
                     }
                     KeyCode::BackTab => {
-                        let prev = match self.focused_pane {
-                            FocusedPane::FileTree => FocusedPane::DiffView,
-                            FocusedPane::BranchList => FocusedPane::FileTree,
-                            FocusedPane::Reflog => FocusedPane::BranchList,
-                            FocusedPane::GitLog => FocusedPane::Reflog,
-                            FocusedPane::DiffView => FocusedPane::GitLog,
-                        };
-                        self.set_focus(prev);
+                        self.set_focus(pane::prev_git_tab(self.focused_pane));
                     }
                     _ => match self.focused_pane {
-                        FocusedPane::FileTree => self.handle_file_tree_key(key),
-                        FocusedPane::BranchList => self.handle_branch_list_key(key),
-                        FocusedPane::GitLog => self.handle_git_log_key(key),
-                        FocusedPane::Reflog => self.handle_reflog_key(key),
-                        FocusedPane::DiffView => self.handle_diff_view_key(key),
+                        FocusedPane::GitLog => pane::GitLogSelectPane.handle_key(self, key),
+                        FocusedPane::DiffView => pane::DiffViewPane.handle_key(self, key),
+                        other => pane::git_select_pane(other).handle_key(self, key),
                     },
                 }
             }
@@ -1130,14 +1115,13 @@ impl App {
             _ => {}
         }
         match self.github.focused_pane {
-            GhFocusedPane::IssueList => self.handle_gh_issue_list_key(key),
-            GhFocusedPane::PrList => self.handle_gh_pr_list_key(key),
-            GhFocusedPane::Detail => self.handle_gh_detail_key(key),
+            GhFocusedPane::Detail => pane::GhDetailViewPane.handle_key(self, key),
+            other => pane::gh_select_pane(other).handle_key(self, key),
         }
         Ok(false)
     }
 
-    fn handle_gh_issue_list_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_gh_issue_list_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.github.issues.is_empty()
@@ -1192,7 +1176,7 @@ impl App {
         }
     }
 
-    fn handle_gh_pr_list_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_gh_pr_list_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.github.prs.is_empty()
@@ -1247,7 +1231,7 @@ impl App {
         }
     }
 
-    fn handle_gh_detail_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_gh_detail_key(&mut self, key: KeyEvent) {
         use crate::github::state::{GhDetailContent, GhDetailPane};
 
         // Determine item count for selection-based panes
@@ -1481,7 +1465,7 @@ impl App {
         }
     }
 
-    fn handle_file_tree_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_file_tree_key(&mut self, key: KeyEvent) {
         // Pane navigation must work even when file list is empty
         match key.code {
             KeyCode::Char('l') => {
@@ -1563,7 +1547,7 @@ impl App {
         }
     }
 
-    fn handle_diff_view_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_diff_view_key(&mut self, key: KeyEvent) {
         match self.diff_view_mode {
             DiffViewMode::Scroll => self.handle_diff_scroll_key(key),
             DiffViewMode::Normal => self.handle_diff_normal_key(key),

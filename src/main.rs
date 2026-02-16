@@ -2,12 +2,13 @@ mod app;
 mod event;
 mod git;
 mod github;
+mod pane;
 mod syntax;
 mod tui;
 mod ui;
 mod update;
 
-use crate::app::{App, FocusedPane, ViewMode};
+use crate::app::{App, ViewMode};
 use crate::event::{Event, EventHandler};
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
@@ -80,11 +81,11 @@ fn run_tui() -> Result<()> {
                     branch_selector::render(frame, &app, layout.branch_list);
                     reflog::render(frame, &mut app, layout.reflog);
 
-                    match app.focused_pane {
-                        FocusedPane::BranchList | FocusedPane::GitLog | FocusedPane::Reflog => {
+                    match pane::git_detail_for(app.focused_pane) {
+                        pane::GitDetailId::CommitLog => {
                             commit_log::render(frame, &mut app, layout.main_pane);
                         }
-                        _ => {
+                        pane::GitDetailId::DiffView => {
                             diff_view::render(frame, &mut app, layout.main_pane);
                         }
                     }
