@@ -1,3 +1,4 @@
+mod branch_action;
 pub(crate) mod container;
 pub mod diff;
 pub mod graph;

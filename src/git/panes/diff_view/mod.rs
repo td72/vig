@@ -1,3 +1,4 @@
+mod keys;
 mod view;
 
 use crate::core::app::{App, DiffViewMode};
