@@ -1,4 +1,5 @@
-use crate::core::app::{App, DiffViewMode, FocusedPane, SearchOrigin};
+use crate::core::app::{App, SearchOrigin};
+use crate::git::state::{DiffViewMode, FocusedPane};
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::git::panes::{

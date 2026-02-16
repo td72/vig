@@ -1,4 +1,5 @@
-use crate::core::app::{App, FocusedPane, SearchMatch, SearchOrigin, TreeEntry};
+use crate::core::app::{App, SearchMatch, SearchOrigin, TreeEntry};
+use crate::git::state::FocusedPane;
 use crate::git::diff::FileStatus;
 use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};

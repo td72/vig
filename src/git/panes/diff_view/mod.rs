@@ -1,7 +1,8 @@
 mod keys;
 mod view;
 
-use crate::core::app::{App, DiffViewMode};
+use crate::core::app::App;
+use crate::git::state::DiffViewMode;
 use crate::core::pane::DetailPane;
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};

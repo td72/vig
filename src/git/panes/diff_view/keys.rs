@@ -1,4 +1,5 @@
-use crate::core::app::{App, CursorPos, DiffSide, DiffViewMode, SearchOrigin};
+use crate::core::app::{App, SearchOrigin};
+use crate::git::state::{CursorPos, DiffSide, DiffViewMode};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 impl App {

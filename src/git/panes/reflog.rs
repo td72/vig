@@ -1,4 +1,5 @@
-use crate::core::app::{App, FocusedPane, SearchMatch, SearchOrigin};
+use crate::core::app::{App, SearchMatch, SearchOrigin};
+use crate::git::state::FocusedPane;
 use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::collections::HashSet;

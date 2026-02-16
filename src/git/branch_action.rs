@@ -1,4 +1,5 @@
-use crate::core::app::{App, BranchAction, BranchActionMenuState, ErrorDialogState};
+use crate::core::app::{App, ErrorDialogState};
+use crate::git::state::{BranchAction, BranchActionMenuState};
 use crossterm::event::{KeyCode, KeyEvent};
 
 impl App {
