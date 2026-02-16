@@ -1,3 +1,4 @@
+use crate::core::app::SearchState;
 use crate::core::syntax::{HighlightCache, SyntaxHighlighter};
 use crate::git::diff::DiffState;
 use crate::git::graph::GraphRow;
@@ -123,6 +124,7 @@ pub struct GitState {
     pub git_log: GitLogState,
     pub reflog: ReflogState,
     pub branch_action_menu: Option<BranchActionMenuState>,
+    pub search: SearchState,
 }
 
 impl GitState {

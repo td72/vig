@@ -1,62 +1,25 @@
 use crate::core::app::{
     App, DiffSide, DiffViewMode, SearchMatch, SearchOrigin, TreeEntry,
 };
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 impl App {
-    pub(crate) fn handle_search_input_key(&mut self, key: KeyEvent) {
-        match key.code {
-            KeyCode::Enter => {
-                let query = self.search.input.clone();
-                if query.is_empty() {
-                    self.search.active = false;
-                    return;
-                }
-                self.search.push_history(&query);
-                self.search.active = false;
-                self.search.query = Some(query);
-                self.execute_search();
-                self.jump_to_match(true);
-            }
-            KeyCode::Esc => {
-                self.search.active = false;
-                self.search.input.clear();
-            }
-            KeyCode::Backspace => {
-                self.search.input.pop();
-                self.search.history_idx = None;
-            }
-            KeyCode::Up | KeyCode::Char('p') if key.code == KeyCode::Up || key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.search.history_prev();
-            }
-            KeyCode::Down | KeyCode::Char('n') if key.code == KeyCode::Down || key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.search.history_next();
-            }
-            KeyCode::Char(c) => {
-                self.search.input.push(c);
-                self.search.history_idx = None;
-            }
-            _ => {}
-        }
-    }
-
-    fn execute_search(&mut self) {
-        self.search.matches.clear();
-        self.search.current_match_idx = None;
-        let query = match &self.search.query {
+    pub(crate) fn execute_git_search(&mut self) {
+        self.git.search.matches.clear();
+        self.git.search.current_match_idx = None;
+        let query = match &self.git.search.query {
             Some(q) => q.clone(),
             None => return,
         };
-        match self.search.origin {
-            SearchOrigin::DiffView => self.search_diff_view(&query),
-            SearchOrigin::FileTree => self.search_file_tree(&query),
-            SearchOrigin::CommitLog => self.search_commit_log(&query),
-            SearchOrigin::BranchList => self.search_branch_list(&query),
-            SearchOrigin::Reflog => self.search_reflog(&query),
+        match self.git.search.origin {
+            SearchOrigin::DiffView => self.search_git_diff_view(&query),
+            SearchOrigin::FileTree => self.search_git_file_tree(&query),
+            SearchOrigin::CommitLog => self.search_git_commit_log(&query),
+            SearchOrigin::BranchList => self.search_git_branch_list(&query),
+            SearchOrigin::Reflog => self.search_git_reflog(&query),
         }
     }
 
-    pub(crate) fn search_diff_view(&mut self, query: &str) {
+    pub(crate) fn search_git_diff_view(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
         let file = match self.selected_file() {
             Some(f) => f.clone(),
@@ -67,7 +30,7 @@ impl App {
             // Search hunk header
             for (col_start, _) in hunk.header.to_lowercase().match_indices(&query_lower) {
                 let col_end = col_start + query.len();
-                self.search.matches.push(SearchMatch::DiffLine {
+                self.git.search.matches.push(SearchMatch::DiffLine {
                     row: row_idx,
                     col_start,
                     col_end,
@@ -81,7 +44,7 @@ impl App {
                 if let Some(ref side_line) = row.left {
                     for (col_start, _) in side_line.content.to_lowercase().match_indices(&query_lower) {
                         let col_end = col_start + query.len();
-                        self.search.matches.push(SearchMatch::DiffLine {
+                        self.git.search.matches.push(SearchMatch::DiffLine {
                             row: row_idx,
                             col_start,
                             col_end,
@@ -93,7 +56,7 @@ impl App {
                 if let Some(ref side_line) = row.right {
                     for (col_start, _) in side_line.content.to_lowercase().match_indices(&query_lower) {
                         let col_end = col_start + query.len();
-                        self.search.matches.push(SearchMatch::DiffLine {
+                        self.git.search.matches.push(SearchMatch::DiffLine {
                             row: row_idx,
                             col_start,
                             col_end,
@@ -106,7 +69,7 @@ impl App {
         }
     }
 
-    fn search_file_tree(&mut self, query: &str) {
+    fn search_git_file_tree(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
         let entries = self.build_tree_entries();
         for (idx, entry) in entries.iter().enumerate() {
@@ -120,12 +83,12 @@ impl App {
                 }
             };
             if name.to_lowercase().contains(&query_lower) {
-                self.search.matches.push(SearchMatch::TreeEntry(idx));
+                self.git.search.matches.push(SearchMatch::TreeEntry(idx));
             }
         }
     }
 
-    fn search_commit_log(&mut self, query: &str) {
+    fn search_git_commit_log(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
         for (idx, commit) in self.git.git_log.commits.iter().enumerate() {
             let text = format!(
@@ -136,21 +99,21 @@ impl App {
                 commit.message
             );
             if text.to_lowercase().contains(&query_lower) {
-                self.search.matches.push(SearchMatch::CommitEntry(idx));
+                self.git.search.matches.push(SearchMatch::CommitEntry(idx));
             }
         }
     }
 
-    fn search_branch_list(&mut self, query: &str) {
+    fn search_git_branch_list(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
         for (idx, branch) in self.git.branch_list.branches.iter().enumerate() {
             if branch.name.to_lowercase().contains(&query_lower) {
-                self.search.matches.push(SearchMatch::BranchEntry(idx));
+                self.git.search.matches.push(SearchMatch::BranchEntry(idx));
             }
         }
     }
 
-    fn search_reflog(&mut self, query: &str) {
+    fn search_git_reflog(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
         for (idx, entry) in self.git.reflog.entries.iter().enumerate() {
             if entry.short_hash.to_lowercase().contains(&query_lower)
@@ -158,29 +121,29 @@ impl App {
                 || entry.action.to_lowercase().contains(&query_lower)
                 || entry.message.to_lowercase().contains(&query_lower)
             {
-                self.search.matches.push(SearchMatch::ReflogEntry(idx));
+                self.git.search.matches.push(SearchMatch::ReflogEntry(idx));
             }
         }
     }
 
-    pub(crate) fn jump_to_match(&mut self, forward: bool) {
+    pub(crate) fn jump_to_git_match(&mut self, forward: bool) {
         // If no active query but last_query exists, re-execute search
-        if self.search.query.is_none() {
-            if let Some(last) = self.search.last_query.clone() {
-                self.search.query = Some(last);
-                self.execute_search();
+        if self.git.search.query.is_none() {
+            if let Some(last) = self.git.search.last_query.clone() {
+                self.git.search.query = Some(last);
+                self.execute_git_search();
             } else {
                 return;
             }
         }
 
-        if self.search.matches.is_empty() {
+        if self.git.search.matches.is_empty() {
             self.status_message = Some("Pattern not found".to_string());
             return;
         }
 
-        let total = self.search.matches.len();
-        let new_idx = match self.search.current_match_idx {
+        let total = self.git.search.matches.len();
+        let new_idx = match self.git.search.current_match_idx {
             Some(idx) => {
                 if forward {
                     (idx + 1) % total
@@ -196,9 +159,9 @@ impl App {
                 }
             }
         };
-        self.search.current_match_idx = Some(new_idx);
+        self.git.search.current_match_idx = Some(new_idx);
 
-        match &self.search.matches[new_idx] {
+        match &self.git.search.matches[new_idx] {
             SearchMatch::DiffLine { row, col_start, side, .. } => {
                 let row = *row;
                 let col_start = *col_start;

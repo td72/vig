@@ -5,5 +5,6 @@ pub mod graph;
 pub mod layout;
 pub mod panes;
 pub mod repository;
+mod search;
 pub mod state;
 pub mod watcher;

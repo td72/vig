@@ -26,15 +26,15 @@ struct SearchHighlightInfo {
 
 impl SearchHighlightInfo {
     fn from_app(app: &App) -> Option<Self> {
-        let query = app.search.query.as_ref()?;
-        if query.is_empty() || app.search.matches.is_empty() {
+        let query = app.git.search.query.as_ref()?;
+        if query.is_empty() || app.git.search.matches.is_empty() {
             return None;
         }
 
-        let current_idx = app.search.current_match_idx;
+        let current_idx = app.git.search.current_match_idx;
         let mut row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>> = HashMap::new();
 
-        for (i, m) in app.search.matches.iter().enumerate() {
+        for (i, m) in app.git.search.matches.iter().enumerate() {
             if let SearchMatch::DiffLine {
                 row,
                 col_start,

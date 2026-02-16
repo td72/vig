@@ -94,9 +94,9 @@ impl SelectPane for FileTreePane {
         }
 
         // Build set of matched tree entry indices and current match index
-        let (match_set, current_match_idx) = if app.search.origin == SearchOrigin::FileTree {
+        let (match_set, current_match_idx) = if app.git.search.origin == SearchOrigin::FileTree {
             let set: HashSet<usize> = app
-                .search
+                .git.search
                 .matches
                 .iter()
                 .filter_map(|m| match m {
@@ -104,8 +104,8 @@ impl SelectPane for FileTreePane {
                     _ => None,
                 })
                 .collect();
-            let current = app.search.current_match_idx.and_then(|ci| {
-                match app.search.matches.get(ci) {
+            let current = app.git.search.current_match_idx.and_then(|ci| {
+                match app.git.search.matches.get(ci) {
                     Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
                     _ => None,
                 }

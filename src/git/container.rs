@@ -95,13 +95,13 @@ pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
             app.show_help = true;
         }
         KeyCode::Char('/') => {
-            app.search.start(search_origin_for(app.git.focused_pane));
+            app.git.search.start(search_origin_for(app.git.focused_pane));
         }
         KeyCode::Char('n') => {
-            app.jump_to_match(true);
+            app.jump_to_git_match(true);
         }
         KeyCode::Char('N') => {
-            app.jump_to_match(false);
+            app.jump_to_git_match(false);
         }
         KeyCode::Char('r') => {
             app.refresh_diff()?;
@@ -160,8 +160,8 @@ impl PaneContainer for GitContainer {
                 app.set_focus(target);
                 true
             }
-            KeyCode::Esc if app.search.query.is_some() => {
-                app.search.clear();
+            KeyCode::Esc if app.git.search.query.is_some() => {
+                app.git.search.clear();
                 true
             }
             _ => false,

@@ -68,9 +68,9 @@ impl SelectPane for BranchListPane {
         }
 
         // Build set of matched branch entry indices
-        let (match_set, current_match_idx) = if app.search.origin == SearchOrigin::BranchList {
+        let (match_set, current_match_idx) = if app.git.search.origin == SearchOrigin::BranchList {
             let set: HashSet<usize> = app
-                .search
+                .git.search
                 .matches
                 .iter()
                 .filter_map(|m| match m {
@@ -78,8 +78,8 @@ impl SelectPane for BranchListPane {
                     _ => None,
                 })
                 .collect();
-            let current = app.search.current_match_idx.and_then(|ci| {
-                match app.search.matches.get(ci) {
+            let current = app.git.search.current_match_idx.and_then(|ci| {
+                match app.git.search.matches.get(ci) {
                     Some(SearchMatch::BranchEntry(idx)) => Some(*idx),
                     _ => None,
                 }

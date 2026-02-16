@@ -111,9 +111,9 @@ fn render_list(f: &mut Frame, app: &mut App, area: Rect) {
         .unwrap_or(0);
 
     // Build set of matched commit entry indices
-    let (match_set, current_match_idx) = if app.search.origin == SearchOrigin::CommitLog {
+    let (match_set, current_match_idx) = if app.git.search.origin == SearchOrigin::CommitLog {
         let set: HashSet<usize> = app
-            .search
+            .git.search
             .matches
             .iter()
             .filter_map(|m| match m {
@@ -121,8 +121,8 @@ fn render_list(f: &mut Frame, app: &mut App, area: Rect) {
                 _ => None,
             })
             .collect();
-        let current = app.search.current_match_idx.and_then(|ci| {
-            match app.search.matches.get(ci) {
+        let current = app.git.search.current_match_idx.and_then(|ci| {
+            match app.git.search.matches.get(ci) {
                 Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
                 _ => None,
             }

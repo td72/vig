@@ -9,6 +9,57 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::collections::{HashMap, HashSet};
 use std::sync::mpsc;
 
+impl SearchState {
+    /// Handle a key event during search input mode.
+    /// Returns `true` if the user confirmed a search query (Enter), signaling
+    /// the caller to execute the search and jump to the first match.
+    pub fn handle_input_key(&mut self, key: KeyEvent) -> bool {
+        match key.code {
+            KeyCode::Enter => {
+                let query = self.input.clone();
+                if query.is_empty() {
+                    self.active = false;
+                    return false;
+                }
+                self.push_history(&query);
+                self.active = false;
+                self.query = Some(query);
+                true
+            }
+            KeyCode::Esc => {
+                self.active = false;
+                self.input.clear();
+                false
+            }
+            KeyCode::Backspace => {
+                self.input.pop();
+                self.history_idx = None;
+                false
+            }
+            KeyCode::Up | KeyCode::Char('p')
+                if key.code == KeyCode::Up
+                    || key.modifiers.contains(KeyModifiers::CONTROL) =>
+            {
+                self.history_prev();
+                false
+            }
+            KeyCode::Down | KeyCode::Char('n')
+                if key.code == KeyCode::Down
+                    || key.modifiers.contains(KeyModifiers::CONTROL) =>
+            {
+                self.history_next();
+                false
+            }
+            KeyCode::Char(c) => {
+                self.input.push(c);
+                self.history_idx = None;
+                false
+            }
+            _ => false,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ViewMode {
     Git,
@@ -175,7 +226,6 @@ pub struct App {
     pub show_help: bool,
     pub status_message: Option<String>,
     pub error_dialog: Option<ErrorDialogState>,
-    pub search: SearchState,
     pub git: GitState,
     pub github: GitHubState,
 }
@@ -190,7 +240,6 @@ impl App {
             show_help: false,
             status_message: None,
             error_dialog: None,
-            search: SearchState::new(),
             git: GitState {
                 diff_state,
                 collapsed_dirs: HashSet::new(),
@@ -232,6 +281,7 @@ impl App {
                     view_height: 0,
                 },
                 branch_action_menu: None,
+                search: SearchState::new(),
             },
             github: GitHubState::new(),
         };
@@ -239,6 +289,13 @@ impl App {
         app.load_reflog();
         app.spawn_bg_highlight();
         Ok(app)
+    }
+
+    pub fn active_search(&self) -> Option<&SearchState> {
+        match self.view_mode {
+            ViewMode::Git => Some(&self.git.search),
+            ViewMode::GitHub => None,
+        }
     }
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
@@ -323,7 +380,7 @@ impl App {
         self.git.content_lines_cache = None;
         self.git.bg_highlights.clear();
         self.git.bg_highlight_rx = None; // Drop old receiver, stops old thread
-        self.search.reset_matches();
+        self.git.search.reset_matches();
         self.spawn_bg_highlight();
         Ok(())
     }
@@ -562,9 +619,15 @@ impl App {
         }
 
         // Search input mode intercepts all keys
-        if self.search.active {
-            self.handle_search_input_key(key);
-            return Ok(false);
+        match self.view_mode {
+            ViewMode::Git if self.git.search.active => {
+                if self.git.search.handle_input_key(key) {
+                    self.execute_git_search();
+                    self.jump_to_git_match(true);
+                }
+                return Ok(false);
+            }
+            _ => {}
         }
 
         // Ctrl+c always quits

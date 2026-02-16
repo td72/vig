@@ -33,8 +33,8 @@ impl App {
                 self.git.diff_scroll_x = self.git.diff_scroll_x.saturating_sub(4);
             }
             KeyCode::Esc => {
-                if self.search.query.is_some() {
-                    self.search.clear();
+                if self.git.search.query.is_some() {
+                    self.git.search.clear();
                 } else {
                     self.set_focus(self.git.previous_pane);
                 }
@@ -43,14 +43,14 @@ impl App {
                 self.git.diff_scroll_x = self.git.diff_scroll_x.saturating_add(4);
             }
             KeyCode::Char('/') => {
-                self.search.start(SearchOrigin::DiffView);
+                self.git.search.start(SearchOrigin::DiffView);
                 self.git.pending_key = None;
             }
             KeyCode::Char('n') => {
-                self.jump_to_match(true);
+                self.jump_to_git_match(true);
             }
             KeyCode::Char('N') => {
-                self.jump_to_match(false);
+                self.jump_to_git_match(false);
             }
             KeyCode::Char('i') => {
                 // Enter Normal mode with cursor at top-left of visible area
@@ -206,19 +206,19 @@ impl App {
                 self.git.visual_anchor = Some(self.git.cursor_pos);
             }
             KeyCode::Char('/') => {
-                self.search.start(SearchOrigin::DiffView);
+                self.git.search.start(SearchOrigin::DiffView);
                 self.git.pending_key = None;
                 self.git.count = None;
             }
             KeyCode::Char('n') => {
-                self.jump_to_match(true);
+                self.jump_to_git_match(true);
             }
             KeyCode::Char('N') => {
-                self.jump_to_match(false);
+                self.jump_to_git_match(false);
             }
             KeyCode::Esc => {
-                if self.search.query.is_some() {
-                    self.search.clear();
+                if self.git.search.query.is_some() {
+                    self.git.search.clear();
                 } else {
                     self.git.diff_view_mode = DiffViewMode::Scroll;
                     self.git.pending_key = None;
@@ -487,15 +487,15 @@ impl App {
                 }
             }
             KeyCode::Char('/') => {
-                self.search.start(SearchOrigin::DiffView);
+                self.git.search.start(SearchOrigin::DiffView);
                 self.git.pending_key = None;
                 self.git.count = None;
             }
             KeyCode::Char('n') => {
-                self.jump_to_match(true);
+                self.jump_to_git_match(true);
             }
             KeyCode::Char('N') => {
-                self.jump_to_match(false);
+                self.jump_to_git_match(false);
             }
             KeyCode::Esc => {
                 self.git.diff_view_mode = DiffViewMode::Normal;
@@ -842,11 +842,11 @@ impl App {
 
     /// Re-execute DiffView search when file selection changes (preserves query)
     pub(crate) fn re_search_on_file_change(&mut self) {
-        if self.search.origin == SearchOrigin::DiffView && self.search.query.is_some() {
-            self.search.reset_matches();
+        if self.git.search.origin == SearchOrigin::DiffView && self.git.search.query.is_some() {
+            self.git.search.reset_matches();
             self.git.content_lines_cache = None;
-            let query = self.search.query.clone().unwrap();
-            self.search_diff_view(&query);
+            let query = self.git.search.query.clone().unwrap();
+            self.search_git_diff_view(&query);
         }
     }
 }

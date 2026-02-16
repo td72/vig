@@ -15,8 +15,8 @@ impl SelectPane for GitLogSelectPane {
                 app.set_focus(FocusedPane::Reflog);
             }
             KeyCode::Esc => {
-                if app.search.query.is_some() {
-                    app.search.clear();
+                if app.git.search.query.is_some() {
+                    app.git.search.clear();
                 } else {
                     app.set_focus(app.git.previous_pane);
                 }
@@ -85,13 +85,13 @@ impl SelectPane for GitLogSelectPane {
                 }
             }
             KeyCode::Char('/') => {
-                app.search.start(SearchOrigin::CommitLog);
+                app.git.search.start(SearchOrigin::CommitLog);
             }
             KeyCode::Char('n') => {
-                app.jump_to_match(true);
+                app.jump_to_git_match(true);
             }
             KeyCode::Char('N') => {
-                app.jump_to_match(false);
+                app.jump_to_git_match(false);
             }
             _ => {}
         }

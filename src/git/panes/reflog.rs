@@ -85,9 +85,9 @@ impl SelectPane for ReflogPane {
         }
 
         // Build set of matched reflog entry indices
-        let (match_set, current_match_idx) = if app.search.origin == SearchOrigin::Reflog {
+        let (match_set, current_match_idx) = if app.git.search.origin == SearchOrigin::Reflog {
             let set: HashSet<usize> = app
-                .search
+                .git.search
                 .matches
                 .iter()
                 .filter_map(|m| match m {
@@ -95,8 +95,8 @@ impl SelectPane for ReflogPane {
                     _ => None,
                 })
                 .collect();
-            let current = app.search.current_match_idx.and_then(|ci| {
-                match app.search.matches.get(ci) {
+            let current = app.git.search.current_match_idx.and_then(|ci| {
+                match app.git.search.matches.get(ci) {
                     Some(SearchMatch::ReflogEntry(idx)) => Some(*idx),
                     _ => None,
                 }
