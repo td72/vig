@@ -103,7 +103,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     // Changed files list
     if app.git_log.detail_changed_files.is_empty() {
         lines.push(Line::from(Span::styled(
-            "  (root commit or no changes)",
+            "  (no changes)",
             Style::default().fg(Color::DarkGray),
         )));
     } else {
@@ -112,6 +112,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
                 'A' => ("A", Color::Green),
                 'D' => ("D", Color::Red),
                 'R' => ("R", Color::Blue),
+                'C' => ("C", Color::Magenta),
                 _ => ("M", Color::Yellow),
             };
             lines.push(Line::from(vec![

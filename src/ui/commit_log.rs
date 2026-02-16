@@ -1,5 +1,5 @@
 use crate::app::{App, FocusedPane, SearchMatch, SearchOrigin};
-use crate::git::graph::{GraphCell, GraphRow};
+use crate::git::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
 use crate::ui::commit_detail;
 use std::collections::HashSet;
 use ratatui::{
@@ -10,7 +10,7 @@ use ratatui::{
     Frame,
 };
 
-const GRAPH_COLORS: [Color; 6] = [
+const GRAPH_COLORS: [Color; NUM_GRAPH_COLORS] = [
     Color::Red,
     Color::Green,
     Color::Yellow,
@@ -48,7 +48,7 @@ fn graph_spans(
                 let color = GRAPH_COLORS[row.colors[i] % GRAPH_COLORS.len()];
                 Style::default().fg(color)
             };
-            spans.push(Span::styled(ch.to_string(), style));
+            spans.push(Span::styled(ch, style));
         } else {
             spans.push(Span::raw(" "));
         }

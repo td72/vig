@@ -1,5 +1,7 @@
 use crate::git::repository::CommitInfo;
 
+pub const NUM_GRAPH_COLORS: usize = 6;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GraphCell {
     Commit,    // ●
@@ -68,7 +70,7 @@ pub fn build_graph(commits: &[CommitInfo]) -> Vec<GraphRow> {
                     lane_from.push(None);
                     active_lanes.len() - 1
                 });
-            lane_colors[col] = next_color % 6;
+            lane_colors[col] = next_color % NUM_GRAPH_COLORS;
             next_color += 1;
             active_lanes[col] = Some(hash.clone());
             lane_from[col] = Some(commit_idx);
@@ -107,7 +109,7 @@ pub fn build_graph(commits: &[CommitInfo]) -> Vec<GraphRow> {
                             lane_from.push(None);
                             active_lanes.len() - 1
                         });
-                    lane_colors[free] = next_color % 6;
+                    lane_colors[free] = next_color % NUM_GRAPH_COLORS;
                     next_color += 1;
                     active_lanes[free] = Some(parent.clone());
                     lane_from[free] = Some(commit_idx);

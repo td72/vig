@@ -704,8 +704,6 @@ impl App {
         }
     }
 
-
-
     fn handle_reflog_key(&mut self, key: KeyEvent) {
         match key.code {
             KeyCode::Char('h') => {
@@ -2615,6 +2613,7 @@ impl App {
             }
             SearchMatch::CommitEntry(idx) => {
                 self.git_log.selected_idx = *idx;
+                self.load_commit_detail();
             }
             SearchMatch::BranchEntry(idx) => {
                 self.branch_list.selected_idx = *idx;
