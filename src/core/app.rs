@@ -55,6 +55,11 @@ impl App {
         Ok(())
     }
 
+    /// Refresh git state after a successful external editor session.
+    pub fn post_edit_refresh(&mut self) -> Result<()> {
+        self.refresh_diff()
+    }
+
     pub fn handle_key(&mut self, key: KeyEvent) -> Result<bool> {
         if self.show_help {
             self.show_help = false;

@@ -151,7 +151,7 @@ fn run_tui() -> Result<()> {
 
                         match status {
                             Ok(s) if s.success() => {
-                                app.refresh_diff()?;
+                                app.post_edit_refresh()?;
                             }
                             Ok(s) => {
                                 app.status_message =
