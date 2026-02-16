@@ -80,11 +80,11 @@ impl App {
                     self.status_message = Some("Already on this branch".to_string());
                     return;
                 }
-                match self.repo.switch_branch(&menu.branch_name) {
+                match self.git.repo.switch_branch(&menu.branch_name) {
                     Ok(()) => {
                         self.status_message =
                             Some(format!("Switched to {}", menu.branch_name));
-                        self.load_branches();
+                        self.git.load_branches();
                         if let Err(e) = self.refresh_diff() {
                             self.status_message = Some(format!("Diff error: {e}"));
                         }
@@ -103,11 +103,11 @@ impl App {
                         Some("Cannot delete the current branch".to_string());
                     return;
                 }
-                match self.repo.delete_branch(&menu.branch_name) {
+                match self.git.repo.delete_branch(&menu.branch_name) {
                     Ok(()) => {
                         self.status_message =
                             Some(format!("Deleted {}", menu.branch_name));
-                        self.load_branches();
+                        self.git.load_branches();
                     }
                     Err(e) => {
                         self.error_dialog = Some(ErrorDialogState {

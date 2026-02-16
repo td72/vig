@@ -105,17 +105,17 @@ pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
         }
         KeyCode::Char('r') => {
             app.refresh_diff()?;
-            app.load_branches();
-            app.load_reflog();
+            app.git.load_branches();
+            app.git.load_reflog();
         }
         KeyCode::Char('e') => {
             return Ok(true); // Signal to open editor
         }
         KeyCode::Tab => {
-            app.set_focus(next_git_tab(app.git.focused_pane));
+            app.git.set_focus(next_git_tab(app.git.focused_pane));
         }
         KeyCode::BackTab => {
-            app.set_focus(prev_git_tab(app.git.focused_pane));
+            app.git.set_focus(prev_git_tab(app.git.focused_pane));
         }
         _ => dispatch_git_key(app, key),
     }
@@ -141,7 +141,7 @@ impl PaneContainer for GitContainer {
         GIT_GROUPS.iter().position(|g| g.id == app.git.focused_pane)
     }
     fn focus_index(&self, app: &mut App, idx: usize) {
-        app.set_focus(GIT_GROUPS[idx].id);
+        app.git.set_focus(GIT_GROUPS[idx].id);
     }
     fn pane_at(&self, idx: usize) -> &'static dyn SelectPane {
         GIT_GROUPS[idx].select
@@ -157,7 +157,7 @@ impl PaneContainer for GitContainer {
                     GitDetailId::DiffView => FocusedPane::DiffView,
                     GitDetailId::CommitLog => FocusedPane::GitLog,
                 };
-                app.set_focus(target);
+                app.git.set_focus(target);
                 true
             }
             KeyCode::Esc if app.git.search.query.is_some() => {

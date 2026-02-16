@@ -21,7 +21,7 @@ impl App {
 
     pub(crate) fn search_git_diff_view(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
-        let file = match self.selected_file() {
+        let file = match self.git.selected_file() {
             Some(f) => f.clone(),
             None => return,
         };
@@ -71,7 +71,7 @@ impl App {
 
     fn search_git_file_tree(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
-        let entries = self.build_tree_entries();
+        let entries = self.git.build_tree_entries();
         for (idx, entry) in entries.iter().enumerate() {
             let name = match entry {
                 TreeEntry::Dir { path, .. } => path.clone(),
@@ -185,11 +185,11 @@ impl App {
             }
             SearchMatch::CommitEntry(idx) => {
                 self.git.git_log.selected_idx = *idx;
-                self.load_commit_detail();
+                self.git.load_commit_detail();
             }
             SearchMatch::BranchEntry(idx) => {
                 self.git.branch_list.selected_idx = *idx;
-                self.update_branch_log();
+                self.git.update_branch_log();
             }
             SearchMatch::ReflogEntry(idx) => {
                 self.git.reflog.selected_idx = *idx;

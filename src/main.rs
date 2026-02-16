@@ -68,7 +68,7 @@ fn run_tui() -> Result<()> {
 
     loop {
         // Collect any completed background highlight results
-        app.drain_bg_highlights();
+        app.git.drain_bg_highlights();
         app.github.drain_bg_messages();
 
         // Draw
@@ -130,7 +130,7 @@ fn run_tui() -> Result<()> {
                 }
 
                 if open_editor {
-                    if let Some(file) = app.selected_file() {
+                    if let Some(file) = app.git.selected_file() {
                         let file_path = workdir.join(&file.path);
                         let editor = env::var("EDITOR")
                             .or_else(|_| env::var("VISUAL"))
@@ -168,8 +168,8 @@ fn run_tui() -> Result<()> {
                 }
             }
             Event::FsChange => {
-                app.load_branches();
-                app.load_reflog();
+                app.git.load_branches();
+                app.git.load_reflog();
                 if let Err(e) = app.refresh_diff() {
                     app.status_message = Some(format!("Refresh error: {e}"));
                 }

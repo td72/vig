@@ -17,7 +17,7 @@ impl SelectPane for ReflogPane {
     fn handle_key(&self, app: &mut App, key: KeyEvent) {
         match key.code {
             KeyCode::Esc => {
-                app.set_focus(FocusedPane::BranchList);
+                app.git.set_focus(FocusedPane::BranchList);
             }
             KeyCode::Char('j') | KeyCode::Down => {
                 if !app.git.reflog.entries.is_empty()

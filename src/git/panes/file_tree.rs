@@ -16,7 +16,7 @@ pub struct FileTreePane;
 
 impl SelectPane for FileTreePane {
     fn handle_key(&self, app: &mut App, key: KeyEvent) {
-        let entries = app.build_tree_entries();
+        let entries = app.git.build_tree_entries();
         if entries.is_empty() {
             return;
         }
@@ -58,7 +58,7 @@ impl SelectPane for FileTreePane {
                         }
                     }
                     Some(TreeEntry::File { .. }) => {
-                        app.set_focus(FocusedPane::DiffView);
+                        app.git.set_focus(FocusedPane::DiffView);
                         app.git.diff_scroll_y = 0;
                         app.git.diff_scroll_x = 0;
                     }
@@ -81,7 +81,7 @@ impl SelectPane for FileTreePane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        let entries = app.build_tree_entries();
+        let entries = app.git.build_tree_entries();
 
         if entries.is_empty() {
             let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(

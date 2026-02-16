@@ -1,8 +1,8 @@
 use crate::core::app::SearchState;
 use crate::core::syntax::{HighlightCache, SyntaxHighlighter};
-use crate::git::diff::DiffState;
-use crate::git::graph::GraphRow;
-use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry};
+use crate::git::diff::{DiffState, FileDiff};
+use crate::git::graph::{self, GraphRow};
+use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
 use ratatui::style::Color;
 use std::collections::{HashMap, HashSet};
 use std::sync::mpsc;
@@ -96,7 +96,21 @@ pub struct CursorPos {
     pub side: DiffSide,
 }
 
+#[derive(Debug, Clone)]
+pub enum TreeEntry {
+    Dir {
+        path: String,
+        depth: usize,
+        collapsed: bool,
+    },
+    File {
+        file_idx: usize,
+        depth: usize,
+    },
+}
+
 pub struct GitState {
+    pub repo: Repo,
     pub diff_state: DiffState,
     pub collapsed_dirs: HashSet<String>,
     pub selected_tree_idx: usize,
@@ -131,5 +145,267 @@ impl GitState {
     pub(crate) fn set_focus(&mut self, pane: FocusedPane) {
         self.previous_pane = self.focused_pane;
         self.focused_pane = pane;
+    }
+
+    pub fn selected_file(&self) -> Option<&FileDiff> {
+        let entries = self.build_tree_entries();
+        if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.selected_tree_idx) {
+            self.diff_state.files.get(*file_idx)
+        } else {
+            None
+        }
+    }
+
+    /// Ensure syntax highlighting is available up to `up_to` rows for the given file.
+    /// Uses pre-computed background results if available, otherwise falls back to on-demand.
+    pub fn ensure_file_highlight(&mut self, file: &FileDiff, up_to: usize) {
+        let needs_init = self
+            .highlight_cache
+            .as_ref()
+            .map(|c| c.file_path != file.path)
+            .unwrap_or(true);
+
+        if needs_init {
+            // Check for pre-computed background highlight results first
+            if let Some((lc, rc)) = self.bg_highlights.remove(&file.path) {
+                self.highlight_cache =
+                    Some(HighlightCache::from_precomputed(file.path.clone(), lc, rc));
+                return;
+            }
+
+            // Fall back to on-demand highlighting
+            let mut left_lines = Vec::new();
+            let mut right_lines = Vec::new();
+            let mut hunk_starts = Vec::new();
+            for hunk in &file.hunks {
+                hunk_starts.push(left_lines.len());
+                left_lines.push(String::new());
+                right_lines.push(String::new());
+                for row in &hunk.rows {
+                    left_lines.push(
+                        row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                    );
+                    right_lines.push(
+                        row.right.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                    );
+                }
+            }
+            self.highlight_cache =
+                self.highlighter
+                    .create_cache(&file.path, left_lines, right_lines, hunk_starts);
+        }
+
+        if let Some(ref mut cache) = self.highlight_cache {
+            self.highlighter.extend_cache(cache, up_to);
+        }
+    }
+
+    /// Spawn a background thread to pre-highlight all files.
+    pub(crate) fn spawn_bg_highlight(&mut self) {
+        let mut file_data: Vec<(String, Vec<String>, Vec<String>, Vec<usize>)> = Vec::new();
+        for file in &self.diff_state.files {
+            if file.is_binary {
+                continue;
+            }
+            let mut left_lines = Vec::new();
+            let mut right_lines = Vec::new();
+            let mut hunk_starts = Vec::new();
+            for hunk in &file.hunks {
+                hunk_starts.push(left_lines.len());
+                left_lines.push(String::new());
+                right_lines.push(String::new());
+                for row in &hunk.rows {
+                    left_lines.push(
+                        row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                    );
+                    right_lines.push(
+                        row.right.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                    );
+                }
+            }
+            file_data.push((file.path.clone(), left_lines, right_lines, hunk_starts));
+        }
+
+        if file_data.is_empty() {
+            return;
+        }
+
+        let (tx, rx) = mpsc::channel();
+        self.bg_highlight_rx = Some(rx);
+
+        std::thread::spawn(move || {
+            let highlighter = SyntaxHighlighter::new();
+            for (path, left_lines, right_lines, hunk_starts) in file_data {
+                if let Some((lc, rc)) = highlighter.highlight_all_lines(
+                    &path, &left_lines, &right_lines, &hunk_starts,
+                ) {
+                    if tx.send((path, lc, rc)).is_err() {
+                        break; // Receiver dropped
+                    }
+                }
+            }
+        });
+    }
+
+    /// Drain completed background highlight results into the local cache.
+    pub fn drain_bg_highlights(&mut self) {
+        if let Some(ref rx) = self.bg_highlight_rx {
+            while let Ok((path, left, right)) = rx.try_recv() {
+                self.bg_highlights.insert(path, (left, right));
+            }
+        }
+    }
+
+    pub fn load_branches(&mut self) {
+        self.branch_list.branches = self.repo.list_local_branches();
+        if self.branch_list.selected_idx >= self.branch_list.branches.len() {
+            self.branch_list.selected_idx = 0;
+        }
+        self.update_branch_log();
+    }
+
+    pub fn update_branch_log(&mut self) {
+        if let Some(branch) = self
+            .branch_list
+            .branches
+            .get(self.branch_list.selected_idx)
+        {
+            self.git_log.ref_name = branch.name.clone();
+            self.git_log.commits = self.repo.log_for_ref(&branch.name, 100);
+            self.git_log.graph = graph::build_graph(&self.git_log.commits);
+            self.git_log.selected_idx = 0;
+            self.git_log.detail_scroll = 0;
+            self.git_log.detail_changed_files.clear();
+            self.load_commit_detail();
+        } else {
+            self.git_log.commits.clear();
+            self.git_log.graph.clear();
+            self.git_log.ref_name.clear();
+            self.git_log.detail_changed_files.clear();
+        }
+    }
+
+    pub fn load_commit_detail(&mut self) {
+        if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
+            self.git_log.detail_changed_files =
+                self.repo.commit_changed_files(&commit.full_hash);
+            self.git_log.detail_scroll = 0;
+        } else {
+            self.git_log.detail_changed_files.clear();
+        }
+    }
+
+    pub fn load_reflog(&mut self) {
+        self.reflog.entries = self.repo.reflog(500);
+        if self.reflog.selected_idx >= self.reflog.entries.len() {
+            self.reflog.selected_idx = 0;
+        }
+    }
+
+    pub fn build_tree_entries(&self) -> Vec<TreeEntry> {
+        let files = &self.diff_state.files;
+        if files.is_empty() {
+            return Vec::new();
+        }
+
+        // Count files per directory to detect single-file directories
+        let mut dir_file_count: HashMap<String, usize> = HashMap::new();
+        for file in files {
+            let parts: Vec<&str> = file.path.rsplitn(2, '/').collect();
+            if parts.len() == 2 {
+                // Has a directory component
+                let dir = parts[1];
+                // Count for this dir and all ancestor dirs
+                let mut current = String::new();
+                for segment in dir.split('/') {
+                    if !current.is_empty() {
+                        current.push('/');
+                    }
+                    current.push_str(segment);
+                    *dir_file_count.entry(current.clone()).or_insert(0) += 1;
+                }
+            }
+        }
+
+        let mut entries = Vec::new();
+        let mut prev_dir_parts: Vec<&str> = Vec::new();
+
+        for (file_idx, file) in files.iter().enumerate() {
+            let parts: Vec<&str> = file.path.rsplitn(2, '/').collect();
+            if parts.len() == 2 {
+                let dir = parts[1];
+                let dir_parts: Vec<&str> = dir.split('/').collect();
+
+                // Check if the entire path from root is single-file at every level
+                // If so, inline the file (show full path, no directory node)
+                let leaf_dir = dir.to_string();
+                if dir_file_count.get(&leaf_dir).copied().unwrap_or(0) == 1 {
+                    // Single file in this directory — inline with full path at depth 0
+                    entries.push(TreeEntry::File {
+                        file_idx,
+                        depth: 0,
+                    });
+                    // Don't update prev_dir_parts since we inlined
+                    prev_dir_parts = Vec::new();
+                    continue;
+                }
+
+                // Find common prefix with previous directory
+                let common_len = prev_dir_parts
+                    .iter()
+                    .zip(dir_parts.iter())
+                    .take_while(|(a, b)| a == b)
+                    .count();
+
+                // Emit new directory entries for parts beyond common prefix
+                let mut collapsed_ancestor = false;
+                for i in common_len..dir_parts.len() {
+                    let dir_path: String = dir_parts[..=i].join("/");
+                    let is_collapsed = self.collapsed_dirs.contains(&dir_path);
+                    if !collapsed_ancestor {
+                        entries.push(TreeEntry::Dir {
+                            path: dir_path.clone(),
+                            depth: i,
+                            collapsed: is_collapsed,
+                        });
+                    }
+                    if is_collapsed {
+                        collapsed_ancestor = true;
+                    }
+                }
+
+                // Check if any ancestor dir is collapsed
+                let mut skip_file = false;
+                let mut check_path = String::new();
+                for part in &dir_parts {
+                    if !check_path.is_empty() {
+                        check_path.push('/');
+                    }
+                    check_path.push_str(part);
+                    if self.collapsed_dirs.contains(&check_path) {
+                        skip_file = true;
+                        break;
+                    }
+                }
+
+                if !skip_file {
+                    entries.push(TreeEntry::File {
+                        file_idx,
+                        depth: dir_parts.len(),
+                    });
+                }
+
+                prev_dir_parts = dir_parts;
+            } else {
+                // Root-level file (no directory component)
+                prev_dir_parts = Vec::new();
+                entries.push(TreeEntry::File {
+                    file_idx,
+                    depth: 0,
+                });
+            }
+        }
+
+        entries
     }
 }

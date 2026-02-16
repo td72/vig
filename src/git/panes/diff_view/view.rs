@@ -91,7 +91,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     let inner = block.inner(area);
     f.render_widget(block, area);
 
-    let file = match app.selected_file() {
+    let file = match app.git.selected_file() {
         Some(f) => f.clone(),
         None => {
             let msg = Paragraph::new(Line::from(Span::styled(
@@ -127,7 +127,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
 
     // Ensure syntax highlighting covers the visible range (incremental)
     let visible_end = (app.git.diff_scroll_y as usize) + (content_area.height as usize) + 1;
-    app.ensure_file_highlight(&file, visible_end);
+    app.git.ensure_file_highlight(&file, visible_end);
 
     // Split content area: left half | separator | right half
     let left_width = (content_area.width.saturating_sub(1)) / 2;

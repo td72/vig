@@ -36,7 +36,7 @@ impl App {
                 if self.git.search.query.is_some() {
                     self.git.search.clear();
                 } else {
-                    self.set_focus(self.git.previous_pane);
+                    self.git.set_focus(self.git.previous_pane);
                 }
             }
             KeyCode::Char('l') | KeyCode::Right => {
@@ -533,7 +533,7 @@ impl App {
     /// Build flat list of content strings for the current side of the diff.
     /// Results are cached and reused until the file or side changes.
     pub fn content_lines(&mut self) -> Vec<String> {
-        let file = match self.selected_file() {
+        let file = match self.git.selected_file() {
             Some(f) => f.clone(),
             None => return Vec::new(),
         };

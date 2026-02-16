@@ -12,13 +12,13 @@ impl SelectPane for GitLogSelectPane {
     fn handle_key(&self, app: &mut App, key: KeyEvent) {
         match key.code {
             KeyCode::Char('h') => {
-                app.set_focus(FocusedPane::Reflog);
+                app.git.set_focus(FocusedPane::Reflog);
             }
             KeyCode::Esc => {
                 if app.git.search.query.is_some() {
                     app.git.search.clear();
                 } else {
-                    app.set_focus(app.git.previous_pane);
+                    app.git.set_focus(app.git.previous_pane);
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
@@ -26,13 +26,13 @@ impl SelectPane for GitLogSelectPane {
                     && app.git.git_log.selected_idx + 1 < app.git.git_log.commits.len()
                 {
                     app.git.git_log.selected_idx += 1;
-                    app.load_commit_detail();
+                    app.git.load_commit_detail();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if app.git.git_log.selected_idx > 0 {
                     app.git.git_log.selected_idx -= 1;
-                    app.load_commit_detail();
+                    app.git.load_commit_detail();
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
@@ -40,21 +40,21 @@ impl SelectPane for GitLogSelectPane {
                 let new_idx = app.git.git_log.selected_idx.saturating_add(half);
                 app.git.git_log.selected_idx =
                     new_idx.min(app.git.git_log.commits.len().saturating_sub(1));
-                app.load_commit_detail();
+                app.git.load_commit_detail();
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (app.git.git_log.view_height / 2).max(1) as usize;
                 app.git.git_log.selected_idx = app.git.git_log.selected_idx.saturating_sub(half);
-                app.load_commit_detail();
+                app.git.load_commit_detail();
             }
             KeyCode::Char('g') => {
                 app.git.git_log.selected_idx = 0;
-                app.load_commit_detail();
+                app.git.load_commit_detail();
             }
             KeyCode::Char('G') => {
                 if !app.git.git_log.commits.is_empty() {
                     app.git.git_log.selected_idx = app.git.git_log.commits.len() - 1;
-                    app.load_commit_detail();
+                    app.git.load_commit_detail();
                 }
             }
             KeyCode::Char('y') => {

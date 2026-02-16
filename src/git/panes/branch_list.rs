@@ -29,13 +29,13 @@ impl SelectPane for BranchListPane {
                     && app.git.branch_list.selected_idx + 1 < app.git.branch_list.branches.len()
                 {
                     app.git.branch_list.selected_idx += 1;
-                    app.update_branch_log();
+                    app.git.update_branch_log();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if app.git.branch_list.selected_idx > 0 {
                     app.git.branch_list.selected_idx -= 1;
-                    app.update_branch_log();
+                    app.git.update_branch_log();
                 }
             }
             KeyCode::Enter => {
