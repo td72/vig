@@ -1,9 +1,9 @@
-use crate::git::repository::Repo;
 pub use crate::git::state::*;
 pub use crate::core::search::{SearchMatch, SearchOrigin, SearchState};
 use crate::github::state::GitHubState;
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ViewMode {
@@ -27,15 +27,14 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(repo: Repo) -> Result<Self> {
-        let diff_state = repo.diff_workdir(None)?;
+    pub fn new(cwd: &Path) -> Result<Self> {
         Ok(Self {
             should_quit: false,
             view_mode: ViewMode::Git,
             show_help: false,
             status_message: None,
             error_dialog: None,
-            git: GitState::new(repo, diff_state),
+            git: GitState::new(cwd)?,
             github: GitHubState::new(),
         })
     }

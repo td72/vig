@@ -3,8 +3,10 @@ use crate::core::syntax::{HighlightCache, SyntaxHighlighter};
 use crate::git::diff::{DiffState, FileDiff};
 use crate::git::graph::{self, GraphRow};
 use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
+use anyhow::Result;
 use ratatui::style::Color;
 use std::collections::{HashMap, HashSet};
+use std::path::Path;
 use std::sync::mpsc;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -142,7 +144,9 @@ pub struct GitState {
 }
 
 impl GitState {
-    pub fn new(repo: Repo, diff_state: DiffState) -> Self {
+    pub fn new(cwd: &Path) -> Result<Self> {
+        let repo = Repo::discover(cwd)?;
+        let diff_state = repo.diff_workdir(None)?;
         let mut state = Self {
             repo,
             diff_state,
@@ -194,7 +198,7 @@ impl GitState {
         state.load_branches();
         state.load_reflog();
         state.spawn_bg_highlight();
-        state
+        Ok(state)
     }
 
     pub(crate) fn set_focus(&mut self, pane: FocusedPane) {

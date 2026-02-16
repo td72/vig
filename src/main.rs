@@ -13,7 +13,6 @@ use crate::git::layout;
 use crate::git::panes::{
     BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
 };
-use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use anyhow::Result;
@@ -55,9 +54,8 @@ fn run_tui() -> Result<()> {
     }));
 
     let cwd = env::current_dir()?;
-    let repo = Repo::discover(&cwd)?;
-    let workdir = repo.workdir().to_path_buf();
-    let mut app = App::new(repo)?;
+    let mut app = App::new(&cwd)?;
+    let workdir = app.git.repo.workdir().to_path_buf();
 
     let events = EventHandler::new(Duration::from_millis(250));
 
