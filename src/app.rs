@@ -2,7 +2,7 @@ use crate::git::diff::{DiffState, FileDiff};
 use crate::git::graph::{self, GraphRow};
 use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
 use crate::github::state::{GhFocusedPane, GitHubState};
-use crate::pane::{self, DetailPane as _, SelectPane as _};
+use crate::pane;
 use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -566,212 +566,8 @@ impl App {
         }
     }
 
-    pub(crate) fn handle_branch_list_key(&mut self, key: KeyEvent) {
-        match key.code {
-            KeyCode::Char('h') => {
-                self.set_focus(FocusedPane::FileTree);
-            }
-            KeyCode::Char('l') => {
-                self.set_focus(FocusedPane::Reflog);
-            }
-            KeyCode::Char('i') => {
-                self.set_focus(FocusedPane::GitLog);
-            }
-            KeyCode::Esc => {
-                if self.search.query.is_some() {
-                    self.search.clear();
-                } else if self.diff_base_ref.is_some() {
-                    self.diff_base_ref = None;
-                    if let Err(e) = self.refresh_diff() {
-                        self.status_message = Some(format!("Diff error: {e}"));
-                    }
-                }
-            }
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.branch_list.branches.is_empty()
-                    && self.branch_list.selected_idx + 1 < self.branch_list.branches.len()
-                {
-                    self.branch_list.selected_idx += 1;
-                    self.update_branch_log();
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.branch_list.selected_idx > 0 {
-                    self.branch_list.selected_idx -= 1;
-                    self.update_branch_log();
-                }
-            }
-            KeyCode::Enter => {
-                self.open_branch_action_menu();
-            }
-            KeyCode::Char('/') => {
-                self.search.start(SearchOrigin::BranchList);
-            }
-            KeyCode::Char('n') => {
-                self.jump_to_match(true);
-            }
-            KeyCode::Char('N') => {
-                self.jump_to_match(false);
-            }
-            _ => {}
-        }
-    }
 
-    pub(crate) fn handle_git_log_key(&mut self, key: KeyEvent) {
-        match key.code {
-            KeyCode::Char('h') => {
-                self.set_focus(FocusedPane::Reflog);
-            }
-            KeyCode::Esc => {
-                if self.search.query.is_some() {
-                    self.search.clear();
-                } else {
-                    self.set_focus(self.previous_pane);
-                }
-            }
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.git_log.commits.is_empty()
-                    && self.git_log.selected_idx + 1 < self.git_log.commits.len()
-                {
-                    self.git_log.selected_idx += 1;
-                    self.load_commit_detail();
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.git_log.selected_idx > 0 {
-                    self.git_log.selected_idx -= 1;
-                    self.load_commit_detail();
-                }
-            }
-            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.git_log.view_height / 2).max(1) as usize;
-                let new_idx = self.git_log.selected_idx.saturating_add(half);
-                self.git_log.selected_idx =
-                    new_idx.min(self.git_log.commits.len().saturating_sub(1));
-                self.load_commit_detail();
-            }
-            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.git_log.view_height / 2).max(1) as usize;
-                self.git_log.selected_idx = self.git_log.selected_idx.saturating_sub(half);
-                self.load_commit_detail();
-            }
-            KeyCode::Char('g') => {
-                self.git_log.selected_idx = 0;
-                self.load_commit_detail();
-            }
-            KeyCode::Char('G') => {
-                if !self.git_log.commits.is_empty() {
-                    self.git_log.selected_idx = self.git_log.commits.len() - 1;
-                    self.load_commit_detail();
-                }
-            }
-            KeyCode::Char('y') => {
-                if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
-                    let hash = commit.full_hash.clone();
-                    self.copy_to_clipboard(&hash);
-                }
-            }
-            KeyCode::Char('o') => {
-                if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
-                    let hash = commit.full_hash.clone();
-                    if let Some(nwo) = crate::github::client::repo_nwo() {
-                        let url = format!("https://github.com/{nwo}/commit/{hash}");
-                        match crate::github::client::open_url(&url) {
-                            Ok(()) => {
-                                self.status_message =
-                                    Some("Opening in browser...".to_string());
-                            }
-                            Err(e) => {
-                                self.status_message =
-                                    Some(format!("Failed to open URL: {e}"));
-                            }
-                        }
-                    } else {
-                        self.status_message =
-                            Some("Could not determine GitHub repository".to_string());
-                    }
-                }
-            }
-            KeyCode::Char('/') => {
-                self.search.start(SearchOrigin::CommitLog);
-            }
-            KeyCode::Char('n') => {
-                self.jump_to_match(true);
-            }
-            KeyCode::Char('N') => {
-                self.jump_to_match(false);
-            }
-            _ => {}
-        }
-    }
-
-    pub(crate) fn handle_reflog_key(&mut self, key: KeyEvent) {
-        match key.code {
-            KeyCode::Char('h') => {
-                self.set_focus(FocusedPane::BranchList);
-            }
-            KeyCode::Char('i') => {
-                self.set_focus(FocusedPane::GitLog);
-            }
-            KeyCode::Esc => {
-                if self.search.query.is_some() {
-                    self.search.clear();
-                } else {
-                    self.set_focus(FocusedPane::BranchList);
-                }
-            }
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.reflog.entries.is_empty()
-                    && self.reflog.selected_idx + 1 < self.reflog.entries.len()
-                {
-                    self.reflog.selected_idx += 1;
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.reflog.selected_idx > 0 {
-                    self.reflog.selected_idx -= 1;
-                }
-            }
-            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.reflog.view_height / 2).max(1) as usize;
-                let new_idx = self.reflog.selected_idx.saturating_add(half);
-                self.reflog.selected_idx =
-                    new_idx.min(self.reflog.entries.len().saturating_sub(1));
-            }
-            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.reflog.view_height / 2).max(1) as usize;
-                self.reflog.selected_idx = self.reflog.selected_idx.saturating_sub(half);
-            }
-            KeyCode::Char('g') => {
-                self.reflog.selected_idx = 0;
-            }
-            KeyCode::Char('G') => {
-                if !self.reflog.entries.is_empty() {
-                    self.reflog.selected_idx = self.reflog.entries.len() - 1;
-                }
-            }
-            KeyCode::Enter => {
-                if let Some(entry) = self.reflog.entries.get(self.reflog.selected_idx) {
-                    self.diff_base_ref = Some(entry.full_hash.clone());
-                    if let Err(e) = self.refresh_diff() {
-                        self.status_message = Some(format!("Diff error: {e}"));
-                    }
-                }
-            }
-            KeyCode::Char('/') => {
-                self.search.start(SearchOrigin::Reflog);
-            }
-            KeyCode::Char('n') => {
-                self.jump_to_match(true);
-            }
-            KeyCode::Char('N') => {
-                self.jump_to_match(false);
-            }
-            _ => {}
-        }
-    }
-
-    fn open_branch_action_menu(&mut self) {
+    pub(crate) fn open_branch_action_menu(&mut self) {
         if let Some(branch) = self.branch_list.branches.get(self.branch_list.selected_idx) {
             self.branch_action_menu = Some(BranchActionMenuState {
                 branch_name: branch.name.clone(),
@@ -1016,7 +812,7 @@ impl App {
             && self.focused_pane == FocusedPane::DiffView
             && self.diff_view_mode != DiffViewMode::Scroll
         {
-            self.handle_diff_view_key(key);
+            pane::dispatch_git_key(self, key);
             return Ok(false);
         }
 
@@ -1074,11 +870,7 @@ impl App {
                     KeyCode::BackTab => {
                         self.set_focus(pane::prev_git_tab(self.focused_pane));
                     }
-                    _ => match self.focused_pane {
-                        FocusedPane::GitLog => pane::GitLogSelectPane.handle_key(self, key),
-                        FocusedPane::DiffView => pane::DiffViewPane.handle_key(self, key),
-                        other => pane::git_select_pane(other).handle_key(self, key),
-                    },
+                    _ => pane::dispatch_git_key(self, key),
                 }
             }
             ViewMode::GitHub => {
@@ -1114,267 +906,11 @@ impl App {
             }
             _ => {}
         }
-        match self.github.focused_pane {
-            GhFocusedPane::Detail => pane::GhDetailViewPane.handle_key(self, key),
-            other => pane::gh_select_pane(other).handle_key(self, key),
-        }
+        pane::dispatch_gh_key(self, key);
         Ok(false)
     }
 
-    pub(crate) fn handle_gh_issue_list_key(&mut self, key: KeyEvent) {
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.github.issues.is_empty()
-                    && self.github.issue_selected_idx + 1 < self.github.issues.len()
-                {
-                    self.github.issue_selected_idx += 1;
-                    self.github.load_selected_issue_detail();
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.github.issue_selected_idx > 0 {
-                    self.github.issue_selected_idx -= 1;
-                    self.github.load_selected_issue_detail();
-                }
-            }
-            KeyCode::Char('g') => {
-                self.github.issue_selected_idx = 0;
-                self.github.load_selected_issue_detail();
-            }
-            KeyCode::Char('G') => {
-                if !self.github.issues.is_empty() {
-                    self.github.issue_selected_idx = self.github.issues.len() - 1;
-                    self.github.load_selected_issue_detail();
-                }
-            }
-            KeyCode::Char('l') | KeyCode::Tab => {
-                self.github.focused_pane = GhFocusedPane::PrList;
-                self.github.load_selected_pr_detail();
-            }
-            KeyCode::Char('i') | KeyCode::Enter => {
-                if !self.github.issues.is_empty() {
-                    self.github.previous_pane = GhFocusedPane::IssueList;
-                    self.github.focused_pane = GhFocusedPane::Detail;
-                    self.github.load_selected_issue_detail();
-                }
-            }
-            KeyCode::Char('o') => {
-                if let Some(issue) = self.github.issues.get(self.github.issue_selected_idx) {
-                    let number = issue.number;
-                    match crate::github::client::open_issue_in_browser(number) {
-                        Ok(()) => {
-                            self.status_message =
-                                Some(format!("Opening issue #{number} in browser..."));
-                        }
-                        Err(e) => {
-                            self.status_message = Some(format!("Failed to open browser: {e}"));
-                        }
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-
-    pub(crate) fn handle_gh_pr_list_key(&mut self, key: KeyEvent) {
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.github.prs.is_empty()
-                    && self.github.pr_selected_idx + 1 < self.github.prs.len()
-                {
-                    self.github.pr_selected_idx += 1;
-                    self.github.load_selected_pr_detail();
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.github.pr_selected_idx > 0 {
-                    self.github.pr_selected_idx -= 1;
-                    self.github.load_selected_pr_detail();
-                }
-            }
-            KeyCode::Char('g') => {
-                self.github.pr_selected_idx = 0;
-                self.github.load_selected_pr_detail();
-            }
-            KeyCode::Char('G') => {
-                if !self.github.prs.is_empty() {
-                    self.github.pr_selected_idx = self.github.prs.len() - 1;
-                    self.github.load_selected_pr_detail();
-                }
-            }
-            KeyCode::Char('h') | KeyCode::BackTab => {
-                self.github.focused_pane = GhFocusedPane::IssueList;
-                self.github.load_selected_issue_detail();
-            }
-            KeyCode::Char('i') | KeyCode::Enter => {
-                if !self.github.prs.is_empty() {
-                    self.github.previous_pane = GhFocusedPane::PrList;
-                    self.github.focused_pane = GhFocusedPane::Detail;
-                    self.github.load_selected_pr_detail();
-                }
-            }
-            KeyCode::Char('o') => {
-                if let Some(pr) = self.github.prs.get(self.github.pr_selected_idx) {
-                    let number = pr.number;
-                    match crate::github::client::open_pr_in_browser(number) {
-                        Ok(()) => {
-                            self.status_message =
-                                Some(format!("Opening PR #{number} in browser..."));
-                        }
-                        Err(e) => {
-                            self.status_message = Some(format!("Failed to open browser: {e}"));
-                        }
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-
-    pub(crate) fn handle_gh_detail_key(&mut self, key: KeyEvent) {
-        use crate::github::state::{GhDetailContent, GhDetailPane};
-
-        // Determine item count for selection-based panes
-        let pane = self.github.detail_pane;
-        let item_count = match pane {
-            GhDetailPane::Status => {
-                if let GhDetailContent::Pr(ref detail) = self.github.detail {
-                    crate::ui::github::detail_view::sorted_checks(detail).len()
-                } else {
-                    0
-                }
-            }
-            GhDetailPane::Reviews => {
-                if let GhDetailContent::Pr(ref detail) = self.github.detail {
-                    crate::ui::github::detail_view::meaningful_reviews(&detail.reviews).len()
-                } else {
-                    0
-                }
-            }
-            GhDetailPane::Comments => match &self.github.detail {
-                GhDetailContent::Issue(detail) => detail.comments.len(),
-                GhDetailContent::Pr(detail) => detail.comments.len(),
-                _ => 0,
-            },
-            GhDetailPane::Body => 0, // scroll-based
-        };
-        let selectable = pane != GhDetailPane::Body;
-
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if selectable && item_count > 0 {
-                    let idx = self.github.active_selected_idx_mut();
-                    if *idx + 1 < item_count {
-                        *idx += 1;
-                        // Reset intra-item scroll when selection moves
-                        *self.github.active_detail_scroll_mut() = 0;
-                    } else {
-                        // At last item — scroll within
-                        let scroll = self.github.active_detail_scroll_mut();
-                        *scroll = scroll.saturating_add(1);
-                    }
-                } else if !selectable {
-                    let scroll = self.github.active_detail_scroll_mut();
-                    *scroll = scroll.saturating_add(1);
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if selectable {
-                    let scroll_val = *self.github.active_detail_scroll_mut();
-                    if scroll_val > 0 {
-                        // Scroll back within current item first
-                        *self.github.active_detail_scroll_mut() = scroll_val - 1;
-                    } else {
-                        let idx = self.github.active_selected_idx_mut();
-                        *idx = idx.saturating_sub(1);
-                    }
-                } else {
-                    let scroll = self.github.active_detail_scroll_mut();
-                    *scroll = scroll.saturating_sub(1);
-                }
-            }
-            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.github.detail_view_height / 2).max(1);
-                let scroll = self.github.active_detail_scroll_mut();
-                *scroll = scroll.saturating_add(half);
-            }
-            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.github.detail_view_height / 2).max(1);
-                let scroll = self.github.active_detail_scroll_mut();
-                *scroll = scroll.saturating_sub(half);
-            }
-            KeyCode::Char('g') => {
-                if selectable {
-                    *self.github.active_selected_idx_mut() = 0;
-                }
-                *self.github.active_detail_scroll_mut() = 0;
-            }
-            KeyCode::Char('G') => {
-                if selectable && item_count > 0 {
-                    *self.github.active_selected_idx_mut() = item_count - 1;
-                }
-                if !selectable || item_count > 0 {
-                    *self.github.active_detail_scroll_mut() = u16::MAX / 2;
-                }
-            }
-            KeyCode::Char('h') => {
-                self.github.detail_pane = GhDetailPane::Body;
-            }
-            KeyCode::Char('l') => {
-                match self.github.detail_pane {
-                    GhDetailPane::Body => {
-                        if self.github.is_pr() {
-                            self.github.detail_pane = GhDetailPane::Status;
-                        } else {
-                            self.github.detail_pane = GhDetailPane::Comments;
-                        }
-                    }
-                    _ if self.github.is_pr() => {
-                        // Cycle right panes like Tab
-                        self.github.detail_pane = match self.github.detail_pane {
-                            GhDetailPane::Status => GhDetailPane::Reviews,
-                            GhDetailPane::Reviews => GhDetailPane::Comments,
-                            GhDetailPane::Comments => GhDetailPane::Status,
-                            other => other,
-                        };
-                    }
-                    _ => {}
-                }
-            }
-            KeyCode::Tab => {
-                // Cycle right panes forward: Status → Reviews → Comments → Status (PR only)
-                if self.github.is_pr() {
-                    self.github.detail_pane = match self.github.detail_pane {
-                        GhDetailPane::Status => GhDetailPane::Reviews,
-                        GhDetailPane::Reviews => GhDetailPane::Comments,
-                        GhDetailPane::Comments => GhDetailPane::Status,
-                        other => other,
-                    };
-                }
-            }
-            KeyCode::BackTab => {
-                // Cycle right panes backward (PR only)
-                if self.github.is_pr() {
-                    self.github.detail_pane = match self.github.detail_pane {
-                        GhDetailPane::Status => GhDetailPane::Comments,
-                        GhDetailPane::Reviews => GhDetailPane::Status,
-                        GhDetailPane::Comments => GhDetailPane::Reviews,
-                        other => other,
-                    };
-                }
-            }
-            KeyCode::Char('o') => {
-                self.open_gh_detail_item();
-            }
-            KeyCode::Esc => {
-                self.github.focused_pane = self.github.previous_pane;
-                self.github.watch_mode = false;
-            }
-            _ => {}
-        }
-    }
-
-    fn open_gh_detail_item(&mut self) {
+    pub(crate) fn open_gh_detail_item(&mut self) {
         use crate::github::state::{GhDetailContent, GhDetailPane};
 
         let url: Option<String> = match self.github.detail_pane {
@@ -1465,97 +1001,7 @@ impl App {
         }
     }
 
-    pub(crate) fn handle_file_tree_key(&mut self, key: KeyEvent) {
-        // Pane navigation must work even when file list is empty
-        match key.code {
-            KeyCode::Char('l') => {
-                self.set_focus(FocusedPane::BranchList);
-                return;
-            }
-            KeyCode::Char('i') => {
-                self.set_focus(FocusedPane::DiffView);
-                return;
-            }
-            KeyCode::Esc => {
-                if self.search.query.is_some() {
-                    self.search.clear();
-                }
-                return;
-            }
-            _ => {}
-        }
-
-        let entries = self.build_tree_entries();
-        if entries.is_empty() {
-            return;
-        }
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if self.selected_tree_idx + 1 < entries.len() {
-                    self.selected_tree_idx += 1;
-                    self.diff_scroll_y = 0;
-                    self.diff_scroll_x = 0;
-                    self.re_search_on_file_change();
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.selected_tree_idx > 0 {
-                    self.selected_tree_idx -= 1;
-                    self.diff_scroll_y = 0;
-                    self.diff_scroll_x = 0;
-                    self.re_search_on_file_change();
-                }
-            }
-            KeyCode::Char(' ') => {
-                if let Some(TreeEntry::Dir { path, .. }) = entries.get(self.selected_tree_idx) {
-                    let path = path.clone();
-                    if self.collapsed_dirs.contains(&path) {
-                        self.collapsed_dirs.remove(&path);
-                    } else {
-                        self.collapsed_dirs.insert(path);
-                    }
-                }
-            }
-            KeyCode::Right | KeyCode::Enter => {
-                match entries.get(self.selected_tree_idx) {
-                    Some(TreeEntry::Dir { path, .. }) => {
-                        let path = path.clone();
-                        if self.collapsed_dirs.contains(&path) {
-                            self.collapsed_dirs.remove(&path);
-                        } else {
-                            self.collapsed_dirs.insert(path);
-                        }
-                    }
-                    Some(TreeEntry::File { .. }) => {
-                        self.set_focus(FocusedPane::DiffView);
-                        self.diff_scroll_y = 0;
-                        self.diff_scroll_x = 0;
-                    }
-                    None => {}
-                }
-            }
-            KeyCode::Char('/') => {
-                self.search.start(SearchOrigin::FileTree);
-            }
-            KeyCode::Char('n') => {
-                self.jump_to_match(true);
-            }
-            KeyCode::Char('N') => {
-                self.jump_to_match(false);
-            }
-            _ => {}
-        }
-    }
-
-    pub(crate) fn handle_diff_view_key(&mut self, key: KeyEvent) {
-        match self.diff_view_mode {
-            DiffViewMode::Scroll => self.handle_diff_scroll_key(key),
-            DiffViewMode::Normal => self.handle_diff_normal_key(key),
-            DiffViewMode::Visual | DiffViewMode::VisualLine => self.handle_diff_visual_key(key),
-        }
-    }
-
-    fn handle_diff_scroll_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_diff_scroll_key(&mut self, key: KeyEvent) {
         let max_scroll = self.diff_total_lines.saturating_sub(self.diff_view_height);
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
@@ -1617,7 +1063,7 @@ impl App {
         }
     }
 
-    fn handle_diff_normal_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_diff_normal_key(&mut self, key: KeyEvent) {
         // Handle Ctrl+w prefix for panel switching
         if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('w') {
             self.pending_key = Some('w');
@@ -1904,7 +1350,7 @@ impl App {
         result
     }
 
-    fn handle_diff_visual_key(&mut self, key: KeyEvent) {
+    pub(crate) fn handle_diff_visual_key(&mut self, key: KeyEvent) {
         // Handle pending key sequences
         if let Some(prefix) = self.pending_key {
             self.pending_key = None;
@@ -2053,7 +1499,7 @@ impl App {
         self.scroll_to_cursor();
     }
 
-    fn copy_to_clipboard(&mut self, text: &str) {
+    pub(crate) fn copy_to_clipboard(&mut self, text: &str) {
         if text.is_empty() {
             return;
         }
@@ -2370,7 +1816,7 @@ impl App {
     // ── Search ──────────────────────────────────────────────
 
     /// Re-execute DiffView search when file selection changes (preserves query)
-    fn re_search_on_file_change(&mut self) {
+    pub(crate) fn re_search_on_file_change(&mut self) {
         if self.search.origin == SearchOrigin::DiffView && self.search.query.is_some() {
             self.search.reset_matches();
             self.content_lines_cache = None;
@@ -2538,7 +1984,7 @@ impl App {
         }
     }
 
-    fn jump_to_match(&mut self, forward: bool) {
+    pub(crate) fn jump_to_match(&mut self, forward: bool) {
         // If no active query but last_query exists, re-execute search
         if self.search.query.is_none() {
             if let Some(last) = self.search.last_query.clone() {
