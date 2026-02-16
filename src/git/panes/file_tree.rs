@@ -1,6 +1,6 @@
 use crate::app::{App, FocusedPane, SearchMatch, SearchOrigin, TreeEntry};
 use crate::git::diff::FileStatus;
-use crate::pane::SelectPane;
+use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};
 use std::collections::HashSet;
 use ratatui::{

@@ -1,5 +1,5 @@
 use crate::app::{App, FocusedPane, SearchMatch, SearchOrigin};
-use crate::pane::SelectPane;
+use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::collections::HashSet;
 use ratatui::{

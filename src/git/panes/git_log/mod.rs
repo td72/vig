@@ -1,7 +1,7 @@
 mod view;
 
 use crate::app::{App, FocusedPane, SearchOrigin};
-use crate::pane::SelectPane;
+use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 

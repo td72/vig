@@ -1,26 +1,26 @@
 mod app;
-mod container;
+mod core;
 mod event;
 mod git;
 mod github;
-mod pane;
 mod syntax;
 mod tui;
 mod ui;
 mod update;
 
 use crate::app::{App, ViewMode};
+use crate::core::pane::{DetailPane, SelectPane};
 use crate::event::{Event, EventHandler};
+use crate::git::container as git_container;
+use crate::git::container::GitDetailId;
+use crate::git::panes::{
+    BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
+};
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
-use crate::container::git as git_container;
-use crate::container::GitDetailId;
-use crate::pane::{
-    BranchListPane, DiffViewPane, FileTreePane, GhDetailViewPane, GhIssueListPane,
-    GhPrListPane, GitLogSelectPane, ReflogPane, SelectPane, DetailPane,
-};
-use crate::ui::{branch_action_menu, confirm_dialog, layout, status_bar};
+use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use crate::ui::github as gh_ui;
+use crate::ui::{branch_action_menu, confirm_dialog, layout, status_bar};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::env;

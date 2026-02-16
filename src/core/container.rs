@@ -1,9 +1,5 @@
-pub(crate) mod git;
-pub(crate) mod github;
-
-use crate::app::{App, FocusedPane, SearchOrigin};
-use crate::github::state::GhFocusedPane;
-use crate::pane::SelectPane;
+use crate::app::App;
+use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};
 
 pub(crate) trait PaneContainer {
@@ -37,34 +33,4 @@ pub(crate) trait PaneContainer {
             self.pane_at(idx).handle_key(app, key);
         }
     }
-}
-
-// === Detail Pane identifiers ===
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GitDetailId {
-    DiffView,
-    CommitLog,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
-pub enum GhDetailId {
-    DetailView,
-}
-
-// === PaneGroup: Select + Detail pair ===
-
-pub struct GitPaneGroup {
-    pub select: &'static dyn SelectPane,
-    pub detail: GitDetailId,
-    pub id: FocusedPane,
-    pub search_origin: SearchOrigin,
-}
-
-pub struct GhPaneGroup {
-    pub select: &'static dyn SelectPane,
-    #[allow(dead_code)]
-    pub detail: GhDetailId,
-    pub id: GhFocusedPane,
 }

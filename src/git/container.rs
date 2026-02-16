@@ -1,10 +1,25 @@
 use crate::app::{App, FocusedPane, SearchOrigin};
-use crate::container::{GitDetailId, GitPaneGroup, PaneContainer};
-use crate::pane::{
-    BranchListPane, DetailPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
-    SelectPane,
+use crate::core::container::PaneContainer;
+use crate::core::pane::{DetailPane, SelectPane};
+use crate::git::panes::{
+    BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
 };
 use crossterm::event::{KeyCode, KeyEvent};
+
+// === Domain types ===
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GitDetailId {
+    DiffView,
+    CommitLog,
+}
+
+pub struct GitPaneGroup {
+    pub select: &'static dyn SelectPane,
+    pub detail: GitDetailId,
+    pub id: FocusedPane,
+    pub search_origin: SearchOrigin,
+}
 
 // === Tab definitions ===
 

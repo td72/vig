@@ -1,8 +1,24 @@
 use crate::app::App;
-use crate::container::{GhDetailId, GhPaneGroup, PaneContainer};
+use crate::core::container::PaneContainer;
+use crate::core::pane::{DetailPane, SelectPane};
+use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use crate::github::state::GhFocusedPane;
-use crate::pane::{DetailPane, GhDetailViewPane, GhIssueListPane, GhPrListPane, SelectPane};
 use crossterm::event::{KeyCode, KeyEvent};
+
+// === Domain types ===
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
+pub enum GhDetailId {
+    DetailView,
+}
+
+pub struct GhPaneGroup {
+    pub select: &'static dyn SelectPane,
+    #[allow(dead_code)]
+    pub detail: GhDetailId,
+    pub id: GhFocusedPane,
+}
 
 // === Tab definitions ===
 

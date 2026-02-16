@@ -1,6 +1,6 @@
 use crate::app::App;
 use crate::github::state::GhFocusedPane;
-use crate::pane::SelectPane;
+use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,

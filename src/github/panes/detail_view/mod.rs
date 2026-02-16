@@ -2,7 +2,7 @@ pub(crate) mod view;
 
 use crate::app::App;
 use crate::github::state::{GhDetailContent, GhDetailPane};
-use crate::pane::DetailPane;
+use crate::core::pane::DetailPane;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 

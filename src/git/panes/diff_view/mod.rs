@@ -1,7 +1,7 @@
 mod view;
 
 use crate::app::{App, DiffViewMode};
-use crate::pane::DetailPane;
+use crate::core::pane::DetailPane;
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 

@@ -811,7 +811,7 @@ impl App {
             && self.focused_pane == FocusedPane::DiffView
             && self.diff_view_mode != DiffViewMode::Scroll
         {
-            crate::container::git::dispatch_git_key(self, key);
+            crate::git::container::dispatch_git_key(self, key);
             return Ok(false);
         }
 
@@ -864,12 +864,12 @@ impl App {
                         return Ok(true); // Signal to open editor
                     }
                     KeyCode::Tab => {
-                        self.set_focus(crate::container::git::next_git_tab(self.focused_pane));
+                        self.set_focus(crate::git::container::next_git_tab(self.focused_pane));
                     }
                     KeyCode::BackTab => {
-                        self.set_focus(crate::container::git::prev_git_tab(self.focused_pane));
+                        self.set_focus(crate::git::container::prev_git_tab(self.focused_pane));
                     }
-                    _ => crate::container::git::dispatch_git_key(self, key),
+                    _ => crate::git::container::dispatch_git_key(self, key),
                 }
             }
             ViewMode::GitHub => {
@@ -905,7 +905,7 @@ impl App {
             }
             _ => {}
         }
-        crate::container::github::dispatch_gh_key(self, key);
+        crate::github::container::dispatch_gh_key(self, key);
         Ok(false)
     }
 
@@ -915,7 +915,7 @@ impl App {
         let url: Option<String> = match self.github.detail_pane {
             GhDetailPane::Status => {
                 if let GhDetailContent::Pr(ref detail) = self.github.detail {
-                    let sorted = crate::pane::github::detail_view::view::sorted_checks(detail);
+                    let sorted = crate::github::panes::detail_view::view::sorted_checks(detail);
                     sorted
                         .get(self.github.detail_check_idx)
                         .and_then(|c| c.details_url.clone())
@@ -926,7 +926,7 @@ impl App {
             GhDetailPane::Reviews => {
                 if let GhDetailContent::Pr(ref detail) = self.github.detail {
                     let reviews =
-                        crate::pane::github::detail_view::view::meaningful_reviews(&detail.reviews);
+                        crate::github::panes::detail_view::view::meaningful_reviews(&detail.reviews);
                     reviews.get(self.github.detail_review_idx).and_then(|r| {
                         r.id.as_ref().and_then(|id| {
                             crate::github::client::repo_nwo().map(|nwo| {
