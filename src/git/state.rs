@@ -142,6 +142,61 @@ pub struct GitState {
 }
 
 impl GitState {
+    pub fn new(repo: Repo, diff_state: DiffState) -> Self {
+        let mut state = Self {
+            repo,
+            diff_state,
+            collapsed_dirs: HashSet::new(),
+            selected_tree_idx: 0,
+            focused_pane: FocusedPane::FileTree,
+            previous_pane: FocusedPane::FileTree,
+            diff_scroll_y: 0,
+            diff_scroll_x: 0,
+            diff_total_lines: 0,
+            diff_view_height: 0,
+            diff_view_mode: DiffViewMode::Scroll,
+            cursor_pos: CursorPos {
+                row: 0,
+                col: 0,
+                side: DiffSide::Left,
+            },
+            visual_anchor: None,
+            pending_key: None,
+            count: None,
+            highlighter: SyntaxHighlighter::new(),
+            highlight_cache: None,
+            content_lines_cache: None,
+            bg_highlights: HashMap::new(),
+            bg_highlight_rx: None,
+            diff_base_ref: None,
+            branch_list: BranchListState {
+                branches: Vec::new(),
+                selected_idx: 0,
+            },
+            git_log: GitLogState {
+                commits: Vec::new(),
+                selected_idx: 0,
+                view_height: 0,
+                ref_name: String::new(),
+                graph: Vec::new(),
+                detail_scroll: 0,
+                detail_view_height: 0,
+                detail_changed_files: Vec::new(),
+            },
+            reflog: ReflogState {
+                entries: Vec::new(),
+                selected_idx: 0,
+                view_height: 0,
+            },
+            branch_action_menu: None,
+            search: SearchState::new(),
+        };
+        state.load_branches();
+        state.load_reflog();
+        state.spawn_bg_highlight();
+        state
+    }
+
     pub(crate) fn set_focus(&mut self, pane: FocusedPane) {
         self.previous_pane = self.focused_pane;
         self.focused_pane = pane;
