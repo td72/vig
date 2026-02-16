@@ -1,11 +1,5 @@
 pub mod branch_action_menu;
-pub mod branch_selector;
-pub mod commit_detail;
-pub mod commit_log;
 pub mod confirm_dialog;
-pub mod diff_view;
-pub mod file_tree;
 pub mod github;
 pub mod layout;
-pub mod reflog;
 pub mod status_bar;

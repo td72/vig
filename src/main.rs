@@ -1,4 +1,5 @@
 mod app;
+mod container;
 mod event;
 mod git;
 mod github;
@@ -12,10 +13,12 @@ use crate::app::{App, ViewMode};
 use crate::event::{Event, EventHandler};
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
-use crate::ui::{
-    branch_action_menu, branch_selector, commit_log, confirm_dialog, diff_view, file_tree,
-    github as gh_ui, layout, reflog, status_bar,
+use crate::pane::{
+    BranchListPane, DiffViewPane, FileTreePane, GhDetailViewPane, GhIssueListPane,
+    GhPrListPane, GitLogSelectPane, ReflogPane, SelectPane, DetailPane,
 };
+use crate::ui::{branch_action_menu, confirm_dialog, layout, status_bar};
+use crate::ui::github as gh_ui;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::env;
@@ -77,16 +80,16 @@ fn run_tui() -> Result<()> {
                 ViewMode::Git => {
                     let layout = layout::compute_layout(frame.area());
                     status_bar::render_header(frame, &app, layout.header);
-                    file_tree::render(frame, &app, layout.file_tree);
-                    branch_selector::render(frame, &app, layout.branch_list);
-                    reflog::render(frame, &mut app, layout.reflog);
+                    FileTreePane.render(frame, &mut app, layout.file_tree);
+                    BranchListPane.render(frame, &mut app, layout.branch_list);
+                    ReflogPane.render(frame, &mut app, layout.reflog);
 
                     match pane::git_detail_for(app.focused_pane) {
                         pane::GitDetailId::CommitLog => {
-                            commit_log::render(frame, &mut app, layout.main_pane);
+                            GitLogSelectPane.render(frame, &mut app, layout.main_pane);
                         }
                         pane::GitDetailId::DiffView => {
-                            diff_view::render(frame, &mut app, layout.main_pane);
+                            DiffViewPane.render(frame, &mut app, layout.main_pane);
                         }
                     }
 
@@ -103,9 +106,9 @@ fn run_tui() -> Result<()> {
                 ViewMode::GitHub => {
                     let gl = gh_ui::layout::compute_gh_layout(frame.area());
                     status_bar::render_gh_header(frame, &app, gl.header);
-                    gh_ui::issue_list::render(frame, &app, gl.issue_list);
-                    gh_ui::pr_list::render(frame, &app, gl.pr_list);
-                    gh_ui::detail_view::render(frame, &mut app, gl.main_pane);
+                    GhIssueListPane.render(frame, &mut app, gl.issue_list);
+                    GhPrListPane.render(frame, &mut app, gl.pr_list);
+                    GhDetailViewPane.render(frame, &mut app, gl.main_pane);
                     status_bar::render_gh_status_bar(frame, &app, gl.status_bar);
                 }
             }

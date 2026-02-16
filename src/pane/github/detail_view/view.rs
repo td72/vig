@@ -9,6 +9,29 @@ use ratatui::{
     Frame,
 };
 
+/// Sort checks by workflow_name then name. Used for both rendering and key handling.
+pub fn sorted_checks(detail: &GhPrDetail) -> Vec<&GhStatusCheck> {
+    let checks = match detail.status_check_rollup {
+        Some(ref checks) => checks.as_slice(),
+        None => return Vec::new(),
+    };
+    let mut sorted: Vec<&GhStatusCheck> = checks.iter().collect();
+    sorted.sort_by(|a, b| {
+        let a_wf = a.workflow_name.as_deref().unwrap_or("");
+        let b_wf = b.workflow_name.as_deref().unwrap_or("");
+        a_wf.cmp(b_wf).then_with(|| a.name.cmp(&b.name))
+    });
+    sorted
+}
+
+/// Get meaningful reviews (non-empty body or non-COMMENTED state).
+pub fn meaningful_reviews(reviews: &[GhReview]) -> Vec<&GhReview> {
+    reviews
+        .iter()
+        .filter(|r| !r.body.is_empty() || r.state != "COMMENTED")
+        .collect()
+}
+
 pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     let is_focused = app.github.focused_pane == GhFocusedPane::Detail;
     let border_color = if is_focused { Color::Cyan } else { Color::DarkGray };
@@ -393,21 +416,6 @@ fn build_body_lines(body: &str) -> Vec<Line<'static>> {
     markdown_to_lines(body, "  ")
 }
 
-/// Sort checks by workflow_name then name. Used for both rendering and key handling.
-pub fn sorted_checks(detail: &GhPrDetail) -> Vec<&GhStatusCheck> {
-    let checks = match detail.status_check_rollup {
-        Some(ref checks) => checks.as_slice(),
-        None => return Vec::new(),
-    };
-    let mut sorted: Vec<&GhStatusCheck> = checks.iter().collect();
-    sorted.sort_by(|a, b| {
-        let a_wf = a.workflow_name.as_deref().unwrap_or("");
-        let b_wf = b.workflow_name.as_deref().unwrap_or("");
-        a_wf.cmp(b_wf).then_with(|| a.name.cmp(&b.name))
-    });
-    sorted
-}
-
 fn render_status_table(
     f: &mut Frame,
     area: Rect,
@@ -563,14 +571,6 @@ fn review_icon(review: &GhReview) -> (&'static str, Color) {
         "DISMISSED" => ("⊘", Color::DarkGray),
         _ => ("?", Color::White),
     }
-}
-
-/// Get meaningful reviews (non-empty body or non-COMMENTED state).
-pub fn meaningful_reviews(reviews: &[GhReview]) -> Vec<&GhReview> {
-    reviews
-        .iter()
-        .filter(|r| !r.body.is_empty() || r.state != "COMMENTED")
-        .collect()
 }
 
 /// Returns (lines, selected_header_line_offset).

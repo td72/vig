@@ -916,7 +916,7 @@ impl App {
         let url: Option<String> = match self.github.detail_pane {
             GhDetailPane::Status => {
                 if let GhDetailContent::Pr(ref detail) = self.github.detail {
-                    let sorted = crate::ui::github::detail_view::sorted_checks(detail);
+                    let sorted = crate::pane::github::detail_view::view::sorted_checks(detail);
                     sorted
                         .get(self.github.detail_check_idx)
                         .and_then(|c| c.details_url.clone())
@@ -927,7 +927,7 @@ impl App {
             GhDetailPane::Reviews => {
                 if let GhDetailContent::Pr(ref detail) = self.github.detail {
                     let reviews =
-                        crate::ui::github::detail_view::meaningful_reviews(&detail.reviews);
+                        crate::pane::github::detail_view::view::meaningful_reviews(&detail.reviews);
                     reviews.get(self.github.detail_review_idx).and_then(|r| {
                         r.id.as_ref().and_then(|id| {
                             crate::github::client::repo_nwo().map(|nwo| {
