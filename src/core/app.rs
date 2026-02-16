@@ -1,7 +1,7 @@
 use crate::git::diff::{DiffState, FileDiff};
 use crate::git::graph::{self, GraphRow};
 use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
-use crate::github::state::{GhFocusedPane, GitHubState};
+use crate::github::state::GitHubState;
 use crate::core::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -687,16 +687,7 @@ impl App {
             return Ok(false);
         }
 
-        // In Normal/Visual modes, keys are handled by the mode handler exclusively
-        if self.view_mode == ViewMode::Git
-            && self.focused_pane == FocusedPane::DiffView
-            && self.diff_view_mode != DiffViewMode::Scroll
-        {
-            crate::git::container::dispatch_git_key(self, key);
-            return Ok(false);
-        }
-
-        // View switching (Scroll mode only — Normal/Visual already returned above)
+        // View switching
         match key.code {
             KeyCode::Char('1') => {
                 self.view_mode = ViewMode::Git;
@@ -710,175 +701,10 @@ impl App {
             _ => {}
         }
 
+        // Delegate to domain container
         match self.view_mode {
-            ViewMode::Git => {
-                match key.code {
-                    KeyCode::Char('q') => {
-                        self.should_quit = true;
-                        return Ok(false);
-                    }
-                    KeyCode::Char('?') => {
-                        self.show_help = true;
-                    }
-                    KeyCode::Char('/') => {
-                        let origin = match self.focused_pane {
-                            FocusedPane::DiffView => SearchOrigin::DiffView,
-                            FocusedPane::FileTree => SearchOrigin::FileTree,
-                            FocusedPane::BranchList => SearchOrigin::BranchList,
-                            FocusedPane::GitLog => SearchOrigin::CommitLog,
-                            FocusedPane::Reflog => SearchOrigin::Reflog,
-                        };
-                        self.search.start(origin);
-                    }
-                    KeyCode::Char('n') => {
-                        self.jump_to_match(true);
-                    }
-                    KeyCode::Char('N') => {
-                        self.jump_to_match(false);
-                    }
-                    KeyCode::Char('r') => {
-                        self.refresh_diff()?;
-                        self.load_branches();
-                        self.load_reflog();
-                    }
-                    KeyCode::Char('e') => {
-                        return Ok(true); // Signal to open editor
-                    }
-                    KeyCode::Tab => {
-                        self.set_focus(crate::git::container::next_git_tab(self.focused_pane));
-                    }
-                    KeyCode::BackTab => {
-                        self.set_focus(crate::git::container::prev_git_tab(self.focused_pane));
-                    }
-                    _ => crate::git::container::dispatch_git_key(self, key),
-                }
-            }
-            ViewMode::GitHub => {
-                return self.handle_github_key(key);
-            }
-        }
-        Ok(false)
-    }
-
-    // ── GitHub View key handlers ──────────────────────────────
-
-    fn handle_github_key(&mut self, key: KeyEvent) -> Result<bool> {
-        match key.code {
-            KeyCode::Char('q') => {
-                self.should_quit = true;
-                return Ok(false);
-            }
-            KeyCode::Char('?') => {
-                self.show_help = true;
-                return Ok(false);
-            }
-            KeyCode::Char('r') => {
-                if self.github.focused_pane == GhFocusedPane::Detail {
-                    self.github.refresh_detail();
-                } else {
-                    self.github.refresh();
-                }
-                return Ok(false);
-            }
-            KeyCode::Char('w') => {
-                self.github.toggle_watch_mode();
-                return Ok(false);
-            }
-            _ => {}
-        }
-        crate::github::container::dispatch_gh_key(self, key);
-        Ok(false)
-    }
-
-    pub(crate) fn open_gh_detail_item(&mut self) {
-        use crate::github::state::{GhDetailContent, GhDetailPane};
-
-        let url: Option<String> = match self.github.detail_pane {
-            GhDetailPane::Status => {
-                if let GhDetailContent::Pr(ref detail) = self.github.detail {
-                    let sorted = crate::github::panes::detail_view::view::sorted_checks(detail);
-                    sorted
-                        .get(self.github.detail_check_idx)
-                        .and_then(|c| c.details_url.clone())
-                } else {
-                    None
-                }
-            }
-            GhDetailPane::Reviews => {
-                if let GhDetailContent::Pr(ref detail) = self.github.detail {
-                    let reviews =
-                        crate::github::panes::detail_view::view::meaningful_reviews(&detail.reviews);
-                    reviews.get(self.github.detail_review_idx).and_then(|r| {
-                        r.id.as_ref().and_then(|id| {
-                            crate::github::client::repo_nwo().map(|nwo| {
-                                format!(
-                                    "https://github.com/{}/pull/{}#pullrequestreview-{}",
-                                    nwo, detail.number, id
-                                )
-                            })
-                        })
-                    })
-                } else {
-                    None
-                }
-            }
-            GhDetailPane::Comments => match &self.github.detail {
-                GhDetailContent::Issue(detail) => detail
-                    .comments
-                    .get(self.github.detail_comment_idx)
-                    .and_then(|c| c.url.clone()),
-                GhDetailContent::Pr(detail) => detail
-                    .comments
-                    .get(self.github.detail_comment_idx)
-                    .and_then(|c| c.url.clone()),
-                _ => None,
-            },
-            GhDetailPane::Body => {
-                // Open the issue/PR page itself
-                match &self.github.detail {
-                    GhDetailContent::Issue(issue) => {
-                        let n = issue.number;
-                        match crate::github::client::open_issue_in_browser(n) {
-                            Ok(()) => {
-                                self.status_message =
-                                    Some(format!("Opening issue #{n} in browser..."));
-                            }
-                            Err(e) => {
-                                self.status_message =
-                                    Some(format!("Failed to open browser: {e}"));
-                            }
-                        }
-                        return;
-                    }
-                    GhDetailContent::Pr(pr) => {
-                        let n = pr.number;
-                        match crate::github::client::open_pr_in_browser(n) {
-                            Ok(()) => {
-                                self.status_message =
-                                    Some(format!("Opening PR #{n} in browser..."));
-                            }
-                            Err(e) => {
-                                self.status_message =
-                                    Some(format!("Failed to open browser: {e}"));
-                            }
-                        }
-                        return;
-                    }
-                    _ => return,
-                }
-            }
-        };
-
-        if let Some(url) = url {
-            match crate::github::client::open_url(&url) {
-                Ok(()) => {
-                    self.status_message = Some("Opening in browser...".to_string());
-                }
-                Err(e) => {
-                    self.status_message = Some(e);
-                }
-            }
+            ViewMode::Git => crate::git::container::handle_git_view_key(self, key),
+            ViewMode::GitHub => crate::github::container::handle_gh_view_key(self, key),
         }
     }
-
 }

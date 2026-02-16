@@ -3,6 +3,7 @@ use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use crate::github::state::GhFocusedPane;
+use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 
 // === Domain types ===
@@ -34,6 +35,31 @@ pub static GH_GROUPS: &[GhPaneGroup] = &[
         id: GhFocusedPane::PrList,
     },
 ];
+
+// === View-level key handling ===
+
+pub fn handle_gh_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
+    match key.code {
+        KeyCode::Char('q') => {
+            app.should_quit = true;
+        }
+        KeyCode::Char('?') => {
+            app.show_help = true;
+        }
+        KeyCode::Char('r') => {
+            if app.github.focused_pane == GhFocusedPane::Detail {
+                app.github.refresh_detail();
+            } else {
+                app.github.refresh();
+            }
+        }
+        KeyCode::Char('w') => {
+            app.github.toggle_watch_mode();
+        }
+        _ => dispatch_gh_key(app, key),
+    }
+    Ok(false)
+}
 
 // === Dispatch ===
 

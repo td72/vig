@@ -1,9 +1,10 @@
-use crate::core::app::{App, FocusedPane, SearchOrigin};
+use crate::core::app::{App, DiffViewMode, FocusedPane, SearchOrigin};
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::git::panes::{
     BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
 };
+use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 
 // === Domain types ===
@@ -18,7 +19,6 @@ pub struct GitPaneGroup {
     pub select: &'static dyn SelectPane,
     pub detail: GitDetailId,
     pub id: FocusedPane,
-    pub search_origin: SearchOrigin,
 }
 
 // === Tab definitions ===
@@ -28,19 +28,16 @@ pub static GIT_GROUPS: &[GitPaneGroup] = &[
         select: &FileTreePane,
         detail: GitDetailId::DiffView,
         id: FocusedPane::FileTree,
-        search_origin: SearchOrigin::FileTree,
     },
     GitPaneGroup {
         select: &BranchListPane,
         detail: GitDetailId::CommitLog,
         id: FocusedPane::BranchList,
-        search_origin: SearchOrigin::BranchList,
     },
     GitPaneGroup {
         select: &ReflogPane,
         detail: GitDetailId::CommitLog,
         id: FocusedPane::Reflog,
-        search_origin: SearchOrigin::Reflog,
     },
 ];
 
@@ -80,6 +77,60 @@ pub fn dispatch_git_key(app: &mut App, key: KeyEvent) {
     }
 }
 
+// === View-level key handling ===
+
+pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
+    // In Normal/Visual modes, keys are handled by the mode handler exclusively
+    if app.focused_pane == FocusedPane::DiffView && app.diff_view_mode != DiffViewMode::Scroll {
+        dispatch_git_key(app, key);
+        return Ok(false);
+    }
+
+    match key.code {
+        KeyCode::Char('q') => {
+            app.should_quit = true;
+        }
+        KeyCode::Char('?') => {
+            app.show_help = true;
+        }
+        KeyCode::Char('/') => {
+            app.search.start(search_origin_for(app.focused_pane));
+        }
+        KeyCode::Char('n') => {
+            app.jump_to_match(true);
+        }
+        KeyCode::Char('N') => {
+            app.jump_to_match(false);
+        }
+        KeyCode::Char('r') => {
+            app.refresh_diff()?;
+            app.load_branches();
+            app.load_reflog();
+        }
+        KeyCode::Char('e') => {
+            return Ok(true); // Signal to open editor
+        }
+        KeyCode::Tab => {
+            app.set_focus(next_git_tab(app.focused_pane));
+        }
+        KeyCode::BackTab => {
+            app.set_focus(prev_git_tab(app.focused_pane));
+        }
+        _ => dispatch_git_key(app, key),
+    }
+    Ok(false)
+}
+
+fn search_origin_for(pane: FocusedPane) -> SearchOrigin {
+    match pane {
+        FocusedPane::DiffView => SearchOrigin::DiffView,
+        FocusedPane::FileTree => SearchOrigin::FileTree,
+        FocusedPane::BranchList => SearchOrigin::BranchList,
+        FocusedPane::GitLog => SearchOrigin::CommitLog,
+        FocusedPane::Reflog => SearchOrigin::Reflog,
+    }
+}
+
 // === Container ===
 
 pub(crate) struct GitContainer;
@@ -110,18 +161,6 @@ impl PaneContainer for GitContainer {
             }
             KeyCode::Esc if app.search.query.is_some() => {
                 app.search.clear();
-                true
-            }
-            KeyCode::Char('/') => {
-                app.search.start(GIT_GROUPS[idx].search_origin);
-                true
-            }
-            KeyCode::Char('n') => {
-                app.jump_to_match(true);
-                true
-            }
-            KeyCode::Char('N') => {
-                app.jump_to_match(false);
                 true
             }
             _ => false,

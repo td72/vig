@@ -6,6 +6,96 @@ use crate::core::pane::DetailPane;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 
+impl App {
+    pub(crate) fn open_gh_detail_item(&mut self) {
+        let url: Option<String> = match self.github.detail_pane {
+            GhDetailPane::Status => {
+                if let GhDetailContent::Pr(ref detail) = self.github.detail {
+                    let sorted = view::sorted_checks(detail);
+                    sorted
+                        .get(self.github.detail_check_idx)
+                        .and_then(|c| c.details_url.clone())
+                } else {
+                    None
+                }
+            }
+            GhDetailPane::Reviews => {
+                if let GhDetailContent::Pr(ref detail) = self.github.detail {
+                    let reviews = view::meaningful_reviews(&detail.reviews);
+                    reviews.get(self.github.detail_review_idx).and_then(|r| {
+                        r.id.as_ref().and_then(|id| {
+                            crate::github::client::repo_nwo().map(|nwo| {
+                                format!(
+                                    "https://github.com/{}/pull/{}#pullrequestreview-{}",
+                                    nwo, detail.number, id
+                                )
+                            })
+                        })
+                    })
+                } else {
+                    None
+                }
+            }
+            GhDetailPane::Comments => match &self.github.detail {
+                GhDetailContent::Issue(detail) => detail
+                    .comments
+                    .get(self.github.detail_comment_idx)
+                    .and_then(|c| c.url.clone()),
+                GhDetailContent::Pr(detail) => detail
+                    .comments
+                    .get(self.github.detail_comment_idx)
+                    .and_then(|c| c.url.clone()),
+                _ => None,
+            },
+            GhDetailPane::Body => {
+                // Open the issue/PR page itself
+                match &self.github.detail {
+                    GhDetailContent::Issue(issue) => {
+                        let n = issue.number;
+                        match crate::github::client::open_issue_in_browser(n) {
+                            Ok(()) => {
+                                self.status_message =
+                                    Some(format!("Opening issue #{n} in browser..."));
+                            }
+                            Err(e) => {
+                                self.status_message =
+                                    Some(format!("Failed to open browser: {e}"));
+                            }
+                        }
+                        return;
+                    }
+                    GhDetailContent::Pr(pr) => {
+                        let n = pr.number;
+                        match crate::github::client::open_pr_in_browser(n) {
+                            Ok(()) => {
+                                self.status_message =
+                                    Some(format!("Opening PR #{n} in browser..."));
+                            }
+                            Err(e) => {
+                                self.status_message =
+                                    Some(format!("Failed to open browser: {e}"));
+                            }
+                        }
+                        return;
+                    }
+                    _ => return,
+                }
+            }
+        };
+
+        if let Some(url) = url {
+            match crate::github::client::open_url(&url) {
+                Ok(()) => {
+                    self.status_message = Some("Opening in browser...".to_string());
+                }
+                Err(e) => {
+                    self.status_message = Some(e);
+                }
+            }
+        }
+    }
+}
+
 pub struct GhDetailViewPane;
 
 impl DetailPane for GhDetailViewPane {
