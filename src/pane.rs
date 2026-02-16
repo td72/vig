@@ -21,25 +21,6 @@ pub struct GitLogSelectPane;
 
 impl SelectPane for FileTreePane {
     fn handle_key(&self, app: &mut App, key: KeyEvent) {
-        // Pane navigation must work even when file list is empty
-        match key.code {
-            KeyCode::Char('l') => {
-                app.set_focus(FocusedPane::BranchList);
-                return;
-            }
-            KeyCode::Char('i') => {
-                app.set_focus(FocusedPane::DiffView);
-                return;
-            }
-            KeyCode::Esc => {
-                if app.search.query.is_some() {
-                    app.search.clear();
-                }
-                return;
-            }
-            _ => {}
-        }
-
         let entries = app.build_tree_entries();
         if entries.is_empty() {
             return;
@@ -89,15 +70,6 @@ impl SelectPane for FileTreePane {
                     None => {}
                 }
             }
-            KeyCode::Char('/') => {
-                app.search.start(SearchOrigin::FileTree);
-            }
-            KeyCode::Char('n') => {
-                app.jump_to_match(true);
-            }
-            KeyCode::Char('N') => {
-                app.jump_to_match(false);
-            }
             _ => {}
         }
     }
@@ -106,19 +78,8 @@ impl SelectPane for FileTreePane {
 impl SelectPane for BranchListPane {
     fn handle_key(&self, app: &mut App, key: KeyEvent) {
         match key.code {
-            KeyCode::Char('h') => {
-                app.set_focus(FocusedPane::FileTree);
-            }
-            KeyCode::Char('l') => {
-                app.set_focus(FocusedPane::Reflog);
-            }
-            KeyCode::Char('i') => {
-                app.set_focus(FocusedPane::GitLog);
-            }
             KeyCode::Esc => {
-                if app.search.query.is_some() {
-                    app.search.clear();
-                } else if app.diff_base_ref.is_some() {
+                if app.diff_base_ref.is_some() {
                     app.diff_base_ref = None;
                     if let Err(e) = app.refresh_diff() {
                         app.status_message = Some(format!("Diff error: {e}"));
@@ -142,15 +103,6 @@ impl SelectPane for BranchListPane {
             KeyCode::Enter => {
                 app.open_branch_action_menu();
             }
-            KeyCode::Char('/') => {
-                app.search.start(SearchOrigin::BranchList);
-            }
-            KeyCode::Char('n') => {
-                app.jump_to_match(true);
-            }
-            KeyCode::Char('N') => {
-                app.jump_to_match(false);
-            }
             _ => {}
         }
     }
@@ -159,18 +111,8 @@ impl SelectPane for BranchListPane {
 impl SelectPane for ReflogPane {
     fn handle_key(&self, app: &mut App, key: KeyEvent) {
         match key.code {
-            KeyCode::Char('h') => {
-                app.set_focus(FocusedPane::BranchList);
-            }
-            KeyCode::Char('i') => {
-                app.set_focus(FocusedPane::GitLog);
-            }
             KeyCode::Esc => {
-                if app.search.query.is_some() {
-                    app.search.clear();
-                } else {
-                    app.set_focus(FocusedPane::BranchList);
-                }
+                app.set_focus(FocusedPane::BranchList);
             }
             KeyCode::Char('j') | KeyCode::Down => {
                 if !app.reflog.entries.is_empty()
@@ -209,15 +151,6 @@ impl SelectPane for ReflogPane {
                         app.status_message = Some(format!("Diff error: {e}"));
                     }
                 }
-            }
-            KeyCode::Char('/') => {
-                app.search.start(SearchOrigin::Reflog);
-            }
-            KeyCode::Char('n') => {
-                app.jump_to_match(true);
-            }
-            KeyCode::Char('N') => {
-                app.jump_to_match(false);
             }
             _ => {}
         }
@@ -360,10 +293,6 @@ impl SelectPane for GhIssueListPane {
                     app.github.load_selected_issue_detail();
                 }
             }
-            KeyCode::Char('l') | KeyCode::Tab => {
-                app.github.focused_pane = GhFocusedPane::PrList;
-                app.github.load_selected_pr_detail();
-            }
             KeyCode::Char('i') | KeyCode::Enter => {
                 if !app.github.issues.is_empty() {
                     app.github.previous_pane = GhFocusedPane::IssueList;
@@ -416,10 +345,6 @@ impl SelectPane for GhPrListPane {
                     app.github.pr_selected_idx = app.github.prs.len() - 1;
                     app.github.load_selected_pr_detail();
                 }
-            }
-            KeyCode::Char('h') | KeyCode::BackTab => {
-                app.github.focused_pane = GhFocusedPane::IssueList;
-                app.github.load_selected_issue_detail();
             }
             KeyCode::Char('i') | KeyCode::Enter => {
                 if !app.github.prs.is_empty() {
@@ -614,6 +539,7 @@ pub struct GitPaneGroup {
     pub select: &'static dyn SelectPane,
     pub detail: GitDetailId,
     pub id: FocusedPane,
+    pub search_origin: SearchOrigin,
 }
 
 pub struct GhPaneGroup {
@@ -630,16 +556,19 @@ pub static GIT_GROUPS: &[GitPaneGroup] = &[
         select: &FileTreePane,
         detail: GitDetailId::DiffView,
         id: FocusedPane::FileTree,
+        search_origin: SearchOrigin::FileTree,
     },
     GitPaneGroup {
         select: &BranchListPane,
         detail: GitDetailId::CommitLog,
         id: FocusedPane::BranchList,
+        search_origin: SearchOrigin::BranchList,
     },
     GitPaneGroup {
         select: &ReflogPane,
         detail: GitDetailId::CommitLog,
         id: FocusedPane::Reflog,
+        search_origin: SearchOrigin::Reflog,
     },
 ];
 
@@ -668,27 +597,123 @@ pub fn prev_git_tab(current: FocusedPane) -> FocusedPane {
     GIT_GROUPS[(idx + GIT_GROUPS.len() - 1) % GIT_GROUPS.len()].id
 }
 
-#[allow(dead_code)]
-pub fn next_gh_tab(current: GhFocusedPane) -> GhFocusedPane {
-    let idx = GH_GROUPS.iter().position(|g| g.id == current).unwrap_or(0);
-    GH_GROUPS[(idx + 1) % GH_GROUPS.len()].id
+
+// === PaneContainer: common navigation logic ===
+
+trait PaneContainer {
+    // Required: container-specific
+    fn current_index(&self, app: &App) -> Option<usize>;
+    fn focus_index(&self, app: &mut App, idx: usize);
+    fn pane_at(&self, idx: usize) -> &'static dyn SelectPane;
+    fn len(&self) -> usize;
+
+    // Optional hooks
+    fn is_prev_key(&self, key: &KeyEvent) -> bool {
+        matches!(key.code, KeyCode::Char('h'))
+    }
+    fn is_next_key(&self, key: &KeyEvent) -> bool {
+        matches!(key.code, KeyCode::Char('l'))
+    }
+    fn handle_common_key(&self, _app: &mut App, _key: KeyEvent, _idx: usize) -> bool {
+        false
+    }
+
+    // Provided: h/l switching + delegation
+    fn dispatch(&self, app: &mut App, key: KeyEvent) {
+        let Some(idx) = self.current_index(app) else {
+            return;
+        };
+        if self.is_prev_key(&key) && idx > 0 {
+            self.focus_index(app, idx - 1);
+        } else if self.is_next_key(&key) && idx + 1 < self.len() {
+            self.focus_index(app, idx + 1);
+        } else if !self.handle_common_key(app, key, idx) {
+            self.pane_at(idx).handle_key(app, key);
+        }
+    }
 }
 
-#[allow(dead_code)]
-pub fn prev_gh_tab(current: GhFocusedPane) -> GhFocusedPane {
-    let idx = GH_GROUPS.iter().position(|g| g.id == current).unwrap_or(0);
-    GH_GROUPS[(idx + GH_GROUPS.len() - 1) % GH_GROUPS.len()].id
+struct GitContainer;
+
+impl PaneContainer for GitContainer {
+    fn current_index(&self, app: &App) -> Option<usize> {
+        GIT_GROUPS.iter().position(|g| g.id == app.focused_pane)
+    }
+    fn focus_index(&self, app: &mut App, idx: usize) {
+        app.set_focus(GIT_GROUPS[idx].id);
+    }
+    fn pane_at(&self, idx: usize) -> &'static dyn SelectPane {
+        GIT_GROUPS[idx].select
+    }
+    fn len(&self) -> usize {
+        GIT_GROUPS.len()
+    }
+
+    fn handle_common_key(&self, app: &mut App, key: KeyEvent, idx: usize) -> bool {
+        match key.code {
+            KeyCode::Char('i') => {
+                let target = match GIT_GROUPS[idx].detail {
+                    GitDetailId::DiffView => FocusedPane::DiffView,
+                    GitDetailId::CommitLog => FocusedPane::GitLog,
+                };
+                app.set_focus(target);
+                true
+            }
+            KeyCode::Esc if app.search.query.is_some() => {
+                app.search.clear();
+                true
+            }
+            KeyCode::Char('/') => {
+                app.search.start(GIT_GROUPS[idx].search_origin);
+                true
+            }
+            KeyCode::Char('n') => {
+                app.jump_to_match(true);
+                true
+            }
+            KeyCode::Char('N') => {
+                app.jump_to_match(false);
+                true
+            }
+            _ => false,
+        }
+    }
+}
+
+struct GhContainer;
+
+impl PaneContainer for GhContainer {
+    fn current_index(&self, app: &App) -> Option<usize> {
+        GH_GROUPS.iter().position(|g| g.id == app.github.focused_pane)
+    }
+    fn focus_index(&self, app: &mut App, idx: usize) {
+        app.github.focused_pane = GH_GROUPS[idx].id;
+        load_gh_detail_for_tab(app);
+    }
+    fn pane_at(&self, idx: usize) -> &'static dyn SelectPane {
+        GH_GROUPS[idx].select
+    }
+    fn len(&self) -> usize {
+        GH_GROUPS.len()
+    }
+
+    fn is_prev_key(&self, key: &KeyEvent) -> bool {
+        matches!(key.code, KeyCode::Char('h') | KeyCode::BackTab)
+    }
+    fn is_next_key(&self, key: &KeyEvent) -> bool {
+        matches!(key.code, KeyCode::Char('l') | KeyCode::Tab)
+    }
+}
+
+fn load_gh_detail_for_tab(app: &mut App) {
+    match app.github.focused_pane {
+        GhFocusedPane::IssueList => app.github.load_selected_issue_detail(),
+        GhFocusedPane::PrList => app.github.load_selected_pr_detail(),
+        _ => {}
+    }
 }
 
 // === Dispatch ===
-
-pub fn git_select_pane(focused: FocusedPane) -> &'static dyn SelectPane {
-    GIT_GROUPS
-        .iter()
-        .find(|g| g.id == focused)
-        .map(|g| g.select)
-        .unwrap_or(&FileTreePane)
-}
 
 pub fn git_detail_for(focused: FocusedPane) -> GitDetailId {
     // GitLog is a nested select inside CommitLog detail
@@ -702,21 +727,13 @@ pub fn git_detail_for(focused: FocusedPane) -> GitDetailId {
         .unwrap_or(GitDetailId::DiffView)
 }
 
-pub fn gh_select_pane(focused: GhFocusedPane) -> &'static dyn SelectPane {
-    GH_GROUPS
-        .iter()
-        .find(|g| g.id == focused)
-        .map(|g| g.select)
-        .unwrap_or(&GhIssueListPane)
-}
-
 /// Dispatch a key event to the currently focused Git pane.
 /// Covers all 5 panes: the 3 select panes in GIT_GROUPS + GitLog (nested select) + DiffView (detail).
 pub fn dispatch_git_key(app: &mut App, key: KeyEvent) {
     match app.focused_pane {
         FocusedPane::GitLog => GitLogSelectPane.handle_key(app, key),
         FocusedPane::DiffView => DiffViewPane.handle_key(app, key),
-        other => git_select_pane(other).handle_key(app, key),
+        _ => GitContainer.dispatch(app, key),
     }
 }
 
@@ -724,6 +741,6 @@ pub fn dispatch_git_key(app: &mut App, key: KeyEvent) {
 pub fn dispatch_gh_key(app: &mut App, key: KeyEvent) {
     match app.github.focused_pane {
         GhFocusedPane::Detail => GhDetailViewPane.handle_key(app, key),
-        other => gh_select_pane(other).handle_key(app, key),
+        _ => GhContainer.dispatch(app, key),
     }
 }
