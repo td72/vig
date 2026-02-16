@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::core::app::App;
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};

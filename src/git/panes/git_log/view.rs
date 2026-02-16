@@ -1,4 +1,4 @@
-use crate::app::{App, FocusedPane, SearchMatch, SearchOrigin};
+use crate::core::app::{App, FocusedPane, SearchMatch, SearchOrigin};
 use crate::git::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
 use std::collections::HashSet;
 use ratatui::{

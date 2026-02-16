@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::core::app::App;
 use crate::github::state::GhFocusedPane;
 use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};

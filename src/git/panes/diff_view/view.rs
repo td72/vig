@@ -1,4 +1,4 @@
-use crate::app::{App, CursorPos, DiffSide, DiffViewMode, FocusedPane, SearchMatch};
+use crate::core::app::{App, CursorPos, DiffSide, DiffViewMode, FocusedPane, SearchMatch};
 use crate::git::diff::{FileDiff, LineType, SideBySideRow};
 use std::collections::HashMap;
 use ratatui::{

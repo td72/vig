@@ -1,26 +1,21 @@
-mod app;
 mod core;
-mod event;
 mod git;
 mod github;
-mod syntax;
-mod tui;
-mod ui;
 mod update;
 
-use crate::app::{App, ViewMode};
+use crate::core::app::{App, ViewMode};
+use crate::core::event::{Event, EventHandler};
 use crate::core::pane::{DetailPane, SelectPane};
-use crate::event::{Event, EventHandler};
+use crate::core::ui::{branch_action_menu, confirm_dialog, status_bar};
 use crate::git::container as git_container;
 use crate::git::container::GitDetailId;
+use crate::git::layout;
 use crate::git::panes::{
     BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
 };
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
-use crate::ui::github as gh_ui;
-use crate::ui::{branch_action_menu, confirm_dialog, layout, status_bar};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::env;
@@ -55,7 +50,7 @@ fn run_tui() -> Result<()> {
     // Restore terminal on panic
     let default_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
-        let _ = tui::restore();
+        let _ = crate::core::tui::restore();
         default_hook(info);
     }));
 
@@ -69,7 +64,7 @@ fn run_tui() -> Result<()> {
     // Start file watcher
     let _watcher = FsWatcher::new(&workdir, events.tx())?;
 
-    let mut terminal = tui::enter()?;
+    let mut terminal = crate::core::tui::enter()?;
 
     loop {
         // Collect any completed background highlight results
@@ -106,7 +101,7 @@ fn run_tui() -> Result<()> {
                     }
                 }
                 ViewMode::GitHub => {
-                    let gl = gh_ui::layout::compute_gh_layout(frame.area());
+                    let gl = crate::github::layout::compute_gh_layout(frame.area());
                     status_bar::render_gh_header(frame, &app, gl.header);
                     GhIssueListPane.render(frame, &mut app, gl.issue_list);
                     GhPrListPane.render(frame, &mut app, gl.pr_list);
@@ -144,11 +139,11 @@ fn run_tui() -> Result<()> {
                         // Pause event polling — blocks until the background
                         // thread has stopped calling crossterm::event::poll()
                         events.pause();
-                        tui::restore()?;
+                        crate::core::tui::restore()?;
 
                         let status = Command::new(&editor).arg(&file_path).status();
 
-                        terminal = tui::enter()?;
+                        terminal = crate::core::tui::enter()?;
                         // Flush stale terminal data before resuming the event thread
                         while crossterm::event::poll(Duration::ZERO)? {
                             let _ = crossterm::event::read();
@@ -188,6 +183,6 @@ fn run_tui() -> Result<()> {
         }
     }
 
-    tui::restore()?;
+    crate::core::tui::restore()?;
     Ok(())
 }

@@ -1,4 +1,4 @@
-use crate::app::{App, ViewMode};
+use crate::core::app::{App, ViewMode};
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},

@@ -1,4 +1,4 @@
-use crate::event::Event;
+use crate::core::event::Event;
 use anyhow::Result;
 use std::path::Path;
 use std::sync::mpsc::Sender;

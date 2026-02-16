@@ -2,7 +2,7 @@ use crate::git::diff::{DiffState, FileDiff};
 use crate::git::graph::{self, GraphRow};
 use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
 use crate::github::state::{GhFocusedPane, GitHubState};
-use crate::syntax::{HighlightCache, SyntaxHighlighter};
+use crate::core::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::style::Color;

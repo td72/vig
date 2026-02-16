@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::core::app::App;
 use crate::github::state::{GhDetailContent, GhDetailPane, GhFocusedPane};
 use crate::github::types::*;
 use ratatui::{

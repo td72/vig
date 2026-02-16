@@ -1,4 +1,4 @@
-use crate::app::{App, BranchAction};
+use crate::core::app::{App, BranchAction};
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},

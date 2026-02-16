@@ -1,4 +1,4 @@
-use crate::app::App;
+use crate::core::app::App;
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 

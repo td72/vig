@@ -1,4 +1,4 @@
-use crate::app::{App, FocusedPane, SearchOrigin};
+use crate::core::app::{App, FocusedPane, SearchOrigin};
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::git::panes::{

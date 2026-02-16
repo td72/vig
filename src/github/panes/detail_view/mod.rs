@@ -1,6 +1,6 @@
 pub(crate) mod view;
 
-use crate::app::App;
+use crate::core::app::App;
 use crate::github::state::{GhDetailContent, GhDetailPane};
 use crate::core::pane::DetailPane;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
