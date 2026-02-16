@@ -201,6 +201,44 @@ impl GitState {
         Ok(state)
     }
 
+    /// Refresh the diff state from the working directory.
+    /// Returns `Ok(Some(message))` if a fallback occurred, `Ok(None)` on clean refresh.
+    pub fn refresh_diff(&mut self) -> Result<Option<String>> {
+        let old_path = self.selected_file().map(|f| f.path.clone());
+        let fallback_msg = match self.repo.diff_workdir(self.diff_base_ref.as_deref()) {
+            Ok(state) => {
+                self.diff_state = state;
+                None
+            }
+            Err(e) => {
+                self.diff_base_ref = None;
+                self.diff_state = self.repo.diff_workdir(None)?;
+                Some(format!("Invalid ref, fell back to HEAD: {e}"))
+            }
+        };
+        // Preserve selection by path
+        if let Some(path) = old_path {
+            let entries = self.build_tree_entries();
+            self.selected_tree_idx = entries
+                .iter()
+                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.diff_state.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
+                .unwrap_or(0);
+        }
+        let entries = self.build_tree_entries();
+        if self.selected_tree_idx >= entries.len() && !entries.is_empty() {
+            self.selected_tree_idx = entries.len() - 1;
+        }
+        self.diff_scroll_y = 0;
+        self.diff_scroll_x = 0;
+        self.highlight_cache = None;
+        self.content_lines_cache = None;
+        self.bg_highlights.clear();
+        self.bg_highlight_rx = None;
+        self.search.reset_matches();
+        self.spawn_bg_highlight();
+        Ok(fallback_msg)
+    }
+
     pub(crate) fn set_focus(&mut self, pane: FocusedPane) {
         self.previous_pane = self.focused_pane;
         self.focused_pane = pane;

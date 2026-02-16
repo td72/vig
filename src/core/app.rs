@@ -47,36 +47,11 @@ impl App {
     }
 
     pub fn refresh_diff(&mut self) -> Result<()> {
-        let old_path = self.git.selected_file().map(|f| f.path.clone());
-        match self.git.repo.diff_workdir(self.git.diff_base_ref.as_deref()) {
-            Ok(state) => self.git.diff_state = state,
-            Err(e) => {
-                self.git.diff_base_ref = None;
-                self.git.diff_state = self.git.repo.diff_workdir(None)?;
-                self.status_message = Some(format!("Invalid ref, fell back to HEAD: {e}"));
-            }
+        if let Some(msg) = self.git.refresh_diff()? {
+            self.status_message = Some(msg);
+        } else {
+            self.status_message = None;
         }
-        // Preserve selection by path
-        if let Some(path) = old_path {
-            let entries = self.git.build_tree_entries();
-            self.git.selected_tree_idx = entries
-                .iter()
-                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.git.diff_state.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
-                .unwrap_or(0);
-        }
-        let entries = self.git.build_tree_entries();
-        if self.git.selected_tree_idx >= entries.len() && !entries.is_empty() {
-            self.git.selected_tree_idx = entries.len() - 1;
-        }
-        self.git.diff_scroll_y = 0;
-        self.git.diff_scroll_x = 0;
-        self.status_message = None;
-        self.git.highlight_cache = None;
-        self.git.content_lines_cache = None;
-        self.git.bg_highlights.clear();
-        self.git.bg_highlight_rx = None; // Drop old receiver, stops old thread
-        self.git.search.reset_matches();
-        self.git.spawn_bg_highlight();
         Ok(())
     }
 
