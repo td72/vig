@@ -21,45 +21,45 @@ impl SelectPane for FileTreePane {
         }
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                if app.selected_tree_idx + 1 < entries.len() {
-                    app.selected_tree_idx += 1;
-                    app.diff_scroll_y = 0;
-                    app.diff_scroll_x = 0;
+                if app.git.selected_tree_idx + 1 < entries.len() {
+                    app.git.selected_tree_idx += 1;
+                    app.git.diff_scroll_y = 0;
+                    app.git.diff_scroll_x = 0;
                     app.re_search_on_file_change();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if app.selected_tree_idx > 0 {
-                    app.selected_tree_idx -= 1;
-                    app.diff_scroll_y = 0;
-                    app.diff_scroll_x = 0;
+                if app.git.selected_tree_idx > 0 {
+                    app.git.selected_tree_idx -= 1;
+                    app.git.diff_scroll_y = 0;
+                    app.git.diff_scroll_x = 0;
                     app.re_search_on_file_change();
                 }
             }
             KeyCode::Char(' ') => {
-                if let Some(TreeEntry::Dir { path, .. }) = entries.get(app.selected_tree_idx) {
+                if let Some(TreeEntry::Dir { path, .. }) = entries.get(app.git.selected_tree_idx) {
                     let path = path.clone();
-                    if app.collapsed_dirs.contains(&path) {
-                        app.collapsed_dirs.remove(&path);
+                    if app.git.collapsed_dirs.contains(&path) {
+                        app.git.collapsed_dirs.remove(&path);
                     } else {
-                        app.collapsed_dirs.insert(path);
+                        app.git.collapsed_dirs.insert(path);
                     }
                 }
             }
             KeyCode::Right | KeyCode::Enter => {
-                match entries.get(app.selected_tree_idx) {
+                match entries.get(app.git.selected_tree_idx) {
                     Some(TreeEntry::Dir { path, .. }) => {
                         let path = path.clone();
-                        if app.collapsed_dirs.contains(&path) {
-                            app.collapsed_dirs.remove(&path);
+                        if app.git.collapsed_dirs.contains(&path) {
+                            app.git.collapsed_dirs.remove(&path);
                         } else {
-                            app.collapsed_dirs.insert(path);
+                            app.git.collapsed_dirs.insert(path);
                         }
                     }
                     Some(TreeEntry::File { .. }) => {
                         app.set_focus(FocusedPane::DiffView);
-                        app.diff_scroll_y = 0;
-                        app.diff_scroll_x = 0;
+                        app.git.diff_scroll_y = 0;
+                        app.git.diff_scroll_x = 0;
                     }
                     None => {}
                 }
@@ -69,7 +69,7 @@ impl SelectPane for FileTreePane {
     }
 
     fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
-        let border_color = if app.focused_pane == FocusedPane::FileTree {
+        let border_color = if app.git.focused_pane == FocusedPane::FileTree {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -143,7 +143,7 @@ impl SelectPane for FileTreePane {
                     ListItem::new(line)
                 }
                 TreeEntry::File { file_idx, depth } => {
-                    let file = &app.diff_state.files[*file_idx];
+                    let file = &app.git.diff_state.files[*file_idx];
                     let indent = " ".repeat(depth * 2);
                     let icon_color = match file.status {
                         FileStatus::Modified => Color::Yellow,
@@ -182,7 +182,7 @@ impl SelectPane for FileTreePane {
 
         // Use custom selection rendering: if selected item is a search match,
         // use search highlight instead of default highlight_style.
-        let selected = app.selected_tree_idx;
+        let selected = app.git.selected_tree_idx;
         let selected_is_match = match_set.contains(&selected);
 
         let highlight_style = if selected_is_match {

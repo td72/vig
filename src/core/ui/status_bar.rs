@@ -43,13 +43,13 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
         ),
         Span::raw(" "),
         Span::styled(
-            format!(" {} ", app.diff_state.branch_name),
+            format!(" {} ", app.git.diff_state.branch_name),
             Style::default().fg(Color::Black).bg(Color::Magenta),
         ),
     ];
 
     {
-        let base_label = match &app.diff_base_ref {
+        let base_label = match &app.git.diff_base_ref {
             Some(base) => format!(" vs {base} "),
             None => " vs HEAD ".to_string(),
         };
@@ -113,9 +113,9 @@ pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
         return;
     }
 
-    let file_count = app.diff_state.files.len();
-    let adds = app.diff_state.stats.additions;
-    let dels = app.diff_state.stats.deletions;
+    let file_count = app.git.diff_state.files.len();
+    let adds = app.git.diff_state.stats.additions;
+    let dels = app.git.diff_state.stats.deletions;
 
     let status = if let Some(ref msg) = app.status_message {
         Line::from(Span::styled(

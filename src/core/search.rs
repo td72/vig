@@ -113,7 +113,7 @@ impl App {
             let name = match entry {
                 TreeEntry::Dir { path, .. } => path.clone(),
                 TreeEntry::File { file_idx, .. } => {
-                    match self.diff_state.files.get(*file_idx) {
+                    match self.git.diff_state.files.get(*file_idx) {
                         Some(f) => f.path.clone(),
                         None => continue,
                     }
@@ -127,7 +127,7 @@ impl App {
 
     fn search_commit_log(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
-        for (idx, commit) in self.git_log.commits.iter().enumerate() {
+        for (idx, commit) in self.git.git_log.commits.iter().enumerate() {
             let text = format!(
                 "{} {} {} {}",
                 commit.short_hash,
@@ -143,7 +143,7 @@ impl App {
 
     fn search_branch_list(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
-        for (idx, branch) in self.branch_list.branches.iter().enumerate() {
+        for (idx, branch) in self.git.branch_list.branches.iter().enumerate() {
             if branch.name.to_lowercase().contains(&query_lower) {
                 self.search.matches.push(SearchMatch::BranchEntry(idx));
             }
@@ -152,7 +152,7 @@ impl App {
 
     fn search_reflog(&mut self, query: &str) {
         let query_lower = query.to_lowercase();
-        for (idx, entry) in self.reflog.entries.iter().enumerate() {
+        for (idx, entry) in self.git.reflog.entries.iter().enumerate() {
             if entry.short_hash.to_lowercase().contains(&query_lower)
                 || entry.selector.to_lowercase().contains(&query_lower)
                 || entry.action.to_lowercase().contains(&query_lower)
@@ -203,33 +203,33 @@ impl App {
                 let row = *row;
                 let col_start = *col_start;
                 let side = *side;
-                if self.diff_view_mode == DiffViewMode::Scroll {
+                if self.git.diff_view_mode == DiffViewMode::Scroll {
                     // In scroll mode, just scroll to the row
-                    self.diff_scroll_y = row.saturating_sub(
-                        (self.diff_view_height / 3) as usize,
+                    self.git.diff_scroll_y = row.saturating_sub(
+                        (self.git.diff_view_height / 3) as usize,
                     ) as u16;
                 } else {
                     // In Normal/Visual mode, move cursor
-                    self.cursor_pos.row = row;
-                    self.cursor_pos.col = col_start;
-                    self.cursor_pos.side = side;
-                    self.content_lines_cache = None; // side may have changed
+                    self.git.cursor_pos.row = row;
+                    self.git.cursor_pos.col = col_start;
+                    self.git.cursor_pos.side = side;
+                    self.git.content_lines_cache = None; // side may have changed
                     self.scroll_to_cursor();
                 }
             }
             SearchMatch::TreeEntry(idx) => {
-                self.selected_tree_idx = *idx;
+                self.git.selected_tree_idx = *idx;
             }
             SearchMatch::CommitEntry(idx) => {
-                self.git_log.selected_idx = *idx;
+                self.git.git_log.selected_idx = *idx;
                 self.load_commit_detail();
             }
             SearchMatch::BranchEntry(idx) => {
-                self.branch_list.selected_idx = *idx;
+                self.git.branch_list.selected_idx = *idx;
                 self.update_branch_log();
             }
             SearchMatch::ReflogEntry(idx) => {
-                self.reflog.selected_idx = *idx;
+                self.git.reflog.selected_idx = *idx;
             }
         }
 

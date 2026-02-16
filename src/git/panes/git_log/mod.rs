@@ -17,53 +17,53 @@ impl SelectPane for GitLogSelectPane {
                 if app.search.query.is_some() {
                     app.search.clear();
                 } else {
-                    app.set_focus(app.previous_pane);
+                    app.set_focus(app.git.previous_pane);
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                if !app.git_log.commits.is_empty()
-                    && app.git_log.selected_idx + 1 < app.git_log.commits.len()
+                if !app.git.git_log.commits.is_empty()
+                    && app.git.git_log.selected_idx + 1 < app.git.git_log.commits.len()
                 {
-                    app.git_log.selected_idx += 1;
+                    app.git.git_log.selected_idx += 1;
                     app.load_commit_detail();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if app.git_log.selected_idx > 0 {
-                    app.git_log.selected_idx -= 1;
+                if app.git.git_log.selected_idx > 0 {
+                    app.git.git_log.selected_idx -= 1;
                     app.load_commit_detail();
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (app.git_log.view_height / 2).max(1) as usize;
-                let new_idx = app.git_log.selected_idx.saturating_add(half);
-                app.git_log.selected_idx =
-                    new_idx.min(app.git_log.commits.len().saturating_sub(1));
+                let half = (app.git.git_log.view_height / 2).max(1) as usize;
+                let new_idx = app.git.git_log.selected_idx.saturating_add(half);
+                app.git.git_log.selected_idx =
+                    new_idx.min(app.git.git_log.commits.len().saturating_sub(1));
                 app.load_commit_detail();
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (app.git_log.view_height / 2).max(1) as usize;
-                app.git_log.selected_idx = app.git_log.selected_idx.saturating_sub(half);
+                let half = (app.git.git_log.view_height / 2).max(1) as usize;
+                app.git.git_log.selected_idx = app.git.git_log.selected_idx.saturating_sub(half);
                 app.load_commit_detail();
             }
             KeyCode::Char('g') => {
-                app.git_log.selected_idx = 0;
+                app.git.git_log.selected_idx = 0;
                 app.load_commit_detail();
             }
             KeyCode::Char('G') => {
-                if !app.git_log.commits.is_empty() {
-                    app.git_log.selected_idx = app.git_log.commits.len() - 1;
+                if !app.git.git_log.commits.is_empty() {
+                    app.git.git_log.selected_idx = app.git.git_log.commits.len() - 1;
                     app.load_commit_detail();
                 }
             }
             KeyCode::Char('y') => {
-                if let Some(commit) = app.git_log.commits.get(app.git_log.selected_idx) {
+                if let Some(commit) = app.git.git_log.commits.get(app.git.git_log.selected_idx) {
                     let hash = commit.full_hash.clone();
                     app.copy_to_clipboard(&hash);
                 }
             }
             KeyCode::Char('o') => {
-                if let Some(commit) = app.git_log.commits.get(app.git_log.selected_idx) {
+                if let Some(commit) = app.git.git_log.commits.get(app.git.git_log.selected_idx) {
                     let hash = commit.full_hash.clone();
                     if let Some(nwo) = crate::github::client::repo_nwo() {
                         let url = format!("https://github.com/{nwo}/commit/{hash}");

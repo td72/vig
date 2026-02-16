@@ -81,7 +81,7 @@ fn run_tui() -> Result<()> {
                     BranchListPane.render(frame, &mut app, layout.branch_list);
                     ReflogPane.render(frame, &mut app, layout.reflog);
 
-                    match git_container::git_detail_for(app.focused_pane) {
+                    match git_container::git_detail_for(app.git.focused_pane) {
                         GitDetailId::CommitLog => {
                             GitLogSelectPane.render(frame, &mut app, layout.main_pane);
                         }
@@ -92,7 +92,7 @@ fn run_tui() -> Result<()> {
 
                     status_bar::render_status_bar(frame, &app, layout.status_bar);
 
-                    if app.branch_action_menu.is_some() {
+                    if app.git.branch_action_menu.is_some() {
                         branch_action_menu::render(frame, &app, frame.area());
                     }
 

@@ -70,7 +70,7 @@ pub fn git_detail_for(focused: FocusedPane) -> GitDetailId {
 /// Dispatch a key event to the currently focused Git pane.
 /// Covers all 5 panes: the 3 select panes in GIT_GROUPS + GitLog (nested select) + DiffView (detail).
 pub fn dispatch_git_key(app: &mut App, key: KeyEvent) {
-    match app.focused_pane {
+    match app.git.focused_pane {
         FocusedPane::GitLog => GitLogSelectPane.handle_key(app, key),
         FocusedPane::DiffView => DiffViewPane.handle_key(app, key),
         _ => GitContainer.dispatch(app, key),
@@ -81,7 +81,7 @@ pub fn dispatch_git_key(app: &mut App, key: KeyEvent) {
 
 pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
     // In Normal/Visual modes, keys are handled by the mode handler exclusively
-    if app.focused_pane == FocusedPane::DiffView && app.diff_view_mode != DiffViewMode::Scroll {
+    if app.git.focused_pane == FocusedPane::DiffView && app.git.diff_view_mode != DiffViewMode::Scroll {
         dispatch_git_key(app, key);
         return Ok(false);
     }
@@ -94,7 +94,7 @@ pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
             app.show_help = true;
         }
         KeyCode::Char('/') => {
-            app.search.start(search_origin_for(app.focused_pane));
+            app.search.start(search_origin_for(app.git.focused_pane));
         }
         KeyCode::Char('n') => {
             app.jump_to_match(true);
@@ -111,10 +111,10 @@ pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
             return Ok(true); // Signal to open editor
         }
         KeyCode::Tab => {
-            app.set_focus(next_git_tab(app.focused_pane));
+            app.set_focus(next_git_tab(app.git.focused_pane));
         }
         KeyCode::BackTab => {
-            app.set_focus(prev_git_tab(app.focused_pane));
+            app.set_focus(prev_git_tab(app.git.focused_pane));
         }
         _ => dispatch_git_key(app, key),
     }
@@ -137,7 +137,7 @@ pub(crate) struct GitContainer;
 
 impl PaneContainer for GitContainer {
     fn current_index(&self, app: &App) -> Option<usize> {
-        GIT_GROUPS.iter().position(|g| g.id == app.focused_pane)
+        GIT_GROUPS.iter().position(|g| g.id == app.git.focused_pane)
     }
     fn focus_index(&self, app: &mut App, idx: usize) {
         app.set_focus(GIT_GROUPS[idx].id);

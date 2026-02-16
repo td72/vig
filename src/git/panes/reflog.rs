@@ -19,38 +19,38 @@ impl SelectPane for ReflogPane {
                 app.set_focus(FocusedPane::BranchList);
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                if !app.reflog.entries.is_empty()
-                    && app.reflog.selected_idx + 1 < app.reflog.entries.len()
+                if !app.git.reflog.entries.is_empty()
+                    && app.git.reflog.selected_idx + 1 < app.git.reflog.entries.len()
                 {
-                    app.reflog.selected_idx += 1;
+                    app.git.reflog.selected_idx += 1;
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if app.reflog.selected_idx > 0 {
-                    app.reflog.selected_idx -= 1;
+                if app.git.reflog.selected_idx > 0 {
+                    app.git.reflog.selected_idx -= 1;
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (app.reflog.view_height / 2).max(1) as usize;
-                let new_idx = app.reflog.selected_idx.saturating_add(half);
-                app.reflog.selected_idx =
-                    new_idx.min(app.reflog.entries.len().saturating_sub(1));
+                let half = (app.git.reflog.view_height / 2).max(1) as usize;
+                let new_idx = app.git.reflog.selected_idx.saturating_add(half);
+                app.git.reflog.selected_idx =
+                    new_idx.min(app.git.reflog.entries.len().saturating_sub(1));
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (app.reflog.view_height / 2).max(1) as usize;
-                app.reflog.selected_idx = app.reflog.selected_idx.saturating_sub(half);
+                let half = (app.git.reflog.view_height / 2).max(1) as usize;
+                app.git.reflog.selected_idx = app.git.reflog.selected_idx.saturating_sub(half);
             }
             KeyCode::Char('g') => {
-                app.reflog.selected_idx = 0;
+                app.git.reflog.selected_idx = 0;
             }
             KeyCode::Char('G') => {
-                if !app.reflog.entries.is_empty() {
-                    app.reflog.selected_idx = app.reflog.entries.len() - 1;
+                if !app.git.reflog.entries.is_empty() {
+                    app.git.reflog.selected_idx = app.git.reflog.entries.len() - 1;
                 }
             }
             KeyCode::Enter => {
-                if let Some(entry) = app.reflog.entries.get(app.reflog.selected_idx) {
-                    app.diff_base_ref = Some(entry.full_hash.clone());
+                if let Some(entry) = app.git.reflog.entries.get(app.git.reflog.selected_idx) {
+                    app.git.diff_base_ref = Some(entry.full_hash.clone());
                     if let Err(e) = app.refresh_diff() {
                         app.status_message = Some(format!("Diff error: {e}"));
                     }
@@ -61,8 +61,8 @@ impl SelectPane for ReflogPane {
     }
 
     fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
-        app.reflog.view_height = area.height.saturating_sub(2); // minus borders
-        let border_color = if app.focused_pane == FocusedPane::Reflog {
+        app.git.reflog.view_height = area.height.saturating_sub(2); // minus borders
+        let border_color = if app.git.focused_pane == FocusedPane::Reflog {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -73,7 +73,7 @@ impl SelectPane for ReflogPane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        if app.reflog.entries.is_empty() {
+        if app.git.reflog.entries.is_empty() {
             let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
                 "  No reflog entries",
                 Style::default().fg(Color::DarkGray),
@@ -106,7 +106,7 @@ impl SelectPane for ReflogPane {
         };
 
         let items: Vec<ListItem> = app
-            .reflog
+            .git.reflog
             .entries
             .iter()
             .enumerate()
@@ -155,7 +155,7 @@ impl SelectPane for ReflogPane {
             })
             .collect();
 
-        let selected = app.reflog.selected_idx;
+        let selected = app.git.reflog.selected_idx;
         let selected_is_match = match_set.contains(&selected);
 
         let highlight_style = if selected_is_match {

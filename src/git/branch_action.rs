@@ -4,14 +4,15 @@ use crossterm::event::{KeyCode, KeyEvent};
 impl App {
     fn select_branch(&mut self) {
         if let Some(branch) = self
+            .git
             .branch_list
             .branches
-            .get(self.branch_list.selected_idx)
+            .get(self.git.branch_list.selected_idx)
         {
             if branch.is_head {
-                self.diff_base_ref = None;
+                self.git.diff_base_ref = None;
             } else {
-                self.diff_base_ref = Some(branch.name.clone());
+                self.git.diff_base_ref = Some(branch.name.clone());
             }
             if let Err(e) = self.refresh_diff() {
                 self.status_message = Some(format!("Diff error: {e}"));
@@ -20,8 +21,8 @@ impl App {
     }
 
     pub(crate) fn open_branch_action_menu(&mut self) {
-        if let Some(branch) = self.branch_list.branches.get(self.branch_list.selected_idx) {
-            self.branch_action_menu = Some(BranchActionMenuState {
+        if let Some(branch) = self.git.branch_list.branches.get(self.git.branch_list.selected_idx) {
+            self.git.branch_action_menu = Some(BranchActionMenuState {
                 branch_name: branch.name.clone(),
                 is_head: branch.is_head,
                 selected_idx: 0,
@@ -30,14 +31,14 @@ impl App {
     }
 
     pub(crate) fn handle_branch_action_menu_key(&mut self, key: KeyEvent) {
-        let menu = match self.branch_action_menu.as_mut() {
+        let menu = match self.git.branch_action_menu.as_mut() {
             Some(m) => m,
             None => return,
         };
 
         match key.code {
             KeyCode::Esc | KeyCode::Char('q') => {
-                self.branch_action_menu = None;
+                self.git.branch_action_menu = None;
             }
             KeyCode::Char('j') | KeyCode::Down => {
                 if menu.selected_idx + 1 < BranchAction::ALL.len() {
@@ -67,7 +68,7 @@ impl App {
     }
 
     fn execute_branch_action(&mut self, action: BranchAction) {
-        let menu = match self.branch_action_menu.take() {
+        let menu = match self.git.branch_action_menu.take() {
             Some(m) => m,
             None => return,
         };

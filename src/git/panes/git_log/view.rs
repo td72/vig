@@ -58,9 +58,9 @@ fn graph_spans(
 
 /// Render the Git Log component: outer border with left (commit list) and right (detail).
 pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
-    let is_focused = app.focused_pane == FocusedPane::GitLog
-        || app.focused_pane == FocusedPane::BranchList
-        || app.focused_pane == FocusedPane::Reflog;
+    let is_focused = app.git.focused_pane == FocusedPane::GitLog
+        || app.git.focused_pane == FocusedPane::BranchList
+        || app.git.focused_pane == FocusedPane::Reflog;
     let border_color = if is_focused {
         Color::Cyan
     } else {
@@ -88,9 +88,9 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
 
 /// Render the commit list (left pane inside Git Log).
 fn render_list(f: &mut Frame, app: &mut App, area: Rect) {
-    app.git_log.view_height = area.height;
+    app.git.git_log.view_height = area.height;
 
-    if app.git_log.commits.is_empty() {
+    if app.git.git_log.commits.is_empty() {
         let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
             "  No commits",
             Style::default().fg(Color::DarkGray),
@@ -102,7 +102,7 @@ fn render_list(f: &mut Frame, app: &mut App, area: Rect) {
 
     // Compute max graph width for alignment
     let max_graph_width = app
-        .git_log
+        .git.git_log
         .graph
         .iter()
         .map(|r| r.cells.len())
@@ -132,17 +132,17 @@ fn render_list(f: &mut Frame, app: &mut App, area: Rect) {
     };
 
     // Highlight pipes originating from the selected commit (lazygit-style)
-    let highlight_from = if app.focused_pane == FocusedPane::GitLog
-        || app.focused_pane == FocusedPane::BranchList
-        || app.focused_pane == FocusedPane::Reflog
+    let highlight_from = if app.git.focused_pane == FocusedPane::GitLog
+        || app.git.focused_pane == FocusedPane::BranchList
+        || app.git.focused_pane == FocusedPane::Reflog
     {
-        Some(app.git_log.selected_idx)
+        Some(app.git.git_log.selected_idx)
     } else {
         None
     };
 
     let items: Vec<ListItem> = app
-        .git_log
+        .git.git_log
         .commits
         .iter()
         .enumerate()
@@ -183,7 +183,7 @@ fn render_list(f: &mut Frame, app: &mut App, area: Rect) {
             let mut spans = Vec::new();
 
             // Graph prefix
-            if let Some(graph_row) = app.git_log.graph.get(idx) {
+            if let Some(graph_row) = app.git.git_log.graph.get(idx) {
                 spans.extend(graph_spans(graph_row, max_graph_width, highlight_from));
             } else {
                 for _ in 0..max_graph_width {
@@ -201,7 +201,7 @@ fn render_list(f: &mut Frame, app: &mut App, area: Rect) {
         })
         .collect();
 
-    let selected = app.git_log.selected_idx;
+    let selected = app.git.git_log.selected_idx;
     let selected_is_match = match_set.contains(&selected);
 
     let highlight_style = if selected_is_match {
@@ -227,9 +227,9 @@ fn render_detail(f: &mut Frame, app: &mut App, area: Rect) {
     let inner = separator.inner(area);
     f.render_widget(separator, area);
 
-    app.git_log.detail_view_height = inner.height;
+    app.git.git_log.detail_view_height = inner.height;
 
-    let commit = match app.git_log.commits.get(app.git_log.selected_idx) {
+    let commit = match app.git.git_log.commits.get(app.git.git_log.selected_idx) {
         Some(c) => c,
         None => {
             let para = Paragraph::new(Line::from(Span::styled(
@@ -313,13 +313,13 @@ fn render_detail(f: &mut Frame, app: &mut App, area: Rect) {
     )));
 
     // Changed files list
-    if app.git_log.detail_changed_files.is_empty() {
+    if app.git.git_log.detail_changed_files.is_empty() {
         lines.push(Line::from(Span::styled(
             "  (no changes)",
             Style::default().fg(Color::DarkGray),
         )));
     } else {
-        for change in &app.git_log.detail_changed_files {
+        for change in &app.git.git_log.detail_changed_files {
             let (status_char, status_color) = match change.status {
                 'A' => ("A", Color::Green),
                 'D' => ("D", Color::Red),
@@ -339,13 +339,13 @@ fn render_detail(f: &mut Frame, app: &mut App, area: Rect) {
 
     // Clamp scroll
     let total_lines = lines.len() as u16;
-    let view_height = app.git_log.detail_view_height;
+    let view_height = app.git.git_log.detail_view_height;
     let max_scroll = total_lines.saturating_sub(view_height);
-    if app.git_log.detail_scroll > max_scroll {
-        app.git_log.detail_scroll = max_scroll;
+    if app.git.git_log.detail_scroll > max_scroll {
+        app.git.git_log.detail_scroll = max_scroll;
     }
 
     let para = Paragraph::new(lines)
-        .scroll((app.git_log.detail_scroll, 0));
+        .scroll((app.git.git_log.detail_scroll, 0));
     f.render_widget(para, inner);
 }

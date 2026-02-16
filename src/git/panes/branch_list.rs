@@ -16,24 +16,24 @@ impl SelectPane for BranchListPane {
     fn handle_key(&self, app: &mut App, key: KeyEvent) {
         match key.code {
             KeyCode::Esc => {
-                if app.diff_base_ref.is_some() {
-                    app.diff_base_ref = None;
+                if app.git.diff_base_ref.is_some() {
+                    app.git.diff_base_ref = None;
                     if let Err(e) = app.refresh_diff() {
                         app.status_message = Some(format!("Diff error: {e}"));
                     }
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                if !app.branch_list.branches.is_empty()
-                    && app.branch_list.selected_idx + 1 < app.branch_list.branches.len()
+                if !app.git.branch_list.branches.is_empty()
+                    && app.git.branch_list.selected_idx + 1 < app.git.branch_list.branches.len()
                 {
-                    app.branch_list.selected_idx += 1;
+                    app.git.branch_list.selected_idx += 1;
                     app.update_branch_log();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if app.branch_list.selected_idx > 0 {
-                    app.branch_list.selected_idx -= 1;
+                if app.git.branch_list.selected_idx > 0 {
+                    app.git.branch_list.selected_idx -= 1;
                     app.update_branch_log();
                 }
             }
@@ -45,7 +45,7 @@ impl SelectPane for BranchListPane {
     }
 
     fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
-        let border_color = if app.focused_pane == FocusedPane::BranchList {
+        let border_color = if app.git.focused_pane == FocusedPane::BranchList {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -56,7 +56,7 @@ impl SelectPane for BranchListPane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        if app.branch_list.branches.is_empty() {
+        if app.git.branch_list.branches.is_empty() {
             let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
                 "  No branches",
                 Style::default().fg(Color::DarkGray),
@@ -89,7 +89,7 @@ impl SelectPane for BranchListPane {
         };
 
         let items: Vec<ListItem> = app
-            .branch_list
+            .git.branch_list
             .branches
             .iter()
             .enumerate()
@@ -138,7 +138,7 @@ impl SelectPane for BranchListPane {
             })
             .collect();
 
-        let selected = app.branch_list.selected_idx;
+        let selected = app.git.branch_list.selected_idx;
         let selected_is_match = match_set.contains(&selected);
 
         let highlight_style = if selected_is_match {
