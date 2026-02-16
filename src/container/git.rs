@@ -1,7 +1,71 @@
-use crate::app::{App, FocusedPane};
-use crate::container::PaneContainer;
-use crate::pane::{GitDetailId, SelectPane, GIT_GROUPS};
+use crate::app::{App, FocusedPane, SearchOrigin};
+use crate::container::{GitDetailId, GitPaneGroup, PaneContainer};
+use crate::pane::{
+    BranchListPane, DetailPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
+    SelectPane,
+};
 use crossterm::event::{KeyCode, KeyEvent};
+
+// === Tab definitions ===
+
+pub static GIT_GROUPS: &[GitPaneGroup] = &[
+    GitPaneGroup {
+        select: &FileTreePane,
+        detail: GitDetailId::DiffView,
+        id: FocusedPane::FileTree,
+        search_origin: SearchOrigin::FileTree,
+    },
+    GitPaneGroup {
+        select: &BranchListPane,
+        detail: GitDetailId::CommitLog,
+        id: FocusedPane::BranchList,
+        search_origin: SearchOrigin::BranchList,
+    },
+    GitPaneGroup {
+        select: &ReflogPane,
+        detail: GitDetailId::CommitLog,
+        id: FocusedPane::Reflog,
+        search_origin: SearchOrigin::Reflog,
+    },
+];
+
+// === Tab cycling ===
+
+pub fn next_git_tab(current: FocusedPane) -> FocusedPane {
+    let idx = GIT_GROUPS.iter().position(|g| g.id == current).unwrap_or(0);
+    GIT_GROUPS[(idx + 1) % GIT_GROUPS.len()].id
+}
+
+pub fn prev_git_tab(current: FocusedPane) -> FocusedPane {
+    let idx = GIT_GROUPS.iter().position(|g| g.id == current).unwrap_or(0);
+    GIT_GROUPS[(idx + GIT_GROUPS.len() - 1) % GIT_GROUPS.len()].id
+}
+
+// === Dispatch ===
+
+pub fn git_detail_for(focused: FocusedPane) -> GitDetailId {
+    // GitLog is a nested select inside CommitLog detail
+    if focused == FocusedPane::GitLog {
+        return GitDetailId::CommitLog;
+    }
+    GIT_GROUPS
+        .iter()
+        .find(|g| g.id == focused)
+        .map(|g| g.detail)
+        .unwrap_or(GitDetailId::DiffView)
+}
+
+/// Dispatch a key event to the currently focused Git pane.
+/// Covers all 5 panes: the 3 select panes in GIT_GROUPS + GitLog (nested select) + DiffView (detail).
+pub fn dispatch_git_key(app: &mut App, key: KeyEvent) {
+    match app.focused_pane {
+        FocusedPane::GitLog => GitLogSelectPane.handle_key(app, key),
+        FocusedPane::DiffView => DiffViewPane.handle_key(app, key),
+        _ => GitContainer.dispatch(app, key),
+    }
+}
+
+// === Container ===
 
 pub(crate) struct GitContainer;
 

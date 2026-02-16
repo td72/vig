@@ -2,7 +2,6 @@ use crate::git::diff::{DiffState, FileDiff};
 use crate::git::graph::{self, GraphRow};
 use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
 use crate::github::state::{GhFocusedPane, GitHubState};
-use crate::pane;
 use crate::syntax::{HighlightCache, SyntaxHighlighter};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -812,7 +811,7 @@ impl App {
             && self.focused_pane == FocusedPane::DiffView
             && self.diff_view_mode != DiffViewMode::Scroll
         {
-            pane::dispatch_git_key(self, key);
+            crate::container::git::dispatch_git_key(self, key);
             return Ok(false);
         }
 
@@ -865,12 +864,12 @@ impl App {
                         return Ok(true); // Signal to open editor
                     }
                     KeyCode::Tab => {
-                        self.set_focus(pane::next_git_tab(self.focused_pane));
+                        self.set_focus(crate::container::git::next_git_tab(self.focused_pane));
                     }
                     KeyCode::BackTab => {
-                        self.set_focus(pane::prev_git_tab(self.focused_pane));
+                        self.set_focus(crate::container::git::prev_git_tab(self.focused_pane));
                     }
-                    _ => pane::dispatch_git_key(self, key),
+                    _ => crate::container::git::dispatch_git_key(self, key),
                 }
             }
             ViewMode::GitHub => {
@@ -906,7 +905,7 @@ impl App {
             }
             _ => {}
         }
-        pane::dispatch_gh_key(self, key);
+        crate::container::github::dispatch_gh_key(self, key);
         Ok(false)
     }
 

@@ -13,6 +13,8 @@ use crate::app::{App, ViewMode};
 use crate::event::{Event, EventHandler};
 use crate::git::repository::Repo;
 use crate::git::watcher::FsWatcher;
+use crate::container::git as git_container;
+use crate::container::GitDetailId;
 use crate::pane::{
     BranchListPane, DiffViewPane, FileTreePane, GhDetailViewPane, GhIssueListPane,
     GhPrListPane, GitLogSelectPane, ReflogPane, SelectPane, DetailPane,
@@ -84,11 +86,11 @@ fn run_tui() -> Result<()> {
                     BranchListPane.render(frame, &mut app, layout.branch_list);
                     ReflogPane.render(frame, &mut app, layout.reflog);
 
-                    match pane::git_detail_for(app.focused_pane) {
-                        pane::GitDetailId::CommitLog => {
+                    match git_container::git_detail_for(app.focused_pane) {
+                        GitDetailId::CommitLog => {
                             GitLogSelectPane.render(frame, &mut app, layout.main_pane);
                         }
-                        pane::GitDetailId::DiffView => {
+                        GitDetailId::DiffView => {
                             DiffViewPane.render(frame, &mut app, layout.main_pane);
                         }
                     }
