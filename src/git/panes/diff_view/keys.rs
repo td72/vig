@@ -516,16 +516,16 @@ impl App {
         match arboard::Clipboard::new() {
             Ok(mut clip) => {
                 if clip.set_text(text).is_ok() {
-                    self.status_message = Some(format!(
+                    self.ctx.status_message = Some(format!(
                         "Yanked {line_count} line{}",
                         if line_count == 1 { "" } else { "s" }
                     ));
                 } else {
-                    self.status_message = Some("Clipboard error".to_string());
+                    self.ctx.status_message = Some("Clipboard error".to_string());
                 }
             }
             Err(_) => {
-                self.status_message = Some("Clipboard unavailable".to_string());
+                self.ctx.status_message = Some("Clipboard unavailable".to_string());
             }
         }
     }

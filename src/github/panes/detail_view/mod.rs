@@ -54,11 +54,11 @@ impl App {
                         let n = issue.number;
                         match crate::github::client::open_issue_in_browser(n) {
                             Ok(()) => {
-                                self.status_message =
+                                self.ctx.status_message =
                                     Some(format!("Opening issue #{n} in browser..."));
                             }
                             Err(e) => {
-                                self.status_message =
+                                self.ctx.status_message =
                                     Some(format!("Failed to open browser: {e}"));
                             }
                         }
@@ -68,11 +68,11 @@ impl App {
                         let n = pr.number;
                         match crate::github::client::open_pr_in_browser(n) {
                             Ok(()) => {
-                                self.status_message =
+                                self.ctx.status_message =
                                     Some(format!("Opening PR #{n} in browser..."));
                             }
                             Err(e) => {
-                                self.status_message =
+                                self.ctx.status_message =
                                     Some(format!("Failed to open browser: {e}"));
                             }
                         }
@@ -86,10 +86,10 @@ impl App {
         if let Some(url) = url {
             match crate::github::client::open_url(&url) {
                 Ok(()) => {
-                    self.status_message = Some("Opening in browser...".to_string());
+                    self.ctx.status_message = Some("Opening in browser...".to_string());
                 }
                 Err(e) => {
-                    self.status_message = Some(e);
+                    self.ctx.status_message = Some(e);
                 }
             }
         }

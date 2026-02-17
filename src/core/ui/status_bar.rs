@@ -60,7 +60,7 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
         ));
     }
 
-    spans.extend(view_tab_spans(app.view_mode));
+    spans.extend(view_tab_spans(app.ctx.view_mode));
 
     spans.push(Span::raw("  "));
     spans.push(Span::styled(
@@ -90,7 +90,7 @@ pub fn render_gh_header(f: &mut Frame, app: &App, area: Rect) {
         ),
     ];
 
-    spans.extend(view_tab_spans(app.view_mode));
+    spans.extend(view_tab_spans(app.ctx.view_mode));
 
     spans.push(Span::raw("  "));
     spans.push(Span::styled(
@@ -119,7 +119,7 @@ pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
     let adds = app.git.diff_state.stats.additions;
     let dels = app.git.diff_state.stats.deletions;
 
-    let status = if let Some(ref msg) = app.status_message {
+    let status = if let Some(ref msg) = app.ctx.status_message {
         Line::from(Span::styled(
             format!(" {msg}"),
             Style::default().fg(Color::Yellow),

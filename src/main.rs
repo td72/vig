@@ -71,7 +71,7 @@ fn run_tui() -> Result<()> {
 
         // Draw
         terminal.draw(|frame| {
-            match app.view_mode {
+            match app.ctx.view_mode {
                 ViewMode::Git => {
                     let layout = layout::compute_layout(frame.area());
                     status_bar::render_header(frame, &app, layout.header);
@@ -94,7 +94,7 @@ fn run_tui() -> Result<()> {
                         branch_action_menu::render(frame, &app, frame.area());
                     }
 
-                    if app.error_dialog.is_some() {
+                    if app.ctx.error_dialog.is_some() {
                         confirm_dialog::render(frame, &app, frame.area());
                     }
                 }
@@ -108,8 +108,8 @@ fn run_tui() -> Result<()> {
                 }
             }
 
-            if app.show_help {
-                status_bar::render_help_overlay(frame, frame.area(), app.view_mode);
+            if app.ctx.show_help {
+                status_bar::render_help_overlay(frame, frame.area(), app.ctx.view_mode);
             }
         })?;
 
@@ -123,7 +123,7 @@ fn run_tui() -> Result<()> {
 
                 let open_editor = app.handle_key(key)?;
 
-                if app.should_quit {
+                if app.ctx.should_quit {
                     break;
                 }
 
@@ -154,11 +154,11 @@ fn run_tui() -> Result<()> {
                                 app.post_edit_refresh()?;
                             }
                             Ok(s) => {
-                                app.status_message =
+                                app.ctx.status_message =
                                     Some(format!("Editor exited with: {s}"));
                             }
                             Err(e) => {
-                                app.status_message =
+                                app.ctx.status_message =
                                     Some(format!("Failed to open editor: {e}"));
                             }
                         }
@@ -169,11 +169,11 @@ fn run_tui() -> Result<()> {
                 app.git.load_branches();
                 app.git.load_reflog();
                 if let Err(e) = app.refresh_diff() {
-                    app.status_message = Some(format!("Refresh error: {e}"));
+                    app.ctx.status_message = Some(format!("Refresh error: {e}"));
                 }
             }
             Event::Tick => {
-                if app.view_mode == ViewMode::GitHub {
+                if app.ctx.view_mode == ViewMode::GitHub {
                     app.github.handle_watch_tick();
                 }
             }

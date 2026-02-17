@@ -138,7 +138,7 @@ impl App {
         }
 
         if self.git.search.matches.is_empty() {
-            self.status_message = Some("Pattern not found".to_string());
+            self.ctx.status_message = Some("Pattern not found".to_string());
             return;
         }
 
@@ -196,6 +196,6 @@ impl App {
             }
         }
 
-        self.status_message = Some(format!("[{}/{}]", new_idx + 1, total));
+        self.ctx.status_message = Some(format!("[{}/{}]", new_idx + 1, total));
     }
 }

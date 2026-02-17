@@ -41,10 +41,10 @@ pub static GH_GROUPS: &[GhPaneGroup] = &[
 pub fn handle_gh_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
     match key.code {
         KeyCode::Char('q') => {
-            app.should_quit = true;
+            app.ctx.should_quit = true;
         }
         KeyCode::Char('?') => {
-            app.show_help = true;
+            app.ctx.show_help = true;
         }
         KeyCode::Char('r') => {
             if app.github.focused_pane == GhFocusedPane::Detail {

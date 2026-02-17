@@ -51,11 +51,11 @@ impl SelectPane for GhIssueListPane {
                     let number = issue.number;
                     match crate::github::client::open_issue_in_browser(number) {
                         Ok(()) => {
-                            app.status_message =
+                            app.ctx.status_message =
                                 Some(format!("Opening issue #{number} in browser..."));
                         }
                         Err(e) => {
-                            app.status_message = Some(format!("Failed to open browser: {e}"));
+                            app.ctx.status_message = Some(format!("Failed to open browser: {e}"));
                         }
                     }
                 }

@@ -16,7 +16,7 @@ impl App {
                 self.git.diff_base_ref = Some(branch.name.clone());
             }
             if let Err(e) = self.refresh_diff() {
-                self.status_message = Some(format!("Diff error: {e}"));
+                self.ctx.status_message = Some(format!("Diff error: {e}"));
             }
         }
     }
@@ -77,20 +77,20 @@ impl App {
         match action {
             BranchAction::Switch => {
                 if menu.is_head {
-                    self.status_message = Some("Already on this branch".to_string());
+                    self.ctx.status_message = Some("Already on this branch".to_string());
                     return;
                 }
                 match self.git.repo.switch_branch(&menu.branch_name) {
                     Ok(()) => {
-                        self.status_message =
+                        self.ctx.status_message =
                             Some(format!("Switched to {}", menu.branch_name));
                         self.git.load_branches();
                         if let Err(e) = self.refresh_diff() {
-                            self.status_message = Some(format!("Diff error: {e}"));
+                            self.ctx.status_message = Some(format!("Diff error: {e}"));
                         }
                     }
                     Err(e) => {
-                        self.error_dialog = Some(ErrorDialogState {
+                        self.ctx.error_dialog = Some(ErrorDialogState {
                             title: "Switch failed".to_string(),
                             message: format!("{e}"),
                         });
@@ -99,18 +99,18 @@ impl App {
             }
             BranchAction::Delete => {
                 if menu.is_head {
-                    self.status_message =
+                    self.ctx.status_message =
                         Some("Cannot delete the current branch".to_string());
                     return;
                 }
                 match self.git.repo.delete_branch(&menu.branch_name) {
                     Ok(()) => {
-                        self.status_message =
+                        self.ctx.status_message =
                             Some(format!("Deleted {}", menu.branch_name));
                         self.git.load_branches();
                     }
                     Err(e) => {
-                        self.error_dialog = Some(ErrorDialogState {
+                        self.ctx.error_dialog = Some(ErrorDialogState {
                             title: "Delete failed".to_string(),
                             message: format!("{e}"),
                         });

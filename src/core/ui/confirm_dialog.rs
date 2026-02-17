@@ -54,7 +54,7 @@ fn wrap_text(text: &str, width: usize) -> Vec<String> {
 }
 
 pub fn render(f: &mut Frame, app: &App, area: Rect) {
-    let dialog = match &app.error_dialog {
+    let dialog = match &app.ctx.error_dialog {
         Some(d) => d,
         None => return,
     };

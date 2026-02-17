@@ -20,7 +20,7 @@ impl SelectPane for BranchListPane {
                 if app.git.diff_base_ref.is_some() {
                     app.git.diff_base_ref = None;
                     if let Err(e) = app.refresh_diff() {
-                        app.status_message = Some(format!("Diff error: {e}"));
+                        app.ctx.status_message = Some(format!("Diff error: {e}"));
                     }
                 }
             }

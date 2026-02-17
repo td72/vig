@@ -53,7 +53,7 @@ impl SelectPane for ReflogPane {
                 if let Some(entry) = app.git.reflog.entries.get(app.git.reflog.selected_idx) {
                     app.git.diff_base_ref = Some(entry.full_hash.clone());
                     if let Err(e) = app.refresh_diff() {
-                        app.status_message = Some(format!("Diff error: {e}"));
+                        app.ctx.status_message = Some(format!("Diff error: {e}"));
                     }
                 }
             }

@@ -89,10 +89,10 @@ pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
 
     match key.code {
         KeyCode::Char('q') => {
-            app.should_quit = true;
+            app.ctx.should_quit = true;
         }
         KeyCode::Char('?') => {
-            app.show_help = true;
+            app.ctx.show_help = true;
         }
         KeyCode::Char('/') => {
             app.git.search.start(search_origin_for(app.git.focused_pane));

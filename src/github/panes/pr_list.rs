@@ -51,11 +51,11 @@ impl SelectPane for GhPrListPane {
                     let number = pr.number;
                     match crate::github::client::open_pr_in_browser(number) {
                         Ok(()) => {
-                            app.status_message =
+                            app.ctx.status_message =
                                 Some(format!("Opening PR #{number} in browser..."));
                         }
                         Err(e) => {
-                            app.status_message = Some(format!("Failed to open browser: {e}"));
+                            app.ctx.status_message = Some(format!("Failed to open browser: {e}"));
                         }
                     }
                 }

@@ -70,16 +70,16 @@ impl SelectPane for GitLogSelectPane {
                         let url = format!("https://github.com/{nwo}/commit/{hash}");
                         match crate::github::client::open_url(&url) {
                             Ok(()) => {
-                                app.status_message =
+                                app.ctx.status_message =
                                     Some("Opening in browser...".to_string());
                             }
                             Err(e) => {
-                                app.status_message =
+                                app.ctx.status_message =
                                     Some(format!("Failed to open URL: {e}"));
                             }
                         }
                     } else {
-                        app.status_message =
+                        app.ctx.status_message =
                             Some("Could not determine GitHub repository".to_string());
                     }
                 }
