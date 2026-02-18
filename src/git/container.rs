@@ -1,12 +1,16 @@
 use crate::core::app::{App, SearchOrigin};
-use crate::git::state::{DiffViewMode, FocusedPane};
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
+use crate::core::ui::{branch_action_menu, status_bar};
+use crate::core::view::View;
+use crate::git::layout;
 use crate::git::panes::{
     BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
 };
+use crate::git::state::{DiffViewMode, FocusedPane};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
+use ratatui::{layout::Rect, Frame};
 
 // === Domain types ===
 
@@ -165,6 +169,54 @@ impl PaneContainer for GitContainer {
                 true
             }
             _ => false,
+        }
+    }
+}
+
+// === View ===
+
+pub struct GitView;
+
+impl View for GitView {
+    fn intercepts_all_keys(&self, app: &App) -> bool {
+        app.git.branch_action_menu.is_some() || app.git.search.active
+    }
+
+    fn handle_key(&self, app: &mut App, key: KeyEvent) -> Result<bool> {
+        // Branch action menu intercepts all keys when open
+        if app.git.branch_action_menu.is_some() {
+            app.handle_branch_action_menu_key(key);
+            return Ok(false);
+        }
+
+        // Search input mode intercepts all keys
+        if app.git.search.active {
+            if app.git.search.handle_input_key(key) {
+                app.execute_git_search();
+                app.jump_to_git_match(true);
+            }
+            return Ok(false);
+        }
+
+        handle_git_view_key(app, key)
+    }
+
+    fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
+        let ly = layout::compute_layout(area);
+        status_bar::render_header(f, app, ly.header);
+        FileTreePane.render(f, app, ly.file_tree);
+        BranchListPane.render(f, app, ly.branch_list);
+        ReflogPane.render(f, app, ly.reflog);
+
+        match git_detail_for(app.git.focused_pane) {
+            GitDetailId::CommitLog => GitLogSelectPane.render(f, app, ly.main_pane),
+            GitDetailId::DiffView => DiffViewPane.render(f, app, ly.main_pane),
+        }
+
+        status_bar::render_status_bar(f, app, ly.status_bar);
+
+        if app.git.branch_action_menu.is_some() {
+            branch_action_menu::render(f, app, area);
         }
     }
 }

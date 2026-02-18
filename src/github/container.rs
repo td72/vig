@@ -1,10 +1,13 @@
 use crate::core::app::App;
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
+use crate::core::ui::status_bar;
+use crate::core::view::View;
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use crate::github::state::GhFocusedPane;
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
+use ratatui::{layout::Rect, Frame};
 
 // === Domain types ===
 
@@ -103,5 +106,24 @@ fn load_gh_detail_for_tab(app: &mut App) {
         GhFocusedPane::IssueList => app.github.load_selected_issue_detail(),
         GhFocusedPane::PrList => app.github.load_selected_pr_detail(),
         _ => {}
+    }
+}
+
+// === View ===
+
+pub struct GhView;
+
+impl View for GhView {
+    fn handle_key(&self, app: &mut App, key: KeyEvent) -> Result<bool> {
+        handle_gh_view_key(app, key)
+    }
+
+    fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
+        let gl = crate::github::layout::compute_gh_layout(area);
+        status_bar::render_gh_header(f, app, gl.header);
+        GhIssueListPane.render(f, app, gl.issue_list);
+        GhPrListPane.render(f, app, gl.pr_list);
+        GhDetailViewPane.render(f, app, gl.main_pane);
+        status_bar::render_gh_status_bar(f, app, gl.status_bar);
     }
 }

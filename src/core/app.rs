@@ -1,5 +1,8 @@
 pub use crate::git::state::*;
 pub use crate::core::search::{SearchMatch, SearchOrigin, SearchState};
+use crate::core::view::View;
+use crate::git::container::GitView;
+use crate::github::container::GhView;
 use crate::github::state::GitHubState;
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -45,13 +48,6 @@ impl App {
         })
     }
 
-    pub fn active_search(&self) -> Option<&SearchState> {
-        match self.ctx.view_mode {
-            ViewMode::Git => Some(&self.git.search),
-            ViewMode::GitHub => None,
-        }
-    }
-
     pub fn refresh_diff(&mut self) -> Result<()> {
         if let Some(msg) = self.git.refresh_diff()? {
             self.ctx.status_message = Some(msg);
@@ -66,6 +62,13 @@ impl App {
         self.refresh_diff()
     }
 
+    pub fn active_view(&self) -> &'static dyn View {
+        match self.ctx.view_mode {
+            ViewMode::Git => &GitView,
+            ViewMode::GitHub => &GhView,
+        }
+    }
+
     pub fn handle_key(&mut self, key: KeyEvent) -> Result<bool> {
         if self.ctx.show_help {
             self.ctx.show_help = false;
@@ -78,22 +81,10 @@ impl App {
             return Ok(false);
         }
 
-        // Action menu intercepts all keys when open
-        if self.git.branch_action_menu.is_some() {
-            self.handle_branch_action_menu_key(key);
-            return Ok(false);
-        }
-
-        // Search input mode intercepts all keys
-        match self.ctx.view_mode {
-            ViewMode::Git if self.git.search.active => {
-                if self.git.search.handle_input_key(key) {
-                    self.execute_git_search();
-                    self.jump_to_git_match(true);
-                }
-                return Ok(false);
-            }
-            _ => {}
+        // If the view intercepts all keys (modal menu, search input), delegate immediately
+        let view = self.active_view();
+        if view.intercepts_all_keys(self) {
+            return view.handle_key(self, key);
         }
 
         // Ctrl+c always quits
@@ -116,10 +107,7 @@ impl App {
             _ => {}
         }
 
-        // Delegate to domain container
-        match self.ctx.view_mode {
-            ViewMode::Git => crate::git::container::handle_git_view_key(self, key),
-            ViewMode::GitHub => crate::github::container::handle_gh_view_key(self, key),
-        }
+        // Delegate to active view
+        view.handle_key(self, key)
     }
 }

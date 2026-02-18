@@ -5,16 +5,8 @@ mod update;
 
 use crate::core::app::{App, ViewMode};
 use crate::core::event::{Event, EventHandler};
-use crate::core::pane::{DetailPane, SelectPane};
-use crate::core::ui::{branch_action_menu, confirm_dialog, status_bar};
-use crate::git::container as git_container;
-use crate::git::container::GitDetailId;
-use crate::git::layout;
-use crate::git::panes::{
-    BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
-};
+use crate::core::ui::{confirm_dialog, status_bar};
 use crate::git::watcher::FsWatcher;
-use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::env;
@@ -71,43 +63,13 @@ fn run_tui() -> Result<()> {
 
         // Draw
         terminal.draw(|frame| {
-            match app.ctx.view_mode {
-                ViewMode::Git => {
-                    let layout = layout::compute_layout(frame.area());
-                    status_bar::render_header(frame, &app, layout.header);
-                    FileTreePane.render(frame, &mut app, layout.file_tree);
-                    BranchListPane.render(frame, &mut app, layout.branch_list);
-                    ReflogPane.render(frame, &mut app, layout.reflog);
+            let view = app.active_view();
+            view.render(frame, &mut app, frame.area());
 
-                    match git_container::git_detail_for(app.git.focused_pane) {
-                        GitDetailId::CommitLog => {
-                            GitLogSelectPane.render(frame, &mut app, layout.main_pane);
-                        }
-                        GitDetailId::DiffView => {
-                            DiffViewPane.render(frame, &mut app, layout.main_pane);
-                        }
-                    }
-
-                    status_bar::render_status_bar(frame, &app, layout.status_bar);
-
-                    if app.git.branch_action_menu.is_some() {
-                        branch_action_menu::render(frame, &app, frame.area());
-                    }
-
-                    if app.ctx.error_dialog.is_some() {
-                        confirm_dialog::render(frame, &app, frame.area());
-                    }
-                }
-                ViewMode::GitHub => {
-                    let gl = crate::github::layout::compute_gh_layout(frame.area());
-                    status_bar::render_gh_header(frame, &app, gl.header);
-                    GhIssueListPane.render(frame, &mut app, gl.issue_list);
-                    GhPrListPane.render(frame, &mut app, gl.pr_list);
-                    GhDetailViewPane.render(frame, &mut app, gl.main_pane);
-                    status_bar::render_gh_status_bar(frame, &app, gl.status_bar);
-                }
+            // Shared overlays (rendered on top of any view)
+            if app.ctx.error_dialog.is_some() {
+                confirm_dialog::render(frame, &app, frame.area());
             }
-
             if app.ctx.show_help {
                 status_bar::render_help_overlay(frame, frame.area(), app.ctx.view_mode);
             }

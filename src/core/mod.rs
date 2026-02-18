@@ -6,3 +6,4 @@ pub mod search;
 pub mod syntax;
 pub mod tui;
 pub mod ui;
+pub mod view;

@@ -103,16 +103,14 @@ pub fn render_gh_header(f: &mut Frame, app: &App, area: Rect) {
 }
 
 pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
-    if let Some(search) = app.active_search() {
-        if search.active {
-            let prompt = format!("/{}\u{2588}", search.input);
-            let line = Line::from(Span::styled(
-                format!(" {prompt}"),
-                Style::default().fg(Color::White),
-            ));
-            f.render_widget(Paragraph::new(line), area);
-            return;
-        }
+    if app.git.search.active {
+        let prompt = format!("/{}\u{2588}", app.git.search.input);
+        let line = Line::from(Span::styled(
+            format!(" {prompt}"),
+            Style::default().fg(Color::White),
+        ));
+        f.render_widget(Paragraph::new(line), area);
+        return;
     }
 
     let file_count = app.git.diff_state.files.len();
