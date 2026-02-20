@@ -2,7 +2,7 @@ use crate::core::app::App;
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::core::ui::status_bar;
-use crate::core::view::View;
+use crate::core::view::{View, ViewAction};
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use crate::github::state::GhFocusedPane;
 use anyhow::Result;
@@ -41,7 +41,7 @@ pub static GH_GROUPS: &[GhPaneGroup] = &[
 
 // === View-level key handling ===
 
-pub fn handle_gh_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
+pub fn handle_gh_view_key(app: &mut App, key: KeyEvent) -> Result<ViewAction> {
     match key.code {
         KeyCode::Char('q') => {
             app.ctx.should_quit = true;
@@ -61,7 +61,7 @@ pub fn handle_gh_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
         }
         _ => dispatch_gh_key(app, key),
     }
-    Ok(false)
+    Ok(ViewAction::None)
 }
 
 // === Dispatch ===
@@ -114,7 +114,7 @@ fn load_gh_detail_for_tab(app: &mut App) {
 pub struct GhView;
 
 impl View for GhView {
-    fn handle_key(&self, app: &mut App, key: KeyEvent) -> Result<bool> {
+    fn handle_key(&self, app: &mut App, key: KeyEvent) -> Result<ViewAction> {
         handle_gh_view_key(app, key)
     }
 
@@ -125,5 +125,13 @@ impl View for GhView {
         GhPrListPane.render(f, app, gl.pr_list);
         GhDetailViewPane.render(f, app, gl.main_pane);
         status_bar::render_gh_status_bar(f, app, gl.status_bar);
+    }
+
+    fn on_tick(&self, app: &mut App) {
+        app.github.handle_watch_tick();
+    }
+
+    fn on_activate(&self, app: &mut App) {
+        app.github.initialize();
     }
 }

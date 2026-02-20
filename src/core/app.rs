@@ -1,6 +1,6 @@
 pub use crate::git::state::*;
 pub use crate::core::search::{SearchMatch, SearchOrigin, SearchState};
-use crate::core::view::View;
+use crate::core::view::{View, ViewAction};
 use crate::git::container::GitView;
 use crate::github::container::GhView;
 use crate::github::state::GitHubState;
@@ -48,6 +48,19 @@ impl App {
         })
     }
 
+    pub fn workdir(&self) -> &Path {
+        self.git.repo.workdir()
+    }
+
+    pub fn drain_all_background(&mut self) {
+        self.git.drain_bg_highlights();
+        self.github.drain_bg_messages();
+    }
+
+    pub fn all_views() -> [&'static dyn View; 2] {
+        [&GitView, &GhView]
+    }
+
     pub fn refresh_diff(&mut self) -> Result<()> {
         if let Some(msg) = self.git.refresh_diff()? {
             self.ctx.status_message = Some(msg);
@@ -57,11 +70,6 @@ impl App {
         Ok(())
     }
 
-    /// Refresh git state after a successful external editor session.
-    pub fn post_edit_refresh(&mut self) -> Result<()> {
-        self.refresh_diff()
-    }
-
     pub fn active_view(&self) -> &'static dyn View {
         match self.ctx.view_mode {
             ViewMode::Git => &GitView,
@@ -69,16 +77,16 @@ impl App {
         }
     }
 
-    pub fn handle_key(&mut self, key: KeyEvent) -> Result<bool> {
+    pub fn handle_key(&mut self, key: KeyEvent) -> Result<ViewAction> {
         if self.ctx.show_help {
             self.ctx.show_help = false;
-            return Ok(false);
+            return Ok(ViewAction::None);
         }
 
         // Error dialog: any key dismisses
         if self.ctx.error_dialog.is_some() {
             self.ctx.error_dialog = None;
-            return Ok(false);
+            return Ok(ViewAction::None);
         }
 
         // If the view intercepts all keys (modal menu, search input), delegate immediately
@@ -90,19 +98,19 @@ impl App {
         // Ctrl+c always quits
         if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
             self.ctx.should_quit = true;
-            return Ok(false);
+            return Ok(ViewAction::None);
         }
 
         // View switching
         match key.code {
             KeyCode::Char('1') => {
                 self.ctx.view_mode = ViewMode::Git;
-                return Ok(false);
+                return Ok(ViewAction::None);
             }
             KeyCode::Char('2') => {
                 self.ctx.view_mode = ViewMode::GitHub;
-                self.github.initialize();
-                return Ok(false);
+                GhView.on_activate(self);
+                return Ok(ViewAction::None);
             }
             _ => {}
         }

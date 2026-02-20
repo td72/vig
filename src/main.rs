@@ -3,9 +3,10 @@ mod git;
 mod github;
 mod update;
 
-use crate::core::app::{App, ViewMode};
+use crate::core::app::App;
 use crate::core::event::{Event, EventHandler};
 use crate::core::ui::{confirm_dialog, status_bar};
+use crate::core::view::ViewAction;
 use crate::git::watcher::FsWatcher;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -47,7 +48,7 @@ fn run_tui() -> Result<()> {
 
     let cwd = env::current_dir()?;
     let mut app = App::new(&cwd)?;
-    let workdir = app.git.repo.workdir().to_path_buf();
+    let workdir = app.workdir().to_path_buf();
 
     let events = EventHandler::new(Duration::from_millis(250));
 
@@ -57,9 +58,8 @@ fn run_tui() -> Result<()> {
     let mut terminal = crate::core::tui::enter()?;
 
     loop {
-        // Collect any completed background highlight results
-        app.git.drain_bg_highlights();
-        app.github.drain_bg_messages();
+        // Collect any completed background results
+        app.drain_all_background();
 
         // Draw
         terminal.draw(|frame| {
@@ -83,61 +83,54 @@ fn run_tui() -> Result<()> {
                     continue;
                 }
 
-                let open_editor = app.handle_key(key)?;
+                let action = app.handle_key(key)?;
 
                 if app.ctx.should_quit {
                     break;
                 }
 
-                if open_editor {
-                    if let Some(file) = app.git.selected_file() {
-                        let file_path = workdir.join(&file.path);
-                        let editor = env::var("EDITOR")
-                            .or_else(|_| env::var("VISUAL"))
-                            .unwrap_or_else(|_| "vi".to_string());
+                if let ViewAction::OpenEditor(file_path) = action {
+                    let editor = env::var("EDITOR")
+                        .or_else(|_| env::var("VISUAL"))
+                        .unwrap_or_else(|_| "vi".to_string());
 
-                        // Pause event polling — blocks until the background
-                        // thread has stopped calling crossterm::event::poll()
-                        events.pause();
-                        crate::core::tui::restore()?;
+                    // Pause event polling — blocks until the background
+                    // thread has stopped calling crossterm::event::poll()
+                    events.pause();
+                    crate::core::tui::restore()?;
 
-                        let status = Command::new(&editor).arg(&file_path).status();
+                    let status = Command::new(&editor).arg(&file_path).status();
 
-                        terminal = crate::core::tui::enter()?;
-                        // Flush stale terminal data before resuming the event thread
-                        while crossterm::event::poll(Duration::ZERO)? {
-                            let _ = crossterm::event::read();
+                    terminal = crate::core::tui::enter()?;
+                    // Flush stale terminal data before resuming the event thread
+                    while crossterm::event::poll(Duration::ZERO)? {
+                        let _ = crossterm::event::read();
+                    }
+                    events.drain();
+                    events.resume();
+
+                    match status {
+                        Ok(s) if s.success() => {
+                            app.active_view().on_editor_return(&mut app)?;
                         }
-                        events.drain();
-                        events.resume();
-
-                        match status {
-                            Ok(s) if s.success() => {
-                                app.post_edit_refresh()?;
-                            }
-                            Ok(s) => {
-                                app.ctx.status_message =
-                                    Some(format!("Editor exited with: {s}"));
-                            }
-                            Err(e) => {
-                                app.ctx.status_message =
-                                    Some(format!("Failed to open editor: {e}"));
-                            }
+                        Ok(s) => {
+                            app.ctx.status_message =
+                                Some(format!("Editor exited with: {s}"));
+                        }
+                        Err(e) => {
+                            app.ctx.status_message =
+                                Some(format!("Failed to open editor: {e}"));
                         }
                     }
                 }
             }
             Event::FsChange => {
-                app.git.load_branches();
-                app.git.load_reflog();
-                if let Err(e) = app.refresh_diff() {
-                    app.ctx.status_message = Some(format!("Refresh error: {e}"));
+                for view in App::all_views() {
+                    view.on_fs_change(&mut app)?;
                 }
             }
             Event::Tick => {
-                if app.ctx.view_mode == ViewMode::GitHub {
-                    app.github.handle_watch_tick();
-                }
+                app.active_view().on_tick(&mut app);
             }
             Event::Resize(_, _) => {}
         }

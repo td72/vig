@@ -2,7 +2,7 @@ use crate::core::app::{App, SearchOrigin};
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::core::ui::{branch_action_menu, status_bar};
-use crate::core::view::View;
+use crate::core::view::{View, ViewAction};
 use crate::git::layout;
 use crate::git::panes::{
     BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
@@ -84,11 +84,11 @@ pub fn dispatch_git_key(app: &mut App, key: KeyEvent) {
 
 // === View-level key handling ===
 
-pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
+pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<ViewAction> {
     // In Normal/Visual modes, keys are handled by the mode handler exclusively
     if app.git.focused_pane == FocusedPane::DiffView && app.git.diff_view_mode != DiffViewMode::Scroll {
         dispatch_git_key(app, key);
-        return Ok(false);
+        return Ok(ViewAction::None);
     }
 
     match key.code {
@@ -113,7 +113,10 @@ pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
             app.git.load_reflog();
         }
         KeyCode::Char('e') => {
-            return Ok(true); // Signal to open editor
+            if let Some(file) = app.git.selected_file() {
+                let file_path = app.workdir().join(&file.path);
+                return Ok(ViewAction::OpenEditor(file_path));
+            }
         }
         KeyCode::Tab => {
             app.git.set_focus(next_git_tab(app.git.focused_pane));
@@ -123,7 +126,7 @@ pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<bool> {
         }
         _ => dispatch_git_key(app, key),
     }
-    Ok(false)
+    Ok(ViewAction::None)
 }
 
 fn search_origin_for(pane: FocusedPane) -> SearchOrigin {
@@ -182,11 +185,11 @@ impl View for GitView {
         app.git.branch_action_menu.is_some() || app.git.search.active
     }
 
-    fn handle_key(&self, app: &mut App, key: KeyEvent) -> Result<bool> {
+    fn handle_key(&self, app: &mut App, key: KeyEvent) -> Result<ViewAction> {
         // Branch action menu intercepts all keys when open
         if app.git.branch_action_menu.is_some() {
             app.handle_branch_action_menu_key(key);
-            return Ok(false);
+            return Ok(ViewAction::None);
         }
 
         // Search input mode intercepts all keys
@@ -195,7 +198,7 @@ impl View for GitView {
                 app.execute_git_search();
                 app.jump_to_git_match(true);
             }
-            return Ok(false);
+            return Ok(ViewAction::None);
         }
 
         handle_git_view_key(app, key)
@@ -218,5 +221,18 @@ impl View for GitView {
         if app.git.branch_action_menu.is_some() {
             branch_action_menu::render(f, app, area);
         }
+    }
+
+    fn on_fs_change(&self, app: &mut App) -> Result<()> {
+        app.git.load_branches();
+        app.git.load_reflog();
+        if let Err(e) = app.refresh_diff() {
+            app.ctx.status_message = Some(format!("Refresh error: {e}"));
+        }
+        Ok(())
+    }
+
+    fn on_editor_return(&self, app: &mut App) -> Result<()> {
+        app.refresh_diff()
     }
 }
