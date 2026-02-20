@@ -2,7 +2,7 @@ use crate::core::app::{App, SearchOrigin};
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::core::ui::{branch_action_menu, status_bar};
-use crate::core::view::{View, ViewAction};
+use crate::core::view::{ExternalCommand, View, ViewAction};
 use crate::git::layout;
 use crate::git::panes::{
     BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
@@ -115,7 +115,13 @@ pub fn handle_git_view_key(app: &mut App, key: KeyEvent) -> Result<ViewAction> {
         KeyCode::Char('e') => {
             if let Some(file) = app.git.selected_file() {
                 let file_path = app.workdir().join(&file.path);
-                return Ok(ViewAction::OpenEditor(file_path));
+                let editor = std::env::var("EDITOR")
+                    .or_else(|_| std::env::var("VISUAL"))
+                    .unwrap_or_else(|_| "vi".to_string());
+                return Ok(ViewAction::Suspend(ExternalCommand {
+                    program: editor,
+                    args: vec![file_path.into()],
+                }));
             }
         }
         KeyCode::Tab => {
@@ -232,7 +238,21 @@ impl View for GitView {
         Ok(())
     }
 
-    fn on_editor_return(&self, app: &mut App) -> Result<()> {
-        app.refresh_diff()
+    fn on_suspend_return(
+        &self,
+        app: &mut App,
+        status: std::io::Result<std::process::ExitStatus>,
+    ) -> Result<()> {
+        match status {
+            Ok(s) if s.success() => app.refresh_diff(),
+            Ok(s) => {
+                app.ctx.status_message = Some(format!("Editor exited with: {s}"));
+                Ok(())
+            }
+            Err(e) => {
+                app.ctx.status_message = Some(format!("Failed to open editor: {e}"));
+                Ok(())
+            }
+        }
     }
 }

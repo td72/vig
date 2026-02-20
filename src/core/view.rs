@@ -2,12 +2,20 @@ use crate::core::app::App;
 use anyhow::Result;
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
-use std::path::PathBuf;
+use std::ffi::OsString;
+use std::io;
+use std::process::ExitStatus;
+
+#[derive(Debug)]
+pub struct ExternalCommand {
+    pub program: String,
+    pub args: Vec<OsString>,
+}
 
 #[derive(Debug)]
 pub enum ViewAction {
     None,
-    OpenEditor(PathBuf),
+    Suspend(ExternalCommand),
 }
 
 pub trait View: Sync {
@@ -33,8 +41,8 @@ pub trait View: Sync {
         Ok(())
     }
 
-    /// Called after returning from an external editor.
-    fn on_editor_return(&self, _app: &mut App) -> Result<()> {
+    /// Called after returning from a suspended external process.
+    fn on_suspend_return(&self, _app: &mut App, _status: io::Result<ExitStatus>) -> Result<()> {
         Ok(())
     }
 

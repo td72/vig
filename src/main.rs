@@ -10,7 +10,6 @@ use crate::core::view::ViewAction;
 use crate::git::watcher::FsWatcher;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use std::env;
 use std::process::Command;
 use std::time::Duration;
 
@@ -46,7 +45,7 @@ fn run_tui() -> Result<()> {
         default_hook(info);
     }));
 
-    let cwd = env::current_dir()?;
+    let cwd = std::env::current_dir()?;
     let mut app = App::new(&cwd)?;
     let workdir = app.workdir().to_path_buf();
 
@@ -89,39 +88,20 @@ fn run_tui() -> Result<()> {
                     break;
                 }
 
-                if let ViewAction::OpenEditor(file_path) = action {
-                    let editor = env::var("EDITOR")
-                        .or_else(|_| env::var("VISUAL"))
-                        .unwrap_or_else(|_| "vi".to_string());
-
-                    // Pause event polling — blocks until the background
-                    // thread has stopped calling crossterm::event::poll()
+                if let ViewAction::Suspend(cmd) = action {
                     events.pause();
                     crate::core::tui::restore()?;
 
-                    let status = Command::new(&editor).arg(&file_path).status();
+                    let status = Command::new(&cmd.program).args(&cmd.args).status();
 
                     terminal = crate::core::tui::enter()?;
-                    // Flush stale terminal data before resuming the event thread
                     while crossterm::event::poll(Duration::ZERO)? {
                         let _ = crossterm::event::read();
                     }
                     events.drain();
                     events.resume();
 
-                    match status {
-                        Ok(s) if s.success() => {
-                            app.active_view().on_editor_return(&mut app)?;
-                        }
-                        Ok(s) => {
-                            app.ctx.status_message =
-                                Some(format!("Editor exited with: {s}"));
-                        }
-                        Err(e) => {
-                            app.ctx.status_message =
-                                Some(format!("Failed to open editor: {e}"));
-                        }
-                    }
+                    app.active_view().on_suspend_return(&mut app, status)?;
                 }
             }
             Event::FsChange => {
