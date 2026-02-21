@@ -1,6 +1,6 @@
-use crate::github::client;
-use crate::github::disk_cache;
-use crate::github::types::*;
+use crate::github::domain::client;
+use crate::github::domain::disk_cache;
+use crate::github::domain::types::*;
 use std::collections::HashMap;
 use std::sync::mpsc;
 use std::time::{Instant, SystemTime};

@@ -23,7 +23,7 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
                 let reviews = view::meaningful_reviews(&detail.reviews);
                 reviews.get(gh.detail_review_idx).and_then(|r| {
                     r.id.as_ref().and_then(|id| {
-                        crate::github::client::repo_nwo().map(|nwo| {
+                        crate::github::domain::client::repo_nwo().map(|nwo| {
                             format!(
                                 "https://github.com/{}/pull/{}#pullrequestreview-{}",
                                 nwo, detail.number, id
@@ -51,7 +51,7 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
             match &gh.detail {
                 GhDetailContent::Issue(issue) => {
                     let n = issue.number;
-                    match crate::github::client::open_issue_in_browser(n) {
+                    match crate::github::domain::client::open_issue_in_browser(n) {
                         Ok(()) => {
                             ctx.status_message = Some(format!("Opening issue #{n} in browser..."));
                         }
@@ -63,7 +63,7 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
                 }
                 GhDetailContent::Pr(pr) => {
                     let n = pr.number;
-                    match crate::github::client::open_pr_in_browser(n) {
+                    match crate::github::domain::client::open_pr_in_browser(n) {
                         Ok(()) => {
                             ctx.status_message = Some(format!("Opening PR #{n} in browser..."));
                         }
@@ -79,7 +79,7 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
     };
 
     if let Some(url) = url {
-        match crate::github::client::open_url(&url) {
+        match crate::github::domain::client::open_url(&url) {
             Ok(()) => {
                 ctx.status_message = Some("Opening in browser...".to_string());
             }

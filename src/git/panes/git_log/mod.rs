@@ -2,8 +2,8 @@ mod view;
 
 use crate::core::app::{AppContext, SearchOrigin};
 use crate::core::pane::SelectPane;
+use crate::git::domain::search;
 use crate::git::panes::diff_view::keys::copy_to_clipboard;
-use crate::git::search;
 use crate::git::state::{FocusedPane, GitState};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
@@ -68,9 +68,9 @@ impl SelectPane<GitState> for GitLogSelectPane {
             KeyCode::Char('o') => {
                 if let Some(commit) = state.git_log.commits.get(state.git_log.selected_idx) {
                     let hash = commit.full_hash.clone();
-                    if let Some(nwo) = crate::github::client::repo_nwo() {
+                    if let Some(nwo) = crate::github::domain::client::repo_nwo() {
                         let url = format!("https://github.com/{nwo}/commit/{hash}");
-                        match crate::github::client::open_url(&url) {
+                        match crate::github::domain::client::open_url(&url) {
                             Ok(()) => {
                                 ctx.status_message = Some("Opening in browser...".to_string());
                             }

@@ -1,8 +1,8 @@
 use crate::core::app::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
-use crate::git::diff::{DiffState, FileDiff};
-use crate::git::graph::{self, GraphRow};
-use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
+use crate::git::domain::diff::{DiffState, FileDiff};
+use crate::git::domain::graph::{self, GraphRow};
+use crate::git::domain::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
 use anyhow::Result;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;

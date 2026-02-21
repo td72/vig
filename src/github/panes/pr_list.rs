@@ -47,7 +47,7 @@ impl SelectPane<GitHubState> for GhPrListPane {
             KeyCode::Char('o') => {
                 if let Some(pr) = state.prs.get(state.pr_selected_idx) {
                     let number = pr.number;
-                    match crate::github::client::open_pr_in_browser(number) {
+                    match crate::github::domain::client::open_pr_in_browser(number) {
                         Ok(()) => {
                             ctx.status_message =
                                 Some(format!("Opening PR #{number} in browser..."));

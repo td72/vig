@@ -1,5 +1,5 @@
 use crate::core::app::{SearchMatch, SearchOrigin};
-use crate::git::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
+use crate::git::domain::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
 use crate::git::state::{FocusedPane, GitState};
 use ratatui::{
     layout::{Constraint, Layout, Rect},

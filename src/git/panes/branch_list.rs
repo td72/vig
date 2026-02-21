@@ -1,6 +1,6 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
 use crate::core::pane::SelectPane;
-use crate::git::branch_action;
+use crate::git::domain::branch_action;
 use crate::git::page::refresh_diff;
 use crate::git::state::{FocusedPane, GitState};
 use crossterm::event::{KeyCode, KeyEvent};

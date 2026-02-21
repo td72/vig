@@ -1,4 +1,4 @@
-use crate::git::diff::{compute_stats, parse_diff, DiffState};
+use crate::git::domain::diff::{compute_stats, parse_diff, DiffState};
 use anyhow::{Context, Result};
 use git2::Repository;
 use std::path::Path;

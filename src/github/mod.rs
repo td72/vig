@@ -5,6 +5,4 @@ pub(crate) mod panes;
 pub mod state;
 
 // Domain-specific
-pub(crate) mod client;
-pub(crate) mod disk_cache;
-pub(crate) mod types;
+pub(crate) mod domain;

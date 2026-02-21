@@ -1,5 +1,5 @@
+use crate::github::domain::types::*;
 use crate::github::state::{GhDetailContent, GhDetailPane, GhFocusedPane, GitHubState};
-use crate::github::types::*;
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},

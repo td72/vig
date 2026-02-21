@@ -1,7 +1,7 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
 use crate::core::pane::SelectPane;
-use crate::git::diff::FileStatus;
-use crate::git::search;
+use crate::git::domain::diff::FileStatus;
+use crate::git::domain::search;
 use crate::git::state::{FocusedPane, GitState, TreeEntry};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{

@@ -1,4 +1,4 @@
-use crate::git::repository::CommitInfo;
+use crate::git::domain::repository::CommitInfo;
 
 pub const NUM_GRAPH_COLORS: usize = 6;
 

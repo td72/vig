@@ -1,5 +1,5 @@
 use crate::core::app::SearchMatch;
-use crate::git::diff::{FileDiff, LineType, SideBySideRow};
+use crate::git::domain::diff::{FileDiff, LineType, SideBySideRow};
 use crate::git::state::{CursorPos, DiffSide, DiffViewMode, FocusedPane, GitState};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
@@ -524,7 +524,7 @@ fn render_row<'a>(
 
 #[allow(clippy::too_many_arguments)]
 fn render_side_with_selection<'a>(
-    side: Option<&crate::git::diff::SideLine>,
+    side: Option<&crate::git::domain::diff::SideLine>,
     line_type: LineType,
     is_left: bool,
     width: usize,

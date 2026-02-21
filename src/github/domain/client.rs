@@ -1,4 +1,4 @@
-use crate::github::types::*;
+use crate::github::domain::types::*;
 use std::process::Command;
 
 pub fn check_gh_available() -> Result<(), String> {

@@ -47,7 +47,7 @@ impl SelectPane<GitHubState> for GhIssueListPane {
             KeyCode::Char('o') => {
                 if let Some(issue) = state.issues.get(state.issue_selected_idx) {
                     let number = issue.number;
-                    match crate::github::client::open_issue_in_browser(number) {
+                    match crate::github::domain::client::open_issue_in_browser(number) {
                         Ok(()) => {
                             ctx.status_message =
                                 Some(format!("Opening issue #{number} in browser..."));
