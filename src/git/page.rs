@@ -1,7 +1,7 @@
 use crate::core::app::{AppContext, Page, SearchOrigin};
 use crate::core::page::{ExternalCommand, PageAction, PageHandler};
 use crate::core::pane::{DetailPane, SelectPane};
-use crate::core::pane_router::PaneRouter;
+use crate::core::pane_router::{PaneRouter, PaneTab};
 use crate::core::ui::{branch_action_menu, status_bar};
 use crate::git::domain::branch_action;
 use crate::git::domain::search;
@@ -25,64 +25,31 @@ pub fn new_page(cwd: &Path) -> Result<(Page, PathBuf)> {
     Ok((page, workdir))
 }
 
-// === Domain types ===
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GitDetailId {
-    DiffView,
-    CommitLog,
-}
-
-pub struct GitPaneTab {
-    pub select: &'static dyn SelectPane<GitState>,
-    pub detail: GitDetailId,
-    pub id: FocusedPane,
-}
-
 // === Tab definitions ===
 
-pub static GIT_TABS: &[GitPaneTab] = &[
-    GitPaneTab {
+pub static GIT_TABS: &[PaneTab<GitState, FocusedPane>] = &[
+    PaneTab {
         select: &FileTreePane,
-        detail: GitDetailId::DiffView,
         id: FocusedPane::FileTree,
     },
-    GitPaneTab {
+    PaneTab {
         select: &BranchListPane,
-        detail: GitDetailId::CommitLog,
         id: FocusedPane::BranchList,
     },
-    GitPaneTab {
+    PaneTab {
         select: &ReflogPane,
-        detail: GitDetailId::CommitLog,
         id: FocusedPane::Reflog,
     },
 ];
 
-// === Tab cycling ===
-
-pub fn next_git_tab(current: FocusedPane) -> FocusedPane {
-    let idx = GIT_TABS.iter().position(|g| g.id == current).unwrap_or(0);
-    GIT_TABS[(idx + 1) % GIT_TABS.len()].id
-}
-
-pub fn prev_git_tab(current: FocusedPane) -> FocusedPane {
-    let idx = GIT_TABS.iter().position(|g| g.id == current).unwrap_or(0);
-    GIT_TABS[(idx + GIT_TABS.len() - 1) % GIT_TABS.len()].id
-}
-
 // === Dispatch ===
 
-pub fn git_detail_for(focused: FocusedPane) -> GitDetailId {
-    // GitLog is a nested select inside CommitLog detail
-    if focused == FocusedPane::GitLog {
-        return GitDetailId::CommitLog;
-    }
-    GIT_TABS
-        .iter()
-        .find(|g| g.id == focused)
-        .map(|g| g.detail)
-        .unwrap_or(GitDetailId::DiffView)
+/// Returns true if the focused pane should show the commit log detail.
+fn is_commit_log_detail(focused: FocusedPane) -> bool {
+    matches!(
+        focused,
+        FocusedPane::BranchList | FocusedPane::Reflog | FocusedPane::GitLog
+    )
 }
 
 /// Dispatch a key event to the currently focused Git pane.
@@ -142,10 +109,10 @@ pub fn handle_git_view_key(
             }
         }
         KeyCode::Tab => {
-            git.set_focus(next_git_tab(git.focused_pane));
+            git.set_focus(GitPaneRouter.next_tab_id(git));
         }
         KeyCode::BackTab => {
-            git.set_focus(prev_git_tab(git.focused_pane));
+            git.set_focus(GitPaneRouter.prev_tab_id(git));
         }
         _ => dispatch_git_key(ctx, git, key),
     }
@@ -178,17 +145,16 @@ pub(crate) fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
 pub(crate) struct GitPaneRouter;
 
 impl PaneRouter<GitState> for GitPaneRouter {
-    fn current_index(&self, state: &GitState) -> Option<usize> {
-        GIT_TABS.iter().position(|g| g.id == state.focused_pane)
+    type PaneId = FocusedPane;
+
+    fn tabs(&self) -> &'static [PaneTab<GitState, FocusedPane>] {
+        GIT_TABS
     }
-    fn focus_index(&self, _ctx: &mut AppContext, state: &mut GitState, idx: usize) {
-        state.set_focus(GIT_TABS[idx].id);
+    fn focused_id(&self, state: &GitState) -> FocusedPane {
+        state.focused_pane
     }
-    fn pane_at(&self, idx: usize) -> &'static dyn SelectPane<GitState> {
-        GIT_TABS[idx].select
-    }
-    fn len(&self) -> usize {
-        GIT_TABS.len()
+    fn set_focused(&self, _ctx: &mut AppContext, state: &mut GitState, id: FocusedPane) {
+        state.set_focus(id);
     }
 
     fn handle_common_key(
@@ -200,9 +166,10 @@ impl PaneRouter<GitState> for GitPaneRouter {
     ) -> bool {
         match key.code {
             KeyCode::Char('i') => {
-                let target = match GIT_TABS[idx].detail {
-                    GitDetailId::DiffView => FocusedPane::DiffView,
-                    GitDetailId::CommitLog => FocusedPane::GitLog,
+                let target = if is_commit_log_detail(GIT_TABS[idx].id) {
+                    FocusedPane::GitLog
+                } else {
+                    FocusedPane::DiffView
                 };
                 state.set_focus(target);
                 true
@@ -308,9 +275,10 @@ impl PageHandler for GitPageHandler {
         BranchListPane.render(f, ctx, git, ly.branch_list);
         ReflogPane.render(f, ctx, git, ly.reflog);
 
-        match git_detail_for(git.focused_pane) {
-            GitDetailId::CommitLog => GitLogSelectPane.render(f, ctx, git, ly.main_pane),
-            GitDetailId::DiffView => DiffViewPane.render(f, ctx, git, ly.main_pane),
+        if is_commit_log_detail(git.focused_pane) {
+            GitLogSelectPane.render(f, ctx, git, ly.main_pane);
+        } else {
+            DiffViewPane.render(f, ctx, git, ly.main_pane);
         }
 
         status_bar::render_status_bar(f, ctx, git, ly.status_bar);

@@ -1,7 +1,7 @@
 use crate::core::app::{AppContext, Page};
 use crate::core::page::{PageAction, PageHandler};
 use crate::core::pane::{DetailPane, SelectPane};
-use crate::core::pane_router::PaneRouter;
+use crate::core::pane_router::{PaneRouter, PaneTab};
 use crate::core::ui::status_bar;
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use crate::github::state::{GhFocusedPane, GitHubState};
@@ -18,32 +18,15 @@ pub fn new_page() -> Page {
     }
 }
 
-// === Domain types ===
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
-pub enum GhDetailId {
-    DetailView,
-}
-
-pub struct GhPaneTab {
-    pub select: &'static dyn SelectPane<GitHubState>,
-    #[allow(dead_code)]
-    pub detail: GhDetailId,
-    pub id: GhFocusedPane,
-}
-
 // === Tab definitions ===
 
-pub static GH_TABS: &[GhPaneTab] = &[
-    GhPaneTab {
+pub static GH_TABS: &[PaneTab<GitHubState, GhFocusedPane>] = &[
+    PaneTab {
         select: &GhIssueListPane,
-        detail: GhDetailId::DetailView,
         id: GhFocusedPane::IssueList,
     },
-    GhPaneTab {
+    PaneTab {
         select: &GhPrListPane,
-        detail: GhDetailId::DetailView,
         id: GhFocusedPane::PrList,
     },
 ];
@@ -92,18 +75,17 @@ pub fn dispatch_gh_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEvent
 pub(crate) struct GhPaneRouter;
 
 impl PaneRouter<GitHubState> for GhPaneRouter {
-    fn current_index(&self, state: &GitHubState) -> Option<usize> {
-        GH_TABS.iter().position(|g| g.id == state.focused_pane)
+    type PaneId = GhFocusedPane;
+
+    fn tabs(&self) -> &'static [PaneTab<GitHubState, GhFocusedPane>] {
+        GH_TABS
     }
-    fn focus_index(&self, _ctx: &mut AppContext, state: &mut GitHubState, idx: usize) {
-        state.focused_pane = GH_TABS[idx].id;
+    fn focused_id(&self, state: &GitHubState) -> GhFocusedPane {
+        state.focused_pane
+    }
+    fn set_focused(&self, _ctx: &mut AppContext, state: &mut GitHubState, id: GhFocusedPane) {
+        state.focused_pane = id;
         load_gh_detail_for_tab(state);
-    }
-    fn pane_at(&self, idx: usize) -> &'static dyn SelectPane<GitHubState> {
-        GH_TABS[idx].select
-    }
-    fn len(&self) -> usize {
-        GH_TABS.len()
     }
 
     fn is_prev_key(&self, key: &KeyEvent) -> bool {
