@@ -1,4 +1,5 @@
 use crate::core::app::SearchState;
+use crate::core::pane::{DetailState, SubPaneScroll};
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::git::domain::diff::{DiffState, FileDiff};
 use crate::git::domain::graph::{self, GraphRow};
@@ -22,13 +23,18 @@ pub struct BranchListState {
     pub selected_idx: usize,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GitLogDetailPane {
+    Detail,
+}
+
 pub struct GitLogState {
     pub commits: Vec<CommitInfo>,
     pub selected_idx: usize,
     pub view_height: u16,
     pub ref_name: String,
     pub graph: Vec<GraphRow>,
-    pub detail_scroll: u16,
+    pub detail: SubPaneScroll,
     pub detail_view_height: u16,
     pub detail_changed_files: Vec<CommitFileChange>,
 }
@@ -182,7 +188,7 @@ impl GitState {
                 view_height: 0,
                 ref_name: String::new(),
                 graph: Vec::new(),
-                detail_scroll: 0,
+                detail: SubPaneScroll::default(),
                 detail_view_height: 0,
                 detail_changed_files: Vec::new(),
             },
@@ -373,7 +379,7 @@ impl GitState {
             self.git_log.commits = self.repo.log_for_ref(&branch.name, 100);
             self.git_log.graph = graph::build_graph(&self.git_log.commits);
             self.git_log.selected_idx = 0;
-            self.git_log.detail_scroll = 0;
+            self.git_log.detail.reset();
             self.git_log.detail_changed_files.clear();
             self.load_commit_detail();
         } else {
@@ -387,7 +393,7 @@ impl GitState {
     pub fn load_commit_detail(&mut self) {
         if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
             self.git_log.detail_changed_files = self.repo.commit_changed_files(&commit.full_hash);
-            self.git_log.detail_scroll = 0;
+            self.git_log.detail.reset();
         } else {
             self.git_log.detail_changed_files.clear();
         }
@@ -510,6 +516,29 @@ impl crate::core::pane::FocusState for GitState {
     fn set_focus(&mut self, id: FocusedPane) {
         self.previous_pane = self.focused_pane;
         self.focused_pane = id;
+    }
+}
+
+impl DetailState for GitLogState {
+    type SubPaneId = GitLogDetailPane;
+    fn active_sub_pane(&self) -> GitLogDetailPane {
+        GitLogDetailPane::Detail
+    }
+    fn set_sub_pane(&mut self, _id: GitLogDetailPane) {}
+    fn sub_scroll(&self, _id: GitLogDetailPane) -> &SubPaneScroll {
+        &self.detail
+    }
+    fn sub_scroll_mut(&mut self, _id: GitLogDetailPane) -> &mut SubPaneScroll {
+        &mut self.detail
+    }
+    fn detail_view_height(&self) -> u16 {
+        self.detail_view_height
+    }
+    fn set_detail_view_height(&mut self, h: u16) {
+        self.detail_view_height = h;
+    }
+    fn reset_sub_panes(&mut self) {
+        self.detail.reset();
     }
 }
 

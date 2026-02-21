@@ -348,10 +348,10 @@ fn render_detail(f: &mut Frame, state: &mut GitState, area: Rect) {
     let total_lines = lines.len() as u16;
     let view_height = state.git_log.detail_view_height;
     let max_scroll = total_lines.saturating_sub(view_height);
-    if state.git_log.detail_scroll > max_scroll {
-        state.git_log.detail_scroll = max_scroll;
+    if state.git_log.detail.scroll_y > max_scroll {
+        state.git_log.detail.scroll_y = max_scroll;
     }
 
-    let para = Paragraph::new(lines).scroll((state.git_log.detail_scroll, 0));
+    let para = Paragraph::new(lines).scroll((state.git_log.detail.scroll_y, 0));
     f.render_widget(para, inner);
 }
