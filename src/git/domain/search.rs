@@ -70,7 +70,7 @@ pub(crate) fn search_git_diff_view(git: &mut GitState, query: &str) {
 
 fn search_git_file_tree(git: &mut GitState, query: &str) {
     let query_lower = query.to_lowercase();
-    let entries = git.build_tree_entries();
+    let entries = git.tree_entries();
     for (idx, entry) in entries.iter().enumerate() {
         let name = match entry {
             TreeEntry::Dir { path, .. } => path.clone(),

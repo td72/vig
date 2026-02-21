@@ -17,7 +17,7 @@ pub struct FileTreePane;
 
 impl SelectPane<GitState> for FileTreePane {
     fn handle_key(&self, _ctx: &mut AppContext, state: &mut GitState, key: KeyEvent) {
-        let entries = state.build_tree_entries();
+        let entries = state.tree_entries();
         if entries.is_empty() {
             return;
         }
@@ -80,7 +80,7 @@ impl SelectPane<GitState> for FileTreePane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        let entries = state.build_tree_entries();
+        let entries = state.tree_entries();
 
         if entries.is_empty() {
             let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
