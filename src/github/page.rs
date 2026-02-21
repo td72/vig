@@ -16,7 +16,7 @@ pub fn new_page() -> Page {
 
 // === Tab definitions ===
 
-pub static GH_TABS: &[PaneTab<GitHubState, GhFocusedPane>] = &[
+pub static GH_TABS: &[PaneTab<GitHubState>] = &[
     PaneTab {
         select: &GhIssueListPane,
         id: GhFocusedPane::IssueList,
@@ -71,16 +71,10 @@ pub fn dispatch_gh_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEvent
 pub(crate) struct GhPaneRouter;
 
 impl PaneRouter<GitHubState> for GhPaneRouter {
-    type PaneId = GhFocusedPane;
-
-    fn tabs(&self) -> &'static [PaneTab<GitHubState, GhFocusedPane>] {
+    fn tabs(&self) -> &'static [PaneTab<GitHubState>] {
         GH_TABS
     }
-    fn focused_id(&self, state: &GitHubState) -> GhFocusedPane {
-        state.focused_pane
-    }
-    fn set_focused(&self, _ctx: &mut AppContext, state: &mut GitHubState, id: GhFocusedPane) {
-        state.focused_pane = id;
+    fn on_focus_change(&self, _ctx: &mut AppContext, state: &mut GitHubState) {
         load_gh_detail_for_tab(state);
     }
 

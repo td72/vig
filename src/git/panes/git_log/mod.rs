@@ -1,7 +1,7 @@
 mod view;
 
 use crate::core::app::{AppContext, SearchOrigin};
-use crate::core::pane::SelectPane;
+use crate::core::pane::{FocusState, SelectPane};
 use crate::git::domain::search;
 use crate::git::panes::diff_view::keys::copy_to_clipboard;
 use crate::git::state::{FocusedPane, GitState};

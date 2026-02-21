@@ -238,11 +238,6 @@ impl GitState {
         Ok(fallback_msg)
     }
 
-    pub(crate) fn set_focus(&mut self, pane: FocusedPane) {
-        self.previous_pane = self.focused_pane;
-        self.focused_pane = pane;
-    }
-
     pub fn selected_file(&self) -> Option<&FileDiff> {
         let entries = self.build_tree_entries();
         if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.selected_tree_idx) {
@@ -504,6 +499,17 @@ impl GitState {
         }
 
         entries
+    }
+}
+
+impl crate::core::pane::FocusState for GitState {
+    type PaneId = FocusedPane;
+    fn focused_pane(&self) -> FocusedPane {
+        self.focused_pane
+    }
+    fn set_focus(&mut self, id: FocusedPane) {
+        self.previous_pane = self.focused_pane;
+        self.focused_pane = id;
     }
 }
 

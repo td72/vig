@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::pane::SelectPane;
+use crate::core::pane::{FocusState, SelectPane};
 use crate::github::state::{GhFocusedPane, GitHubState};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -39,8 +39,7 @@ impl SelectPane<GitHubState> for GhPrListPane {
             }
             KeyCode::Char('i') | KeyCode::Enter => {
                 if !state.prs.is_empty() {
-                    state.previous_pane = GhFocusedPane::PrList;
-                    state.focused_pane = GhFocusedPane::Detail;
+                    state.set_focus(GhFocusedPane::Detail);
                     state.load_selected_pr_detail();
                 }
             }

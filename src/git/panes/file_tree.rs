@@ -1,5 +1,5 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
-use crate::core::pane::SelectPane;
+use crate::core::pane::{FocusState, SelectPane};
 use crate::git::domain::diff::FileStatus;
 use crate::git::domain::search;
 use crate::git::state::{FocusedPane, GitState, TreeEntry};

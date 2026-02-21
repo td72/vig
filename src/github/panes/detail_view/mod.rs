@@ -1,7 +1,7 @@
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
-use crate::core::pane::DetailPane;
+use crate::core::pane::{DetailPane, FocusState};
 use crate::github::state::{GhDetailContent, GhDetailPane, GitHubState};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
@@ -227,7 +227,8 @@ impl DetailPane<GitHubState> for GhDetailViewPane {
                 open_gh_detail_item(ctx, state);
             }
             KeyCode::Esc => {
-                state.focused_pane = state.previous_pane;
+                let prev = state.previous_pane;
+                state.set_focus(prev);
                 state.watch_mode = false;
             }
             _ => {}

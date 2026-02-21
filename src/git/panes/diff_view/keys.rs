@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::core::pane::FocusState;
 use crate::core::search::SearchOrigin;
 use crate::git::domain::search::{jump_to_git_match, scroll_to_cursor};
 use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitState};

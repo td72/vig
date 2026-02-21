@@ -1,5 +1,5 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
-use crate::core::pane::SelectPane;
+use crate::core::pane::{FocusState, SelectPane};
 use crate::git::page::refresh_diff;
 use crate::git::state::{FocusedPane, GitState};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};

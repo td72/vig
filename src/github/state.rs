@@ -528,6 +528,17 @@ fn local_utc_offset_secs() -> i64 {
     })
 }
 
+impl crate::core::pane::FocusState for GitHubState {
+    type PaneId = GhFocusedPane;
+    fn focused_pane(&self) -> GhFocusedPane {
+        self.focused_pane
+    }
+    fn set_focus(&mut self, id: GhFocusedPane) {
+        self.previous_pane = self.focused_pane;
+        self.focused_pane = id;
+    }
+}
+
 impl crate::core::app::PageState for GitHubState {
     fn drain_background(&mut self) {
         self.drain_bg_messages();

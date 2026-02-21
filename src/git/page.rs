@@ -1,6 +1,6 @@
 use crate::core::app::{AppContext, Page, SearchOrigin};
 use crate::core::page::{ExternalCommand, PageAction, PageHandler};
-use crate::core::pane::{DetailPane, SelectPane};
+use crate::core::pane::{DetailPane, FocusState, SelectPane};
 use crate::core::pane_router::{PaneRouter, PaneTab};
 use crate::core::ui::{branch_action_menu, status_bar};
 use crate::git::domain::branch_action;
@@ -23,7 +23,7 @@ pub fn new_page(cwd: &Path) -> Result<(Page, PathBuf)> {
 
 // === Tab definitions ===
 
-pub static GIT_TABS: &[PaneTab<GitState, FocusedPane>] = &[
+pub static GIT_TABS: &[PaneTab<GitState>] = &[
     PaneTab {
         select: &FileTreePane,
         id: FocusedPane::FileTree,
@@ -141,16 +141,8 @@ pub(crate) fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
 pub(crate) struct GitPaneRouter;
 
 impl PaneRouter<GitState> for GitPaneRouter {
-    type PaneId = FocusedPane;
-
-    fn tabs(&self) -> &'static [PaneTab<GitState, FocusedPane>] {
+    fn tabs(&self) -> &'static [PaneTab<GitState>] {
         GIT_TABS
-    }
-    fn focused_id(&self, state: &GitState) -> FocusedPane {
-        state.focused_pane
-    }
-    fn set_focused(&self, _ctx: &mut AppContext, state: &mut GitState, id: FocusedPane) {
-        state.set_focus(id);
     }
 
     fn handle_common_key(
