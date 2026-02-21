@@ -1,3 +1,4 @@
+use crate::core::app::SearchState;
 use crate::github::domain::client;
 use crate::github::domain::disk_cache;
 use crate::github::domain::types::*;
@@ -74,6 +75,7 @@ pub struct GitHubState {
     watch_last_update: Option<SystemTime>,
     watch_in_flight_since: Option<Instant>,
     pub watch_error: Option<String>,
+    pub search: SearchState,
 }
 
 impl GitHubState {
@@ -109,6 +111,7 @@ impl GitHubState {
             watch_last_update: None,
             watch_in_flight_since: None,
             watch_error: None,
+            search: SearchState::new(),
         }
     }
 
@@ -528,5 +531,11 @@ fn local_utc_offset_secs() -> i64 {
 impl crate::core::app::PageState for GitHubState {
     fn drain_background(&mut self) {
         self.drain_bg_messages();
+    }
+    fn search(&self) -> &SearchState {
+        &self.search
+    }
+    fn search_mut(&mut self) -> &mut SearchState {
+        &mut self.search
     }
 }

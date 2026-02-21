@@ -21,6 +21,9 @@ pub struct AppContext {
 
 pub trait PageState {
     fn drain_background(&mut self);
+    fn search(&self) -> &SearchState;
+    #[allow(dead_code)]
+    fn search_mut(&mut self) -> &mut SearchState;
 }
 
 // --- Type-erasure layer (private) ---
@@ -61,7 +64,9 @@ impl<S: PageState + 'static> PageInner for TypedPage<S> {
         self.handler.render(f, ctx, &mut self.state, area);
     }
     fn intercepts_all_keys(&self, ctx: &AppContext) -> bool {
-        self.handler.intercepts_all_keys(ctx, &self.state)
+        // Search input is a shared concern: when active, intercept all keys
+        // regardless of individual PageHandler logic.
+        self.state.search().active || self.handler.intercepts_all_keys(ctx, &self.state)
     }
     fn on_tick(&mut self, ctx: &mut AppContext) {
         self.handler.on_tick(ctx, &mut self.state);

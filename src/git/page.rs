@@ -233,7 +233,7 @@ impl PageHandler<GitState> for GitPageHandler {
     }
 
     fn intercepts_all_keys(&self, _ctx: &AppContext, git: &GitState) -> bool {
-        git.branch_action_menu.is_some() || git.search.active
+        git.branch_action_menu.is_some()
     }
 
     fn handle_key(

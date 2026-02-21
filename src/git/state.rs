@@ -511,4 +511,10 @@ impl crate::core::app::PageState for GitState {
     fn drain_background(&mut self) {
         self.drain_bg_highlights();
     }
+    fn search(&self) -> &crate::core::app::SearchState {
+        &self.search
+    }
+    fn search_mut(&mut self) -> &mut crate::core::app::SearchState {
+        &mut self.search
+    }
 }
