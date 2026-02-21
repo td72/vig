@@ -66,7 +66,7 @@ pub fn handle_git_view_key(
     key: KeyEvent,
 ) -> Result<PageAction> {
     // In Normal/Visual modes, keys are handled by the mode handler exclusively
-    if git.focused_pane == FocusedPane::DiffView && git.vim.mode != DiffViewMode::Scroll {
+    if git.focused_pane == FocusedPane::DiffView && git.diff_view.vim.mode != DiffViewMode::Scroll {
         dispatch_git_key(ctx, git, key);
         return Ok(PageAction::None);
     }

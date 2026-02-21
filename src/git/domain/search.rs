@@ -165,16 +165,17 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
             let row = *row;
             let col_start = *col_start;
             let side = *side;
-            if git.vim.mode == DiffViewMode::Scroll {
+            if git.diff_view.vim.mode == DiffViewMode::Scroll {
                 // In scroll mode, just scroll to the row
-                git.scroll.y = row.saturating_sub((git.scroll.view_height / 3) as usize) as u16;
+                git.diff_view.scroll.y =
+                    row.saturating_sub((git.diff_view.scroll.view_height / 3) as usize) as u16;
             } else {
                 // In Normal/Visual mode, move cursor
-                git.vim.cursor.row = row;
-                git.vim.cursor.col = col_start;
-                git.vim.cursor.side = side;
-                git.highlight.content_lines_cache = None; // side may have changed
-                scroll_to_cursor(git);
+                git.diff_view.vim.cursor.row = row;
+                git.diff_view.vim.cursor.col = col_start;
+                git.diff_view.vim.cursor.side = side;
+                git.diff_view.highlight.content_lines_cache = None; // side may have changed
+                git.diff_view.scroll_to_cursor();
             }
         }
         SearchMatch::TreeEntry(idx) => {
@@ -196,24 +197,11 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
     ctx.status_message = Some(format!("[{}/{}]", new_idx + 1, total));
 }
 
-pub(crate) fn scroll_to_cursor(git: &mut GitState) {
-    let row = git.vim.cursor.row as u16;
-    let height = git.scroll.view_height;
-    if height == 0 {
-        return;
-    }
-    if row < git.scroll.y {
-        git.scroll.y = row;
-    } else if row >= git.scroll.y + height {
-        git.scroll.y = row - height + 1;
-    }
-}
-
 /// Re-execute DiffView search when file selection changes (preserves query)
 pub(crate) fn re_search_on_file_change(git: &mut GitState) {
     if git.search.origin == SearchOrigin::DiffView && git.search.query.is_some() {
         git.search.reset_matches();
-        git.highlight.content_lines_cache = None;
+        git.diff_view.highlight.content_lines_cache = None;
         let query = git.search.query.clone().unwrap();
         search_git_diff_view(git, &query);
     }

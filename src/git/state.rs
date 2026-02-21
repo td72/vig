@@ -280,15 +280,34 @@ pub struct FileTreeState {
     pub collapsed_dirs: HashSet<String>,
 }
 
+pub struct DiffViewState {
+    pub scroll: DiffScroll,
+    pub vim: VimState,
+    pub highlight: HighlightState,
+}
+
+impl DiffViewState {
+    pub fn scroll_to_cursor(&mut self) {
+        let row = self.vim.cursor.row as u16;
+        let height = self.scroll.view_height;
+        if height == 0 {
+            return;
+        }
+        if row < self.scroll.y {
+            self.scroll.y = row;
+        } else if row >= self.scroll.y + height {
+            self.scroll.y = row - height + 1;
+        }
+    }
+}
+
 pub struct GitState {
     pub repo: Repo,
     pub diff_state: DiffState,
     pub file_tree: FileTreeState,
     pub focused_pane: FocusedPane,
     pub previous_pane: FocusedPane,
-    pub scroll: DiffScroll,
-    pub vim: VimState,
-    pub highlight: HighlightState,
+    pub diff_view: DiffViewState,
     pub diff_base_ref: Option<String>,
     pub branch_list: BranchListState,
     pub git_log: GitLogState,
@@ -310,9 +329,11 @@ impl GitState {
             },
             focused_pane: FocusedPane::FileTree,
             previous_pane: FocusedPane::FileTree,
-            scroll: DiffScroll::default(),
-            vim: VimState::default(),
-            highlight: HighlightState::new(),
+            diff_view: DiffViewState {
+                scroll: DiffScroll::default(),
+                vim: VimState::default(),
+                highlight: HighlightState::new(),
+            },
             diff_base_ref: None,
             branch_list: BranchListState {
                 branches: Vec::new(),
@@ -338,7 +359,10 @@ impl GitState {
         };
         state.load_branches();
         state.load_reflog();
-        state.highlight.spawn_bg_highlight(&state.diff_state.files);
+        state
+            .diff_view
+            .highlight
+            .spawn_bg_highlight(&state.diff_state.files);
         Ok(state)
     }
 
@@ -369,11 +393,13 @@ impl GitState {
         if self.file_tree.selected_idx >= entries.len() && !entries.is_empty() {
             self.file_tree.selected_idx = entries.len() - 1;
         }
-        self.scroll.y = 0;
-        self.scroll.x = 0;
-        self.highlight.reset();
+        self.diff_view.scroll.y = 0;
+        self.diff_view.scroll.x = 0;
+        self.diff_view.highlight.reset();
         self.search.reset_matches();
-        self.highlight.spawn_bg_highlight(&self.diff_state.files);
+        self.diff_view
+            .highlight
+            .spawn_bg_highlight(&self.diff_state.files);
         Ok(fallback_msg)
     }
 
@@ -473,7 +499,7 @@ impl DetailState for GitLogState {
 
 impl crate::core::app::PageState for GitState {
     fn drain_background(&mut self) {
-        self.highlight.drain_bg_highlights();
+        self.diff_view.highlight.drain_bg_highlights();
     }
     fn search(&self) -> &crate::core::app::SearchState {
         &self.search

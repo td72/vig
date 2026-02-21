@@ -11,7 +11,7 @@ pub struct DiffViewPane;
 
 impl DetailPane<GitState> for DiffViewPane {
     fn handle_key(&self, ctx: &mut AppContext, state: &mut GitState, key: KeyEvent) {
-        match state.vim.mode {
+        match state.diff_view.vim.mode {
             DiffViewMode::Scroll => keys::handle_diff_scroll_key(ctx, state, key),
             DiffViewMode::Normal => keys::handle_diff_normal_key(ctx, state, key),
             DiffViewMode::Visual | DiffViewMode::VisualLine => {
