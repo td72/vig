@@ -116,7 +116,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
         body_lines,
         active_pane == GhDetailPane::Body,
         is_focused,
-        state.detail_scroll_body,
+        state.detail_body.scroll_y,
     );
 
     // Right side
@@ -131,7 +131,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 state.detail_view_height = cols[1].height;
             }
             let (comments_lines, sel_scroll) =
-                build_comments_lines(&detail.comments, state.detail_comment_idx);
+                build_comments_lines(&detail.comments, state.detail_comments.selected_idx);
             render_pane(
                 f,
                 cols[1],
@@ -139,7 +139,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 comments_lines,
                 active_pane == GhDetailPane::Comments,
                 is_focused,
-                sel_scroll + state.detail_scroll_comments,
+                sel_scroll + state.detail_comments.scroll_y,
             );
         }
         GhDetailContent::Pr(detail) => {
@@ -167,7 +167,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 detail,
                 active_pane == GhDetailPane::Status,
                 is_focused,
-                state.detail_check_idx,
+                state.detail_status.selected_idx,
             );
 
             let review_count = detail
@@ -177,7 +177,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 .count();
             let reviews_title = format!("Reviews ({review_count})");
             let (reviews_lines, rev_scroll) =
-                build_reviews_lines(&detail.reviews, state.detail_review_idx);
+                build_reviews_lines(&detail.reviews, state.detail_reviews.selected_idx);
             render_pane(
                 f,
                 right_rows[1],
@@ -185,13 +185,13 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 reviews_lines,
                 active_pane == GhDetailPane::Reviews,
                 is_focused,
-                rev_scroll + state.detail_scroll_reviews,
+                rev_scroll + state.detail_reviews.scroll_y,
             );
 
             let comments_count = detail.comments.len();
             let comments_title = format!("Comments ({comments_count})");
             let (comments_lines, cmt_scroll) =
-                build_comments_lines(&detail.comments, state.detail_comment_idx);
+                build_comments_lines(&detail.comments, state.detail_comments.selected_idx);
             render_pane(
                 f,
                 right_rows[2],
@@ -199,7 +199,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 comments_lines,
                 active_pane == GhDetailPane::Comments,
                 is_focused,
-                cmt_scroll + state.detail_scroll_comments,
+                cmt_scroll + state.detail_comments.scroll_y,
             );
         }
         _ => unreachable!(),

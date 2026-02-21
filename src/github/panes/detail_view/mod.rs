@@ -1,7 +1,7 @@
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
-use crate::core::pane::{DetailPane, FocusState};
+use crate::core::pane::{DetailPane, DetailState, FocusState};
 use crate::github::state::{GhDetailContent, GhDetailPane, GitHubState};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
@@ -12,7 +12,7 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
             if let GhDetailContent::Pr(ref detail) = gh.detail {
                 let sorted = view::sorted_checks(detail);
                 sorted
-                    .get(gh.detail_check_idx)
+                    .get(gh.detail_status.selected_idx)
                     .and_then(|c| c.details_url.clone())
             } else {
                 None
@@ -21,7 +21,7 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
         GhDetailPane::Reviews => {
             if let GhDetailContent::Pr(ref detail) = gh.detail {
                 let reviews = view::meaningful_reviews(&detail.reviews);
-                reviews.get(gh.detail_review_idx).and_then(|r| {
+                reviews.get(gh.detail_reviews.selected_idx).and_then(|r| {
                     r.id.as_ref().and_then(|id| {
                         crate::github::domain::client::repo_nwo().map(|nwo| {
                             format!(
@@ -38,11 +38,11 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
         GhDetailPane::Comments => match &gh.detail {
             GhDetailContent::Issue(detail) => detail
                 .comments
-                .get(gh.detail_comment_idx)
+                .get(gh.detail_comments.selected_idx)
                 .and_then(|c| c.url.clone()),
             GhDetailContent::Pr(detail) => detail
                 .comments
-                .get(gh.detail_comment_idx)
+                .get(gh.detail_comments.selected_idx)
                 .and_then(|c| c.url.clone()),
             _ => None,
         },
@@ -123,58 +123,55 @@ impl DetailPane<GitHubState> for GhDetailViewPane {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 if selectable && item_count > 0 {
-                    let idx = state.active_selected_idx_mut();
-                    if *idx + 1 < item_count {
-                        *idx += 1;
-                        // Reset intra-item scroll when selection moves
-                        *state.active_detail_scroll_mut() = 0;
+                    let s = state.active_scroll_mut();
+                    if s.selected_idx + 1 < item_count {
+                        s.selected_idx += 1;
+                        s.scroll_y = 0;
                     } else {
-                        // At last item — scroll within
-                        let scroll = state.active_detail_scroll_mut();
-                        *scroll = scroll.saturating_add(1);
+                        s.scroll_y = s.scroll_y.saturating_add(1);
                     }
                 } else if !selectable {
-                    let scroll = state.active_detail_scroll_mut();
-                    *scroll = scroll.saturating_add(1);
+                    let s = state.active_scroll_mut();
+                    s.scroll_y = s.scroll_y.saturating_add(1);
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if selectable {
-                    let scroll_val = *state.active_detail_scroll_mut();
-                    if scroll_val > 0 {
-                        // Scroll back within current item first
-                        *state.active_detail_scroll_mut() = scroll_val - 1;
+                    let s = state.active_scroll_mut();
+                    if s.scroll_y > 0 {
+                        s.scroll_y -= 1;
                     } else {
-                        let idx = state.active_selected_idx_mut();
-                        *idx = idx.saturating_sub(1);
+                        s.selected_idx = s.selected_idx.saturating_sub(1);
                     }
                 } else {
-                    let scroll = state.active_detail_scroll_mut();
-                    *scroll = scroll.saturating_sub(1);
+                    let s = state.active_scroll_mut();
+                    s.scroll_y = s.scroll_y.saturating_sub(1);
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (state.detail_view_height / 2).max(1);
-                let scroll = state.active_detail_scroll_mut();
-                *scroll = scroll.saturating_add(half);
+                let s = state.active_scroll_mut();
+                s.scroll_y = s.scroll_y.saturating_add(half);
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (state.detail_view_height / 2).max(1);
-                let scroll = state.active_detail_scroll_mut();
-                *scroll = scroll.saturating_sub(half);
+                let s = state.active_scroll_mut();
+                s.scroll_y = s.scroll_y.saturating_sub(half);
             }
             KeyCode::Char('g') => {
+                let s = state.active_scroll_mut();
                 if selectable {
-                    *state.active_selected_idx_mut() = 0;
+                    s.selected_idx = 0;
                 }
-                *state.active_detail_scroll_mut() = 0;
+                s.scroll_y = 0;
             }
             KeyCode::Char('G') => {
+                let s = state.active_scroll_mut();
                 if selectable && item_count > 0 {
-                    *state.active_selected_idx_mut() = item_count - 1;
+                    s.selected_idx = item_count - 1;
                 }
                 if !selectable || item_count > 0 {
-                    *state.active_detail_scroll_mut() = u16::MAX / 2;
+                    s.scroll_y = u16::MAX / 2;
                 }
             }
             KeyCode::Char('h') => {

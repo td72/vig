@@ -1,4 +1,5 @@
 use crate::core::app::SearchState;
+use crate::core::pane::{DetailState, SubPaneScroll};
 use crate::github::domain::client;
 use crate::github::domain::disk_cache;
 use crate::github::domain::types::*;
@@ -57,13 +58,10 @@ pub struct GitHubState {
     pub previous_pane: GhFocusedPane,
     pub detail: GhDetailContent,
     pub detail_pane: GhDetailPane,
-    pub detail_scroll_body: u16,
-    pub detail_scroll_status: u16,
-    pub detail_scroll_reviews: u16,
-    pub detail_scroll_comments: u16,
-    pub detail_check_idx: usize,
-    pub detail_review_idx: usize,
-    pub detail_comment_idx: usize,
+    pub detail_body: SubPaneScroll,
+    pub detail_status: SubPaneScroll,
+    pub detail_reviews: SubPaneScroll,
+    pub detail_comments: SubPaneScroll,
     pub detail_view_height: u16,
     issue_cache: HashMap<u64, GhIssueDetail>,
     pr_cache: HashMap<u64, GhPrDetail>,
@@ -93,13 +91,10 @@ impl GitHubState {
             previous_pane: GhFocusedPane::IssueList,
             detail: GhDetailContent::None,
             detail_pane: GhDetailPane::Body,
-            detail_scroll_body: 0,
-            detail_scroll_status: 0,
-            detail_scroll_reviews: 0,
-            detail_scroll_comments: 0,
-            detail_check_idx: 0,
-            detail_review_idx: 0,
-            detail_comment_idx: 0,
+            detail_body: SubPaneScroll::default(),
+            detail_status: SubPaneScroll::default(),
+            detail_reviews: SubPaneScroll::default(),
+            detail_comments: SubPaneScroll::default(),
             detail_view_height: 0,
             issue_cache: HashMap::new(),
             pr_cache: HashMap::new(),
@@ -115,39 +110,8 @@ impl GitHubState {
         }
     }
 
-    pub fn active_selected_idx_mut(&mut self) -> &mut usize {
-        match self.detail_pane {
-            GhDetailPane::Status => &mut self.detail_check_idx,
-            GhDetailPane::Reviews => &mut self.detail_review_idx,
-            GhDetailPane::Comments => &mut self.detail_comment_idx,
-            GhDetailPane::Body => {
-                panic!("active_selected_idx_mut called with Body pane which has no selection")
-            }
-        }
-    }
-
-    pub fn active_detail_scroll_mut(&mut self) -> &mut u16 {
-        match self.detail_pane {
-            GhDetailPane::Body => &mut self.detail_scroll_body,
-            GhDetailPane::Status => &mut self.detail_scroll_status,
-            GhDetailPane::Reviews => &mut self.detail_scroll_reviews,
-            GhDetailPane::Comments => &mut self.detail_scroll_comments,
-        }
-    }
-
     pub fn is_pr(&self) -> bool {
         matches!(&self.detail, GhDetailContent::Pr(_))
-    }
-
-    fn reset_detail_panes(&mut self) {
-        self.detail_pane = GhDetailPane::Body;
-        self.detail_scroll_body = 0;
-        self.detail_scroll_status = 0;
-        self.detail_scroll_reviews = 0;
-        self.detail_scroll_comments = 0;
-        self.detail_check_idx = 0;
-        self.detail_review_idx = 0;
-        self.detail_comment_idx = 0;
     }
 
     /// Initialize on first switch to GitHub View.
@@ -299,21 +263,21 @@ impl GitHubState {
     pub fn load_issue_detail(&mut self, number: u64) {
         if let Some(cached) = self.issue_cache.get(&number) {
             self.detail = GhDetailContent::Issue(Box::new(cached.clone()));
-            self.reset_detail_panes();
+            self.reset_sub_panes();
             return;
         }
         // Disk cache fallback
         if let Some(cached) = disk_cache::load_issue_detail(number) {
             self.issue_cache.insert(number, cached.clone());
             self.detail = GhDetailContent::Issue(Box::new(cached));
-            self.reset_detail_panes();
+            self.reset_sub_panes();
             return;
         }
         self.detail = GhDetailContent::Loading {
             kind: GhDetailKind::Issue,
             number,
         };
-        self.reset_detail_panes();
+        self.reset_sub_panes();
         if let Some(tx) = &self.bg_tx {
             let tx = tx.clone();
             std::thread::spawn(move || {
@@ -327,21 +291,21 @@ impl GitHubState {
     pub fn load_pr_detail(&mut self, number: u64) {
         if let Some(cached) = self.pr_cache.get(&number) {
             self.detail = GhDetailContent::Pr(Box::new(cached.clone()));
-            self.reset_detail_panes();
+            self.reset_sub_panes();
             return;
         }
         // Disk cache fallback
         if let Some(cached) = disk_cache::load_pr_detail(number) {
             self.pr_cache.insert(number, cached.clone());
             self.detail = GhDetailContent::Pr(Box::new(cached));
-            self.reset_detail_panes();
+            self.reset_sub_panes();
             return;
         }
         self.detail = GhDetailContent::Loading {
             kind: GhDetailKind::Pr,
             number,
         };
-        self.reset_detail_panes();
+        self.reset_sub_panes();
         if let Some(tx) = &self.bg_tx {
             let tx = tx.clone();
             std::thread::spawn(move || {
@@ -536,6 +500,45 @@ impl crate::core::pane::FocusState for GitHubState {
     fn set_focus(&mut self, id: GhFocusedPane) {
         self.previous_pane = self.focused_pane;
         self.focused_pane = id;
+    }
+}
+
+impl DetailState for GitHubState {
+    type SubPaneId = GhDetailPane;
+    fn active_sub_pane(&self) -> GhDetailPane {
+        self.detail_pane
+    }
+    fn set_sub_pane(&mut self, id: GhDetailPane) {
+        self.detail_pane = id;
+    }
+    fn sub_scroll(&self, id: GhDetailPane) -> &SubPaneScroll {
+        match id {
+            GhDetailPane::Body => &self.detail_body,
+            GhDetailPane::Status => &self.detail_status,
+            GhDetailPane::Reviews => &self.detail_reviews,
+            GhDetailPane::Comments => &self.detail_comments,
+        }
+    }
+    fn sub_scroll_mut(&mut self, id: GhDetailPane) -> &mut SubPaneScroll {
+        match id {
+            GhDetailPane::Body => &mut self.detail_body,
+            GhDetailPane::Status => &mut self.detail_status,
+            GhDetailPane::Reviews => &mut self.detail_reviews,
+            GhDetailPane::Comments => &mut self.detail_comments,
+        }
+    }
+    fn detail_view_height(&self) -> u16 {
+        self.detail_view_height
+    }
+    fn set_detail_view_height(&mut self, h: u16) {
+        self.detail_view_height = h;
+    }
+    fn reset_sub_panes(&mut self) {
+        self.detail_pane = GhDetailPane::Body;
+        self.detail_body.reset();
+        self.detail_status.reset();
+        self.detail_reviews.reset();
+        self.detail_comments.reset();
     }
 }
 
