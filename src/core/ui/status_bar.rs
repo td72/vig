@@ -1,4 +1,4 @@
-use crate::core::app::{AppContext, ViewMode};
+use crate::core::app::AppContext;
 use crate::git::state::GitState;
 use crate::github::state::GitHubState;
 use ratatui::{
@@ -9,29 +9,22 @@ use ratatui::{
     Frame,
 };
 
-fn view_tab_spans(active: ViewMode) -> Vec<Span<'static>> {
-    let git_style = if active == ViewMode::Git {
-        Style::default()
-            .fg(Color::Black)
-            .bg(Color::White)
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::DarkGray)
-    };
-    let gh_style = if active == ViewMode::GitHub {
-        Style::default()
-            .fg(Color::Black)
-            .bg(Color::White)
-            .add_modifier(Modifier::BOLD)
-    } else {
-        Style::default().fg(Color::DarkGray)
-    };
-    vec![
-        Span::raw("  "),
-        Span::styled(" 1:Git ", git_style),
-        Span::raw(" "),
-        Span::styled(" 2:GitHub ", gh_style),
-    ]
+fn view_tab_spans(ctx: &AppContext) -> Vec<Span<'static>> {
+    let active_style = Style::default()
+        .fg(Color::Black)
+        .bg(Color::White)
+        .add_modifier(Modifier::BOLD);
+    let inactive_style = Style::default().fg(Color::DarkGray);
+
+    let mut spans = vec![Span::raw("  ")];
+    for (i, label) in ctx.view_labels.iter().enumerate() {
+        if i > 0 {
+            spans.push(Span::raw(" "));
+        }
+        let style = if i == ctx.active_view { active_style } else { inactive_style };
+        spans.push(Span::styled(format!(" {}:{} ", i + 1, label), style));
+    }
+    spans
 }
 
 pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
@@ -62,7 +55,7 @@ pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect
         ));
     }
 
-    spans.extend(view_tab_spans(ctx.view_mode));
+    spans.extend(view_tab_spans(ctx));
 
     spans.push(Span::raw("  "));
     spans.push(Span::styled(
@@ -92,7 +85,7 @@ pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
         ),
     ];
 
-    spans.extend(view_tab_spans(ctx.view_mode));
+    spans.extend(view_tab_spans(ctx));
 
     spans.push(Span::raw("  "));
     spans.push(Span::styled(
@@ -220,69 +213,8 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
     f.render_widget(Paragraph::new(line), area);
 }
 
-pub fn render_help_overlay(f: &mut Frame, area: Rect, view_mode: ViewMode) {
+pub fn render_help_overlay(f: &mut Frame, area: Rect, keybindings: &[(&str, &str)]) {
     use ratatui::widgets::{Block, Borders, Clear};
-
-    let keybindings = match view_mode {
-        ViewMode::Git => vec![
-            ("1 / 2", "Switch to Git / GitHub"),
-            ("j / ↓", "Next item / Scroll down"),
-            ("k / ↑", "Prev item / Scroll up"),
-            ("Enter", "Select file/branch"),
-            ("Tab", "Next pane"),
-            ("Shift+Tab", "Prev pane"),
-            ("Ctrl+d", "Half page down"),
-            ("Ctrl+u", "Half page up"),
-            ("g / G", "Top / Bottom"),
-            ("h / l", "Scroll left / right"),
-            ("i", "Normal mode (cursor)"),
-            ("v / V", "Visual / Visual Line"),
-            ("y", "Yank (copy) selection"),
-            ("/", "Search"),
-            ("n / N", "Next / Prev match"),
-            ("Esc", "Clear search / Back"),
-            ("e", "Open in $EDITOR"),
-            ("r", "Refresh diff + branches"),
-            ("?", "Toggle help"),
-            ("q", "Quit"),
-            ("", ""),
-            ("", "── Branch List ──"),
-            ("/", "Search branches"),
-            ("Enter", "Action menu"),
-            ("", ""),
-            ("", "── Git Log ──"),
-            ("j / k", "Navigate commits"),
-            ("Ctrl+d/u", "Half page scroll"),
-            ("g / G", "Top / Bottom"),
-            ("y", "Copy commit hash"),
-            ("o", "Open in GitHub"),
-            ("/", "Search commits"),
-            ("", ""),
-            ("", "── Reflog ──"),
-            ("j / k", "Navigate entries"),
-            ("Ctrl+d/u", "Half page scroll"),
-            ("g / G", "Top / Bottom"),
-            ("Enter", "Set as diff base"),
-            ("/", "Search reflog"),
-        ],
-        ViewMode::GitHub => vec![
-            ("1 / 2", "Switch to Git / GitHub"),
-            ("h / l", "Issues ↔ PRs (list)"),
-            ("j / k", "Navigate list"),
-            ("i / Enter", "Open detail"),
-            ("o", "Open in browser"),
-            ("Esc", "Back to list"),
-            ("h / l", "Body ↔ Right pane (detail)"),
-            ("Tab / S-Tab", "Cycle right panes (detail)"),
-            ("Ctrl+d", "Half page down (detail)"),
-            ("Ctrl+u", "Half page up (detail)"),
-            ("g / G", "Top / Bottom"),
-            ("r", "Refresh data"),
-            ("w", "Toggle watch mode (PR)"),
-            ("?", "Toggle help"),
-            ("q", "Quit"),
-        ],
-    };
 
     let help_width = 50u16.min(area.width.saturating_sub(4));
     let help_height = ((keybindings.len() as u16) + 2).min(area.height.saturating_sub(4));
@@ -302,7 +234,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect, view_mode: ViewMode) {
                         .fg(Color::Cyan)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::raw(desc),
+                Span::raw(*desc),
             ])
         })
         .collect();

@@ -20,6 +20,14 @@ pub enum ViewAction {
 }
 
 pub trait View: Sync {
+    /// Short label shown in the view tab bar (e.g. "Git", "GitHub").
+    fn label(&self) -> &'static str;
+
+    /// Keybinding help entries shown in the help overlay: `(key, description)`.
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        vec![]
+    }
+
     /// Handle a key event. Returns a `ViewAction` indicating what the caller should do.
     fn handle_key(&self, ctx: &mut AppContext, state: &mut dyn Any, key: KeyEvent) -> Result<ViewAction>;
 

@@ -115,6 +115,28 @@ fn load_gh_detail_for_tab(state: &mut GitHubState) {
 pub struct GhView;
 
 impl View for GhView {
+    fn label(&self) -> &'static str { "GitHub" }
+
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        vec![
+            ("1 / 2", "Switch view"),
+            ("h / l", "Issues ↔ PRs (list)"),
+            ("j / k", "Navigate list"),
+            ("i / Enter", "Open detail"),
+            ("o", "Open in browser"),
+            ("Esc", "Back to list"),
+            ("h / l", "Body ↔ Right pane (detail)"),
+            ("Tab / S-Tab", "Cycle right panes (detail)"),
+            ("Ctrl+d", "Half page down (detail)"),
+            ("Ctrl+u", "Half page up (detail)"),
+            ("g / G", "Top / Bottom"),
+            ("r", "Refresh data"),
+            ("w", "Toggle watch mode (PR)"),
+            ("?", "Toggle help"),
+            ("q", "Quit"),
+        ]
+    }
+
     fn handle_key(&self, ctx: &mut AppContext, state: &mut dyn Any, key: KeyEvent) -> Result<ViewAction> {
         let gh = state.downcast_mut::<GitHubState>().unwrap();
         handle_gh_view_key(ctx, gh, key)

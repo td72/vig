@@ -198,6 +198,52 @@ impl PaneContainer<GitState> for GitContainer {
 pub struct GitView;
 
 impl View for GitView {
+    fn label(&self) -> &'static str { "Git" }
+
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        vec![
+            ("1 / 2", "Switch view"),
+            ("j / ↓", "Next item / Scroll down"),
+            ("k / ↑", "Prev item / Scroll up"),
+            ("Enter", "Select file/branch"),
+            ("Tab", "Next pane"),
+            ("Shift+Tab", "Prev pane"),
+            ("Ctrl+d", "Half page down"),
+            ("Ctrl+u", "Half page up"),
+            ("g / G", "Top / Bottom"),
+            ("h / l", "Scroll left / right"),
+            ("i", "Normal mode (cursor)"),
+            ("v / V", "Visual / Visual Line"),
+            ("y", "Yank (copy) selection"),
+            ("/", "Search"),
+            ("n / N", "Next / Prev match"),
+            ("Esc", "Clear search / Back"),
+            ("e", "Open in $EDITOR"),
+            ("r", "Refresh diff + branches"),
+            ("?", "Toggle help"),
+            ("q", "Quit"),
+            ("", ""),
+            ("", "── Branch List ──"),
+            ("/", "Search branches"),
+            ("Enter", "Action menu"),
+            ("", ""),
+            ("", "── Git Log ──"),
+            ("j / k", "Navigate commits"),
+            ("Ctrl+d/u", "Half page scroll"),
+            ("g / G", "Top / Bottom"),
+            ("y", "Copy commit hash"),
+            ("o", "Open in GitHub"),
+            ("/", "Search commits"),
+            ("", ""),
+            ("", "── Reflog ──"),
+            ("j / k", "Navigate entries"),
+            ("Ctrl+d/u", "Half page scroll"),
+            ("g / G", "Top / Bottom"),
+            ("Enter", "Set as diff base"),
+            ("/", "Search reflog"),
+        ]
+    }
+
     fn intercepts_all_keys(&self, _ctx: &AppContext, state: &dyn Any) -> bool {
         let git = state.downcast_ref::<GitState>().unwrap();
         git.branch_action_menu.is_some() || git.search.active

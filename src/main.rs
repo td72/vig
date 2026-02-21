@@ -3,7 +3,7 @@ mod git;
 mod github;
 mod update;
 
-use crate::core::app::{App, AppContext, GitState, ViewEntry, ViewMode};
+use crate::core::app::{App, AppContext, GitState, ViewEntry};
 use crate::core::event::{Event, EventHandler};
 use crate::core::ui::{confirm_dialog, status_bar};
 use crate::core::view::ViewAction;
@@ -53,18 +53,20 @@ fn run_tui() -> Result<()> {
     let workdir = git.repo.workdir().to_path_buf();
     let github = GitHubState::new();
 
+    let entries = vec![
+        ViewEntry { view: &GitView, state: Box::new(git) },
+        ViewEntry { view: &GhView, state: Box::new(github) },
+    ];
+    let view_labels = entries.iter().map(|e| e.view.label()).collect();
     let ctx = AppContext {
         should_quit: false,
-        view_mode: ViewMode::Git,
+        active_view: 0,
+        view_labels,
         show_help: false,
         status_message: None,
         error_dialog: None,
         workdir: workdir.clone(),
     };
-    let entries = vec![
-        ViewEntry { view: &GitView, state: Box::new(git) },
-        ViewEntry { view: &GhView, state: Box::new(github) },
-    ];
     let mut app = App::new(ctx, entries);
 
     let events = EventHandler::new(Duration::from_millis(250));
@@ -88,7 +90,8 @@ fn run_tui() -> Result<()> {
                 confirm_dialog::render(frame, &app.ctx, area);
             }
             if app.ctx.show_help {
-                status_bar::render_help_overlay(frame, area, app.ctx.view_mode);
+                let bindings = app.active_help_bindings();
+                status_bar::render_help_overlay(frame, area, &bindings);
             }
         })?;
 

@@ -6,12 +6,6 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::any::Any;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ViewMode {
-    Git,
-    GitHub,
-}
-
 pub struct ErrorDialogState {
     pub title: String,
     pub message: String,
@@ -19,7 +13,8 @@ pub struct ErrorDialogState {
 
 pub struct AppContext {
     pub should_quit: bool,
-    pub view_mode: ViewMode,
+    pub active_view: usize,
+    pub view_labels: Vec<&'static str>,
     pub show_help: bool,
     pub status_message: Option<String>,
     pub error_dialog: Option<ErrorDialogState>,
@@ -54,7 +49,7 @@ impl App {
     }
 
     pub fn render(&mut self, f: &mut ratatui::Frame, area: ratatui::layout::Rect) {
-        let idx = self.view_index();
+        let idx = self.ctx.active_view;
         let view = self.entries[idx].view;
         let state = self.entries[idx].state.as_any_mut();
         view.render(f, &self.ctx, state, area);
@@ -70,24 +65,21 @@ impl App {
     }
 
     pub fn on_tick(&mut self) {
-        let idx = self.view_index();
+        let idx = self.ctx.active_view;
         let view = self.entries[idx].view;
         let state = self.entries[idx].state.as_any_mut();
         view.on_tick(&mut self.ctx, state);
     }
 
     pub fn on_suspend_return(&mut self, status: std::io::Result<std::process::ExitStatus>) -> Result<()> {
-        let idx = self.view_index();
+        let idx = self.ctx.active_view;
         let view = self.entries[idx].view;
         let state = self.entries[idx].state.as_any_mut();
         view.on_suspend_return(&mut self.ctx, state, status)
     }
 
-    fn view_index(&self) -> usize {
-        match self.ctx.view_mode {
-            ViewMode::Git => 0,
-            ViewMode::GitHub => 1,
-        }
+    pub fn active_help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        self.entries[self.ctx.active_view].view.help_bindings()
     }
 
     pub fn handle_key(&mut self, key: KeyEvent) -> Result<ViewAction> {
@@ -102,7 +94,7 @@ impl App {
             return Ok(ViewAction::None);
         }
 
-        let idx = self.view_index();
+        let idx = self.ctx.active_view;
 
         // If the view intercepts all keys (modal menu, search input), delegate immediately
         let view = self.entries[idx].view;
@@ -117,21 +109,16 @@ impl App {
             return Ok(ViewAction::None);
         }
 
-        // View switching
-        match key.code {
-            KeyCode::Char('1') => {
-                self.ctx.view_mode = ViewMode::Git;
-                return Ok(ViewAction::None);
-            }
-            KeyCode::Char('2') => {
-                self.ctx.view_mode = ViewMode::GitHub;
-                let new_idx = self.view_index();
+        // View switching: '1'..'9' maps to view index 0..8
+        if let KeyCode::Char(c @ '1'..='9') = key.code {
+            let new_idx = (c as usize) - ('1' as usize);
+            if new_idx < self.entries.len() && new_idx != idx {
+                self.ctx.active_view = new_idx;
                 let view = self.entries[new_idx].view;
                 let state = self.entries[new_idx].state.as_any_mut();
                 view.on_activate(&mut self.ctx, state);
-                return Ok(ViewAction::None);
             }
-            _ => {}
+            return Ok(ViewAction::None);
         }
 
         // Delegate to active view
