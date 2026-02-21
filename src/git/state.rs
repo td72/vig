@@ -275,11 +275,15 @@ impl HighlightState {
 
 pub use crate::git::domain::tree::TreeEntry;
 
+pub struct FileTreeState {
+    pub selected_idx: usize,
+    pub collapsed_dirs: HashSet<String>,
+}
+
 pub struct GitState {
     pub repo: Repo,
     pub diff_state: DiffState,
-    pub collapsed_dirs: HashSet<String>,
-    pub selected_tree_idx: usize,
+    pub file_tree: FileTreeState,
     pub focused_pane: FocusedPane,
     pub previous_pane: FocusedPane,
     pub scroll: DiffScroll,
@@ -300,8 +304,10 @@ impl GitState {
         let mut state = Self {
             repo,
             diff_state,
-            collapsed_dirs: HashSet::new(),
-            selected_tree_idx: 0,
+            file_tree: FileTreeState {
+                selected_idx: 0,
+                collapsed_dirs: HashSet::new(),
+            },
             focused_pane: FocusedPane::FileTree,
             previous_pane: FocusedPane::FileTree,
             scroll: DiffScroll::default(),
@@ -354,14 +360,14 @@ impl GitState {
         // Preserve selection by path
         if let Some(path) = old_path {
             let entries = self.tree_entries();
-            self.selected_tree_idx = entries
+            self.file_tree.selected_idx = entries
                 .iter()
                 .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.diff_state.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
                 .unwrap_or(0);
         }
         let entries = self.tree_entries();
-        if self.selected_tree_idx >= entries.len() && !entries.is_empty() {
-            self.selected_tree_idx = entries.len() - 1;
+        if self.file_tree.selected_idx >= entries.len() && !entries.is_empty() {
+            self.file_tree.selected_idx = entries.len() - 1;
         }
         self.scroll.y = 0;
         self.scroll.x = 0;
@@ -373,7 +379,7 @@ impl GitState {
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
         let entries = self.tree_entries();
-        if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.selected_tree_idx) {
+        if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.file_tree.selected_idx) {
             self.diff_state.files.get(*file_idx)
         } else {
             None
@@ -422,7 +428,10 @@ impl GitState {
     }
 
     pub fn tree_entries(&self) -> Vec<TreeEntry> {
-        crate::git::domain::tree::build_tree_entries(&self.diff_state.files, &self.collapsed_dirs)
+        crate::git::domain::tree::build_tree_entries(
+            &self.diff_state.files,
+            &self.file_tree.collapsed_dirs,
+        )
     }
 }
 

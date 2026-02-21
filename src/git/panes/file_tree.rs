@@ -23,38 +23,39 @@ impl SelectPane<GitState> for FileTreePane {
         }
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                if state.selected_tree_idx + 1 < entries.len() {
-                    state.selected_tree_idx += 1;
+                if state.file_tree.selected_idx + 1 < entries.len() {
+                    state.file_tree.selected_idx += 1;
                     state.scroll.y = 0;
                     state.scroll.x = 0;
                     search::re_search_on_file_change(state);
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if state.selected_tree_idx > 0 {
-                    state.selected_tree_idx -= 1;
+                if state.file_tree.selected_idx > 0 {
+                    state.file_tree.selected_idx -= 1;
                     state.scroll.y = 0;
                     state.scroll.x = 0;
                     search::re_search_on_file_change(state);
                 }
             }
             KeyCode::Char(' ') => {
-                if let Some(TreeEntry::Dir { path, .. }) = entries.get(state.selected_tree_idx) {
+                if let Some(TreeEntry::Dir { path, .. }) = entries.get(state.file_tree.selected_idx)
+                {
                     let path = path.clone();
-                    if state.collapsed_dirs.contains(&path) {
-                        state.collapsed_dirs.remove(&path);
+                    if state.file_tree.collapsed_dirs.contains(&path) {
+                        state.file_tree.collapsed_dirs.remove(&path);
                     } else {
-                        state.collapsed_dirs.insert(path);
+                        state.file_tree.collapsed_dirs.insert(path);
                     }
                 }
             }
-            KeyCode::Right | KeyCode::Enter => match entries.get(state.selected_tree_idx) {
+            KeyCode::Right | KeyCode::Enter => match entries.get(state.file_tree.selected_idx) {
                 Some(TreeEntry::Dir { path, .. }) => {
                     let path = path.clone();
-                    if state.collapsed_dirs.contains(&path) {
-                        state.collapsed_dirs.remove(&path);
+                    if state.file_tree.collapsed_dirs.contains(&path) {
+                        state.file_tree.collapsed_dirs.remove(&path);
                     } else {
-                        state.collapsed_dirs.insert(path);
+                        state.file_tree.collapsed_dirs.insert(path);
                     }
                 }
                 Some(TreeEntry::File { .. }) => {
@@ -186,7 +187,7 @@ impl SelectPane<GitState> for FileTreePane {
             })
             .collect();
 
-        let selected = state.selected_tree_idx;
+        let selected = state.file_tree.selected_idx;
         let selected_is_match = match_set.contains(&selected);
 
         let highlight_style = if selected_is_match {

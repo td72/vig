@@ -178,7 +178,7 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
             }
         }
         SearchMatch::TreeEntry(idx) => {
-            git.selected_tree_idx = *idx;
+            git.file_tree.selected_idx = *idx;
         }
         SearchMatch::CommitEntry(idx) => {
             git.git_log.selected_idx = *idx;
