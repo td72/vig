@@ -511,10 +511,4 @@ impl crate::core::app::PageState for GitState {
     fn drain_background(&mut self) {
         self.drain_bg_highlights();
     }
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
-        self
-    }
 }

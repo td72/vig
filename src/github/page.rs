@@ -8,14 +8,10 @@ use crate::github::state::{GhFocusedPane, GitHubState};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
-use std::any::Any;
 
 /// Create a GitHub page.
 pub fn new_page() -> Page {
-    Page {
-        handler: &GhPageHandler,
-        state: Box::new(GitHubState::new()),
-    }
+    Page::new(&GhPageHandler, GitHubState::new())
 }
 
 // === Tab definitions ===
@@ -108,7 +104,7 @@ fn load_gh_detail_for_tab(state: &mut GitHubState) {
 
 pub struct GhPageHandler;
 
-impl PageHandler for GhPageHandler {
+impl PageHandler<GitHubState> for GhPageHandler {
     fn label(&self) -> &'static str {
         "GitHub"
     }
@@ -136,15 +132,13 @@ impl PageHandler for GhPageHandler {
     fn handle_key(
         &self,
         ctx: &mut AppContext,
-        state: &mut dyn Any,
+        gh: &mut GitHubState,
         key: KeyEvent,
     ) -> Result<PageAction> {
-        let gh = state.downcast_mut::<GitHubState>().unwrap();
         handle_gh_view_key(ctx, gh, key)
     }
 
-    fn render(&self, f: &mut Frame, ctx: &AppContext, state: &mut dyn Any, area: Rect) {
-        let gh = state.downcast_mut::<GitHubState>().unwrap();
+    fn render(&self, f: &mut Frame, ctx: &AppContext, gh: &mut GitHubState, area: Rect) {
         let gl = crate::github::layout::compute_gh_layout(area);
         status_bar::render_gh_header(f, ctx, gl.header);
         GhIssueListPane.render(f, ctx, gh, gl.issue_list);
@@ -153,13 +147,11 @@ impl PageHandler for GhPageHandler {
         status_bar::render_gh_status_bar(f, ctx, gh, gl.status_bar);
     }
 
-    fn on_tick(&self, _ctx: &mut AppContext, state: &mut dyn Any) {
-        let gh = state.downcast_mut::<GitHubState>().unwrap();
+    fn on_tick(&self, _ctx: &mut AppContext, gh: &mut GitHubState) {
         gh.handle_watch_tick();
     }
 
-    fn on_activate(&self, _ctx: &mut AppContext, state: &mut dyn Any) {
-        let gh = state.downcast_mut::<GitHubState>().unwrap();
+    fn on_activate(&self, _ctx: &mut AppContext, gh: &mut GitHubState) {
         gh.initialize();
     }
 }

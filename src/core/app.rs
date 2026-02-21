@@ -2,7 +2,6 @@ use crate::core::page::{PageAction, PageHandler};
 pub use crate::core::search::{SearchMatch, SearchOrigin, SearchState};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use std::any::Any;
 use std::path::PathBuf;
 
 pub struct ErrorDialogState {
@@ -22,13 +21,121 @@ pub struct AppContext {
 
 pub trait PageState {
     fn drain_background(&mut self);
-    fn as_any(&self) -> &dyn Any;
-    fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
-pub struct Page {
-    pub handler: &'static dyn PageHandler,
-    pub state: Box<dyn PageState>,
+// --- Type-erasure layer (private) ---
+
+trait PageInner {
+    fn label(&self) -> &'static str;
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)>;
+    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction>;
+    fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect);
+    fn intercepts_all_keys(&self, ctx: &AppContext) -> bool;
+    fn on_tick(&mut self, ctx: &mut AppContext);
+    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()>;
+    fn on_suspend_return(
+        &mut self,
+        ctx: &mut AppContext,
+        status: std::io::Result<std::process::ExitStatus>,
+    ) -> Result<()>;
+    fn on_activate(&mut self, ctx: &mut AppContext);
+    fn drain_background(&mut self);
+}
+
+struct TypedPage<S: 'static> {
+    handler: &'static dyn PageHandler<S>,
+    state: S,
+}
+
+impl<S: PageState + 'static> PageInner for TypedPage<S> {
+    fn label(&self) -> &'static str {
+        self.handler.label()
+    }
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        self.handler.help_bindings()
+    }
+    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        self.handler.handle_key(ctx, &mut self.state, key)
+    }
+    fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect) {
+        self.handler.render(f, ctx, &mut self.state, area);
+    }
+    fn intercepts_all_keys(&self, ctx: &AppContext) -> bool {
+        self.handler.intercepts_all_keys(ctx, &self.state)
+    }
+    fn on_tick(&mut self, ctx: &mut AppContext) {
+        self.handler.on_tick(ctx, &mut self.state);
+    }
+    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
+        self.handler.on_fs_change(ctx, &mut self.state)
+    }
+    fn on_suspend_return(
+        &mut self,
+        ctx: &mut AppContext,
+        status: std::io::Result<std::process::ExitStatus>,
+    ) -> Result<()> {
+        self.handler.on_suspend_return(ctx, &mut self.state, status)
+    }
+    fn on_activate(&mut self, ctx: &mut AppContext) {
+        self.handler.on_activate(ctx, &mut self.state);
+    }
+    fn drain_background(&mut self) {
+        self.state.drain_background();
+    }
+}
+
+// --- Public Page wrapper ---
+
+pub struct Page(Box<dyn PageInner>);
+
+impl Page {
+    pub fn new<S: PageState + 'static>(handler: &'static dyn PageHandler<S>, state: S) -> Self {
+        Self(Box::new(TypedPage { handler, state }))
+    }
+
+    pub fn label(&self) -> &'static str {
+        self.0.label()
+    }
+
+    pub fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        self.0.help_bindings()
+    }
+
+    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        self.0.handle_key(ctx, key)
+    }
+
+    fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect) {
+        self.0.render(f, ctx, area);
+    }
+
+    fn intercepts_all_keys(&self, ctx: &AppContext) -> bool {
+        self.0.intercepts_all_keys(ctx)
+    }
+
+    fn on_tick(&mut self, ctx: &mut AppContext) {
+        self.0.on_tick(ctx);
+    }
+
+    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
+        self.0.on_fs_change(ctx)
+    }
+
+    fn on_suspend_return(
+        &mut self,
+        ctx: &mut AppContext,
+        status: std::io::Result<std::process::ExitStatus>,
+    ) -> Result<()> {
+        self.0.on_suspend_return(ctx, status)
+    }
+
+    fn on_activate(&mut self, ctx: &mut AppContext) {
+        self.0.on_activate(ctx);
+    }
+
+    fn drain_background(&mut self) {
+        self.0.drain_background();
+    }
 }
 
 pub struct App {
@@ -43,31 +150,25 @@ impl App {
 
     pub fn drain_all_background(&mut self) {
         for page in &mut self.pages {
-            page.state.drain_background();
+            page.drain_background();
         }
     }
 
     pub fn render(&mut self, f: &mut ratatui::Frame, area: ratatui::layout::Rect) {
         let idx = self.ctx.active_page;
-        let handler = self.pages[idx].handler;
-        let state = self.pages[idx].state.as_any_mut();
-        handler.render(f, &self.ctx, state, area);
+        self.pages[idx].render(f, &self.ctx, area);
     }
 
     pub fn on_fs_change(&mut self) -> Result<()> {
         for page in &mut self.pages {
-            let handler = page.handler;
-            let state = page.state.as_any_mut();
-            handler.on_fs_change(&mut self.ctx, state)?;
+            page.on_fs_change(&mut self.ctx)?;
         }
         Ok(())
     }
 
     pub fn on_tick(&mut self) {
         let idx = self.ctx.active_page;
-        let handler = self.pages[idx].handler;
-        let state = self.pages[idx].state.as_any_mut();
-        handler.on_tick(&mut self.ctx, state);
+        self.pages[idx].on_tick(&mut self.ctx);
     }
 
     pub fn on_suspend_return(
@@ -75,13 +176,11 @@ impl App {
         status: std::io::Result<std::process::ExitStatus>,
     ) -> Result<()> {
         let idx = self.ctx.active_page;
-        let handler = self.pages[idx].handler;
-        let state = self.pages[idx].state.as_any_mut();
-        handler.on_suspend_return(&mut self.ctx, state, status)
+        self.pages[idx].on_suspend_return(&mut self.ctx, status)
     }
 
     pub fn active_help_bindings(&self) -> Vec<(&'static str, &'static str)> {
-        self.pages[self.ctx.active_page].handler.help_bindings()
+        self.pages[self.ctx.active_page].help_bindings()
     }
 
     pub fn handle_key(&mut self, key: KeyEvent) -> Result<PageAction> {
@@ -99,10 +198,8 @@ impl App {
         let idx = self.ctx.active_page;
 
         // If the page intercepts all keys (modal menu, search input), delegate immediately
-        let handler = self.pages[idx].handler;
-        if handler.intercepts_all_keys(&self.ctx, self.pages[idx].state.as_any()) {
-            let state = self.pages[idx].state.as_any_mut();
-            return handler.handle_key(&mut self.ctx, state, key);
+        if self.pages[idx].intercepts_all_keys(&self.ctx) {
+            return self.pages[idx].handle_key(&mut self.ctx, key);
         }
 
         // Ctrl+c always quits
@@ -116,15 +213,12 @@ impl App {
             let new_idx = (c as usize) - ('1' as usize);
             if new_idx < self.pages.len() && new_idx != idx {
                 self.ctx.active_page = new_idx;
-                let handler = self.pages[new_idx].handler;
-                let state = self.pages[new_idx].state.as_any_mut();
-                handler.on_activate(&mut self.ctx, state);
+                self.pages[new_idx].on_activate(&mut self.ctx);
             }
             return Ok(PageAction::None);
         }
 
         // Delegate to active page
-        let state = self.pages[idx].state.as_any_mut();
-        handler.handle_key(&mut self.ctx, state, key)
+        self.pages[idx].handle_key(&mut self.ctx, key)
     }
 }

@@ -50,7 +50,7 @@ fn run_tui() -> Result<()> {
     let gh_page = crate::github::page::new_page();
 
     let pages = vec![git_page, gh_page];
-    let page_labels = pages.iter().map(|p| p.handler.label()).collect();
+    let page_labels = pages.iter().map(|p| p.label()).collect();
     let ctx = AppContext {
         should_quit: false,
         active_page: 0,

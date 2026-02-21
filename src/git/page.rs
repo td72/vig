@@ -11,17 +11,13 @@ use crate::git::state::{DiffViewMode, FocusedPane, GitState};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
-use std::any::Any;
 use std::path::{Path, PathBuf};
 
 /// Create a Git page. Returns the page and the resolved workdir path.
 pub fn new_page(cwd: &Path) -> Result<(Page, PathBuf)> {
     let git = GitState::new(cwd)?;
     let workdir = git.repo.workdir().to_path_buf();
-    let page = Page {
-        handler: &GitPageHandler,
-        state: Box::new(git),
-    };
+    let page = Page::new(&GitPageHandler, git);
     Ok((page, workdir))
 }
 
@@ -187,7 +183,7 @@ impl PaneRouter<GitState> for GitPaneRouter {
 
 pub struct GitPageHandler;
 
-impl PageHandler for GitPageHandler {
+impl PageHandler<GitState> for GitPageHandler {
     fn label(&self) -> &'static str {
         "Git"
     }
@@ -236,19 +232,16 @@ impl PageHandler for GitPageHandler {
         ]
     }
 
-    fn intercepts_all_keys(&self, _ctx: &AppContext, state: &dyn Any) -> bool {
-        let git = state.downcast_ref::<GitState>().unwrap();
+    fn intercepts_all_keys(&self, _ctx: &AppContext, git: &GitState) -> bool {
         git.branch_action_menu.is_some() || git.search.active
     }
 
     fn handle_key(
         &self,
         ctx: &mut AppContext,
-        state: &mut dyn Any,
+        git: &mut GitState,
         key: KeyEvent,
     ) -> Result<PageAction> {
-        let git = state.downcast_mut::<GitState>().unwrap();
-
         // Branch action menu intercepts all keys when open
         if git.branch_action_menu.is_some() {
             branch_action::handle_branch_action_menu_key(ctx, git, key);
@@ -267,8 +260,7 @@ impl PageHandler for GitPageHandler {
         handle_git_view_key(ctx, git, key)
     }
 
-    fn render(&self, f: &mut Frame, ctx: &AppContext, state: &mut dyn Any, area: Rect) {
-        let git = state.downcast_mut::<GitState>().unwrap();
+    fn render(&self, f: &mut Frame, ctx: &AppContext, git: &mut GitState, area: Rect) {
         let ly = layout::compute_layout(area);
         status_bar::render_header(f, ctx, git, ly.header);
         FileTreePane.render(f, ctx, git, ly.file_tree);
@@ -288,8 +280,7 @@ impl PageHandler for GitPageHandler {
         }
     }
 
-    fn on_fs_change(&self, ctx: &mut AppContext, state: &mut dyn Any) -> Result<()> {
-        let git = state.downcast_mut::<GitState>().unwrap();
+    fn on_fs_change(&self, ctx: &mut AppContext, git: &mut GitState) -> Result<()> {
         git.load_branches();
         git.load_reflog();
         refresh_diff(ctx, git);
@@ -299,10 +290,9 @@ impl PageHandler for GitPageHandler {
     fn on_suspend_return(
         &self,
         ctx: &mut AppContext,
-        state: &mut dyn Any,
+        git: &mut GitState,
         status: std::io::Result<std::process::ExitStatus>,
     ) -> Result<()> {
-        let git = state.downcast_mut::<GitState>().unwrap();
         match status {
             Ok(s) if s.success() => {
                 refresh_diff(ctx, git);
