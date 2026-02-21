@@ -1,13 +1,10 @@
 pub use crate::git::state::*;
 pub use crate::core::search::{SearchMatch, SearchOrigin, SearchState};
 use crate::core::view::{View, ViewAction};
-use crate::git::container::GitView;
-use crate::github::container::GhView;
-use crate::github::state::GitHubState;
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::any::Any;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ViewMode {
@@ -35,9 +32,9 @@ pub trait ViewState {
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
-struct ViewEntry {
-    view: &'static dyn View,
-    state: Box<dyn ViewState>,
+pub struct ViewEntry {
+    pub view: &'static dyn View,
+    pub state: Box<dyn ViewState>,
 }
 
 pub struct App {
@@ -46,29 +43,8 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(cwd: &Path) -> Result<Self> {
-        let git = GitState::new(cwd)?;
-        let workdir = git.repo.workdir().to_path_buf();
-        let github = GitHubState::new();
-
-        Ok(Self {
-            ctx: AppContext {
-                should_quit: false,
-                view_mode: ViewMode::Git,
-                show_help: false,
-                status_message: None,
-                error_dialog: None,
-                workdir,
-            },
-            entries: vec![
-                ViewEntry { view: &GitView, state: Box::new(git) },
-                ViewEntry { view: &GhView, state: Box::new(github) },
-            ],
-        })
-    }
-
-    pub fn workdir(&self) -> &Path {
-        &self.ctx.workdir
+    pub fn new(ctx: AppContext, entries: Vec<ViewEntry>) -> Self {
+        Self { ctx, entries }
     }
 
     pub fn drain_all_background(&mut self) {
