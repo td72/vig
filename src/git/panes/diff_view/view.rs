@@ -103,7 +103,7 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
                 Style::default().fg(Color::DarkGray),
             )));
             f.render_widget(msg, inner);
-            state.diff_total_lines = 0;
+            state.scroll.total_lines = 0;
             return;
         }
     };
@@ -114,7 +114,7 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
             Style::default().fg(Color::DarkGray),
         )));
         f.render_widget(msg, inner);
-        state.diff_total_lines = 0;
+        state.scroll.total_lines = 0;
         return;
     }
 
@@ -130,8 +130,8 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
     };
 
     // Ensure syntax highlighting covers the visible range (incremental)
-    let visible_end = (state.diff_scroll_y as usize) + (content_area.height as usize) + 1;
-    state.ensure_file_highlight(&file, visible_end);
+    let visible_end = (state.scroll.y as usize) + (content_area.height as usize) + 1;
+    state.highlight.ensure_file_highlight(&file, visible_end);
 
     // Split content area: left half | separator | right half
     let left_width = (content_area.width.saturating_sub(1)) / 2;
@@ -154,7 +154,7 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
     // Access cached highlight colors by reference (no clone)
     let (left_lines, right_lines) = {
         let empty: Vec<Vec<Color>> = Vec::new();
-        let (lc, rc) = match &state.highlight_cache {
+        let (lc, rc) = match &state.highlight.cache {
             Some(c) => (&c.left_colors, &c.right_colors),
             None => (&empty, &empty),
         };
@@ -162,7 +162,7 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
             &file,
             left_width as usize,
             right_width as usize,
-            state.diff_scroll_x,
+            state.scroll.x,
             &selection,
             lc,
             rc,
@@ -171,10 +171,10 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
     };
 
     let total_lines = left_lines.len() as u16;
-    state.diff_total_lines = total_lines;
-    state.diff_view_height = content_area.height;
+    state.scroll.total_lines = total_lines;
+    state.scroll.view_height = content_area.height;
 
-    let left_para = Paragraph::new(left_lines).scroll((state.diff_scroll_y, 0));
+    let left_para = Paragraph::new(left_lines).scroll((state.scroll.y, 0));
     f.render_widget(left_para, panes[0]);
 
     // Separator
@@ -184,7 +184,7 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
     let sep = Paragraph::new(sep_lines).scroll((0, 0));
     f.render_widget(sep, panes[1]);
 
-    let right_para = Paragraph::new(right_lines).scroll((state.diff_scroll_y, 0));
+    let right_para = Paragraph::new(right_lines).scroll((state.scroll.y, 0));
     f.render_widget(right_para, panes[2]);
 
     // Status line
@@ -201,7 +201,7 @@ fn render_diff_statusline(
     let width = area.width as usize;
 
     // Mode badge
-    let (mode_label, mode_style) = match state.diff_view_mode {
+    let (mode_label, mode_style) = match state.vim.mode {
         DiffViewMode::Scroll => (
             "SCROLL",
             Style::default().fg(Color::Black).bg(Color::DarkGray),
@@ -225,34 +225,34 @@ fn render_diff_statusline(
         .unwrap_or("");
 
     // Side indicator
-    let side = match state.diff_view_mode {
+    let side = match state.vim.mode {
         DiffViewMode::Scroll => "",
-        _ => match state.cursor_pos.side {
+        _ => match state.vim.cursor.side {
             DiffSide::Left => "LEFT",
             DiffSide::Right => "RIGHT",
         },
     };
 
     // Cursor position / scroll percentage
-    let position_info = match state.diff_view_mode {
+    let position_info = match state.vim.mode {
         DiffViewMode::Scroll => {
             if total_lines == 0 {
                 "Empty".to_string()
-            } else if total_lines <= state.diff_view_height {
+            } else if total_lines <= state.scroll.view_height {
                 "All".to_string()
-            } else if state.diff_scroll_y == 0 {
+            } else if state.scroll.y == 0 {
                 "Top".to_string()
-            } else if state.diff_scroll_y >= total_lines.saturating_sub(state.diff_view_height) {
+            } else if state.scroll.y >= total_lines.saturating_sub(state.scroll.view_height) {
                 "Bot".to_string()
             } else {
                 format!(
                     "{}%",
-                    state.diff_scroll_y as u32 * 100 / total_lines.saturating_sub(1) as u32
+                    state.scroll.y as u32 * 100 / total_lines.saturating_sub(1) as u32
                 )
             }
         }
         _ => {
-            format!("{}:{}", state.cursor_pos.row + 1, state.cursor_pos.col + 1)
+            format!("{}:{}", state.vim.cursor.row + 1, state.vim.cursor.col + 1)
         }
     };
 
@@ -276,10 +276,10 @@ fn render_diff_statusline(
 
     // Showcmd (pending key sequence)
     let mut showcmd = String::new();
-    if let Some(c) = state.count {
+    if let Some(c) = state.vim.count {
         showcmd.push_str(&c.to_string());
     }
-    if let Some(k) = state.pending_key {
+    if let Some(k) = state.vim.pending_key {
         if k == 'w' {
             showcmd.push_str("Ctrl+w");
         } else {
@@ -320,46 +320,46 @@ fn render_diff_statusline(
 }
 
 fn build_selection_info(state: &GitState) -> Option<SelectionInfo> {
-    match state.diff_view_mode {
+    match state.vim.mode {
         DiffViewMode::Normal => Some(SelectionInfo {
-            start: state.cursor_pos,
-            end: state.cursor_pos,
+            start: state.vim.cursor,
+            end: state.vim.cursor,
             mode: DiffViewMode::Normal,
-            cursor: state.cursor_pos,
+            cursor: state.vim.cursor,
         }),
         DiffViewMode::Visual => {
-            let anchor = state.visual_anchor?;
-            let (start, end) = if anchor.row < state.cursor_pos.row
-                || (anchor.row == state.cursor_pos.row && anchor.col <= state.cursor_pos.col)
+            let anchor = state.vim.visual_anchor?;
+            let (start, end) = if anchor.row < state.vim.cursor.row
+                || (anchor.row == state.vim.cursor.row && anchor.col <= state.vim.cursor.col)
             {
-                (anchor, state.cursor_pos)
+                (anchor, state.vim.cursor)
             } else {
-                (state.cursor_pos, anchor)
+                (state.vim.cursor, anchor)
             };
             Some(SelectionInfo {
                 start,
                 end,
                 mode: DiffViewMode::Visual,
-                cursor: state.cursor_pos,
+                cursor: state.vim.cursor,
             })
         }
         DiffViewMode::VisualLine => {
-            let anchor = state.visual_anchor?;
-            let start_row = anchor.row.min(state.cursor_pos.row);
-            let end_row = anchor.row.max(state.cursor_pos.row);
+            let anchor = state.vim.visual_anchor?;
+            let start_row = anchor.row.min(state.vim.cursor.row);
+            let end_row = anchor.row.max(state.vim.cursor.row);
             Some(SelectionInfo {
                 start: CursorPos {
                     row: start_row,
                     col: 0,
-                    side: state.cursor_pos.side,
+                    side: state.vim.cursor.side,
                 },
                 end: CursorPos {
                     row: end_row,
                     col: usize::MAX,
-                    side: state.cursor_pos.side,
+                    side: state.vim.cursor.side,
                 },
                 mode: DiffViewMode::VisualLine,
-                cursor: state.cursor_pos,
+                cursor: state.vim.cursor,
             })
         }
         DiffViewMode::Scroll => None,

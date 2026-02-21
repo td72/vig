@@ -25,16 +25,16 @@ impl SelectPane<GitState> for FileTreePane {
             KeyCode::Char('j') | KeyCode::Down => {
                 if state.selected_tree_idx + 1 < entries.len() {
                     state.selected_tree_idx += 1;
-                    state.diff_scroll_y = 0;
-                    state.diff_scroll_x = 0;
+                    state.scroll.y = 0;
+                    state.scroll.x = 0;
                     search::re_search_on_file_change(state);
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if state.selected_tree_idx > 0 {
                     state.selected_tree_idx -= 1;
-                    state.diff_scroll_y = 0;
-                    state.diff_scroll_x = 0;
+                    state.scroll.y = 0;
+                    state.scroll.x = 0;
                     search::re_search_on_file_change(state);
                 }
             }
@@ -59,8 +59,8 @@ impl SelectPane<GitState> for FileTreePane {
                 }
                 Some(TreeEntry::File { .. }) => {
                     state.set_focus(FocusedPane::DiffView);
-                    state.diff_scroll_y = 0;
-                    state.diff_scroll_x = 0;
+                    state.scroll.y = 0;
+                    state.scroll.x = 0;
                 }
                 None => {}
             },

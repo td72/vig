@@ -165,15 +165,15 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
             let row = *row;
             let col_start = *col_start;
             let side = *side;
-            if git.diff_view_mode == DiffViewMode::Scroll {
+            if git.vim.mode == DiffViewMode::Scroll {
                 // In scroll mode, just scroll to the row
-                git.diff_scroll_y = row.saturating_sub((git.diff_view_height / 3) as usize) as u16;
+                git.scroll.y = row.saturating_sub((git.scroll.view_height / 3) as usize) as u16;
             } else {
                 // In Normal/Visual mode, move cursor
-                git.cursor_pos.row = row;
-                git.cursor_pos.col = col_start;
-                git.cursor_pos.side = side;
-                git.content_lines_cache = None; // side may have changed
+                git.vim.cursor.row = row;
+                git.vim.cursor.col = col_start;
+                git.vim.cursor.side = side;
+                git.highlight.content_lines_cache = None; // side may have changed
                 scroll_to_cursor(git);
             }
         }
@@ -197,15 +197,15 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
 }
 
 pub(crate) fn scroll_to_cursor(git: &mut GitState) {
-    let row = git.cursor_pos.row as u16;
-    let height = git.diff_view_height;
+    let row = git.vim.cursor.row as u16;
+    let height = git.scroll.view_height;
     if height == 0 {
         return;
     }
-    if row < git.diff_scroll_y {
-        git.diff_scroll_y = row;
-    } else if row >= git.diff_scroll_y + height {
-        git.diff_scroll_y = row - height + 1;
+    if row < git.scroll.y {
+        git.scroll.y = row;
+    } else if row >= git.scroll.y + height {
+        git.scroll.y = row - height + 1;
     }
 }
 
@@ -213,7 +213,7 @@ pub(crate) fn scroll_to_cursor(git: &mut GitState) {
 pub(crate) fn re_search_on_file_change(git: &mut GitState) {
     if git.search.origin == SearchOrigin::DiffView && git.search.query.is_some() {
         git.search.reset_matches();
-        git.content_lines_cache = None;
+        git.highlight.content_lines_cache = None;
         let query = git.search.query.clone().unwrap();
         search_git_diff_view(git, &query);
     }

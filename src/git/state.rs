@@ -103,57 +103,27 @@ pub struct CursorPos {
     pub side: DiffSide,
 }
 
-pub use crate::git::domain::tree::TreeEntry;
+#[derive(Default)]
+pub struct DiffScroll {
+    pub y: u16,
+    pub x: u16,
+    pub total_lines: u16,
+    pub view_height: u16,
+}
 
-pub struct GitState {
-    pub repo: Repo,
-    pub diff_state: DiffState,
-    pub collapsed_dirs: HashSet<String>,
-    pub selected_tree_idx: usize,
-    pub focused_pane: FocusedPane,
-    pub previous_pane: FocusedPane,
-    pub diff_scroll_y: u16,
-    pub diff_scroll_x: u16,
-    pub diff_total_lines: u16,
-    pub diff_view_height: u16,
-    pub diff_view_mode: DiffViewMode,
-    pub cursor_pos: CursorPos,
+pub struct VimState {
+    pub mode: DiffViewMode,
+    pub cursor: CursorPos,
     pub visual_anchor: Option<CursorPos>,
     pub pending_key: Option<char>,
     pub count: Option<usize>,
-    pub highlighter: SyntaxHighlighter,
-    pub highlight_cache: Option<HighlightCache>,
-    /// Cached content_lines result: (file_path, side, lines). Invalidated on file/side switch.
-    pub(crate) content_lines_cache: Option<(String, DiffSide, Vec<String>)>,
-    /// Pre-computed highlight results from background thread, keyed by file path.
-    pub(crate) bg_highlights: HashMap<String, HighlightPair>,
-    /// Receiver for background highlight results.
-    pub(crate) bg_highlight_rx: Option<mpsc::Receiver<(String, HighlightPair)>>,
-    pub diff_base_ref: Option<String>,
-    pub branch_list: BranchListState,
-    pub git_log: GitLogState,
-    pub reflog: ReflogState,
-    pub branch_action_menu: Option<BranchActionMenuState>,
-    pub search: SearchState,
 }
 
-impl GitState {
-    pub fn new(cwd: &Path) -> Result<Self> {
-        let repo = Repo::discover(cwd)?;
-        let diff_state = repo.diff_workdir(None)?;
-        let mut state = Self {
-            repo,
-            diff_state,
-            collapsed_dirs: HashSet::new(),
-            selected_tree_idx: 0,
-            focused_pane: FocusedPane::FileTree,
-            previous_pane: FocusedPane::FileTree,
-            diff_scroll_y: 0,
-            diff_scroll_x: 0,
-            diff_total_lines: 0,
-            diff_view_height: 0,
-            diff_view_mode: DiffViewMode::Scroll,
-            cursor_pos: CursorPos {
+impl Default for VimState {
+    fn default() -> Self {
+        Self {
+            mode: DiffViewMode::Scroll,
+            cursor: CursorPos {
                 row: 0,
                 col: 0,
                 side: DiffSide::Left,
@@ -161,92 +131,41 @@ impl GitState {
             visual_anchor: None,
             pending_key: None,
             count: None,
+        }
+    }
+}
+
+pub struct HighlightState {
+    pub highlighter: SyntaxHighlighter,
+    pub cache: Option<HighlightCache>,
+    pub(crate) content_lines_cache: Option<(String, DiffSide, Vec<String>)>,
+    pub(crate) bg_highlights: HashMap<String, HighlightPair>,
+    pub(crate) bg_highlight_rx: Option<mpsc::Receiver<(String, HighlightPair)>>,
+}
+
+impl HighlightState {
+    pub fn new() -> Self {
+        Self {
             highlighter: SyntaxHighlighter::new(),
-            highlight_cache: None,
+            cache: None,
             content_lines_cache: None,
             bg_highlights: HashMap::new(),
             bg_highlight_rx: None,
-            diff_base_ref: None,
-            branch_list: BranchListState {
-                branches: Vec::new(),
-                selected_idx: 0,
-            },
-            git_log: GitLogState {
-                commits: Vec::new(),
-                selected_idx: 0,
-                view_height: 0,
-                ref_name: String::new(),
-                graph: Vec::new(),
-                detail: SubPaneScroll::default(),
-                detail_view_height: 0,
-                detail_changed_files: Vec::new(),
-            },
-            reflog: ReflogState {
-                entries: Vec::new(),
-                selected_idx: 0,
-                view_height: 0,
-            },
-            branch_action_menu: None,
-            search: SearchState::new(),
-        };
-        state.load_branches();
-        state.load_reflog();
-        state.spawn_bg_highlight();
-        Ok(state)
+        }
     }
 
-    /// Refresh the diff state from the working directory.
-    /// Returns `Ok(Some(message))` if a fallback occurred, `Ok(None)` on clean refresh.
-    pub fn refresh_diff(&mut self) -> Result<Option<String>> {
-        let old_path = self.selected_file().map(|f| f.path.clone());
-        let fallback_msg = match self.repo.diff_workdir(self.diff_base_ref.as_deref()) {
-            Ok(state) => {
-                self.diff_state = state;
-                None
-            }
-            Err(e) => {
-                self.diff_base_ref = None;
-                self.diff_state = self.repo.diff_workdir(None)?;
-                Some(format!("Invalid ref, fell back to HEAD: {e}"))
-            }
-        };
-        // Preserve selection by path
-        if let Some(path) = old_path {
-            let entries = self.tree_entries();
-            self.selected_tree_idx = entries
-                .iter()
-                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.diff_state.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
-                .unwrap_or(0);
-        }
-        let entries = self.tree_entries();
-        if self.selected_tree_idx >= entries.len() && !entries.is_empty() {
-            self.selected_tree_idx = entries.len() - 1;
-        }
-        self.diff_scroll_y = 0;
-        self.diff_scroll_x = 0;
-        self.highlight_cache = None;
+    pub fn reset(&mut self) {
+        self.cache = None;
         self.content_lines_cache = None;
         self.bg_highlights.clear();
         self.bg_highlight_rx = None;
-        self.search.reset_matches();
-        self.spawn_bg_highlight();
-        Ok(fallback_msg)
-    }
-
-    pub fn selected_file(&self) -> Option<&FileDiff> {
-        let entries = self.tree_entries();
-        if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.selected_tree_idx) {
-            self.diff_state.files.get(*file_idx)
-        } else {
-            None
-        }
     }
 
     /// Ensure syntax highlighting is available up to `up_to` rows for the given file.
     /// Uses pre-computed background results if available, otherwise falls back to on-demand.
     pub fn ensure_file_highlight(&mut self, file: &FileDiff, up_to: usize) {
         let needs_init = self
-            .highlight_cache
+            .cache
             .as_ref()
             .map(|c| c.file_path != file.path)
             .unwrap_or(true);
@@ -254,8 +173,7 @@ impl GitState {
         if needs_init {
             // Check for pre-computed background highlight results first
             if let Some((lc, rc)) = self.bg_highlights.remove(&file.path) {
-                self.highlight_cache =
-                    Some(HighlightCache::from_precomputed(file.path.clone(), lc, rc));
+                self.cache = Some(HighlightCache::from_precomputed(file.path.clone(), lc, rc));
                 return;
             }
 
@@ -282,20 +200,20 @@ impl GitState {
                     );
                 }
             }
-            self.highlight_cache =
+            self.cache =
                 self.highlighter
                     .create_cache(&file.path, left_lines, right_lines, hunk_starts);
         }
 
-        if let Some(ref mut cache) = self.highlight_cache {
+        if let Some(ref mut cache) = self.cache {
             self.highlighter.extend_cache(cache, up_to);
         }
     }
 
     /// Spawn a background thread to pre-highlight all files.
-    pub(crate) fn spawn_bg_highlight(&mut self) {
+    pub(crate) fn spawn_bg_highlight(&mut self, files: &[FileDiff]) {
         let mut file_data: Vec<_> = Vec::new();
-        for file in &self.diff_state.files {
+        for file in files {
             if file.is_binary {
                 continue;
             }
@@ -351,6 +269,114 @@ impl GitState {
             while let Ok((path, pair)) = rx.try_recv() {
                 self.bg_highlights.insert(path, pair);
             }
+        }
+    }
+}
+
+pub use crate::git::domain::tree::TreeEntry;
+
+pub struct GitState {
+    pub repo: Repo,
+    pub diff_state: DiffState,
+    pub collapsed_dirs: HashSet<String>,
+    pub selected_tree_idx: usize,
+    pub focused_pane: FocusedPane,
+    pub previous_pane: FocusedPane,
+    pub scroll: DiffScroll,
+    pub vim: VimState,
+    pub highlight: HighlightState,
+    pub diff_base_ref: Option<String>,
+    pub branch_list: BranchListState,
+    pub git_log: GitLogState,
+    pub reflog: ReflogState,
+    pub branch_action_menu: Option<BranchActionMenuState>,
+    pub search: SearchState,
+}
+
+impl GitState {
+    pub fn new(cwd: &Path) -> Result<Self> {
+        let repo = Repo::discover(cwd)?;
+        let diff_state = repo.diff_workdir(None)?;
+        let mut state = Self {
+            repo,
+            diff_state,
+            collapsed_dirs: HashSet::new(),
+            selected_tree_idx: 0,
+            focused_pane: FocusedPane::FileTree,
+            previous_pane: FocusedPane::FileTree,
+            scroll: DiffScroll::default(),
+            vim: VimState::default(),
+            highlight: HighlightState::new(),
+            diff_base_ref: None,
+            branch_list: BranchListState {
+                branches: Vec::new(),
+                selected_idx: 0,
+            },
+            git_log: GitLogState {
+                commits: Vec::new(),
+                selected_idx: 0,
+                view_height: 0,
+                ref_name: String::new(),
+                graph: Vec::new(),
+                detail: SubPaneScroll::default(),
+                detail_view_height: 0,
+                detail_changed_files: Vec::new(),
+            },
+            reflog: ReflogState {
+                entries: Vec::new(),
+                selected_idx: 0,
+                view_height: 0,
+            },
+            branch_action_menu: None,
+            search: SearchState::new(),
+        };
+        state.load_branches();
+        state.load_reflog();
+        state.highlight.spawn_bg_highlight(&state.diff_state.files);
+        Ok(state)
+    }
+
+    /// Refresh the diff state from the working directory.
+    /// Returns `Ok(Some(message))` if a fallback occurred, `Ok(None)` on clean refresh.
+    pub fn refresh_diff(&mut self) -> Result<Option<String>> {
+        let old_path = self.selected_file().map(|f| f.path.clone());
+        let fallback_msg = match self.repo.diff_workdir(self.diff_base_ref.as_deref()) {
+            Ok(state) => {
+                self.diff_state = state;
+                None
+            }
+            Err(e) => {
+                self.diff_base_ref = None;
+                self.diff_state = self.repo.diff_workdir(None)?;
+                Some(format!("Invalid ref, fell back to HEAD: {e}"))
+            }
+        };
+        // Preserve selection by path
+        if let Some(path) = old_path {
+            let entries = self.tree_entries();
+            self.selected_tree_idx = entries
+                .iter()
+                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.diff_state.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
+                .unwrap_or(0);
+        }
+        let entries = self.tree_entries();
+        if self.selected_tree_idx >= entries.len() && !entries.is_empty() {
+            self.selected_tree_idx = entries.len() - 1;
+        }
+        self.scroll.y = 0;
+        self.scroll.x = 0;
+        self.highlight.reset();
+        self.search.reset_matches();
+        self.highlight.spawn_bg_highlight(&self.diff_state.files);
+        Ok(fallback_msg)
+    }
+
+    pub fn selected_file(&self) -> Option<&FileDiff> {
+        let entries = self.tree_entries();
+        if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.selected_tree_idx) {
+            self.diff_state.files.get(*file_idx)
+        } else {
+            None
         }
     }
 
@@ -438,7 +464,7 @@ impl DetailState for GitLogState {
 
 impl crate::core::app::PageState for GitState {
     fn drain_background(&mut self) {
-        self.drain_bg_highlights();
+        self.highlight.drain_bg_highlights();
     }
     fn search(&self) -> &crate::core::app::SearchState {
         &self.search
