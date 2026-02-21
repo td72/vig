@@ -1,9 +1,9 @@
 pub mod app;
-pub mod container;
 pub mod event;
+pub mod page;
 pub mod pane;
+pub mod pane_router;
 pub mod search;
 pub mod syntax;
 pub mod tui;
 pub mod ui;
-pub mod view;

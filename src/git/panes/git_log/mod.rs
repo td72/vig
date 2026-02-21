@@ -1,10 +1,10 @@
 mod view;
 
 use crate::core::app::{AppContext, SearchOrigin};
+use crate::core::pane::SelectPane;
 use crate::git::panes::diff_view::keys::copy_to_clipboard;
 use crate::git::search;
 use crate::git::state::{FocusedPane, GitState};
-use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 
@@ -72,12 +72,10 @@ impl SelectPane<GitState> for GitLogSelectPane {
                         let url = format!("https://github.com/{nwo}/commit/{hash}");
                         match crate::github::client::open_url(&url) {
                             Ok(()) => {
-                                ctx.status_message =
-                                    Some("Opening in browser...".to_string());
+                                ctx.status_message = Some("Opening in browser...".to_string());
                             }
                             Err(e) => {
-                                ctx.status_message =
-                                    Some(format!("Failed to open URL: {e}"));
+                                ctx.status_message = Some(format!("Failed to open URL: {e}"));
                             }
                         }
                     } else {

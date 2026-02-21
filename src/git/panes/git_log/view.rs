@@ -1,7 +1,6 @@
 use crate::core::app::{SearchMatch, SearchOrigin};
-use crate::git::state::{FocusedPane, GitState};
 use crate::git::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
-use std::collections::HashSet;
+use crate::git::state::{FocusedPane, GitState};
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -9,6 +8,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
     Frame,
 };
+use std::collections::HashSet;
 
 const GRAPH_COLORS: [Color; NUM_GRAPH_COLORS] = [
     Color::Red,
@@ -28,15 +28,15 @@ fn graph_spans(
     for i in 0..max_width {
         if i < row.cells.len() {
             let ch = match row.cells[i] {
-                GraphCell::Commit    => "●",
-                GraphCell::Vertical  => "│",
-                GraphCell::Horizontal=> "─",
+                GraphCell::Commit => "●",
+                GraphCell::Vertical => "│",
+                GraphCell::Horizontal => "─",
                 GraphCell::DownRight => "╮",
-                GraphCell::DownLeft  => "╭",
-                GraphCell::UpRight   => "╯",
-                GraphCell::UpLeft    => "╰",
-                GraphCell::Cross     => "┼",
-                GraphCell::Empty     => " ",
+                GraphCell::DownLeft => "╭",
+                GraphCell::UpRight => "╯",
+                GraphCell::UpLeft => "╰",
+                GraphCell::Cross => "┼",
+                GraphCell::Empty => " ",
             };
             let is_highlighted = highlight_from.is_some()
                 && row.from_indices.get(i).copied().flatten() == highlight_from;
@@ -77,11 +77,8 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
     f.render_widget(block, area);
 
     // Split inner area: left (commit list) | right (detail)
-    let cols = Layout::horizontal([
-        Constraint::Percentage(60),
-        Constraint::Percentage(40),
-    ])
-    .split(inner);
+    let cols =
+        Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).split(inner);
 
     render_list(f, state, cols[0]);
     render_detail(f, state, cols[1]);
@@ -121,12 +118,14 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
                 _ => None,
             })
             .collect();
-        let current = state.search.current_match_idx.and_then(|ci| {
-            match state.search.matches.get(ci) {
-                Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
-                _ => None,
-            }
-        });
+        let current =
+            state
+                .search
+                .current_match_idx
+                .and_then(|ci| match state.search.matches.get(ci) {
+                    Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
+                    _ => None,
+                });
         (set, current)
     } else {
         (HashSet::new(), None)
@@ -161,23 +160,33 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
 
             let hash_style = {
                 let mut s = Style::default().fg(fg_override.unwrap_or(Color::Yellow));
-                if let Some(bg) = bg { s = s.bg(bg); }
+                if let Some(bg) = bg {
+                    s = s.bg(bg);
+                }
                 s
             };
             let date_style = {
                 let mut s = Style::default().fg(fg_override.unwrap_or(Color::DarkGray));
-                if let Some(bg) = bg { s = s.bg(bg); }
+                if let Some(bg) = bg {
+                    s = s.bg(bg);
+                }
                 s
             };
             let author_style = {
                 let mut s = Style::default().fg(fg_override.unwrap_or(Color::Cyan));
-                if let Some(bg) = bg { s = s.bg(bg); }
+                if let Some(bg) = bg {
+                    s = s.bg(bg);
+                }
                 s
             };
             let msg_style = {
                 let mut s = Style::default();
-                if let Some(fg) = fg_override { s = s.fg(fg); }
-                if let Some(bg) = bg { s = s.bg(bg); }
+                if let Some(fg) = fg_override {
+                    s = s.fg(fg);
+                }
+                if let Some(bg) = bg {
+                    s = s.bg(bg);
+                }
                 s
             };
 
@@ -195,7 +204,10 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
 
             spans.push(Span::styled(format!("{} ", commit.short_hash), hash_style));
             spans.push(Span::styled(format!("{} ", commit.date), date_style));
-            spans.push(Span::styled(format!("{:<12} ", commit.author), author_style));
+            spans.push(Span::styled(
+                format!("{:<12} ", commit.author),
+                author_style,
+            ));
             spans.push(Span::styled(commit.message.clone(), msg_style));
 
             ListItem::new(Line::from(spans))
@@ -247,10 +259,7 @@ fn render_detail(f: &mut Frame, state: &mut GitState, area: Rect) {
     // Commit hash
     lines.push(Line::from(vec![
         Span::styled("Commit: ", Style::default().fg(Color::DarkGray)),
-        Span::styled(
-            commit.full_hash.clone(),
-            Style::default().fg(Color::Yellow),
-        ),
+        Span::styled(commit.full_hash.clone(), Style::default().fg(Color::Yellow)),
     ]));
 
     // Parent hashes
@@ -283,10 +292,7 @@ fn render_detail(f: &mut Frame, state: &mut GitState, area: Rect) {
     // Author
     lines.push(Line::from(vec![
         Span::styled("Author: ", Style::default().fg(Color::DarkGray)),
-        Span::styled(
-            commit.author.clone(),
-            Style::default().fg(Color::Cyan),
-        ),
+        Span::styled(commit.author.clone(), Style::default().fg(Color::Cyan)),
     ]));
 
     // Date
@@ -346,7 +352,6 @@ fn render_detail(f: &mut Frame, state: &mut GitState, area: Rect) {
         state.git_log.detail_scroll = max_scroll;
     }
 
-    let para = Paragraph::new(lines)
-        .scroll((state.git_log.detail_scroll, 0));
+    let para = Paragraph::new(lines).scroll((state.git_log.detail_scroll, 0));
     f.render_widget(para, inner);
 }

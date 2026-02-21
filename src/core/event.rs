@@ -27,8 +27,7 @@ impl EventHandler {
         let event_tx = tx.clone();
         let paused = Arc::new(AtomicBool::new(false));
         let paused_flag = Arc::clone(&paused);
-        let pause_ack: Arc<(Mutex<bool>, Condvar)> =
-            Arc::new((Mutex::new(false), Condvar::new()));
+        let pause_ack: Arc<(Mutex<bool>, Condvar)> = Arc::new((Mutex::new(false), Condvar::new()));
         let ack_clone = Arc::clone(&pause_ack);
         thread::spawn(move || loop {
             if paused_flag.load(Ordering::SeqCst) {

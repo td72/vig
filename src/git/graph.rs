@@ -4,15 +4,15 @@ pub const NUM_GRAPH_COLORS: usize = 6;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GraphCell {
-    Commit,    // ●
-    Vertical,  // │
-    Horizontal,// ─
-    DownRight, // ╮  line from left, turns down
-    DownLeft,  // ╭  line from right, turns down
-    UpRight,   // ╯  line from above, turns left
-    UpLeft,    // ╰  line from above, turns right
-    Cross,     // ┼  vertical + horizontal crossing
-    Empty,     //
+    Commit,     // ●
+    Vertical,   // │
+    Horizontal, // ─
+    DownRight,  // ╮  line from left, turns down
+    DownLeft,   // ╭  line from right, turns down
+    UpRight,    // ╯  line from above, turns left
+    UpLeft,     // ╰  line from above, turns right
+    Cross,      // ┼  vertical + horizontal crossing
+    Empty,      //
 }
 
 #[derive(Debug, Clone)]

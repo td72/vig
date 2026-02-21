@@ -1,10 +1,9 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
-use crate::git::branch_action;
-use crate::git::container::refresh_diff;
-use crate::git::state::{FocusedPane, GitState};
 use crate::core::pane::SelectPane;
+use crate::git::branch_action;
+use crate::git::page::refresh_diff;
+use crate::git::state::{FocusedPane, GitState};
 use crossterm::event::{KeyCode, KeyEvent};
-use std::collections::HashSet;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -12,6 +11,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
     Frame,
 };
+use std::collections::HashSet;
 
 pub struct BranchListPane;
 
@@ -68,26 +68,27 @@ impl SelectPane<GitState> for BranchListPane {
         }
 
         // Build set of matched branch entry indices
-        let (match_set, current_match_idx) = if state.search.origin == SearchOrigin::BranchList {
-            let set: HashSet<usize> = state
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::BranchEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = state.search.current_match_idx.and_then(|ci| {
-                match state.search.matches.get(ci) {
-                    Some(SearchMatch::BranchEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+        let (match_set, current_match_idx) =
+            if state.search.origin == SearchOrigin::BranchList {
+                let set: HashSet<usize> = state
+                    .search
+                    .matches
+                    .iter()
+                    .filter_map(|m| match m {
+                        SearchMatch::BranchEntry(idx) => Some(*idx),
+                        _ => None,
+                    })
+                    .collect();
+                let current = state.search.current_match_idx.and_then(|ci| {
+                    match state.search.matches.get(ci) {
+                        Some(SearchMatch::BranchEntry(idx)) => Some(*idx),
+                        _ => None,
+                    }
+                });
+                (set, current)
+            } else {
+                (HashSet::new(), None)
+            };
 
         let items: Vec<ListItem> = state
             .branch_list
@@ -101,7 +102,9 @@ impl SelectPane<GitState> for BranchListPane {
                 let mut spans = vec![Span::raw(" ")];
 
                 let name_style = if is_current {
-                    Style::default().fg(Color::Black).bg(Color::Rgb(200, 120, 0))
+                    Style::default()
+                        .fg(Color::Black)
+                        .bg(Color::Rgb(200, 120, 0))
                 } else if is_match {
                     Style::default().bg(Color::Rgb(60, 60, 0))
                 } else if branch.is_head {
@@ -150,7 +153,9 @@ impl SelectPane<GitState> for BranchListPane {
                 .add_modifier(Modifier::BOLD)
         };
 
-        let list = List::new(items).block(block).highlight_style(highlight_style);
+        let list = List::new(items)
+            .block(block)
+            .highlight_style(highlight_style);
 
         let mut list_state = ListState::default();
         list_state.select(Some(selected));

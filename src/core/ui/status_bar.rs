@@ -9,7 +9,7 @@ use ratatui::{
     Frame,
 };
 
-fn view_tab_spans(ctx: &AppContext) -> Vec<Span<'static>> {
+fn page_tab_spans(ctx: &AppContext) -> Vec<Span<'static>> {
     let active_style = Style::default()
         .fg(Color::Black)
         .bg(Color::White)
@@ -17,11 +17,15 @@ fn view_tab_spans(ctx: &AppContext) -> Vec<Span<'static>> {
     let inactive_style = Style::default().fg(Color::DarkGray);
 
     let mut spans = vec![Span::raw("  ")];
-    for (i, label) in ctx.view_labels.iter().enumerate() {
+    for (i, label) in ctx.page_labels.iter().enumerate() {
         if i > 0 {
             spans.push(Span::raw(" "));
         }
-        let style = if i == ctx.active_view { active_style } else { inactive_style };
+        let style = if i == ctx.active_page {
+            active_style
+        } else {
+            inactive_style
+        };
         spans.push(Span::styled(format!(" {}:{} ", i + 1, label), style));
     }
     spans
@@ -55,13 +59,10 @@ pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect
         ));
     }
 
-    spans.extend(view_tab_spans(ctx));
+    spans.extend(page_tab_spans(ctx));
 
     spans.push(Span::raw("  "));
-    spans.push(Span::styled(
-        "? help",
-        Style::default().fg(Color::DarkGray),
-    ));
+    spans.push(Span::styled("? help", Style::default().fg(Color::DarkGray)));
 
     let title = Line::from(spans);
     f.render_widget(Paragraph::new(title), area);
@@ -79,19 +80,14 @@ pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
         Span::raw(" "),
         Span::styled(
             " GitHub ",
-            Style::default()
-                .fg(Color::Black)
-                .bg(Color::Rgb(36, 41, 47)),
+            Style::default().fg(Color::Black).bg(Color::Rgb(36, 41, 47)),
         ),
     ];
 
-    spans.extend(view_tab_spans(ctx));
+    spans.extend(page_tab_spans(ctx));
 
     spans.push(Span::raw("  "));
-    spans.push(Span::styled(
-        "? help",
-        Style::default().fg(Color::DarkGray),
-    ));
+    spans.push(Span::styled("? help", Style::default().fg(Color::DarkGray)));
 
     let title = Line::from(spans);
     f.render_widget(Paragraph::new(title), area);
@@ -125,7 +121,10 @@ pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: 
     } else {
         Line::from(vec![
             Span::styled(
-                format!(" {file_count} file{}", if file_count == 1 { "" } else { "s" }),
+                format!(
+                    " {file_count} file{}",
+                    if file_count == 1 { "" } else { "s" }
+                ),
                 Style::default().fg(Color::White),
             ),
             Span::raw("  "),
@@ -225,7 +224,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect, keybindings: &[(&str, &str
     f.render_widget(Clear, help_area);
 
     let lines: Vec<Line> = keybindings
-        .into_iter()
+        .iter()
         .map(|(key, desc)| {
             Line::from(vec![
                 Span::styled(

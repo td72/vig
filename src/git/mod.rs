@@ -1,8 +1,8 @@
 pub(crate) mod branch_action;
-pub(crate) mod container;
 pub mod diff;
 pub mod graph;
 pub mod layout;
+pub(crate) mod page;
 pub mod panes;
 pub mod repository;
 pub(crate) mod search;

@@ -1,8 +1,8 @@
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
-use crate::github::state::{GhDetailContent, GhDetailPane, GitHubState};
 use crate::core::pane::DetailPane;
+use crate::github::state::{GhDetailContent, GhDetailPane, GitHubState};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 
@@ -53,12 +53,10 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
                     let n = issue.number;
                     match crate::github::client::open_issue_in_browser(n) {
                         Ok(()) => {
-                            ctx.status_message =
-                                Some(format!("Opening issue #{n} in browser..."));
+                            ctx.status_message = Some(format!("Opening issue #{n} in browser..."));
                         }
                         Err(e) => {
-                            ctx.status_message =
-                                Some(format!("Failed to open browser: {e}"));
+                            ctx.status_message = Some(format!("Failed to open browser: {e}"));
                         }
                     }
                     return;
@@ -67,12 +65,10 @@ pub(crate) fn open_gh_detail_item(ctx: &mut AppContext, gh: &mut GitHubState) {
                     let n = pr.number;
                     match crate::github::client::open_pr_in_browser(n) {
                         Ok(()) => {
-                            ctx.status_message =
-                                Some(format!("Opening PR #{n} in browser..."));
+                            ctx.status_message = Some(format!("Opening PR #{n} in browser..."));
                         }
                         Err(e) => {
-                            ctx.status_message =
-                                Some(format!("Failed to open browser: {e}"));
+                            ctx.status_message = Some(format!("Failed to open browser: {e}"));
                         }
                     }
                     return;

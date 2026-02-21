@@ -1,13 +1,11 @@
-use crate::core::app::{AppContext, SearchOrigin, ViewEntry};
-use crate::core::container::PaneContainer;
+use crate::core::app::{AppContext, Page, SearchOrigin};
+use crate::core::page::{ExternalCommand, PageAction, PageHandler};
 use crate::core::pane::{DetailPane, SelectPane};
+use crate::core::pane_router::PaneRouter;
 use crate::core::ui::{branch_action_menu, status_bar};
-use crate::core::view::{ExternalCommand, View, ViewAction};
 use crate::git::branch_action;
 use crate::git::layout;
-use crate::git::panes::{
-    BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane,
-};
+use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane};
 use crate::git::search;
 use crate::git::state::{DiffViewMode, FocusedPane, GitState};
 use anyhow::Result;
@@ -16,12 +14,15 @@ use ratatui::{layout::Rect, Frame};
 use std::any::Any;
 use std::path::{Path, PathBuf};
 
-/// Create a Git view entry. Returns the entry and the resolved workdir path.
-pub fn new_entry(cwd: &Path) -> Result<(ViewEntry, PathBuf)> {
+/// Create a Git page. Returns the page and the resolved workdir path.
+pub fn new_page(cwd: &Path) -> Result<(Page, PathBuf)> {
     let git = GitState::new(cwd)?;
     let workdir = git.repo.workdir().to_path_buf();
-    let entry = ViewEntry { view: &GitView, state: Box::new(git) };
-    Ok((entry, workdir))
+    let page = Page {
+        handler: &GitPageHandler,
+        state: Box::new(git),
+    };
+    Ok((page, workdir))
 }
 
 // === Domain types ===
@@ -32,7 +33,7 @@ pub enum GitDetailId {
     CommitLog,
 }
 
-pub struct GitPaneGroup {
+pub struct GitPaneTab {
     pub select: &'static dyn SelectPane<GitState>,
     pub detail: GitDetailId,
     pub id: FocusedPane,
@@ -40,18 +41,18 @@ pub struct GitPaneGroup {
 
 // === Tab definitions ===
 
-pub static GIT_GROUPS: &[GitPaneGroup] = &[
-    GitPaneGroup {
+pub static GIT_TABS: &[GitPaneTab] = &[
+    GitPaneTab {
         select: &FileTreePane,
         detail: GitDetailId::DiffView,
         id: FocusedPane::FileTree,
     },
-    GitPaneGroup {
+    GitPaneTab {
         select: &BranchListPane,
         detail: GitDetailId::CommitLog,
         id: FocusedPane::BranchList,
     },
-    GitPaneGroup {
+    GitPaneTab {
         select: &ReflogPane,
         detail: GitDetailId::CommitLog,
         id: FocusedPane::Reflog,
@@ -61,13 +62,13 @@ pub static GIT_GROUPS: &[GitPaneGroup] = &[
 // === Tab cycling ===
 
 pub fn next_git_tab(current: FocusedPane) -> FocusedPane {
-    let idx = GIT_GROUPS.iter().position(|g| g.id == current).unwrap_or(0);
-    GIT_GROUPS[(idx + 1) % GIT_GROUPS.len()].id
+    let idx = GIT_TABS.iter().position(|g| g.id == current).unwrap_or(0);
+    GIT_TABS[(idx + 1) % GIT_TABS.len()].id
 }
 
 pub fn prev_git_tab(current: FocusedPane) -> FocusedPane {
-    let idx = GIT_GROUPS.iter().position(|g| g.id == current).unwrap_or(0);
-    GIT_GROUPS[(idx + GIT_GROUPS.len() - 1) % GIT_GROUPS.len()].id
+    let idx = GIT_TABS.iter().position(|g| g.id == current).unwrap_or(0);
+    GIT_TABS[(idx + GIT_TABS.len() - 1) % GIT_TABS.len()].id
 }
 
 // === Dispatch ===
@@ -77,7 +78,7 @@ pub fn git_detail_for(focused: FocusedPane) -> GitDetailId {
     if focused == FocusedPane::GitLog {
         return GitDetailId::CommitLog;
     }
-    GIT_GROUPS
+    GIT_TABS
         .iter()
         .find(|g| g.id == focused)
         .map(|g| g.detail)
@@ -85,22 +86,26 @@ pub fn git_detail_for(focused: FocusedPane) -> GitDetailId {
 }
 
 /// Dispatch a key event to the currently focused Git pane.
-/// Covers all 5 panes: the 3 select panes in GIT_GROUPS + GitLog (nested select) + DiffView (detail).
+/// Covers all 5 panes: the 3 select panes in GIT_TABS + GitLog (nested select) + DiffView (detail).
 pub fn dispatch_git_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) {
     match git.focused_pane {
         FocusedPane::GitLog => GitLogSelectPane.handle_key(ctx, git, key),
         FocusedPane::DiffView => DiffViewPane.handle_key(ctx, git, key),
-        _ => GitContainer.dispatch(ctx, git, key),
+        _ => GitPaneRouter.dispatch(ctx, git, key),
     }
 }
 
 // === View-level key handling ===
 
-pub fn handle_git_view_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) -> Result<ViewAction> {
+pub fn handle_git_view_key(
+    ctx: &mut AppContext,
+    git: &mut GitState,
+    key: KeyEvent,
+) -> Result<PageAction> {
     // In Normal/Visual modes, keys are handled by the mode handler exclusively
     if git.focused_pane == FocusedPane::DiffView && git.diff_view_mode != DiffViewMode::Scroll {
         dispatch_git_key(ctx, git, key);
-        return Ok(ViewAction::None);
+        return Ok(PageAction::None);
     }
 
     match key.code {
@@ -130,7 +135,7 @@ pub fn handle_git_view_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEve
                 let editor = std::env::var("EDITOR")
                     .or_else(|_| std::env::var("VISUAL"))
                     .unwrap_or_else(|_| "vi".to_string());
-                return Ok(ViewAction::Suspend(ExternalCommand {
+                return Ok(PageAction::Suspend(ExternalCommand {
                     program: editor,
                     args: vec![file_path.into()],
                 }));
@@ -144,7 +149,7 @@ pub fn handle_git_view_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEve
         }
         _ => dispatch_git_key(ctx, git, key),
     }
-    Ok(ViewAction::None)
+    Ok(PageAction::None)
 }
 
 fn search_origin_for(pane: FocusedPane) -> SearchOrigin {
@@ -158,7 +163,10 @@ fn search_origin_for(pane: FocusedPane) -> SearchOrigin {
 }
 
 pub(crate) fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
-    if let Some(msg) = git.refresh_diff().unwrap_or_else(|e| Some(format!("Diff error: {e}"))) {
+    if let Some(msg) = git
+        .refresh_diff()
+        .unwrap_or_else(|e| Some(format!("Diff error: {e}")))
+    {
         ctx.status_message = Some(msg);
     } else {
         ctx.status_message = None;
@@ -167,26 +175,32 @@ pub(crate) fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
 
 // === Container ===
 
-pub(crate) struct GitContainer;
+pub(crate) struct GitPaneRouter;
 
-impl PaneContainer<GitState> for GitContainer {
+impl PaneRouter<GitState> for GitPaneRouter {
     fn current_index(&self, state: &GitState) -> Option<usize> {
-        GIT_GROUPS.iter().position(|g| g.id == state.focused_pane)
+        GIT_TABS.iter().position(|g| g.id == state.focused_pane)
     }
     fn focus_index(&self, _ctx: &mut AppContext, state: &mut GitState, idx: usize) {
-        state.set_focus(GIT_GROUPS[idx].id);
+        state.set_focus(GIT_TABS[idx].id);
     }
     fn pane_at(&self, idx: usize) -> &'static dyn SelectPane<GitState> {
-        GIT_GROUPS[idx].select
+        GIT_TABS[idx].select
     }
     fn len(&self) -> usize {
-        GIT_GROUPS.len()
+        GIT_TABS.len()
     }
 
-    fn handle_common_key(&self, _ctx: &mut AppContext, state: &mut GitState, key: KeyEvent, idx: usize) -> bool {
+    fn handle_common_key(
+        &self,
+        _ctx: &mut AppContext,
+        state: &mut GitState,
+        key: KeyEvent,
+        idx: usize,
+    ) -> bool {
         match key.code {
             KeyCode::Char('i') => {
-                let target = match GIT_GROUPS[idx].detail {
+                let target = match GIT_TABS[idx].detail {
                     GitDetailId::DiffView => FocusedPane::DiffView,
                     GitDetailId::CommitLog => FocusedPane::GitLog,
                 };
@@ -204,10 +218,12 @@ impl PaneContainer<GitState> for GitContainer {
 
 // === View ===
 
-pub struct GitView;
+pub struct GitPageHandler;
 
-impl View for GitView {
-    fn label(&self) -> &'static str { "Git" }
+impl PageHandler for GitPageHandler {
+    fn label(&self) -> &'static str {
+        "Git"
+    }
 
     fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
         vec![
@@ -258,13 +274,18 @@ impl View for GitView {
         git.branch_action_menu.is_some() || git.search.active
     }
 
-    fn handle_key(&self, ctx: &mut AppContext, state: &mut dyn Any, key: KeyEvent) -> Result<ViewAction> {
+    fn handle_key(
+        &self,
+        ctx: &mut AppContext,
+        state: &mut dyn Any,
+        key: KeyEvent,
+    ) -> Result<PageAction> {
         let git = state.downcast_mut::<GitState>().unwrap();
 
         // Branch action menu intercepts all keys when open
         if git.branch_action_menu.is_some() {
             branch_action::handle_branch_action_menu_key(ctx, git, key);
-            return Ok(ViewAction::None);
+            return Ok(PageAction::None);
         }
 
         // Search input mode intercepts all keys
@@ -273,7 +294,7 @@ impl View for GitView {
                 search::execute_git_search(git);
                 search::jump_to_git_match(ctx, git, true);
             }
-            return Ok(ViewAction::None);
+            return Ok(PageAction::None);
         }
 
         handle_git_view_key(ctx, git, key)

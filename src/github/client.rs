@@ -95,7 +95,14 @@ pub fn open_pr_in_browser(number: u64) -> Result<(), String> {
 /// Get the "owner/repo" string for the current repository using `gh`.
 pub fn repo_nwo() -> Option<String> {
     let output = Command::new("gh")
-        .args(["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"])
+        .args([
+            "repo",
+            "view",
+            "--json",
+            "nameWithOwner",
+            "-q",
+            ".nameWithOwner",
+        ])
         .output()
         .ok()?;
     if output.status.success() {

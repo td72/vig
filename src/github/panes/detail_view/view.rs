@@ -33,7 +33,11 @@ pub fn meaningful_reviews(reviews: &[GhReview]) -> Vec<&GhReview> {
 
 pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
     let is_focused = state.focused_pane == GhFocusedPane::Detail;
-    let border_color = if is_focused { Color::Cyan } else { Color::DarkGray };
+    let border_color = if is_focused {
+        Color::Cyan
+    } else {
+        Color::DarkGray
+    };
 
     let block = Block::default()
         .title(" Detail ")
@@ -86,19 +90,16 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
     let header_height = header_lines.len() as u16;
 
     // Layout: header (fixed) + content area (side-by-side)
-    let vert = Layout::vertical([
-        Constraint::Length(header_height),
-        Constraint::Min(1),
-    ])
-    .split(inner);
+    let vert =
+        Layout::vertical([Constraint::Length(header_height), Constraint::Min(1)]).split(inner);
 
     // Render header
     let header_para = Paragraph::new(header_lines).wrap(Wrap { trim: false });
     f.render_widget(header_para, vert[0]);
 
     // Split content area into left and right columns
-    let cols = Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(vert[1]);
+    let cols =
+        Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).split(vert[1]);
 
     let active_pane = state.detail_pane;
 
@@ -129,7 +130,8 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
             } else {
                 state.detail_view_height = cols[1].height;
             }
-            let (comments_lines, sel_scroll) = build_comments_lines(&detail.comments, state.detail_comment_idx);
+            let (comments_lines, sel_scroll) =
+                build_comments_lines(&detail.comments, state.detail_comment_idx);
             render_pane(
                 f,
                 cols[1],
@@ -156,10 +158,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 GhDetailPane::Comments => right_rows[2].height,
             };
 
-            let checks_count = detail
-                .status_check_rollup
-                .as_ref()
-                .map_or(0, |c| c.len());
+            let checks_count = detail.status_check_rollup.as_ref().map_or(0, |c| c.len());
             let checks_title = format!("Checks ({checks_count})");
             render_status_table(
                 f,
@@ -177,7 +176,8 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 .filter(|r| !r.body.is_empty() || r.state != "COMMENTED")
                 .count();
             let reviews_title = format!("Reviews ({review_count})");
-            let (reviews_lines, rev_scroll) = build_reviews_lines(&detail.reviews, state.detail_review_idx);
+            let (reviews_lines, rev_scroll) =
+                build_reviews_lines(&detail.reviews, state.detail_review_idx);
             render_pane(
                 f,
                 right_rows[1],
@@ -190,7 +190,8 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
 
             let comments_count = detail.comments.len();
             let comments_title = format!("Comments ({comments_count})");
-            let (comments_lines, cmt_scroll) = build_comments_lines(&detail.comments, state.detail_comment_idx);
+            let (comments_lines, cmt_scroll) =
+                build_comments_lines(&detail.comments, state.detail_comment_idx);
             render_pane(
                 f,
                 right_rows[2],
@@ -277,7 +278,11 @@ fn build_label_spans(labels: &[GhLabel]) -> Vec<Span<'static>> {
             _ => (255, 255, 255),
         };
         let brightness = (r as u32 * 299 + g as u32 * 587 + b as u32 * 114) / 1000;
-        let fg = if brightness > 128 { Color::Black } else { Color::White };
+        let fg = if brightness > 128 {
+            Color::Black
+        } else {
+            Color::White
+        };
 
         spans.push(Span::raw(" "));
         spans.push(Span::styled(
@@ -311,7 +316,10 @@ fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
     let mut spans = vec![Span::raw(" ")];
     spans.push(badge(author, Color::Rgb(31, 111, 139)));
     spans.push(Span::raw(" "));
-    spans.push(badge(format_date(&detail.created_at), Color::Rgb(68, 71, 78)));
+    spans.push(badge(
+        format_date(&detail.created_at),
+        Color::Rgb(68, 71, 78),
+    ));
     spans.push(Span::raw(" "));
     spans.push(state_badge(&detail.state));
     for s in build_label_spans(&detail.labels) {
@@ -342,14 +350,23 @@ fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
     let mut spans = vec![Span::raw(" ")];
     spans.push(badge(author, Color::Rgb(31, 111, 139)));
     spans.push(Span::raw(" "));
-    spans.push(badge(format_date(&detail.created_at), Color::Rgb(68, 71, 78)));
+    spans.push(badge(
+        format_date(&detail.created_at),
+        Color::Rgb(68, 71, 78),
+    ));
     spans.push(Span::raw(" "));
     spans.push(state_badge(&detail.state));
     spans.push(Span::raw(" "));
     spans.push(badge(&detail.head_ref_name, Color::Rgb(130, 80, 160)));
     spans.push(Span::raw(" "));
-    spans.push(badge(&format!("+{}", detail.additions), Color::Rgb(35, 134, 54)));
-    spans.push(badge(&format!("-{}", detail.deletions), Color::Rgb(218, 54, 51)));
+    spans.push(badge(
+        &format!("+{}", detail.additions),
+        Color::Rgb(35, 134, 54),
+    ));
+    spans.push(badge(
+        &format!("-{}", detail.deletions),
+        Color::Rgb(218, 54, 51),
+    ));
     spans.push(Span::raw(" "));
     spans.push(badge(
         &format!("{} files", detail.changed_files),
@@ -378,10 +395,7 @@ fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
 
 fn badge(text: &str, bg: Color) -> Span<'static> {
     let fg = badge_fg(bg);
-    Span::styled(
-        format!(" {text} "),
-        Style::default().fg(fg).bg(bg),
-    )
+    Span::styled(format!(" {text} "), Style::default().fg(fg).bg(bg))
 }
 
 fn badge_fg(bg: Color) -> Color {
@@ -390,7 +404,11 @@ fn badge_fg(bg: Color) -> Color {
         _ => return Color::White,
     };
     let brightness = (r as u32 * 299 + g as u32 * 587 + b as u32 * 114) / 1000;
-    if brightness > 128 { Color::Black } else { Color::White }
+    if brightness > 128 {
+        Color::Black
+    } else {
+        Color::White
+    }
 }
 
 fn state_badge(state: &str) -> Span<'static> {
@@ -448,10 +466,8 @@ fn render_status_table(
             let (icon, color) = check_icon(check);
             let workflow = check.workflow_name.as_deref().unwrap_or("");
             let (job, params) = parse_check_name(&check.name);
-            let duration = format_duration(
-                check.started_at.as_deref(),
-                check.completed_at.as_deref(),
-            );
+            let duration =
+                format_duration(check.started_at.as_deref(), check.completed_at.as_deref());
             Row::new(vec![
                 Line::from(Span::styled(icon, Style::default().fg(color))),
                 Line::from(Span::styled(workflow.to_string(), dim)),
@@ -662,7 +678,7 @@ fn build_comments_lines(comments: &[GhComment], selected_idx: usize) -> (Vec<Lin
 }
 
 fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
-    use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, HeadingLevel};
+    use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 
     let opts = Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS;
     let parser = Parser::new_ext(text, opts);
@@ -685,7 +701,10 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
     };
 
     let current_style = |stack: &[Style]| -> Style {
-        stack.iter().copied().fold(Style::default(), |acc, s| acc.patch(s))
+        stack
+            .iter()
+            .copied()
+            .fold(Style::default(), |acc, s| acc.patch(s))
     };
 
     for event in parser {
@@ -696,10 +715,18 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
                 }
                 in_heading = true;
                 heading_style = match level {
-                    HeadingLevel::H1 => Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
-                    HeadingLevel::H2 => Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
-                    HeadingLevel::H3 => Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD | Modifier::ITALIC),
-                    _ => Style::default().fg(Color::Cyan).add_modifier(Modifier::ITALIC),
+                    HeadingLevel::H1 => Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+                    HeadingLevel::H2 => Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                    HeadingLevel::H3 => Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD | Modifier::ITALIC),
+                    _ => Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::ITALIC),
                 };
                 let prefix = match level {
                     HeadingLevel::H1 => "# ",
@@ -722,7 +749,11 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
                 }
             }
             Event::End(TagEnd::Paragraph) => {
-                let style = if in_heading { heading_style } else { Style::default() };
+                let style = if in_heading {
+                    heading_style
+                } else {
+                    Style::default()
+                };
                 flush_line(&mut lines, &mut current_spans, padding, style);
             }
             Event::Start(Tag::CodeBlock(_)) => {
@@ -738,15 +769,21 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
             Event::Start(Tag::Emphasis) => {
                 style_stack.push(Style::default().add_modifier(Modifier::ITALIC));
             }
-            Event::End(TagEnd::Emphasis) => { style_stack.pop(); }
+            Event::End(TagEnd::Emphasis) => {
+                style_stack.pop();
+            }
             Event::Start(Tag::Strong) => {
                 style_stack.push(Style::default().add_modifier(Modifier::BOLD));
             }
-            Event::End(TagEnd::Strong) => { style_stack.pop(); }
+            Event::End(TagEnd::Strong) => {
+                style_stack.pop();
+            }
             Event::Start(Tag::Strikethrough) => {
                 style_stack.push(Style::default().add_modifier(Modifier::CROSSED_OUT));
             }
-            Event::End(TagEnd::Strikethrough) => { style_stack.pop(); }
+            Event::End(TagEnd::Strikethrough) => {
+                style_stack.pop();
+            }
             Event::Start(Tag::List(_)) | Event::End(TagEnd::List(_)) => {}
             Event::Start(Tag::Item) => {
                 if !current_spans.is_empty() {
@@ -762,14 +799,22 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
                 in_list_item = false;
             }
             Event::Start(Tag::Link { dest_url, .. }) => {
-                style_stack.push(Style::default().fg(Color::Blue).add_modifier(Modifier::UNDERLINED));
+                style_stack.push(
+                    Style::default()
+                        .fg(Color::Blue)
+                        .add_modifier(Modifier::UNDERLINED),
+                );
                 let _ = dest_url;
             }
-            Event::End(TagEnd::Link) => { style_stack.pop(); }
+            Event::End(TagEnd::Link) => {
+                style_stack.pop();
+            }
             Event::Start(Tag::BlockQuote(_)) => {
                 style_stack.push(Style::default().fg(Color::DarkGray));
             }
-            Event::End(TagEnd::BlockQuote(_)) => { style_stack.pop(); }
+            Event::End(TagEnd::BlockQuote(_)) => {
+                style_stack.pop();
+            }
             Event::Text(t) => {
                 if in_code_block {
                     for line in t.as_ref().lines() {
@@ -784,14 +829,20 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
                 }
             }
             Event::Code(code) => {
-                let style = Style::default().fg(Color::Yellow).bg(Color::Rgb(50, 50, 50));
+                let style = Style::default()
+                    .fg(Color::Yellow)
+                    .bg(Color::Rgb(50, 50, 50));
                 current_spans.push(Span::styled(format!(" {} ", code.as_ref()), style));
             }
             Event::SoftBreak => {
                 current_spans.push(Span::raw(" "));
             }
             Event::HardBreak => {
-                let style = if in_heading { heading_style } else { Style::default() };
+                let style = if in_heading {
+                    heading_style
+                } else {
+                    Style::default()
+                };
                 flush_line(&mut lines, &mut current_spans, padding, style);
             }
             Event::Rule => {

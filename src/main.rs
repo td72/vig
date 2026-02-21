@@ -5,8 +5,8 @@ mod update;
 
 use crate::core::app::{App, AppContext};
 use crate::core::event::{Event, EventHandler};
+use crate::core::page::PageAction;
 use crate::core::ui::{confirm_dialog, status_bar};
-use crate::core::view::ViewAction;
 use crate::git::watcher::FsWatcher;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -46,21 +46,21 @@ fn run_tui() -> Result<()> {
     }));
 
     let cwd = std::env::current_dir()?;
-    let (git_entry, workdir) = crate::git::container::new_entry(&cwd)?;
-    let gh_entry = crate::github::container::new_entry();
+    let (git_page, workdir) = crate::git::page::new_page(&cwd)?;
+    let gh_page = crate::github::page::new_page();
 
-    let entries = vec![git_entry, gh_entry];
-    let view_labels = entries.iter().map(|e| e.view.label()).collect();
+    let pages = vec![git_page, gh_page];
+    let page_labels = pages.iter().map(|p| p.handler.label()).collect();
     let ctx = AppContext {
         should_quit: false,
-        active_view: 0,
-        view_labels,
+        active_page: 0,
+        page_labels,
         show_help: false,
         status_message: None,
         error_dialog: None,
         workdir: workdir.clone(),
     };
-    let mut app = App::new(ctx, entries);
+    let mut app = App::new(ctx, pages);
 
     let events = EventHandler::new(Duration::from_millis(250));
 
@@ -102,7 +102,7 @@ fn run_tui() -> Result<()> {
                     break;
                 }
 
-                if let ViewAction::Suspend(cmd) = action {
+                if let PageAction::Suspend(cmd) = action {
                     events.pause();
                     crate::core::tui::restore()?;
 

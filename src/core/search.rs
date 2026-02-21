@@ -112,15 +112,13 @@ impl SearchState {
                 false
             }
             KeyCode::Up | KeyCode::Char('p')
-                if key.code == KeyCode::Up
-                    || key.modifiers.contains(KeyModifiers::CONTROL) =>
+                if key.code == KeyCode::Up || key.modifiers.contains(KeyModifiers::CONTROL) =>
             {
                 self.history_prev();
                 false
             }
             KeyCode::Down | KeyCode::Char('n')
-                if key.code == KeyCode::Down
-                    || key.modifiers.contains(KeyModifiers::CONTROL) =>
+                if key.code == KeyCode::Down || key.modifiers.contains(KeyModifiers::CONTROL) =>
             {
                 self.history_next();
                 false
@@ -158,19 +156,16 @@ impl SearchState {
 
     /// Navigate to next history entry (or back to saved input)
     pub fn history_next(&mut self) {
-        match self.history_idx {
-            Some(idx) => {
-                if idx + 1 < self.history.len() {
-                    let new_idx = idx + 1;
-                    self.history_idx = Some(new_idx);
-                    self.input = self.history[new_idx].clone();
-                } else {
-                    // Back to the input the user was typing
-                    self.history_idx = None;
-                    self.input = self.saved_input.clone();
-                }
+        if let Some(idx) = self.history_idx {
+            if idx + 1 < self.history.len() {
+                let new_idx = idx + 1;
+                self.history_idx = Some(new_idx);
+                self.input = self.history[new_idx].clone();
+            } else {
+                // Back to the input the user was typing
+                self.history_idx = None;
+                self.input = self.saved_input.clone();
             }
-            None => {}
         }
     }
 

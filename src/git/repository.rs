@@ -42,9 +42,7 @@ impl Repo {
     }
 
     pub fn workdir(&self) -> &Path {
-        self.inner
-            .workdir()
-            .unwrap_or_else(|| self.inner.path())
+        self.inner.workdir().unwrap_or_else(|| self.inner.path())
     }
 
     pub fn branch_name(&self) -> String {
@@ -56,8 +54,7 @@ impl Repo {
                     r.shorthand().map(|s| s.to_string())
                 } else {
                     // Detached HEAD — show short hash
-                    r.target()
-                        .map(|oid| format!("{:.7}", oid))
+                    r.target().map(|oid| format!("{:.7}", oid))
                 }
             })
             .unwrap_or_else(|| "HEAD".to_string())
@@ -76,19 +73,19 @@ impl Repo {
 
     pub fn list_local_branches(&self) -> Vec<BranchInfo> {
         let head_name = self.branch_name();
-        let mut branches: Vec<BranchInfo> =
-            match self.inner.branches(Some(git2::BranchType::Local)) {
-                Ok(iter) => iter
-                    .filter_map(|b| b.ok())
-                    .filter_map(|(branch, _)| {
-                        branch.name().ok().flatten().map(|name| BranchInfo {
-                            name: name.to_string(),
-                            is_head: name == head_name,
-                        })
+        let mut branches: Vec<BranchInfo> = match self.inner.branches(Some(git2::BranchType::Local))
+        {
+            Ok(iter) => iter
+                .filter_map(|b| b.ok())
+                .filter_map(|(branch, _)| {
+                    branch.name().ok().flatten().map(|name| BranchInfo {
+                        name: name.to_string(),
+                        is_head: name == head_name,
                     })
-                    .collect(),
-                Err(_) => Vec::new(),
-            };
+                })
+                .collect(),
+            Err(_) => Vec::new(),
+        };
         branches.sort_by(|a, b| match (a.is_head, b.is_head) {
             (true, false) => std::cmp::Ordering::Less,
             (false, true) => std::cmp::Ordering::Greater,
@@ -123,18 +120,11 @@ impl Repo {
             };
             let hash_str = oid.to_string();
             let short_hash = hash_str[..7.min(hash_str.len())].to_string();
-            let author = commit
-                .author()
-                .name()
-                .unwrap_or("unknown")
-                .to_string();
+            let author = commit.author().name().unwrap_or("unknown").to_string();
             let date = epoch_to_date(commit.time().seconds());
             let message = commit.summary().unwrap_or("").to_string();
             let full_message = commit.message().unwrap_or("").to_string();
-            let parent_ids = commit
-                .parent_ids()
-                .map(|oid| oid.to_string())
-                .collect();
+            let parent_ids = commit.parent_ids().map(|oid| oid.to_string()).collect();
             commits.push(CommitInfo {
                 short_hash,
                 full_hash: hash_str,
@@ -225,14 +215,14 @@ impl Repo {
             Err(_) => return Vec::new(),
         };
         let parent_tree = commit.parent(0).ok().and_then(|p| p.tree().ok());
-        let diff = match self.inner.diff_tree_to_tree(
-            parent_tree.as_ref(),
-            Some(&commit_tree),
-            None,
-        ) {
-            Ok(d) => d,
-            Err(_) => return Vec::new(),
-        };
+        let diff =
+            match self
+                .inner
+                .diff_tree_to_tree(parent_tree.as_ref(), Some(&commit_tree), None)
+            {
+                Ok(d) => d,
+                Err(_) => return Vec::new(),
+            };
         let mut changes = Vec::new();
         for delta in diff.deltas() {
             let status = match delta.status() {

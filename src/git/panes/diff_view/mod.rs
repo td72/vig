@@ -2,8 +2,8 @@ pub(crate) mod keys;
 mod view;
 
 use crate::core::app::AppContext;
-use crate::git::state::{DiffViewMode, GitState};
 use crate::core::pane::DetailPane;
+use crate::git::state::{DiffViewMode, GitState};
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 
@@ -14,7 +14,9 @@ impl DetailPane<GitState> for DiffViewPane {
         match state.diff_view_mode {
             DiffViewMode::Scroll => keys::handle_diff_scroll_key(ctx, state, key),
             DiffViewMode::Normal => keys::handle_diff_normal_key(ctx, state, key),
-            DiffViewMode::Visual | DiffViewMode::VisualLine => keys::handle_diff_visual_key(ctx, state, key),
+            DiffViewMode::Visual | DiffViewMode::VisualLine => {
+                keys::handle_diff_visual_key(ctx, state, key)
+            }
         }
     }
 

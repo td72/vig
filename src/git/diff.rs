@@ -119,41 +119,39 @@ pub fn parse_diff(repo: &Repository, base_ref: Option<&str>) -> anyhow::Result<V
         let status = delta_status(&delta);
         let path = delta_path(&delta);
 
-        if let Ok(patch) = Patch::from_diff(&diff, idx) {
-            if let Some(patch) = patch {
-                let is_binary = patch.delta().flags().is_binary();
-                if is_binary {
-                    files.push(FileDiff {
-                        path,
-                        status,
-                        hunks: Vec::new(),
-                        is_binary: true,
-                    });
-                    continue;
-                }
-
-                let mut hunks = Vec::new();
-                for hunk_idx in 0..patch.num_hunks() {
-                    let (hunk, _) = patch.hunk(hunk_idx)?;
-                    let header = String::from_utf8_lossy(hunk.header()).trim().to_string();
-
-                    let mut raw_lines = Vec::new();
-                    for line_idx in 0..patch.num_lines_in_hunk(hunk_idx)? {
-                        let line = patch.line_in_hunk(hunk_idx, line_idx)?;
-                        raw_lines.push(raw_from_diff_line(&line));
-                    }
-
-                    let rows = align_hunk_lines(&raw_lines);
-                    hunks.push(DiffHunk { header, rows });
-                }
-
+        if let Ok(Some(patch)) = Patch::from_diff(&diff, idx) {
+            let is_binary = patch.delta().flags().is_binary();
+            if is_binary {
                 files.push(FileDiff {
                     path,
                     status,
-                    hunks,
-                    is_binary: false,
+                    hunks: Vec::new(),
+                    is_binary: true,
                 });
+                continue;
             }
+
+            let mut hunks = Vec::new();
+            for hunk_idx in 0..patch.num_hunks() {
+                let (hunk, _) = patch.hunk(hunk_idx)?;
+                let header = String::from_utf8_lossy(hunk.header()).trim().to_string();
+
+                let mut raw_lines = Vec::new();
+                for line_idx in 0..patch.num_lines_in_hunk(hunk_idx)? {
+                    let line = patch.line_in_hunk(hunk_idx, line_idx)?;
+                    raw_lines.push(raw_from_diff_line(&line));
+                }
+
+                let rows = align_hunk_lines(&raw_lines);
+                hunks.push(DiffHunk { header, rows });
+            }
+
+            files.push(FileDiff {
+                path,
+                status,
+                hunks,
+                is_binary: false,
+            });
         }
     }
 

@@ -96,7 +96,10 @@ pub fn load_issue_detail(number: u64) -> Option<GhIssueDetail> {
 
 pub fn save_issue_detail(detail: &GhIssueDetail) {
     if let Some(dir) = cache_dir() {
-        save_json(&dir.join("issue").join(format!("{}.json", detail.number)), detail);
+        save_json(
+            &dir.join("issue").join(format!("{}.json", detail.number)),
+            detail,
+        );
     }
 }
 
@@ -106,7 +109,10 @@ pub fn load_pr_detail(number: u64) -> Option<GhPrDetail> {
 
 pub fn save_pr_detail(detail: &GhPrDetail) {
     if let Some(dir) = cache_dir() {
-        save_json(&dir.join("pr").join(format!("{}.json", detail.number)), detail);
+        save_json(
+            &dir.join("pr").join(format!("{}.json", detail.number)),
+            detail,
+        );
     }
 }
 

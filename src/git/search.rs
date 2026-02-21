@@ -74,12 +74,10 @@ fn search_git_file_tree(git: &mut GitState, query: &str) {
     for (idx, entry) in entries.iter().enumerate() {
         let name = match entry {
             TreeEntry::Dir { path, .. } => path.clone(),
-            TreeEntry::File { file_idx, .. } => {
-                match git.diff_state.files.get(*file_idx) {
-                    Some(f) => f.path.clone(),
-                    None => continue,
-                }
-            }
+            TreeEntry::File { file_idx, .. } => match git.diff_state.files.get(*file_idx) {
+                Some(f) => f.path.clone(),
+                None => continue,
+            },
         };
         if name.to_lowercase().contains(&query_lower) {
             git.search.matches.push(SearchMatch::TreeEntry(idx));
@@ -92,10 +90,7 @@ fn search_git_commit_log(git: &mut GitState, query: &str) {
     for (idx, commit) in git.git_log.commits.iter().enumerate() {
         let text = format!(
             "{} {} {} {}",
-            commit.short_hash,
-            commit.author,
-            commit.date,
-            commit.message
+            commit.short_hash, commit.author, commit.date, commit.message
         );
         if text.to_lowercase().contains(&query_lower) {
             git.search.matches.push(SearchMatch::CommitEntry(idx));
@@ -161,15 +156,18 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
     git.search.current_match_idx = Some(new_idx);
 
     match &git.search.matches[new_idx] {
-        SearchMatch::DiffLine { row, col_start, side, .. } => {
+        SearchMatch::DiffLine {
+            row,
+            col_start,
+            side,
+            ..
+        } => {
             let row = *row;
             let col_start = *col_start;
             let side = *side;
             if git.diff_view_mode == DiffViewMode::Scroll {
                 // In scroll mode, just scroll to the row
-                git.diff_scroll_y = row.saturating_sub(
-                    (git.diff_view_height / 3) as usize,
-                ) as u16;
+                git.diff_scroll_y = row.saturating_sub((git.diff_view_height / 3) as usize) as u16;
             } else {
                 // In Normal/Visual mode, move cursor
                 git.cursor_pos.row = row;

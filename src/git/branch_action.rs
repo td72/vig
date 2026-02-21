@@ -3,7 +3,10 @@ use crate::git::state::{BranchAction, BranchActionMenuState, GitState};
 use crossterm::event::{KeyCode, KeyEvent};
 
 fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
-    if let Some(msg) = git.refresh_diff().unwrap_or_else(|e| Some(format!("Diff error: {e}"))) {
+    if let Some(msg) = git
+        .refresh_diff()
+        .unwrap_or_else(|e| Some(format!("Diff error: {e}")))
+    {
         ctx.status_message = Some(msg);
     } else {
         ctx.status_message = None;
@@ -11,11 +14,7 @@ fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
 }
 
 fn select_branch(ctx: &mut AppContext, git: &mut GitState) {
-    if let Some(branch) = git
-        .branch_list
-        .branches
-        .get(git.branch_list.selected_idx)
-    {
+    if let Some(branch) = git.branch_list.branches.get(git.branch_list.selected_idx) {
         if branch.is_head {
             git.diff_base_ref = None;
         } else {
@@ -35,7 +34,11 @@ pub(crate) fn open_branch_action_menu(git: &mut GitState) {
     }
 }
 
-pub(crate) fn handle_branch_action_menu_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) {
+pub(crate) fn handle_branch_action_menu_key(
+    ctx: &mut AppContext,
+    git: &mut GitState,
+    key: KeyEvent,
+) {
     let menu = match git.branch_action_menu.as_mut() {
         Some(m) => m,
         None => return,
@@ -86,8 +89,7 @@ fn execute_branch_action(ctx: &mut AppContext, git: &mut GitState, action: Branc
             }
             match git.repo.switch_branch(&menu.branch_name) {
                 Ok(()) => {
-                    ctx.status_message =
-                        Some(format!("Switched to {}", menu.branch_name));
+                    ctx.status_message = Some(format!("Switched to {}", menu.branch_name));
                     git.load_branches();
                     refresh_diff(ctx, git);
                 }
@@ -101,14 +103,12 @@ fn execute_branch_action(ctx: &mut AppContext, git: &mut GitState, action: Branc
         }
         BranchAction::Delete => {
             if menu.is_head {
-                ctx.status_message =
-                    Some("Cannot delete the current branch".to_string());
+                ctx.status_message = Some("Cannot delete the current branch".to_string());
                 return;
             }
             match git.repo.delete_branch(&menu.branch_name) {
                 Ok(()) => {
-                    ctx.status_message =
-                        Some(format!("Deleted {}", menu.branch_name));
+                    ctx.status_message = Some(format!("Deleted {}", menu.branch_name));
                     git.load_branches();
                 }
                 Err(e) => {

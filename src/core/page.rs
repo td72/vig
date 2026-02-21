@@ -14,13 +14,13 @@ pub struct ExternalCommand {
 }
 
 #[derive(Debug)]
-pub enum ViewAction {
+pub enum PageAction {
     None,
     Suspend(ExternalCommand),
 }
 
-pub trait View: Sync {
-    /// Short label shown in the view tab bar (e.g. "Git", "GitHub").
+pub trait PageHandler: Sync {
+    /// Short label shown in the page tab bar (e.g. "Git", "GitHub").
     fn label(&self) -> &'static str;
 
     /// Keybinding help entries shown in the help overlay: `(key, description)`.
@@ -28,33 +28,43 @@ pub trait View: Sync {
         vec![]
     }
 
-    /// Handle a key event. Returns a `ViewAction` indicating what the caller should do.
-    fn handle_key(&self, ctx: &mut AppContext, state: &mut dyn Any, key: KeyEvent) -> Result<ViewAction>;
+    /// Handle a key event. Returns a `PageAction` indicating what the caller should do.
+    fn handle_key(
+        &self,
+        ctx: &mut AppContext,
+        state: &mut dyn Any,
+        key: KeyEvent,
+    ) -> Result<PageAction>;
 
-    /// Render the view (layout, panes, header, status bar, view-specific overlays).
+    /// Render the page (layout, panes, header, status bar, page-specific overlays).
     /// Shared overlays (help, error_dialog) are rendered by the caller after this.
     fn render(&self, f: &mut Frame, ctx: &AppContext, state: &mut dyn Any, area: Rect);
 
-    /// Returns true if the view is in a mode that intercepts all key input
+    /// Returns true if the page is in a mode that intercepts all key input
     /// (e.g., modal menu, text input). When true, shared keybindings
-    /// (Ctrl+c, view switching) are bypassed in favor of the view.
+    /// (Ctrl+c, page switching) are bypassed in favor of the page.
     fn intercepts_all_keys(&self, _ctx: &AppContext, _state: &dyn Any) -> bool {
         false
     }
 
-    /// Called on each tick event (active view only).
+    /// Called on each tick event (active page only).
     fn on_tick(&self, _ctx: &mut AppContext, _state: &mut dyn Any) {}
 
-    /// Called when a filesystem change is detected (all views).
+    /// Called when a filesystem change is detected (all pages).
     fn on_fs_change(&self, _ctx: &mut AppContext, _state: &mut dyn Any) -> Result<()> {
         Ok(())
     }
 
     /// Called after returning from a suspended external process.
-    fn on_suspend_return(&self, _ctx: &mut AppContext, _state: &mut dyn Any, _status: io::Result<ExitStatus>) -> Result<()> {
+    fn on_suspend_return(
+        &self,
+        _ctx: &mut AppContext,
+        _state: &mut dyn Any,
+        _status: io::Result<ExitStatus>,
+    ) -> Result<()> {
         Ok(())
     }
 
-    /// Called when this view becomes active (view switching).
+    /// Called when this page becomes active (page switching).
     fn on_activate(&self, _ctx: &mut AppContext, _state: &mut dyn Any) {}
 }

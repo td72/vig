@@ -1,10 +1,9 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::core::pane::SelectPane;
+use crate::git::diff::FileStatus;
 use crate::git::search;
 use crate::git::state::{FocusedPane, GitState, TreeEntry};
-use crate::git::diff::FileStatus;
-use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};
-use std::collections::HashSet;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -12,6 +11,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
     Frame,
 };
+use std::collections::HashSet;
 
 pub struct FileTreePane;
 
@@ -48,24 +48,22 @@ impl SelectPane<GitState> for FileTreePane {
                     }
                 }
             }
-            KeyCode::Right | KeyCode::Enter => {
-                match entries.get(state.selected_tree_idx) {
-                    Some(TreeEntry::Dir { path, .. }) => {
-                        let path = path.clone();
-                        if state.collapsed_dirs.contains(&path) {
-                            state.collapsed_dirs.remove(&path);
-                        } else {
-                            state.collapsed_dirs.insert(path);
-                        }
+            KeyCode::Right | KeyCode::Enter => match entries.get(state.selected_tree_idx) {
+                Some(TreeEntry::Dir { path, .. }) => {
+                    let path = path.clone();
+                    if state.collapsed_dirs.contains(&path) {
+                        state.collapsed_dirs.remove(&path);
+                    } else {
+                        state.collapsed_dirs.insert(path);
                     }
-                    Some(TreeEntry::File { .. }) => {
-                        state.set_focus(FocusedPane::DiffView);
-                        state.diff_scroll_y = 0;
-                        state.diff_scroll_x = 0;
-                    }
-                    None => {}
                 }
-            }
+                Some(TreeEntry::File { .. }) => {
+                    state.set_focus(FocusedPane::DiffView);
+                    state.diff_scroll_y = 0;
+                    state.diff_scroll_x = 0;
+                }
+                None => {}
+            },
             _ => {}
         }
     }
@@ -95,26 +93,27 @@ impl SelectPane<GitState> for FileTreePane {
         }
 
         // Build set of matched tree entry indices and current match index
-        let (match_set, current_match_idx) = if state.search.origin == SearchOrigin::FileTree {
-            let set: HashSet<usize> = state
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::TreeEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = state.search.current_match_idx.and_then(|ci| {
-                match state.search.matches.get(ci) {
-                    Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+        let (match_set, current_match_idx) =
+            if state.search.origin == SearchOrigin::FileTree {
+                let set: HashSet<usize> = state
+                    .search
+                    .matches
+                    .iter()
+                    .filter_map(|m| match m {
+                        SearchMatch::TreeEntry(idx) => Some(*idx),
+                        _ => None,
+                    })
+                    .collect();
+                let current = state.search.current_match_idx.and_then(|ci| {
+                    match state.search.matches.get(ci) {
+                        Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
+                        _ => None,
+                    }
+                });
+                (set, current)
+            } else {
+                (HashSet::new(), None)
+            };
 
         let items: Vec<ListItem> = entries
             .iter()
@@ -123,63 +122,68 @@ impl SelectPane<GitState> for FileTreePane {
                 let is_match = match_set.contains(&entry_idx);
                 let is_current = current_match_idx == Some(entry_idx);
                 match entry {
-                TreeEntry::Dir {
-                    path,
-                    depth,
-                    collapsed,
-                } => {
-                    let indent = " ".repeat(depth * 2);
-                    let icon = if *collapsed { "▶" } else { "▼" };
-                    let dir_name = path.rsplit('/').next().unwrap_or(path);
-                    let name_style = if is_current {
-                        Style::default().fg(Color::Black).bg(Color::Rgb(200, 120, 0))
-                    } else if is_match {
-                        Style::default().fg(Color::DarkGray).bg(Color::Rgb(60, 60, 0))
-                    } else {
-                        Style::default().fg(Color::DarkGray)
-                    };
-                    let line = Line::from(vec![
-                        Span::raw(format!(" {indent}  ")),
-                        Span::styled(format!("{icon} {dir_name}/"), name_style),
-                    ]);
-                    ListItem::new(line)
-                }
-                TreeEntry::File { file_idx, depth } => {
-                    let file = &state.diff_state.files[*file_idx];
-                    let indent = " ".repeat(depth * 2);
-                    let icon_color = match file.status {
-                        FileStatus::Modified => Color::Yellow,
-                        FileStatus::Added => Color::Green,
-                        FileStatus::Deleted => Color::Red,
-                        FileStatus::Renamed => Color::Blue,
-                        FileStatus::Untracked => Color::DarkGray,
-                    };
-                    // For depth > 0, show only filename; for depth 0, show full path
-                    let display_name = if *depth > 0 {
-                        file.path.rsplit('/').next().unwrap_or(&file.path)
-                    } else {
-                        &file.path
-                    };
-                    let name_style = if is_current {
-                        Style::default().fg(Color::Black).bg(Color::Rgb(200, 120, 0))
-                    } else if is_match {
-                        Style::default().bg(Color::Rgb(60, 60, 0))
-                    } else {
-                        Style::default()
-                    };
-                    let line = Line::from(vec![
-                        Span::raw(format!(" {indent}")),
-                        Span::styled(
-                            format!("{} ", file.status.icon()),
+                    TreeEntry::Dir {
+                        path,
+                        depth,
+                        collapsed,
+                    } => {
+                        let indent = " ".repeat(depth * 2);
+                        let icon = if *collapsed { "▶" } else { "▼" };
+                        let dir_name = path.rsplit('/').next().unwrap_or(path);
+                        let name_style = if is_current {
                             Style::default()
-                                .fg(icon_color)
-                                .add_modifier(Modifier::BOLD),
-                        ),
-                        Span::styled(display_name.to_string(), name_style),
-                    ]);
-                    ListItem::new(line)
+                                .fg(Color::Black)
+                                .bg(Color::Rgb(200, 120, 0))
+                        } else if is_match {
+                            Style::default()
+                                .fg(Color::DarkGray)
+                                .bg(Color::Rgb(60, 60, 0))
+                        } else {
+                            Style::default().fg(Color::DarkGray)
+                        };
+                        let line = Line::from(vec![
+                            Span::raw(format!(" {indent}  ")),
+                            Span::styled(format!("{icon} {dir_name}/"), name_style),
+                        ]);
+                        ListItem::new(line)
+                    }
+                    TreeEntry::File { file_idx, depth } => {
+                        let file = &state.diff_state.files[*file_idx];
+                        let indent = " ".repeat(depth * 2);
+                        let icon_color = match file.status {
+                            FileStatus::Modified => Color::Yellow,
+                            FileStatus::Added => Color::Green,
+                            FileStatus::Deleted => Color::Red,
+                            FileStatus::Renamed => Color::Blue,
+                            FileStatus::Untracked => Color::DarkGray,
+                        };
+                        // For depth > 0, show only filename; for depth 0, show full path
+                        let display_name = if *depth > 0 {
+                            file.path.rsplit('/').next().unwrap_or(&file.path)
+                        } else {
+                            &file.path
+                        };
+                        let name_style = if is_current {
+                            Style::default()
+                                .fg(Color::Black)
+                                .bg(Color::Rgb(200, 120, 0))
+                        } else if is_match {
+                            Style::default().bg(Color::Rgb(60, 60, 0))
+                        } else {
+                            Style::default()
+                        };
+                        let line = Line::from(vec![
+                            Span::raw(format!(" {indent}")),
+                            Span::styled(
+                                format!("{} ", file.status.icon()),
+                                Style::default().fg(icon_color).add_modifier(Modifier::BOLD),
+                            ),
+                            Span::styled(display_name.to_string(), name_style),
+                        ]);
+                        ListItem::new(line)
+                    }
                 }
-            }})
+            })
             .collect();
 
         let selected = state.selected_tree_idx;
@@ -193,7 +197,9 @@ impl SelectPane<GitState> for FileTreePane {
                 .add_modifier(Modifier::BOLD)
         };
 
-        let list = List::new(items).block(block).highlight_style(highlight_style);
+        let list = List::new(items)
+            .block(block)
+            .highlight_style(highlight_style);
 
         let mut state2 = ListState::default();
         state2.select(Some(selected));

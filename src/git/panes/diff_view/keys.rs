@@ -5,9 +5,7 @@ use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitState};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub(crate) fn handle_diff_scroll_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) {
-    let max_scroll = git
-        .diff_total_lines
-        .saturating_sub(git.diff_view_height);
+    let max_scroll = git.diff_total_lines.saturating_sub(git.diff_view_height);
     match key.code {
         KeyCode::Char('j') | KeyCode::Down => {
             git.diff_scroll_y = (git.diff_scroll_y + 1).min(max_scroll);
@@ -96,19 +94,16 @@ pub(crate) fn handle_diff_normal_key(ctx: &mut AppContext, git: &mut GitState, k
             }
             'g' => {
                 let lines = content_lines(git);
-                match key.code {
-                    KeyCode::Char('g') => {
-                        // gg or {count}gg — go to line
-                        if let Some(n) = git.count.take() {
-                            git.cursor_pos.row =
-                                (n.saturating_sub(1)).min(lines.len().saturating_sub(1));
-                        } else {
-                            git.cursor_pos.row = 0;
-                        }
-                        git.cursor_pos.col = 0;
-                        clamp_col(git, &lines);
+                if let KeyCode::Char('g') = key.code {
+                    // gg or {count}gg — go to line
+                    if let Some(n) = git.count.take() {
+                        git.cursor_pos.row =
+                            (n.saturating_sub(1)).min(lines.len().saturating_sub(1));
+                    } else {
+                        git.cursor_pos.row = 0;
                     }
-                    _ => {}
+                    git.cursor_pos.col = 0;
+                    clamp_col(git, &lines);
                 }
                 git.count = None;
                 scroll_to_cursor(git);
@@ -147,8 +142,7 @@ pub(crate) fn handle_diff_normal_key(ctx: &mut AppContext, git: &mut GitState, k
         }
         KeyCode::Char('l') | KeyCode::Right => {
             let line_len = current_line_len(git, &lines);
-            git.cursor_pos.col =
-                (git.cursor_pos.col + n).min(line_len.saturating_sub(1));
+            git.cursor_pos.col = (git.cursor_pos.col + n).min(line_len.saturating_sub(1));
         }
         KeyCode::Char('j') | KeyCode::Down => {
             git.cursor_pos.row = (git.cursor_pos.row + n).min(total - 1);
@@ -235,7 +229,13 @@ fn take_count(git: &mut GitState) -> usize {
 }
 
 /// Execute y + motion (yy, yw, y$, y0, yb, ye) with count
-fn execute_yank_motion(ctx: &mut AppContext, git: &mut GitState, motion: KeyCode, lines: &[String], count: usize) {
+fn execute_yank_motion(
+    ctx: &mut AppContext,
+    git: &mut GitState,
+    motion: KeyCode,
+    lines: &[String],
+    count: usize,
+) {
     let text = match motion {
         // yy or {n}yy — yank current line(s)
         KeyCode::Char('y') => {
@@ -412,8 +412,7 @@ pub(crate) fn handle_diff_visual_key(ctx: &mut AppContext, git: &mut GitState, k
         }
         KeyCode::Char('l') | KeyCode::Right => {
             let line_len = current_line_len(git, &lines);
-            git.cursor_pos.col =
-                (git.cursor_pos.col + n).min(line_len.saturating_sub(1));
+            git.cursor_pos.col = (git.cursor_pos.col + n).min(line_len.saturating_sub(1));
         }
         KeyCode::Char('j') | KeyCode::Down => {
             git.cursor_pos.row = (git.cursor_pos.row + n).min(total - 1);
@@ -630,11 +629,11 @@ fn move_word_backward(git: &mut GitState, lines: &[String]) {
     // Move back one
     col = col.saturating_sub(1);
     // Skip whitespace backward
-    while col > 0 && line.get(col).map_or(false, |c| c.is_whitespace()) {
+    while col > 0 && line.get(col).is_some_and(|c| c.is_whitespace()) {
         col -= 1;
     }
     // Skip word chars backward
-    while col > 0 && line.get(col - 1).map_or(false, |c| !c.is_whitespace()) {
+    while col > 0 && line.get(col - 1).is_some_and(|c| !c.is_whitespace()) {
         col -= 1;
     }
     git.cursor_pos.row = row;
@@ -670,7 +669,10 @@ fn move_word_end(git: &mut GitState, lines: &[String]) {
 }
 
 fn line_len_at(lines: &[String], row: usize) -> usize {
-    lines.get(row).map(|l| l.chars().count().max(1)).unwrap_or(1)
+    lines
+        .get(row)
+        .map(|l| l.chars().count().max(1))
+        .unwrap_or(1)
 }
 
 fn yank_selection(git: &GitState, lines: &[String]) -> String {
@@ -801,8 +803,8 @@ fn select_text_object_delim(
         }
         // Search forward for close
         let mut close_pos = None;
-        for i in (col + 1)..chars.len() {
-            if chars[i] == close {
+        for (i, &ch) in chars.iter().enumerate().skip(col + 1) {
+            if ch == close {
                 close_pos = Some(i);
                 break;
             }

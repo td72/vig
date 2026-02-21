@@ -1,8 +1,8 @@
-use crate::core::app::{AppContext, ViewEntry};
-use crate::core::container::PaneContainer;
+use crate::core::app::{AppContext, Page};
+use crate::core::page::{PageAction, PageHandler};
 use crate::core::pane::{DetailPane, SelectPane};
+use crate::core::pane_router::PaneRouter;
 use crate::core::ui::status_bar;
-use crate::core::view::{View, ViewAction};
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
 use crate::github::state::{GhFocusedPane, GitHubState};
 use anyhow::Result;
@@ -10,9 +10,12 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
 use std::any::Any;
 
-/// Create a GitHub view entry.
-pub fn new_entry() -> ViewEntry {
-    ViewEntry { view: &GhView, state: Box::new(GitHubState::new()) }
+/// Create a GitHub page.
+pub fn new_page() -> Page {
+    Page {
+        handler: &GhPageHandler,
+        state: Box::new(GitHubState::new()),
+    }
 }
 
 // === Domain types ===
@@ -23,7 +26,7 @@ pub enum GhDetailId {
     DetailView,
 }
 
-pub struct GhPaneGroup {
+pub struct GhPaneTab {
     pub select: &'static dyn SelectPane<GitHubState>,
     #[allow(dead_code)]
     pub detail: GhDetailId,
@@ -32,13 +35,13 @@ pub struct GhPaneGroup {
 
 // === Tab definitions ===
 
-pub static GH_GROUPS: &[GhPaneGroup] = &[
-    GhPaneGroup {
+pub static GH_TABS: &[GhPaneTab] = &[
+    GhPaneTab {
         select: &GhIssueListPane,
         detail: GhDetailId::DetailView,
         id: GhFocusedPane::IssueList,
     },
-    GhPaneGroup {
+    GhPaneTab {
         select: &GhPrListPane,
         detail: GhDetailId::DetailView,
         id: GhFocusedPane::PrList,
@@ -47,7 +50,11 @@ pub static GH_GROUPS: &[GhPaneGroup] = &[
 
 // === View-level key handling ===
 
-pub fn handle_gh_view_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEvent) -> Result<ViewAction> {
+pub fn handle_gh_view_key(
+    ctx: &mut AppContext,
+    gh: &mut GitHubState,
+    key: KeyEvent,
+) -> Result<PageAction> {
     match key.code {
         KeyCode::Char('q') => {
             ctx.should_quit = true;
@@ -67,7 +74,7 @@ pub fn handle_gh_view_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEv
         }
         _ => dispatch_gh_key(ctx, gh, key),
     }
-    Ok(ViewAction::None)
+    Ok(PageAction::None)
 }
 
 // === Dispatch ===
@@ -76,27 +83,27 @@ pub fn handle_gh_view_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEv
 pub fn dispatch_gh_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEvent) {
     match gh.focused_pane {
         GhFocusedPane::Detail => GhDetailViewPane.handle_key(ctx, gh, key),
-        _ => GhContainer.dispatch(ctx, gh, key),
+        _ => GhPaneRouter.dispatch(ctx, gh, key),
     }
 }
 
 // === Container ===
 
-pub(crate) struct GhContainer;
+pub(crate) struct GhPaneRouter;
 
-impl PaneContainer<GitHubState> for GhContainer {
+impl PaneRouter<GitHubState> for GhPaneRouter {
     fn current_index(&self, state: &GitHubState) -> Option<usize> {
-        GH_GROUPS.iter().position(|g| g.id == state.focused_pane)
+        GH_TABS.iter().position(|g| g.id == state.focused_pane)
     }
     fn focus_index(&self, _ctx: &mut AppContext, state: &mut GitHubState, idx: usize) {
-        state.focused_pane = GH_GROUPS[idx].id;
+        state.focused_pane = GH_TABS[idx].id;
         load_gh_detail_for_tab(state);
     }
     fn pane_at(&self, idx: usize) -> &'static dyn SelectPane<GitHubState> {
-        GH_GROUPS[idx].select
+        GH_TABS[idx].select
     }
     fn len(&self) -> usize {
-        GH_GROUPS.len()
+        GH_TABS.len()
     }
 
     fn is_prev_key(&self, key: &KeyEvent) -> bool {
@@ -117,10 +124,12 @@ fn load_gh_detail_for_tab(state: &mut GitHubState) {
 
 // === View ===
 
-pub struct GhView;
+pub struct GhPageHandler;
 
-impl View for GhView {
-    fn label(&self) -> &'static str { "GitHub" }
+impl PageHandler for GhPageHandler {
+    fn label(&self) -> &'static str {
+        "GitHub"
+    }
 
     fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
         vec![
@@ -142,7 +151,12 @@ impl View for GhView {
         ]
     }
 
-    fn handle_key(&self, ctx: &mut AppContext, state: &mut dyn Any, key: KeyEvent) -> Result<ViewAction> {
+    fn handle_key(
+        &self,
+        ctx: &mut AppContext,
+        state: &mut dyn Any,
+        key: KeyEvent,
+    ) -> Result<PageAction> {
         let gh = state.downcast_mut::<GitHubState>().unwrap();
         handle_gh_view_key(ctx, gh, key)
     }

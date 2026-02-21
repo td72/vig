@@ -2,6 +2,8 @@ use ratatui::style::Color;
 use syntect::highlighting::{HighlightIterator, HighlightState, Highlighter, Theme, ThemeSet};
 use syntect::parsing::{ParseState, ScopeStack, SyntaxDefinition, SyntaxReference, SyntaxSet};
 
+pub type HighlightPair = (Vec<Vec<Color>>, Vec<Vec<Color>>);
+
 pub struct SyntaxHighlighter {
     syntax_set: SyntaxSet,
     theme: Theme,
@@ -204,8 +206,7 @@ impl SyntaxHighlighter {
             if inc.hunk_starts.contains(&i) {
                 if let Some(syntax) = self.find_syntax(&cache.file_path, None) {
                     inc.left_parse_state = ParseState::new(syntax);
-                    inc.left_highlight_state =
-                        HighlightState::new(&highlighter, ScopeStack::new());
+                    inc.left_highlight_state = HighlightState::new(&highlighter, ScopeStack::new());
                     inc.right_parse_state = ParseState::new(syntax);
                     inc.right_highlight_state =
                         HighlightState::new(&highlighter, ScopeStack::new());
@@ -246,7 +247,7 @@ impl SyntaxHighlighter {
         left_lines: &[String],
         right_lines: &[String],
         hunk_starts: &[usize],
-    ) -> Option<(Vec<Vec<Color>>, Vec<Vec<Color>>)> {
+    ) -> Option<HighlightPair> {
         let first_content = left_lines
             .iter()
             .enumerate()
@@ -275,10 +276,18 @@ impl SyntaxHighlighter {
                 continue;
             }
             left_colors.push(highlight_line_colors(
-                l, &mut left_parse, &mut left_hl, &self.syntax_set, &highlighter,
+                l,
+                &mut left_parse,
+                &mut left_hl,
+                &self.syntax_set,
+                &highlighter,
             ));
             right_colors.push(highlight_line_colors(
-                r, &mut right_parse, &mut right_hl, &self.syntax_set, &highlighter,
+                r,
+                &mut right_parse,
+                &mut right_hl,
+                &self.syntax_set,
+                &highlighter,
             ));
         }
 
@@ -301,8 +310,7 @@ fn highlight_line_colors(
         Err(_) => return Vec::new(),
     };
     let mut colors = Vec::new();
-    for (style, text) in HighlightIterator::new(highlight_state, &ops, &line_with_nl, highlighter)
-    {
+    for (style, text) in HighlightIterator::new(highlight_state, &ops, &line_with_nl, highlighter) {
         let color = syntect_to_ratatui_color(style.foreground);
         for _ in text.chars() {
             colors.push(color);

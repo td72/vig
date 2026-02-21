@@ -275,7 +275,7 @@ impl GitHubState {
                             }
                         }
                     }
-                },
+                }
             }
         }
 
@@ -525,7 +525,7 @@ fn local_utc_offset_secs() -> i64 {
     })
 }
 
-impl crate::core::app::ViewState for GitHubState {
+impl crate::core::app::PageState for GitHubState {
     fn drain_background(&mut self) {
         self.drain_bg_messages();
     }

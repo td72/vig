@@ -23,9 +23,9 @@ pub fn compute_layout(area: Rect) -> AppLayout {
     let top_row = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Length(30),    // file tree
+            Constraint::Length(30),     // file tree
             Constraint::Percentage(35), // branch list
-            Constraint::Min(20),       // reflog
+            Constraint::Min(20),        // reflog
         ])
         .split(vertical[1]);
 

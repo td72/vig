@@ -67,9 +67,11 @@ pub fn render(f: &mut Frame, git: &GitState, area: Rect) {
         let key_char = action.key();
         let label = action.label();
         let item_bg = if is_selected { Color::DarkGray } else { BG };
-        let style = Style::default()
-            .bg(item_bg)
-            .add_modifier(if is_selected { Modifier::BOLD } else { Modifier::empty() });
+        let style = Style::default().bg(item_bg).add_modifier(if is_selected {
+            Modifier::BOLD
+        } else {
+            Modifier::empty()
+        });
         let key_style = Style::default()
             .fg(Color::Cyan)
             .bg(item_bg)

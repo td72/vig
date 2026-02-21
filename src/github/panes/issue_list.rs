@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
-use crate::github::state::{GhFocusedPane, GitHubState};
 use crate::core::pane::SelectPane;
+use crate::github::state::{GhFocusedPane, GitHubState};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -16,9 +16,7 @@ impl SelectPane<GitHubState> for GhIssueListPane {
     fn handle_key(&self, ctx: &mut AppContext, state: &mut GitHubState, key: KeyEvent) {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                if !state.issues.is_empty()
-                    && state.issue_selected_idx + 1 < state.issues.len()
-                {
+                if !state.issues.is_empty() && state.issue_selected_idx + 1 < state.issues.len() {
                     state.issue_selected_idx += 1;
                     state.load_selected_issue_detail();
                 }
@@ -66,7 +64,11 @@ impl SelectPane<GitHubState> for GhIssueListPane {
 
     fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitHubState, area: Rect) {
         let is_focused = state.focused_pane == GhFocusedPane::IssueList;
-        let border_color = if is_focused { Color::Cyan } else { Color::DarkGray };
+        let border_color = if is_focused {
+            Color::Cyan
+        } else {
+            Color::DarkGray
+        };
 
         let block = Block::default()
             .title(" Issues ")

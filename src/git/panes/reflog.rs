@@ -1,9 +1,8 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
-use crate::git::container::refresh_diff;
-use crate::git::state::{FocusedPane, GitState};
 use crate::core::pane::SelectPane;
+use crate::git::page::refresh_diff;
+use crate::git::state::{FocusedPane, GitState};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use std::collections::HashSet;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -11,6 +10,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
     Frame,
 };
+use std::collections::HashSet;
 
 pub struct ReflogPane;
 
@@ -84,26 +84,27 @@ impl SelectPane<GitState> for ReflogPane {
         }
 
         // Build set of matched reflog entry indices
-        let (match_set, current_match_idx) = if state.search.origin == SearchOrigin::Reflog {
-            let set: HashSet<usize> = state
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::ReflogEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = state.search.current_match_idx.and_then(|ci| {
-                match state.search.matches.get(ci) {
-                    Some(SearchMatch::ReflogEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+        let (match_set, current_match_idx) =
+            if state.search.origin == SearchOrigin::Reflog {
+                let set: HashSet<usize> = state
+                    .search
+                    .matches
+                    .iter()
+                    .filter_map(|m| match m {
+                        SearchMatch::ReflogEntry(idx) => Some(*idx),
+                        _ => None,
+                    })
+                    .collect();
+                let current = state.search.current_match_idx.and_then(|ci| {
+                    match state.search.matches.get(ci) {
+                        Some(SearchMatch::ReflogEntry(idx)) => Some(*idx),
+                        _ => None,
+                    }
+                });
+                (set, current)
+            } else {
+                (HashSet::new(), None)
+            };
 
         let items: Vec<ListItem> = state
             .reflog
@@ -124,25 +125,35 @@ impl SelectPane<GitState> for ReflogPane {
 
                 let hash_style = {
                     let mut s = Style::default().fg(fg_override.unwrap_or(Color::Yellow));
-                    if let Some(bg) = bg { s = s.bg(bg); }
+                    if let Some(bg) = bg {
+                        s = s.bg(bg);
+                    }
                     s
                 };
                 let selector_style = {
                     let mut s = Style::default().fg(fg_override.unwrap_or(Color::DarkGray));
-                    if let Some(bg) = bg { s = s.bg(bg); }
+                    if let Some(bg) = bg {
+                        s = s.bg(bg);
+                    }
                     s
                 };
                 let action_style = {
                     let mut s = Style::default()
                         .fg(fg_override.unwrap_or(Color::Cyan))
                         .add_modifier(Modifier::BOLD);
-                    if let Some(bg) = bg { s = s.bg(bg); }
+                    if let Some(bg) = bg {
+                        s = s.bg(bg);
+                    }
                     s
                 };
                 let msg_style = {
                     let mut s = Style::default();
-                    if let Some(fg) = fg_override { s = s.fg(fg); }
-                    if let Some(bg) = bg { s = s.bg(bg); }
+                    if let Some(fg) = fg_override {
+                        s = s.fg(fg);
+                    }
+                    if let Some(bg) = bg {
+                        s = s.bg(bg);
+                    }
                     s
                 };
 
@@ -166,7 +177,9 @@ impl SelectPane<GitState> for ReflogPane {
                 .add_modifier(Modifier::BOLD)
         };
 
-        let list = List::new(items).block(block).highlight_style(highlight_style);
+        let list = List::new(items)
+            .block(block)
+            .highlight_style(highlight_style);
 
         let mut list_state = ListState::default();
         list_state.select(Some(selected));

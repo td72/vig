@@ -2,7 +2,7 @@ use crate::core::app::AppContext;
 use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};
 
-pub(crate) trait PaneContainer<S: 'static> {
+pub(crate) trait PaneRouter<S: 'static> {
     // Required: container-specific
     fn current_index(&self, state: &S) -> Option<usize>;
     fn focus_index(&self, ctx: &mut AppContext, state: &mut S, idx: usize);
@@ -16,7 +16,13 @@ pub(crate) trait PaneContainer<S: 'static> {
     fn is_next_key(&self, key: &KeyEvent) -> bool {
         matches!(key.code, KeyCode::Char('l'))
     }
-    fn handle_common_key(&self, _ctx: &mut AppContext, _state: &mut S, _key: KeyEvent, _idx: usize) -> bool {
+    fn handle_common_key(
+        &self,
+        _ctx: &mut AppContext,
+        _state: &mut S,
+        _key: KeyEvent,
+        _idx: usize,
+    ) -> bool {
         false
     }
 

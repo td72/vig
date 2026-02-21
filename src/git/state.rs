@@ -1,10 +1,9 @@
 use crate::core::app::SearchState;
-use crate::core::syntax::{HighlightCache, SyntaxHighlighter};
+use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::git::diff::{DiffState, FileDiff};
 use crate::git::graph::{self, GraphRow};
 use crate::git::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
 use anyhow::Result;
-use ratatui::style::Color;
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::mpsc;
@@ -132,9 +131,9 @@ pub struct GitState {
     /// Cached content_lines result: (file_path, side, lines). Invalidated on file/side switch.
     pub(crate) content_lines_cache: Option<(String, DiffSide, Vec<String>)>,
     /// Pre-computed highlight results from background thread, keyed by file path.
-    pub(crate) bg_highlights: HashMap<String, (Vec<Vec<Color>>, Vec<Vec<Color>>)>,
+    pub(crate) bg_highlights: HashMap<String, HighlightPair>,
     /// Receiver for background highlight results.
-    pub(crate) bg_highlight_rx: Option<mpsc::Receiver<(String, Vec<Vec<Color>>, Vec<Vec<Color>>)>>,
+    pub(crate) bg_highlight_rx: Option<mpsc::Receiver<(String, HighlightPair)>>,
     pub diff_base_ref: Option<String>,
     pub branch_list: BranchListState,
     pub git_log: GitLogState,
@@ -280,10 +279,16 @@ impl GitState {
                 right_lines.push(String::new());
                 for row in &hunk.rows {
                     left_lines.push(
-                        row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                        row.left
+                            .as_ref()
+                            .map(|s| s.content.clone())
+                            .unwrap_or_default(),
                     );
                     right_lines.push(
-                        row.right.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                        row.right
+                            .as_ref()
+                            .map(|s| s.content.clone())
+                            .unwrap_or_default(),
                     );
                 }
             }
@@ -299,7 +304,7 @@ impl GitState {
 
     /// Spawn a background thread to pre-highlight all files.
     pub(crate) fn spawn_bg_highlight(&mut self) {
-        let mut file_data: Vec<(String, Vec<String>, Vec<String>, Vec<usize>)> = Vec::new();
+        let mut file_data: Vec<_> = Vec::new();
         for file in &self.diff_state.files {
             if file.is_binary {
                 continue;
@@ -313,10 +318,16 @@ impl GitState {
                 right_lines.push(String::new());
                 for row in &hunk.rows {
                     left_lines.push(
-                        row.left.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                        row.left
+                            .as_ref()
+                            .map(|s| s.content.clone())
+                            .unwrap_or_default(),
                     );
                     right_lines.push(
-                        row.right.as_ref().map(|s| s.content.clone()).unwrap_or_default(),
+                        row.right
+                            .as_ref()
+                            .map(|s| s.content.clone())
+                            .unwrap_or_default(),
                     );
                 }
             }
@@ -333,10 +344,10 @@ impl GitState {
         std::thread::spawn(move || {
             let highlighter = SyntaxHighlighter::new();
             for (path, left_lines, right_lines, hunk_starts) in file_data {
-                if let Some((lc, rc)) = highlighter.highlight_all_lines(
-                    &path, &left_lines, &right_lines, &hunk_starts,
-                ) {
-                    if tx.send((path, lc, rc)).is_err() {
+                if let Some(pair) =
+                    highlighter.highlight_all_lines(&path, &left_lines, &right_lines, &hunk_starts)
+                {
+                    if tx.send((path, pair)).is_err() {
                         break; // Receiver dropped
                     }
                 }
@@ -347,8 +358,8 @@ impl GitState {
     /// Drain completed background highlight results into the local cache.
     pub fn drain_bg_highlights(&mut self) {
         if let Some(ref rx) = self.bg_highlight_rx {
-            while let Ok((path, left, right)) = rx.try_recv() {
-                self.bg_highlights.insert(path, (left, right));
+            while let Ok((path, pair)) = rx.try_recv() {
+                self.bg_highlights.insert(path, pair);
             }
         }
     }
@@ -362,11 +373,7 @@ impl GitState {
     }
 
     pub fn update_branch_log(&mut self) {
-        if let Some(branch) = self
-            .branch_list
-            .branches
-            .get(self.branch_list.selected_idx)
-        {
+        if let Some(branch) = self.branch_list.branches.get(self.branch_list.selected_idx) {
             self.git_log.ref_name = branch.name.clone();
             self.git_log.commits = self.repo.log_for_ref(&branch.name, 100);
             self.git_log.graph = graph::build_graph(&self.git_log.commits);
@@ -384,8 +391,7 @@ impl GitState {
 
     pub fn load_commit_detail(&mut self) {
         if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
-            self.git_log.detail_changed_files =
-                self.repo.commit_changed_files(&commit.full_hash);
+            self.git_log.detail_changed_files = self.repo.commit_changed_files(&commit.full_hash);
             self.git_log.detail_scroll = 0;
         } else {
             self.git_log.detail_changed_files.clear();
@@ -438,10 +444,7 @@ impl GitState {
                 let leaf_dir = dir.to_string();
                 if dir_file_count.get(&leaf_dir).copied().unwrap_or(0) == 1 {
                     // Single file in this directory — inline with full path at depth 0
-                    entries.push(TreeEntry::File {
-                        file_idx,
-                        depth: 0,
-                    });
+                    entries.push(TreeEntry::File { file_idx, depth: 0 });
                     // Don't update prev_dir_parts since we inlined
                     prev_dir_parts = Vec::new();
                     continue;
@@ -496,10 +499,7 @@ impl GitState {
             } else {
                 // Root-level file (no directory component)
                 prev_dir_parts = Vec::new();
-                entries.push(TreeEntry::File {
-                    file_idx,
-                    depth: 0,
-                });
+                entries.push(TreeEntry::File { file_idx, depth: 0 });
             }
         }
 
@@ -507,7 +507,7 @@ impl GitState {
     }
 }
 
-impl crate::core::app::ViewState for GitState {
+impl crate::core::app::PageState for GitState {
     fn drain_background(&mut self) {
         self.drain_bg_highlights();
     }
