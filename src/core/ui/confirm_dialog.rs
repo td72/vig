@@ -1,4 +1,4 @@
-use crate::core::app::App;
+use crate::core::app::AppContext;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -53,8 +53,8 @@ fn wrap_text(text: &str, width: usize) -> Vec<String> {
     result
 }
 
-pub fn render(f: &mut Frame, app: &App, area: Rect) {
-    let dialog = match &app.ctx.error_dialog {
+pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
+    let dialog = match &ctx.error_dialog {
         Some(d) => d,
         None => return,
     };

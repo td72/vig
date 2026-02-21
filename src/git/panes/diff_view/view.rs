@@ -1,5 +1,5 @@
-use crate::core::app::{App, SearchMatch};
-use crate::git::state::{CursorPos, DiffSide, DiffViewMode, FocusedPane};
+use crate::core::app::SearchMatch;
+use crate::git::state::{CursorPos, DiffSide, DiffViewMode, FocusedPane, GitState};
 use crate::git::diff::{FileDiff, LineType, SideBySideRow};
 use std::collections::HashMap;
 use ratatui::{
@@ -25,16 +25,16 @@ struct SearchHighlightInfo {
 }
 
 impl SearchHighlightInfo {
-    fn from_app(app: &App) -> Option<Self> {
-        let query = app.git.search.query.as_ref()?;
-        if query.is_empty() || app.git.search.matches.is_empty() {
+    fn from_state(state: &GitState) -> Option<Self> {
+        let query = state.search.query.as_ref()?;
+        if query.is_empty() || state.search.matches.is_empty() {
             return None;
         }
 
-        let current_idx = app.git.search.current_match_idx;
+        let current_idx = state.search.current_match_idx;
         let mut row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>> = HashMap::new();
 
-        for (i, m) in app.git.search.matches.iter().enumerate() {
+        for (i, m) in state.search.matches.iter().enumerate() {
             if let SearchMatch::DiffLine {
                 row,
                 col_start,
@@ -76,8 +76,8 @@ struct SelectionInfo {
     cursor: CursorPos,
 }
 
-pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
-    let border_color = if app.git.focused_pane == FocusedPane::DiffView {
+pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
+    let border_color = if state.focused_pane == FocusedPane::DiffView {
         Color::Cyan
     } else {
         Color::DarkGray
@@ -91,7 +91,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     let inner = block.inner(area);
     f.render_widget(block, area);
 
-    let file = match app.git.selected_file() {
+    let file = match state.selected_file() {
         Some(f) => f.clone(),
         None => {
             let msg = Paragraph::new(Line::from(Span::styled(
@@ -99,7 +99,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
                 Style::default().fg(Color::DarkGray),
             )));
             f.render_widget(msg, inner);
-            app.git.diff_total_lines = 0;
+            state.diff_total_lines = 0;
             return;
         }
     };
@@ -110,7 +110,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
             Style::default().fg(Color::DarkGray),
         )));
         f.render_widget(msg, inner);
-        app.git.diff_total_lines = 0;
+        state.diff_total_lines = 0;
         return;
     }
 
@@ -126,8 +126,8 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     };
 
     // Ensure syntax highlighting covers the visible range (incremental)
-    let visible_end = (app.git.diff_scroll_y as usize) + (content_area.height as usize) + 1;
-    app.git.ensure_file_highlight(&file, visible_end);
+    let visible_end = (state.diff_scroll_y as usize) + (content_area.height as usize) + 1;
+    state.ensure_file_highlight(&file, visible_end);
 
     // Split content area: left half | separator | right half
     let left_width = (content_area.width.saturating_sub(1)) / 2;
@@ -142,15 +142,15 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         .split(content_area);
 
     // Build selection info if in visual mode
-    let selection = build_selection_info(app);
+    let selection = build_selection_info(state);
 
     // Build search highlight info
-    let search_hl = SearchHighlightInfo::from_app(app);
+    let search_hl = SearchHighlightInfo::from_state(state);
 
     // Access cached highlight colors by reference (no clone)
     let (left_lines, right_lines) = {
         let empty: Vec<Vec<Color>> = Vec::new();
-        let (lc, rc) = match &app.git.highlight_cache {
+        let (lc, rc) = match &state.highlight_cache {
             Some(c) => (&c.left_colors, &c.right_colors),
             None => (&empty, &empty),
         };
@@ -158,7 +158,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
             &file,
             left_width as usize,
             right_width as usize,
-            app.git.diff_scroll_x,
+            state.diff_scroll_x,
             &selection,
             lc,
             rc,
@@ -167,10 +167,10 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     };
 
     let total_lines = left_lines.len() as u16;
-    app.git.diff_total_lines = total_lines;
-    app.git.diff_view_height = content_area.height;
+    state.diff_total_lines = total_lines;
+    state.diff_view_height = content_area.height;
 
-    let left_para = Paragraph::new(left_lines).scroll((app.git.diff_scroll_y, 0));
+    let left_para = Paragraph::new(left_lines).scroll((state.diff_scroll_y, 0));
     f.render_widget(left_para, panes[0]);
 
     // Separator
@@ -180,18 +180,18 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     let sep = Paragraph::new(sep_lines).scroll((0, 0));
     f.render_widget(sep, panes[1]);
 
-    let right_para = Paragraph::new(right_lines).scroll((app.git.diff_scroll_y, 0));
+    let right_para = Paragraph::new(right_lines).scroll((state.diff_scroll_y, 0));
     f.render_widget(right_para, panes[2]);
 
     // Status line
-    render_diff_statusline(f, app, &file.path, total_lines, statusline_area);
+    render_diff_statusline(f, state, &file.path, total_lines, statusline_area);
 }
 
-fn render_diff_statusline(f: &mut Frame, app: &App, file_path: &str, total_lines: u16, area: Rect) {
+fn render_diff_statusline(f: &mut Frame, state: &GitState, file_path: &str, total_lines: u16, area: Rect) {
     let width = area.width as usize;
 
     // Mode badge
-    let (mode_label, mode_style) = match app.git.diff_view_mode {
+    let (mode_label, mode_style) = match state.diff_view_mode {
         DiffViewMode::Scroll => ("SCROLL", Style::default().fg(Color::Black).bg(Color::DarkGray)),
         DiffViewMode::Normal => ("NORMAL", Style::default().fg(Color::Black).bg(Color::Cyan)),
         DiffViewMode::Visual => ("VISUAL", Style::default().fg(Color::Black).bg(Color::Magenta)),
@@ -206,31 +206,31 @@ fn render_diff_statusline(f: &mut Frame, app: &App, file_path: &str, total_lines
         .unwrap_or("");
 
     // Side indicator
-    let side = match app.git.diff_view_mode {
+    let side = match state.diff_view_mode {
         DiffViewMode::Scroll => "",
-        _ => match app.git.cursor_pos.side {
+        _ => match state.cursor_pos.side {
             DiffSide::Left => "LEFT",
             DiffSide::Right => "RIGHT",
         },
     };
 
     // Cursor position / scroll percentage
-    let position_info = match app.git.diff_view_mode {
+    let position_info = match state.diff_view_mode {
         DiffViewMode::Scroll => {
             if total_lines == 0 {
                 "Empty".to_string()
-            } else if total_lines <= app.git.diff_view_height {
+            } else if total_lines <= state.diff_view_height {
                 "All".to_string()
-            } else if app.git.diff_scroll_y == 0 {
+            } else if state.diff_scroll_y == 0 {
                 "Top".to_string()
-            } else if app.git.diff_scroll_y >= total_lines.saturating_sub(app.git.diff_view_height) {
+            } else if state.diff_scroll_y >= total_lines.saturating_sub(state.diff_view_height) {
                 "Bot".to_string()
             } else {
-                format!("{}%", app.git.diff_scroll_y as u32 * 100 / total_lines.saturating_sub(1) as u32)
+                format!("{}%", state.diff_scroll_y as u32 * 100 / total_lines.saturating_sub(1) as u32)
             }
         }
         _ => {
-            format!("{}:{}", app.git.cursor_pos.row + 1, app.git.cursor_pos.col + 1)
+            format!("{}:{}", state.cursor_pos.row + 1, state.cursor_pos.col + 1)
         }
     };
 
@@ -256,10 +256,10 @@ fn render_diff_statusline(f: &mut Frame, app: &App, file_path: &str, total_lines
 
     // Showcmd (pending key sequence)
     let mut showcmd = String::new();
-    if let Some(c) = app.git.count {
+    if let Some(c) = state.count {
         showcmd.push_str(&c.to_string());
     }
-    if let Some(k) = app.git.pending_key {
+    if let Some(k) = state.pending_key {
         if k == 'w' {
             showcmd.push_str("Ctrl+w");
         } else {
@@ -297,39 +297,39 @@ fn render_diff_statusline(f: &mut Frame, app: &App, file_path: &str, total_lines
     f.render_widget(Paragraph::new(line), area);
 }
 
-fn build_selection_info(app: &App) -> Option<SelectionInfo> {
-    match app.git.diff_view_mode {
+fn build_selection_info(state: &GitState) -> Option<SelectionInfo> {
+    match state.diff_view_mode {
         DiffViewMode::Normal => Some(SelectionInfo {
-            start: app.git.cursor_pos,
-            end: app.git.cursor_pos,
+            start: state.cursor_pos,
+            end: state.cursor_pos,
             mode: DiffViewMode::Normal,
-            cursor: app.git.cursor_pos,
+            cursor: state.cursor_pos,
         }),
         DiffViewMode::Visual => {
-            let anchor = app.git.visual_anchor?;
-            let (start, end) = if anchor.row < app.git.cursor_pos.row
-                || (anchor.row == app.git.cursor_pos.row && anchor.col <= app.git.cursor_pos.col)
+            let anchor = state.visual_anchor?;
+            let (start, end) = if anchor.row < state.cursor_pos.row
+                || (anchor.row == state.cursor_pos.row && anchor.col <= state.cursor_pos.col)
             {
-                (anchor, app.git.cursor_pos)
+                (anchor, state.cursor_pos)
             } else {
-                (app.git.cursor_pos, anchor)
+                (state.cursor_pos, anchor)
             };
             Some(SelectionInfo {
                 start,
                 end,
                 mode: DiffViewMode::Visual,
-                cursor: app.git.cursor_pos,
+                cursor: state.cursor_pos,
             })
         }
         DiffViewMode::VisualLine => {
-            let anchor = app.git.visual_anchor?;
-            let start_row = anchor.row.min(app.git.cursor_pos.row);
-            let end_row = anchor.row.max(app.git.cursor_pos.row);
+            let anchor = state.visual_anchor?;
+            let start_row = anchor.row.min(state.cursor_pos.row);
+            let end_row = anchor.row.max(state.cursor_pos.row);
             Some(SelectionInfo {
-                start: CursorPos { row: start_row, col: 0, side: app.git.cursor_pos.side },
-                end: CursorPos { row: end_row, col: usize::MAX, side: app.git.cursor_pos.side },
+                start: CursorPos { row: start_row, col: 0, side: state.cursor_pos.side },
+                end: CursorPos { row: end_row, col: usize::MAX, side: state.cursor_pos.side },
                 mode: DiffViewMode::VisualLine,
-                cursor: app.git.cursor_pos,
+                cursor: state.cursor_pos,
             })
         }
         DiffViewMode::Scroll => None,

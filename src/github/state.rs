@@ -524,3 +524,15 @@ fn local_utc_offset_secs() -> i64 {
             .unwrap_or(0)
     })
 }
+
+impl crate::core::app::ViewState for GitHubState {
+    fn drain_background(&mut self) {
+        self.drain_bg_messages();
+    }
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+        self
+    }
+}

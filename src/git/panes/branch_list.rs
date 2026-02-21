@@ -1,5 +1,7 @@
-use crate::core::app::{App, SearchMatch, SearchOrigin};
-use crate::git::state::FocusedPane;
+use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::git::branch_action;
+use crate::git::container::refresh_diff;
+use crate::git::state::{FocusedPane, GitState};
 use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};
 use std::collections::HashSet;
@@ -13,40 +15,38 @@ use ratatui::{
 
 pub struct BranchListPane;
 
-impl SelectPane for BranchListPane {
-    fn handle_key(&self, app: &mut App, key: KeyEvent) {
+impl SelectPane<GitState> for BranchListPane {
+    fn handle_key(&self, ctx: &mut AppContext, state: &mut GitState, key: KeyEvent) {
         match key.code {
             KeyCode::Esc => {
-                if app.git.diff_base_ref.is_some() {
-                    app.git.diff_base_ref = None;
-                    if let Err(e) = app.refresh_diff() {
-                        app.ctx.status_message = Some(format!("Diff error: {e}"));
-                    }
+                if state.diff_base_ref.is_some() {
+                    state.diff_base_ref = None;
+                    refresh_diff(ctx, state);
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                if !app.git.branch_list.branches.is_empty()
-                    && app.git.branch_list.selected_idx + 1 < app.git.branch_list.branches.len()
+                if !state.branch_list.branches.is_empty()
+                    && state.branch_list.selected_idx + 1 < state.branch_list.branches.len()
                 {
-                    app.git.branch_list.selected_idx += 1;
-                    app.git.update_branch_log();
+                    state.branch_list.selected_idx += 1;
+                    state.update_branch_log();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if app.git.branch_list.selected_idx > 0 {
-                    app.git.branch_list.selected_idx -= 1;
-                    app.git.update_branch_log();
+                if state.branch_list.selected_idx > 0 {
+                    state.branch_list.selected_idx -= 1;
+                    state.update_branch_log();
                 }
             }
             KeyCode::Enter => {
-                app.open_branch_action_menu();
+                branch_action::open_branch_action_menu(state);
             }
             _ => {}
         }
     }
 
-    fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
-        let border_color = if app.git.focused_pane == FocusedPane::BranchList {
+    fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitState, area: Rect) {
+        let border_color = if state.focused_pane == FocusedPane::BranchList {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -57,7 +57,7 @@ impl SelectPane for BranchListPane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        if app.git.branch_list.branches.is_empty() {
+        if state.branch_list.branches.is_empty() {
             let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
                 "  No branches",
                 Style::default().fg(Color::DarkGray),
@@ -68,9 +68,9 @@ impl SelectPane for BranchListPane {
         }
 
         // Build set of matched branch entry indices
-        let (match_set, current_match_idx) = if app.git.search.origin == SearchOrigin::BranchList {
-            let set: HashSet<usize> = app
-                .git.search
+        let (match_set, current_match_idx) = if state.search.origin == SearchOrigin::BranchList {
+            let set: HashSet<usize> = state
+                .search
                 .matches
                 .iter()
                 .filter_map(|m| match m {
@@ -78,8 +78,8 @@ impl SelectPane for BranchListPane {
                     _ => None,
                 })
                 .collect();
-            let current = app.git.search.current_match_idx.and_then(|ci| {
-                match app.git.search.matches.get(ci) {
+            let current = state.search.current_match_idx.and_then(|ci| {
+                match state.search.matches.get(ci) {
                     Some(SearchMatch::BranchEntry(idx)) => Some(*idx),
                     _ => None,
                 }
@@ -89,8 +89,8 @@ impl SelectPane for BranchListPane {
             (HashSet::new(), None)
         };
 
-        let items: Vec<ListItem> = app
-            .git.branch_list
+        let items: Vec<ListItem> = state
+            .branch_list
             .branches
             .iter()
             .enumerate()
@@ -139,7 +139,7 @@ impl SelectPane for BranchListPane {
             })
             .collect();
 
-        let selected = app.git.branch_list.selected_idx;
+        let selected = state.branch_list.selected_idx;
         let selected_is_match = match_set.contains(&selected);
 
         let highlight_style = if selected_is_match {
@@ -152,8 +152,8 @@ impl SelectPane for BranchListPane {
 
         let list = List::new(items).block(block).highlight_style(highlight_style);
 
-        let mut state = ListState::default();
-        state.select(Some(selected));
-        f.render_stateful_widget(list, area, &mut state);
+        let mut list_state = ListState::default();
+        list_state.select(Some(selected));
+        f.render_stateful_widget(list, area, &mut list_state);
     }
 }

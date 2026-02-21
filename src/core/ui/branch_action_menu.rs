@@ -1,5 +1,4 @@
-use crate::core::app::App;
-use crate::git::state::BranchAction;
+use crate::git::state::{BranchAction, GitState};
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -24,8 +23,8 @@ fn pad_line(line: Line<'static>, width: usize) -> Line<'static> {
     }
 }
 
-pub fn render(f: &mut Frame, app: &App, area: Rect) {
-    let menu = match &app.git.branch_action_menu {
+pub fn render(f: &mut Frame, git: &GitState, area: Rect) {
+    let menu = match &git.branch_action_menu {
         Some(m) => m,
         None => return,
     };

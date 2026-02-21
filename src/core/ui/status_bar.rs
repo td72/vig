@@ -1,4 +1,6 @@
-use crate::core::app::{App, ViewMode};
+use crate::core::app::{AppContext, ViewMode};
+use crate::git::state::GitState;
+use crate::github::state::GitHubState;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -32,7 +34,7 @@ fn view_tab_spans(active: ViewMode) -> Vec<Span<'static>> {
     ]
 }
 
-pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
+pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
     let mut spans = vec![
         Span::styled(
             " vig ",
@@ -43,13 +45,13 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
         ),
         Span::raw(" "),
         Span::styled(
-            format!(" {} ", app.git.diff_state.branch_name),
+            format!(" {} ", git.diff_state.branch_name),
             Style::default().fg(Color::Black).bg(Color::Magenta),
         ),
     ];
 
     {
-        let base_label = match &app.git.diff_base_ref {
+        let base_label = match &git.diff_base_ref {
             Some(base) => format!(" vs {base} "),
             None => " vs HEAD ".to_string(),
         };
@@ -60,7 +62,7 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
         ));
     }
 
-    spans.extend(view_tab_spans(app.ctx.view_mode));
+    spans.extend(view_tab_spans(ctx.view_mode));
 
     spans.push(Span::raw("  "));
     spans.push(Span::styled(
@@ -72,7 +74,7 @@ pub fn render_header(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(Paragraph::new(title), area);
 }
 
-pub fn render_gh_header(f: &mut Frame, app: &App, area: Rect) {
+pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
     let mut spans = vec![
         Span::styled(
             " vig ",
@@ -90,7 +92,7 @@ pub fn render_gh_header(f: &mut Frame, app: &App, area: Rect) {
         ),
     ];
 
-    spans.extend(view_tab_spans(app.ctx.view_mode));
+    spans.extend(view_tab_spans(ctx.view_mode));
 
     spans.push(Span::raw("  "));
     spans.push(Span::styled(
@@ -102,9 +104,9 @@ pub fn render_gh_header(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(Paragraph::new(title), area);
 }
 
-pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
-    if app.git.search.active {
-        let prompt = format!("/{}\u{2588}", app.git.search.input);
+pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
+    if git.search.active {
+        let prompt = format!("/{}\u{2588}", git.search.input);
         let line = Line::from(Span::styled(
             format!(" {prompt}"),
             Style::default().fg(Color::White),
@@ -113,11 +115,11 @@ pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
         return;
     }
 
-    let file_count = app.git.diff_state.files.len();
-    let adds = app.git.diff_state.stats.additions;
-    let dels = app.git.diff_state.stats.deletions;
+    let file_count = git.diff_state.files.len();
+    let adds = git.diff_state.stats.additions;
+    let dels = git.diff_state.stats.deletions;
 
-    let status = if let Some(ref msg) = app.ctx.status_message {
+    let status = if let Some(ref msg) = ctx.status_message {
         Line::from(Span::styled(
             format!(" {msg}"),
             Style::default().fg(Color::Yellow),
@@ -143,8 +145,8 @@ pub fn render_status_bar(f: &mut Frame, app: &App, area: Rect) {
     f.render_widget(Paragraph::new(status), area);
 }
 
-pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
-    if let Some(ref err) = app.github.gh_error {
+pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, area: Rect) {
+    if let Some(ref err) = gh.gh_error {
         let line = Line::from(Span::styled(
             format!(" {err}"),
             Style::default().fg(Color::Red),
@@ -153,10 +155,10 @@ pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
         return;
     }
 
-    let issue_count = app.github.issues.len();
-    let pr_count = app.github.prs.len();
+    let issue_count = gh.issues.len();
+    let pr_count = gh.prs.len();
 
-    let loading = app.github.issues_loading || app.github.prs_loading;
+    let loading = gh.issues_loading || gh.prs_loading;
     let has_data = issue_count > 0 || pr_count > 0;
 
     let mut spans = Vec::new();
@@ -190,9 +192,9 @@ pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
         }
     }
 
-    if let Some(time) = app.github.watch_last_update_time() {
+    if let Some(time) = gh.watch_last_update_time() {
         spans.push(Span::raw("  "));
-        if let Some(ref err) = app.github.watch_error {
+        if let Some(ref err) = gh.watch_error {
             spans.push(Span::styled(
                 format!("\u{23f1} Watch (err: {err})"),
                 Style::default().fg(Color::Red),
@@ -203,6 +205,15 @@ pub fn render_gh_status_bar(f: &mut Frame, app: &App, area: Rect) {
                 Style::default().fg(Color::Yellow),
             ));
         }
+    }
+
+    // Status message (overrides if present)
+    if let Some(ref msg) = ctx.status_message {
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            msg.clone(),
+            Style::default().fg(Color::Yellow),
+        ));
     }
 
     let line = Line::from(spans);

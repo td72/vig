@@ -62,15 +62,15 @@ fn run_tui() -> Result<()> {
 
         // Draw
         terminal.draw(|frame| {
-            let view = app.active_view();
-            view.render(frame, &mut app, frame.area());
+            let area = frame.area();
+            app.render(frame, area);
 
             // Shared overlays (rendered on top of any view)
             if app.ctx.error_dialog.is_some() {
-                confirm_dialog::render(frame, &app, frame.area());
+                confirm_dialog::render(frame, &app.ctx, area);
             }
             if app.ctx.show_help {
-                status_bar::render_help_overlay(frame, frame.area(), app.ctx.view_mode);
+                status_bar::render_help_overlay(frame, area, app.ctx.view_mode);
             }
         })?;
 
@@ -101,16 +101,14 @@ fn run_tui() -> Result<()> {
                     events.drain();
                     events.resume();
 
-                    app.active_view().on_suspend_return(&mut app, status)?;
+                    app.on_suspend_return(status)?;
                 }
             }
             Event::FsChange => {
-                for view in App::all_views() {
-                    view.on_fs_change(&mut app)?;
-                }
+                app.on_fs_change()?;
             }
             Event::Tick => {
-                app.active_view().on_tick(&mut app);
+                app.on_tick();
             }
             Event::Resize(_, _) => {}
         }

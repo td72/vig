@@ -1,13 +1,14 @@
-use crate::core::app::App;
+use crate::core::app::AppContext;
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::core::ui::status_bar;
 use crate::core::view::{View, ViewAction};
 use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
-use crate::github::state::GhFocusedPane;
+use crate::github::state::{GhFocusedPane, GitHubState};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
+use std::any::Any;
 
 // === Domain types ===
 
@@ -18,7 +19,7 @@ pub enum GhDetailId {
 }
 
 pub struct GhPaneGroup {
-    pub select: &'static dyn SelectPane,
+    pub select: &'static dyn SelectPane<GitHubState>,
     #[allow(dead_code)]
     pub detail: GhDetailId,
     pub id: GhFocusedPane,
@@ -41,25 +42,25 @@ pub static GH_GROUPS: &[GhPaneGroup] = &[
 
 // === View-level key handling ===
 
-pub fn handle_gh_view_key(app: &mut App, key: KeyEvent) -> Result<ViewAction> {
+pub fn handle_gh_view_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEvent) -> Result<ViewAction> {
     match key.code {
         KeyCode::Char('q') => {
-            app.ctx.should_quit = true;
+            ctx.should_quit = true;
         }
         KeyCode::Char('?') => {
-            app.ctx.show_help = true;
+            ctx.show_help = true;
         }
         KeyCode::Char('r') => {
-            if app.github.focused_pane == GhFocusedPane::Detail {
-                app.github.refresh_detail();
+            if gh.focused_pane == GhFocusedPane::Detail {
+                gh.refresh_detail();
             } else {
-                app.github.refresh();
+                gh.refresh();
             }
         }
         KeyCode::Char('w') => {
-            app.github.toggle_watch_mode();
+            gh.toggle_watch_mode();
         }
-        _ => dispatch_gh_key(app, key),
+        _ => dispatch_gh_key(ctx, gh, key),
     }
     Ok(ViewAction::None)
 }
@@ -67,10 +68,10 @@ pub fn handle_gh_view_key(app: &mut App, key: KeyEvent) -> Result<ViewAction> {
 // === Dispatch ===
 
 /// Dispatch a key event to the currently focused GitHub pane.
-pub fn dispatch_gh_key(app: &mut App, key: KeyEvent) {
-    match app.github.focused_pane {
-        GhFocusedPane::Detail => GhDetailViewPane.handle_key(app, key),
-        _ => GhContainer.dispatch(app, key),
+pub fn dispatch_gh_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEvent) {
+    match gh.focused_pane {
+        GhFocusedPane::Detail => GhDetailViewPane.handle_key(ctx, gh, key),
+        _ => GhContainer.dispatch(ctx, gh, key),
     }
 }
 
@@ -78,15 +79,15 @@ pub fn dispatch_gh_key(app: &mut App, key: KeyEvent) {
 
 pub(crate) struct GhContainer;
 
-impl PaneContainer for GhContainer {
-    fn current_index(&self, app: &App) -> Option<usize> {
-        GH_GROUPS.iter().position(|g| g.id == app.github.focused_pane)
+impl PaneContainer<GitHubState> for GhContainer {
+    fn current_index(&self, state: &GitHubState) -> Option<usize> {
+        GH_GROUPS.iter().position(|g| g.id == state.focused_pane)
     }
-    fn focus_index(&self, app: &mut App, idx: usize) {
-        app.github.focused_pane = GH_GROUPS[idx].id;
-        load_gh_detail_for_tab(app);
+    fn focus_index(&self, _ctx: &mut AppContext, state: &mut GitHubState, idx: usize) {
+        state.focused_pane = GH_GROUPS[idx].id;
+        load_gh_detail_for_tab(state);
     }
-    fn pane_at(&self, idx: usize) -> &'static dyn SelectPane {
+    fn pane_at(&self, idx: usize) -> &'static dyn SelectPane<GitHubState> {
         GH_GROUPS[idx].select
     }
     fn len(&self) -> usize {
@@ -101,10 +102,10 @@ impl PaneContainer for GhContainer {
     }
 }
 
-fn load_gh_detail_for_tab(app: &mut App) {
-    match app.github.focused_pane {
-        GhFocusedPane::IssueList => app.github.load_selected_issue_detail(),
-        GhFocusedPane::PrList => app.github.load_selected_pr_detail(),
+fn load_gh_detail_for_tab(state: &mut GitHubState) {
+    match state.focused_pane {
+        GhFocusedPane::IssueList => state.load_selected_issue_detail(),
+        GhFocusedPane::PrList => state.load_selected_pr_detail(),
         _ => {}
     }
 }
@@ -114,24 +115,28 @@ fn load_gh_detail_for_tab(app: &mut App) {
 pub struct GhView;
 
 impl View for GhView {
-    fn handle_key(&self, app: &mut App, key: KeyEvent) -> Result<ViewAction> {
-        handle_gh_view_key(app, key)
+    fn handle_key(&self, ctx: &mut AppContext, state: &mut dyn Any, key: KeyEvent) -> Result<ViewAction> {
+        let gh = state.downcast_mut::<GitHubState>().unwrap();
+        handle_gh_view_key(ctx, gh, key)
     }
 
-    fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
+    fn render(&self, f: &mut Frame, ctx: &AppContext, state: &mut dyn Any, area: Rect) {
+        let gh = state.downcast_mut::<GitHubState>().unwrap();
         let gl = crate::github::layout::compute_gh_layout(area);
-        status_bar::render_gh_header(f, app, gl.header);
-        GhIssueListPane.render(f, app, gl.issue_list);
-        GhPrListPane.render(f, app, gl.pr_list);
-        GhDetailViewPane.render(f, app, gl.main_pane);
-        status_bar::render_gh_status_bar(f, app, gl.status_bar);
+        status_bar::render_gh_header(f, ctx, gl.header);
+        GhIssueListPane.render(f, ctx, gh, gl.issue_list);
+        GhPrListPane.render(f, ctx, gh, gl.pr_list);
+        GhDetailViewPane.render(f, ctx, gh, gl.main_pane);
+        status_bar::render_gh_status_bar(f, ctx, gh, gl.status_bar);
     }
 
-    fn on_tick(&self, app: &mut App) {
-        app.github.handle_watch_tick();
+    fn on_tick(&self, _ctx: &mut AppContext, state: &mut dyn Any) {
+        let gh = state.downcast_mut::<GitHubState>().unwrap();
+        gh.handle_watch_tick();
     }
 
-    fn on_activate(&self, app: &mut App) {
-        app.github.initialize();
+    fn on_activate(&self, _ctx: &mut AppContext, state: &mut dyn Any) {
+        let gh = state.downcast_mut::<GitHubState>().unwrap();
+        gh.initialize();
     }
 }

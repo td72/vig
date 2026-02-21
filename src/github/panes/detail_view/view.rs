@@ -1,5 +1,4 @@
-use crate::core::app::App;
-use crate::github::state::{GhDetailContent, GhDetailPane, GhFocusedPane};
+use crate::github::state::{GhDetailContent, GhDetailPane, GhFocusedPane, GitHubState};
 use crate::github::types::*;
 use ratatui::{
     layout::{Constraint, Layout, Rect},
@@ -32,8 +31,8 @@ pub fn meaningful_reviews(reviews: &[GhReview]) -> Vec<&GhReview> {
         .collect()
 }
 
-pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
-    let is_focused = app.github.focused_pane == GhFocusedPane::Detail;
+pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
+    let is_focused = state.focused_pane == GhFocusedPane::Detail;
     let border_color = if is_focused { Color::Cyan } else { Color::DarkGray };
 
     let block = Block::default()
@@ -45,7 +44,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     f.render_widget(block, area);
 
     // Early return for non-loaded states
-    match &app.github.detail {
+    match &state.detail {
         GhDetailContent::None => {
             let para = Paragraph::new(Line::from(Span::styled(
                 "  Select an issue or PR to view details",
@@ -78,7 +77,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     }
 
     // Build header lines
-    let header_lines = match &app.github.detail {
+    let header_lines = match &state.detail {
         GhDetailContent::Issue(detail) => build_issue_header(detail),
         GhDetailContent::Pr(detail) => build_pr_header(detail),
         _ => unreachable!(),
@@ -101,10 +100,10 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
     let cols = Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(vert[1]);
 
-    let active_pane = app.github.detail_pane;
+    let active_pane = state.detail_pane;
 
     // Left pane: Body
-    let body_lines = match &app.github.detail {
+    let body_lines = match &state.detail {
         GhDetailContent::Issue(detail) => build_body_lines(&detail.body),
         GhDetailContent::Pr(detail) => build_body_lines(&detail.body),
         _ => unreachable!(),
@@ -116,21 +115,21 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
         body_lines,
         active_pane == GhDetailPane::Body,
         is_focused,
-        app.github.detail_scroll_body,
+        state.detail_scroll_body,
     );
 
     // Right side
-    match &app.github.detail {
+    match &state.detail {
         GhDetailContent::Issue(detail) => {
             // Issue: single Comments pane on the right
             let count = detail.comments.len();
             let title = format!("Comments ({count})");
             if active_pane == GhDetailPane::Body {
-                app.github.detail_view_height = cols[0].height;
+                state.detail_view_height = cols[0].height;
             } else {
-                app.github.detail_view_height = cols[1].height;
+                state.detail_view_height = cols[1].height;
             }
-            let (comments_lines, sel_scroll) = build_comments_lines(&detail.comments, app.github.detail_comment_idx);
+            let (comments_lines, sel_scroll) = build_comments_lines(&detail.comments, state.detail_comment_idx);
             render_pane(
                 f,
                 cols[1],
@@ -138,7 +137,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
                 comments_lines,
                 active_pane == GhDetailPane::Comments,
                 is_focused,
-                sel_scroll + app.github.detail_scroll_comments,
+                sel_scroll + state.detail_scroll_comments,
             );
         }
         GhDetailContent::Pr(detail) => {
@@ -150,7 +149,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
             ])
             .split(cols[1]);
 
-            app.github.detail_view_height = match active_pane {
+            state.detail_view_height = match active_pane {
                 GhDetailPane::Body => cols[0].height,
                 GhDetailPane::Status => right_rows[0].height,
                 GhDetailPane::Reviews => right_rows[1].height,
@@ -169,7 +168,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
                 detail,
                 active_pane == GhDetailPane::Status,
                 is_focused,
-                app.github.detail_check_idx,
+                state.detail_check_idx,
             );
 
             let review_count = detail
@@ -178,7 +177,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
                 .filter(|r| !r.body.is_empty() || r.state != "COMMENTED")
                 .count();
             let reviews_title = format!("Reviews ({review_count})");
-            let (reviews_lines, rev_scroll) = build_reviews_lines(&detail.reviews, app.github.detail_review_idx);
+            let (reviews_lines, rev_scroll) = build_reviews_lines(&detail.reviews, state.detail_review_idx);
             render_pane(
                 f,
                 right_rows[1],
@@ -186,12 +185,12 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
                 reviews_lines,
                 active_pane == GhDetailPane::Reviews,
                 is_focused,
-                rev_scroll + app.github.detail_scroll_reviews,
+                rev_scroll + state.detail_scroll_reviews,
             );
 
             let comments_count = detail.comments.len();
             let comments_title = format!("Comments ({comments_count})");
-            let (comments_lines, cmt_scroll) = build_comments_lines(&detail.comments, app.github.detail_comment_idx);
+            let (comments_lines, cmt_scroll) = build_comments_lines(&detail.comments, state.detail_comment_idx);
             render_pane(
                 f,
                 right_rows[2],
@@ -199,7 +198,7 @@ pub fn render(f: &mut Frame, app: &mut App, area: Rect) {
                 comments_lines,
                 active_pane == GhDetailPane::Comments,
                 is_focused,
-                cmt_scroll + app.github.detail_scroll_comments,
+                cmt_scroll + state.detail_scroll_comments,
             );
         }
         _ => unreachable!(),

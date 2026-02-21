@@ -1,5 +1,6 @@
-use crate::core::app::{App, SearchMatch, SearchOrigin, TreeEntry};
-use crate::git::state::FocusedPane;
+use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::git::search;
+use crate::git::state::{FocusedPane, GitState, TreeEntry};
 use crate::git::diff::FileStatus;
 use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};
@@ -14,53 +15,53 @@ use ratatui::{
 
 pub struct FileTreePane;
 
-impl SelectPane for FileTreePane {
-    fn handle_key(&self, app: &mut App, key: KeyEvent) {
-        let entries = app.git.build_tree_entries();
+impl SelectPane<GitState> for FileTreePane {
+    fn handle_key(&self, _ctx: &mut AppContext, state: &mut GitState, key: KeyEvent) {
+        let entries = state.build_tree_entries();
         if entries.is_empty() {
             return;
         }
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                if app.git.selected_tree_idx + 1 < entries.len() {
-                    app.git.selected_tree_idx += 1;
-                    app.git.diff_scroll_y = 0;
-                    app.git.diff_scroll_x = 0;
-                    app.re_search_on_file_change();
+                if state.selected_tree_idx + 1 < entries.len() {
+                    state.selected_tree_idx += 1;
+                    state.diff_scroll_y = 0;
+                    state.diff_scroll_x = 0;
+                    search::re_search_on_file_change(state);
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if app.git.selected_tree_idx > 0 {
-                    app.git.selected_tree_idx -= 1;
-                    app.git.diff_scroll_y = 0;
-                    app.git.diff_scroll_x = 0;
-                    app.re_search_on_file_change();
+                if state.selected_tree_idx > 0 {
+                    state.selected_tree_idx -= 1;
+                    state.diff_scroll_y = 0;
+                    state.diff_scroll_x = 0;
+                    search::re_search_on_file_change(state);
                 }
             }
             KeyCode::Char(' ') => {
-                if let Some(TreeEntry::Dir { path, .. }) = entries.get(app.git.selected_tree_idx) {
+                if let Some(TreeEntry::Dir { path, .. }) = entries.get(state.selected_tree_idx) {
                     let path = path.clone();
-                    if app.git.collapsed_dirs.contains(&path) {
-                        app.git.collapsed_dirs.remove(&path);
+                    if state.collapsed_dirs.contains(&path) {
+                        state.collapsed_dirs.remove(&path);
                     } else {
-                        app.git.collapsed_dirs.insert(path);
+                        state.collapsed_dirs.insert(path);
                     }
                 }
             }
             KeyCode::Right | KeyCode::Enter => {
-                match entries.get(app.git.selected_tree_idx) {
+                match entries.get(state.selected_tree_idx) {
                     Some(TreeEntry::Dir { path, .. }) => {
                         let path = path.clone();
-                        if app.git.collapsed_dirs.contains(&path) {
-                            app.git.collapsed_dirs.remove(&path);
+                        if state.collapsed_dirs.contains(&path) {
+                            state.collapsed_dirs.remove(&path);
                         } else {
-                            app.git.collapsed_dirs.insert(path);
+                            state.collapsed_dirs.insert(path);
                         }
                     }
                     Some(TreeEntry::File { .. }) => {
-                        app.git.set_focus(FocusedPane::DiffView);
-                        app.git.diff_scroll_y = 0;
-                        app.git.diff_scroll_x = 0;
+                        state.set_focus(FocusedPane::DiffView);
+                        state.diff_scroll_y = 0;
+                        state.diff_scroll_x = 0;
                     }
                     None => {}
                 }
@@ -69,8 +70,8 @@ impl SelectPane for FileTreePane {
         }
     }
 
-    fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
-        let border_color = if app.git.focused_pane == FocusedPane::FileTree {
+    fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitState, area: Rect) {
+        let border_color = if state.focused_pane == FocusedPane::FileTree {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -81,7 +82,7 @@ impl SelectPane for FileTreePane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        let entries = app.git.build_tree_entries();
+        let entries = state.build_tree_entries();
 
         if entries.is_empty() {
             let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
@@ -94,9 +95,9 @@ impl SelectPane for FileTreePane {
         }
 
         // Build set of matched tree entry indices and current match index
-        let (match_set, current_match_idx) = if app.git.search.origin == SearchOrigin::FileTree {
-            let set: HashSet<usize> = app
-                .git.search
+        let (match_set, current_match_idx) = if state.search.origin == SearchOrigin::FileTree {
+            let set: HashSet<usize> = state
+                .search
                 .matches
                 .iter()
                 .filter_map(|m| match m {
@@ -104,8 +105,8 @@ impl SelectPane for FileTreePane {
                     _ => None,
                 })
                 .collect();
-            let current = app.git.search.current_match_idx.and_then(|ci| {
-                match app.git.search.matches.get(ci) {
+            let current = state.search.current_match_idx.and_then(|ci| {
+                match state.search.matches.get(ci) {
                     Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
                     _ => None,
                 }
@@ -144,7 +145,7 @@ impl SelectPane for FileTreePane {
                     ListItem::new(line)
                 }
                 TreeEntry::File { file_idx, depth } => {
-                    let file = &app.git.diff_state.files[*file_idx];
+                    let file = &state.diff_state.files[*file_idx];
                     let indent = " ".repeat(depth * 2);
                     let icon_color = match file.status {
                         FileStatus::Modified => Color::Yellow,
@@ -181,13 +182,10 @@ impl SelectPane for FileTreePane {
             }})
             .collect();
 
-        // Use custom selection rendering: if selected item is a search match,
-        // use search highlight instead of default highlight_style.
-        let selected = app.git.selected_tree_idx;
+        let selected = state.selected_tree_idx;
         let selected_is_match = match_set.contains(&selected);
 
         let highlight_style = if selected_is_match {
-            // Let the item's own search-highlight style take precedence
             Style::default().add_modifier(Modifier::BOLD)
         } else {
             Style::default()
@@ -197,8 +195,8 @@ impl SelectPane for FileTreePane {
 
         let list = List::new(items).block(block).highlight_style(highlight_style);
 
-        let mut state = ListState::default();
-        state.select(Some(selected));
-        f.render_stateful_widget(list, area, &mut state);
+        let mut state2 = ListState::default();
+        state2.select(Some(selected));
+        f.render_stateful_widget(list, area, &mut state2);
     }
 }

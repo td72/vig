@@ -1,10 +1,10 @@
-mod branch_action;
+pub(crate) mod branch_action;
 pub(crate) mod container;
 pub mod diff;
 pub mod graph;
 pub mod layout;
 pub mod panes;
 pub mod repository;
-mod search;
+pub(crate) mod search;
 pub mod state;
 pub mod watcher;

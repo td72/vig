@@ -1,5 +1,5 @@
-use crate::core::app::App;
-use crate::github::state::GhFocusedPane;
+use crate::core::app::AppContext;
+use crate::github::state::{GhFocusedPane, GitHubState};
 use crate::core::pane::SelectPane;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -12,50 +12,50 @@ use ratatui::{
 
 pub struct GhIssueListPane;
 
-impl SelectPane for GhIssueListPane {
-    fn handle_key(&self, app: &mut App, key: KeyEvent) {
+impl SelectPane<GitHubState> for GhIssueListPane {
+    fn handle_key(&self, ctx: &mut AppContext, state: &mut GitHubState, key: KeyEvent) {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                if !app.github.issues.is_empty()
-                    && app.github.issue_selected_idx + 1 < app.github.issues.len()
+                if !state.issues.is_empty()
+                    && state.issue_selected_idx + 1 < state.issues.len()
                 {
-                    app.github.issue_selected_idx += 1;
-                    app.github.load_selected_issue_detail();
+                    state.issue_selected_idx += 1;
+                    state.load_selected_issue_detail();
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if app.github.issue_selected_idx > 0 {
-                    app.github.issue_selected_idx -= 1;
-                    app.github.load_selected_issue_detail();
+                if state.issue_selected_idx > 0 {
+                    state.issue_selected_idx -= 1;
+                    state.load_selected_issue_detail();
                 }
             }
             KeyCode::Char('g') => {
-                app.github.issue_selected_idx = 0;
-                app.github.load_selected_issue_detail();
+                state.issue_selected_idx = 0;
+                state.load_selected_issue_detail();
             }
             KeyCode::Char('G') => {
-                if !app.github.issues.is_empty() {
-                    app.github.issue_selected_idx = app.github.issues.len() - 1;
-                    app.github.load_selected_issue_detail();
+                if !state.issues.is_empty() {
+                    state.issue_selected_idx = state.issues.len() - 1;
+                    state.load_selected_issue_detail();
                 }
             }
             KeyCode::Char('i') | KeyCode::Enter => {
-                if !app.github.issues.is_empty() {
-                    app.github.previous_pane = GhFocusedPane::IssueList;
-                    app.github.focused_pane = GhFocusedPane::Detail;
-                    app.github.load_selected_issue_detail();
+                if !state.issues.is_empty() {
+                    state.previous_pane = GhFocusedPane::IssueList;
+                    state.focused_pane = GhFocusedPane::Detail;
+                    state.load_selected_issue_detail();
                 }
             }
             KeyCode::Char('o') => {
-                if let Some(issue) = app.github.issues.get(app.github.issue_selected_idx) {
+                if let Some(issue) = state.issues.get(state.issue_selected_idx) {
                     let number = issue.number;
                     match crate::github::client::open_issue_in_browser(number) {
                         Ok(()) => {
-                            app.ctx.status_message =
+                            ctx.status_message =
                                 Some(format!("Opening issue #{number} in browser..."));
                         }
                         Err(e) => {
-                            app.ctx.status_message = Some(format!("Failed to open browser: {e}"));
+                            ctx.status_message = Some(format!("Failed to open browser: {e}"));
                         }
                     }
                 }
@@ -64,8 +64,8 @@ impl SelectPane for GhIssueListPane {
         }
     }
 
-    fn render(&self, f: &mut Frame, app: &mut App, area: Rect) {
-        let is_focused = app.github.focused_pane == GhFocusedPane::IssueList;
+    fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitHubState, area: Rect) {
+        let is_focused = state.focused_pane == GhFocusedPane::IssueList;
         let border_color = if is_focused { Color::Cyan } else { Color::DarkGray };
 
         let block = Block::default()
@@ -73,7 +73,7 @@ impl SelectPane for GhIssueListPane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        if app.github.issues_loading && app.github.issues.is_empty() {
+        if state.issues_loading && state.issues.is_empty() {
             let items = vec![ListItem::new(Line::from(Span::styled(
                 "  Loading...",
                 Style::default().fg(Color::DarkGray),
@@ -83,7 +83,7 @@ impl SelectPane for GhIssueListPane {
             return;
         }
 
-        if app.github.issues.is_empty() {
+        if state.issues.is_empty() {
             let items = vec![ListItem::new(Line::from(Span::styled(
                 "  No issues",
                 Style::default().fg(Color::DarkGray),
@@ -93,8 +93,7 @@ impl SelectPane for GhIssueListPane {
             return;
         }
 
-        let items: Vec<ListItem> = app
-            .github
+        let items: Vec<ListItem> = state
             .issues
             .iter()
             .map(|issue| {
@@ -127,13 +126,13 @@ impl SelectPane for GhIssueListPane {
             .block(block)
             .highlight_style(highlight_style);
 
-        let mut state = ListState::default();
+        let mut list_state = ListState::default();
         if is_focused
-            || (app.github.focused_pane == GhFocusedPane::Detail
-                && app.github.previous_pane == GhFocusedPane::IssueList)
+            || (state.focused_pane == GhFocusedPane::Detail
+                && state.previous_pane == GhFocusedPane::IssueList)
         {
-            state.select(Some(app.github.issue_selected_idx));
+            list_state.select(Some(state.issue_selected_idx));
         }
-        f.render_stateful_widget(list, area, &mut state);
+        f.render_stateful_widget(list, area, &mut list_state);
     }
 }
