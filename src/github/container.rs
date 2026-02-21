@@ -1,4 +1,4 @@
-use crate::core::app::AppContext;
+use crate::core::app::{AppContext, ViewEntry};
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::core::ui::status_bar;
@@ -9,6 +9,11 @@ use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
 use std::any::Any;
+
+/// Create a GitHub view entry.
+pub fn new_entry() -> ViewEntry {
+    ViewEntry { view: &GhView, state: Box::new(GitHubState::new()) }
+}
 
 // === Domain types ===
 

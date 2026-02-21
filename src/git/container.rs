@@ -1,4 +1,4 @@
-use crate::core::app::{AppContext, SearchOrigin};
+use crate::core::app::{AppContext, SearchOrigin, ViewEntry};
 use crate::core::container::PaneContainer;
 use crate::core::pane::{DetailPane, SelectPane};
 use crate::core::ui::{branch_action_menu, status_bar};
@@ -14,6 +14,15 @@ use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
 use std::any::Any;
+use std::path::{Path, PathBuf};
+
+/// Create a Git view entry. Returns the entry and the resolved workdir path.
+pub fn new_entry(cwd: &Path) -> Result<(ViewEntry, PathBuf)> {
+    let git = GitState::new(cwd)?;
+    let workdir = git.repo.workdir().to_path_buf();
+    let entry = ViewEntry { view: &GitView, state: Box::new(git) };
+    Ok((entry, workdir))
+}
 
 // === Domain types ===
 

@@ -1,4 +1,3 @@
-pub use crate::git::state::*;
 pub use crate::core::search::{SearchMatch, SearchOrigin, SearchState};
 use crate::core::view::{View, ViewAction};
 use anyhow::Result;

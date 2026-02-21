@@ -3,14 +3,11 @@ mod git;
 mod github;
 mod update;
 
-use crate::core::app::{App, AppContext, GitState, ViewEntry};
+use crate::core::app::{App, AppContext};
 use crate::core::event::{Event, EventHandler};
 use crate::core::ui::{confirm_dialog, status_bar};
 use crate::core::view::ViewAction;
-use crate::git::container::GitView;
 use crate::git::watcher::FsWatcher;
-use crate::github::container::GhView;
-use crate::github::state::GitHubState;
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::process::Command;
@@ -49,14 +46,10 @@ fn run_tui() -> Result<()> {
     }));
 
     let cwd = std::env::current_dir()?;
-    let git = GitState::new(&cwd)?;
-    let workdir = git.repo.workdir().to_path_buf();
-    let github = GitHubState::new();
+    let (git_entry, workdir) = crate::git::container::new_entry(&cwd)?;
+    let gh_entry = crate::github::container::new_entry();
 
-    let entries = vec![
-        ViewEntry { view: &GitView, state: Box::new(git) },
-        ViewEntry { view: &GhView, state: Box::new(github) },
-    ];
+    let entries = vec![git_entry, gh_entry];
     let view_labels = entries.iter().map(|e| e.view.label()).collect();
     let ctx = AppContext {
         should_quit: false,
