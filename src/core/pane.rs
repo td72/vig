@@ -2,10 +2,9 @@ use crate::core::app::AppContext;
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 
-pub trait FocusState {
-    type PaneId: Copy + PartialEq + 'static;
-    fn focused_pane(&self) -> Self::PaneId;
-    fn set_focus(&mut self, id: Self::PaneId);
+pub trait FocusState<P: Copy + PartialEq + 'static> {
+    fn focused_pane(&self) -> P;
+    fn set_focus(&mut self, id: P);
 }
 
 pub trait SelectPane<S>: Sync {
@@ -27,10 +26,8 @@ impl SubPaneScroll {
 }
 
 #[allow(dead_code)]
-pub trait DetailState {
-    type SubPaneId: Copy + PartialEq;
-    fn active_sub_pane(&self) -> Self::SubPaneId;
-    fn set_sub_pane(&mut self, id: Self::SubPaneId);
+pub trait DetailState: FocusState<Self::SubPaneId> {
+    type SubPaneId: Copy + PartialEq + 'static;
     fn sub_scroll(&self, id: Self::SubPaneId) -> &SubPaneScroll;
     fn sub_scroll_mut(&mut self, id: Self::SubPaneId) -> &mut SubPaneScroll;
     fn detail_view_height(&self) -> u16;
@@ -38,10 +35,10 @@ pub trait DetailState {
     fn reset_sub_panes(&mut self);
 
     fn active_scroll(&self) -> &SubPaneScroll {
-        self.sub_scroll(self.active_sub_pane())
+        self.sub_scroll(self.focused_pane())
     }
     fn active_scroll_mut(&mut self) -> &mut SubPaneScroll {
-        let id = self.active_sub_pane();
+        let id = self.focused_pane();
         self.sub_scroll_mut(id)
     }
 }

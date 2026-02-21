@@ -2,14 +2,14 @@ use crate::core::app::AppContext;
 use crate::core::pane::{FocusState, SelectPane};
 use crossterm::event::{KeyCode, KeyEvent};
 
-pub struct PaneTab<S: FocusState + 'static> {
+pub struct PaneTab<S: 'static, P: Copy + PartialEq + 'static> {
     pub select: &'static dyn SelectPane<S>,
-    pub id: S::PaneId,
+    pub id: P,
 }
 
-pub(crate) trait PaneRouter<S: FocusState + 'static> {
+pub(crate) trait PaneRouter<S: FocusState<P> + 'static, P: Copy + PartialEq + 'static> {
     // --- Required (1) ---
-    fn tabs(&self) -> &'static [PaneTab<S>];
+    fn tabs(&self) -> &'static [PaneTab<S, P>];
 
     // --- Optional hooks ---
     fn on_focus_change(&self, _ctx: &mut AppContext, _state: &mut S) {}
@@ -46,12 +46,12 @@ pub(crate) trait PaneRouter<S: FocusState + 'static> {
         self.tabs().len()
     }
 
-    fn next_tab_id(&self, state: &S) -> S::PaneId {
+    fn next_tab_id(&self, state: &S) -> P {
         let tabs = self.tabs();
         let idx = self.current_index(state).unwrap_or(0);
         tabs[(idx + 1) % tabs.len()].id
     }
-    fn prev_tab_id(&self, state: &S) -> S::PaneId {
+    fn prev_tab_id(&self, state: &S) -> P {
         let tabs = self.tabs();
         let idx = self.current_index(state).unwrap_or(0);
         tabs[(idx + tabs.len() - 1) % tabs.len()].id

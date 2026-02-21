@@ -23,7 +23,7 @@ pub fn new_page(cwd: &Path) -> Result<(Page, PathBuf)> {
 
 // === Tab definitions ===
 
-pub static GIT_TABS: &[PaneTab<GitState>] = &[
+pub static GIT_TABS: &[PaneTab<GitState, FocusedPane>] = &[
     PaneTab {
         select: &FileTreePane,
         id: FocusedPane::FileTree,
@@ -140,8 +140,8 @@ pub(crate) fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
 
 pub(crate) struct GitPaneRouter;
 
-impl PaneRouter<GitState> for GitPaneRouter {
-    fn tabs(&self) -> &'static [PaneTab<GitState>] {
+impl PaneRouter<GitState, FocusedPane> for GitPaneRouter {
+    fn tabs(&self) -> &'static [PaneTab<GitState, FocusedPane>] {
         GIT_TABS
     }
 

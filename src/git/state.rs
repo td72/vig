@@ -508,8 +508,7 @@ impl GitState {
     }
 }
 
-impl crate::core::pane::FocusState for GitState {
-    type PaneId = FocusedPane;
+impl crate::core::pane::FocusState<FocusedPane> for GitState {
     fn focused_pane(&self) -> FocusedPane {
         self.focused_pane
     }
@@ -519,12 +518,15 @@ impl crate::core::pane::FocusState for GitState {
     }
 }
 
-impl DetailState for GitLogState {
-    type SubPaneId = GitLogDetailPane;
-    fn active_sub_pane(&self) -> GitLogDetailPane {
+impl crate::core::pane::FocusState<GitLogDetailPane> for GitLogState {
+    fn focused_pane(&self) -> GitLogDetailPane {
         GitLogDetailPane::Detail
     }
-    fn set_sub_pane(&mut self, _id: GitLogDetailPane) {}
+    fn set_focus(&mut self, _id: GitLogDetailPane) {}
+}
+
+impl DetailState for GitLogState {
+    type SubPaneId = GitLogDetailPane;
     fn sub_scroll(&self, _id: GitLogDetailPane) -> &SubPaneScroll {
         &self.detail
     }

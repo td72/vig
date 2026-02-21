@@ -492,8 +492,7 @@ fn local_utc_offset_secs() -> i64 {
     })
 }
 
-impl crate::core::pane::FocusState for GitHubState {
-    type PaneId = GhFocusedPane;
+impl crate::core::pane::FocusState<GhFocusedPane> for GitHubState {
     fn focused_pane(&self) -> GhFocusedPane {
         self.focused_pane
     }
@@ -503,14 +502,17 @@ impl crate::core::pane::FocusState for GitHubState {
     }
 }
 
-impl DetailState for GitHubState {
-    type SubPaneId = GhDetailPane;
-    fn active_sub_pane(&self) -> GhDetailPane {
+impl crate::core::pane::FocusState<GhDetailPane> for GitHubState {
+    fn focused_pane(&self) -> GhDetailPane {
         self.detail_pane
     }
-    fn set_sub_pane(&mut self, id: GhDetailPane) {
+    fn set_focus(&mut self, id: GhDetailPane) {
         self.detail_pane = id;
     }
+}
+
+impl DetailState for GitHubState {
+    type SubPaneId = GhDetailPane;
     fn sub_scroll(&self, id: GhDetailPane) -> &SubPaneScroll {
         match id {
             GhDetailPane::Body => &self.detail_body,
