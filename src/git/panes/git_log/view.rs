@@ -59,9 +59,9 @@ fn graph_spans(
 
 /// Render the Git Log component: outer border with left (commit list) and right (detail).
 pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
-    let is_focused = state.focused_pane == FocusedPane::GitLog
-        || state.focused_pane == FocusedPane::BranchList
-        || state.focused_pane == FocusedPane::Reflog;
+    let is_focused = state.shared.focused_pane == FocusedPane::GitLog
+        || state.shared.focused_pane == FocusedPane::BranchList
+        || state.shared.focused_pane == FocusedPane::Reflog;
     let border_color = if is_focused {
         Color::Cyan
     } else {
@@ -108,8 +108,9 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
         .unwrap_or(0);
 
     // Build set of matched commit entry indices
-    let (match_set, current_match_idx) = if state.search.origin == SearchOrigin::CommitLog {
+    let (match_set, current_match_idx) = if state.shared.search.origin == SearchOrigin::CommitLog {
         let set: HashSet<usize> = state
+            .shared
             .search
             .matches
             .iter()
@@ -118,23 +119,21 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
                 _ => None,
             })
             .collect();
-        let current =
-            state
-                .search
-                .current_match_idx
-                .and_then(|ci| match state.search.matches.get(ci) {
-                    Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
-                    _ => None,
-                });
+        let current = state.shared.search.current_match_idx.and_then(|ci| {
+            match state.shared.search.matches.get(ci) {
+                Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
+                _ => None,
+            }
+        });
         (set, current)
     } else {
         (HashSet::new(), None)
     };
 
     // Highlight pipes originating from the selected commit (lazygit-style)
-    let highlight_from = if state.focused_pane == FocusedPane::GitLog
-        || state.focused_pane == FocusedPane::BranchList
-        || state.focused_pane == FocusedPane::Reflog
+    let highlight_from = if state.shared.focused_pane == FocusedPane::GitLog
+        || state.shared.focused_pane == FocusedPane::BranchList
+        || state.shared.focused_pane == FocusedPane::Reflog
     {
         Some(state.git_log.selected_idx)
     } else {

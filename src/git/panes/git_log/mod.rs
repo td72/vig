@@ -17,10 +17,10 @@ impl SelectPane<GitState> for GitLogSelectPane {
                 state.set_focus(FocusedPane::Reflog);
             }
             KeyCode::Esc => {
-                if state.search.query.is_some() {
-                    state.search.clear();
+                if state.shared.search.query.is_some() {
+                    state.shared.search.clear();
                 } else {
-                    state.set_focus(state.previous_pane);
+                    state.set_focus(state.shared.previous_pane);
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
@@ -85,7 +85,7 @@ impl SelectPane<GitState> for GitLogSelectPane {
                 }
             }
             KeyCode::Char('/') => {
-                state.search.start(SearchOrigin::CommitLog);
+                state.shared.search.start(SearchOrigin::CommitLog);
             }
             KeyCode::Char('n') => {
                 search::jump_to_git_match(ctx, state, true);

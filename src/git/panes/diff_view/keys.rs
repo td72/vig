@@ -36,17 +36,17 @@ pub(crate) fn handle_diff_scroll_key(ctx: &mut AppContext, git: &mut GitState, k
             git.diff_view.scroll.x = git.diff_view.scroll.x.saturating_sub(4);
         }
         KeyCode::Esc => {
-            if git.search.query.is_some() {
-                git.search.clear();
+            if git.shared.search.query.is_some() {
+                git.shared.search.clear();
             } else {
-                git.set_focus(git.previous_pane);
+                git.set_focus(git.shared.previous_pane);
             }
         }
         KeyCode::Char('l') | KeyCode::Right => {
             git.diff_view.scroll.x = git.diff_view.scroll.x.saturating_add(4);
         }
         KeyCode::Char('/') => {
-            git.search.start(SearchOrigin::DiffView);
+            git.shared.search.start(SearchOrigin::DiffView);
             git.diff_view.vim.pending_key = None;
         }
         KeyCode::Char('n') => {
@@ -206,7 +206,7 @@ pub(crate) fn handle_diff_normal_key(ctx: &mut AppContext, git: &mut GitState, k
             git.diff_view.vim.visual_anchor = Some(git.diff_view.vim.cursor);
         }
         KeyCode::Char('/') => {
-            git.search.start(SearchOrigin::DiffView);
+            git.shared.search.start(SearchOrigin::DiffView);
             git.diff_view.vim.pending_key = None;
             git.diff_view.vim.count = None;
         }
@@ -217,8 +217,8 @@ pub(crate) fn handle_diff_normal_key(ctx: &mut AppContext, git: &mut GitState, k
             jump_to_git_match(ctx, git, false);
         }
         KeyCode::Esc => {
-            if git.search.query.is_some() {
-                git.search.clear();
+            if git.shared.search.query.is_some() {
+                git.shared.search.clear();
             } else {
                 git.diff_view.vim.mode = DiffViewMode::Scroll;
                 git.diff_view.vim.pending_key = None;
@@ -493,7 +493,7 @@ pub(crate) fn handle_diff_visual_key(ctx: &mut AppContext, git: &mut GitState, k
             }
         }
         KeyCode::Char('/') => {
-            git.search.start(SearchOrigin::DiffView);
+            git.shared.search.start(SearchOrigin::DiffView);
             git.diff_view.vim.pending_key = None;
             git.diff_view.vim.count = None;
         }

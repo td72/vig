@@ -18,6 +18,42 @@ pub enum FocusedPane {
     DiffView,
 }
 
+// === PaneEvent: cross-pane side effects ===
+
+#[allow(dead_code)]
+pub enum PaneEvent {
+    SetFocus(FocusedPane),
+    ResetDiffScroll,
+    RefreshDiff,
+    SetDiffBase(Option<String>),
+    OpenBranchActionMenu,
+    SwitchBranch(String),
+    DeleteBranch(String),
+    UpdateBranchLog,
+    LoadCommitDetail,
+    ReSearchOnFileChange,
+    StartSearch(crate::core::app::SearchOrigin),
+    ClearSearch,
+    OpenEditor(String),
+    Quit,
+    ShowHelp,
+    StatusMessage(String),
+    ErrorDialog { title: String, message: String },
+    CopyToClipboard(String),
+    OpenUrl(String),
+}
+
+// === GitShared: immutable shared state for pane handle_key ===
+
+pub struct GitShared {
+    pub repo: Repo,
+    pub diff_state: DiffState,
+    pub diff_base_ref: Option<String>,
+    pub focused_pane: FocusedPane,
+    pub previous_pane: FocusedPane,
+    pub search: SearchState,
+}
+
 pub struct BranchListState {
     pub branches: Vec<BranchInfo>,
     pub selected_idx: usize,
@@ -303,17 +339,12 @@ impl DiffViewState {
 }
 
 pub struct GitState {
-    pub repo: Repo,
-    pub diff_state: DiffState,
+    pub shared: GitShared,
     pub file_tree: FileTreeState,
-    pub focused_pane: FocusedPane,
-    pub previous_pane: FocusedPane,
     pub diff_view: DiffViewState,
-    pub diff_base_ref: Option<String>,
     pub branch_list: BranchListState,
     pub git_log: GitLogState,
     pub reflog: ReflogState,
-    pub search: SearchState,
 }
 
 impl GitState {
@@ -321,20 +352,23 @@ impl GitState {
         let repo = Repo::discover(cwd)?;
         let diff_state = repo.diff_workdir(None)?;
         let mut state = Self {
-            repo,
-            diff_state,
+            shared: GitShared {
+                repo,
+                diff_state,
+                diff_base_ref: None,
+                focused_pane: FocusedPane::FileTree,
+                previous_pane: FocusedPane::FileTree,
+                search: SearchState::new(),
+            },
             file_tree: FileTreeState {
                 selected_idx: 0,
                 collapsed_dirs: HashSet::new(),
             },
-            focused_pane: FocusedPane::FileTree,
-            previous_pane: FocusedPane::FileTree,
             diff_view: DiffViewState {
                 scroll: DiffScroll::default(),
                 vim: VimState::default(),
                 highlight: HighlightState::new(),
             },
-            diff_base_ref: None,
             branch_list: BranchListState {
                 branches: Vec::new(),
                 selected_idx: 0,
@@ -355,14 +389,13 @@ impl GitState {
                 selected_idx: 0,
                 view_height: 0,
             },
-            search: SearchState::new(),
         };
         state.load_branches();
         state.load_reflog();
         state
             .diff_view
             .highlight
-            .spawn_bg_highlight(&state.diff_state.files);
+            .spawn_bg_highlight(&state.shared.diff_state.files);
         Ok(state)
     }
 
@@ -370,14 +403,18 @@ impl GitState {
     /// Returns `Ok(Some(message))` if a fallback occurred, `Ok(None)` on clean refresh.
     pub fn refresh_diff(&mut self) -> Result<Option<String>> {
         let old_path = self.selected_file().map(|f| f.path.clone());
-        let fallback_msg = match self.repo.diff_workdir(self.diff_base_ref.as_deref()) {
+        let fallback_msg = match self
+            .shared
+            .repo
+            .diff_workdir(self.shared.diff_base_ref.as_deref())
+        {
             Ok(state) => {
-                self.diff_state = state;
+                self.shared.diff_state = state;
                 None
             }
             Err(e) => {
-                self.diff_base_ref = None;
-                self.diff_state = self.repo.diff_workdir(None)?;
+                self.shared.diff_base_ref = None;
+                self.shared.diff_state = self.shared.repo.diff_workdir(None)?;
                 Some(format!("Invalid ref, fell back to HEAD: {e}"))
             }
         };
@@ -386,7 +423,7 @@ impl GitState {
             let entries = self.tree_entries();
             self.file_tree.selected_idx = entries
                 .iter()
-                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.diff_state.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
+                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.shared.diff_state.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
                 .unwrap_or(0);
         }
         let entries = self.tree_entries();
@@ -396,24 +433,24 @@ impl GitState {
         self.diff_view.scroll.y = 0;
         self.diff_view.scroll.x = 0;
         self.diff_view.highlight.reset();
-        self.search.reset_matches();
+        self.shared.search.reset_matches();
         self.diff_view
             .highlight
-            .spawn_bg_highlight(&self.diff_state.files);
+            .spawn_bg_highlight(&self.shared.diff_state.files);
         Ok(fallback_msg)
     }
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
         let entries = self.tree_entries();
         if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.file_tree.selected_idx) {
-            self.diff_state.files.get(*file_idx)
+            self.shared.diff_state.files.get(*file_idx)
         } else {
             None
         }
     }
 
     pub fn load_branches(&mut self) {
-        self.branch_list.branches = self.repo.list_local_branches();
+        self.branch_list.branches = self.shared.repo.list_local_branches();
         if self.branch_list.selected_idx >= self.branch_list.branches.len() {
             self.branch_list.selected_idx = 0;
         }
@@ -423,7 +460,7 @@ impl GitState {
     pub fn update_branch_log(&mut self) {
         if let Some(branch) = self.branch_list.branches.get(self.branch_list.selected_idx) {
             self.git_log.ref_name = branch.name.clone();
-            self.git_log.commits = self.repo.log_for_ref(&branch.name, 100);
+            self.git_log.commits = self.shared.repo.log_for_ref(&branch.name, 100);
             self.git_log.graph = graph::build_graph(&self.git_log.commits);
             self.git_log.selected_idx = 0;
             self.git_log.detail.reset();
@@ -439,7 +476,8 @@ impl GitState {
 
     pub fn load_commit_detail(&mut self) {
         if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
-            self.git_log.detail_changed_files = self.repo.commit_changed_files(&commit.full_hash);
+            self.git_log.detail_changed_files =
+                self.shared.repo.commit_changed_files(&commit.full_hash);
             self.git_log.detail.reset();
         } else {
             self.git_log.detail_changed_files.clear();
@@ -447,7 +485,7 @@ impl GitState {
     }
 
     pub fn load_reflog(&mut self) {
-        self.reflog.entries = self.repo.reflog(500);
+        self.reflog.entries = self.shared.repo.reflog(500);
         if self.reflog.selected_idx >= self.reflog.entries.len() {
             self.reflog.selected_idx = 0;
         }
@@ -455,7 +493,7 @@ impl GitState {
 
     pub fn tree_entries(&self) -> Vec<TreeEntry> {
         crate::git::domain::tree::build_tree_entries(
-            &self.diff_state.files,
+            &self.shared.diff_state.files,
             &self.file_tree.collapsed_dirs,
         )
     }
@@ -463,11 +501,11 @@ impl GitState {
 
 impl crate::core::pane::FocusState<FocusedPane> for GitState {
     fn focused_pane(&self) -> FocusedPane {
-        self.focused_pane
+        self.shared.focused_pane
     }
     fn set_focus(&mut self, id: FocusedPane) {
-        self.previous_pane = self.focused_pane;
-        self.focused_pane = id;
+        self.shared.previous_pane = self.shared.focused_pane;
+        self.shared.focused_pane = id;
     }
 }
 
@@ -502,9 +540,9 @@ impl crate::core::app::PageState for GitState {
         self.diff_view.highlight.drain_bg_highlights();
     }
     fn search(&self) -> &crate::core::app::SearchState {
-        &self.search
+        &self.shared.search
     }
     fn search_mut(&mut self) -> &mut crate::core::app::SearchState {
-        &mut self.search
+        &mut self.shared.search
     }
 }

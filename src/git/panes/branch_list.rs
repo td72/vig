@@ -19,8 +19,8 @@ impl SelectPane<GitState> for BranchListPane {
     fn handle_key(&self, ctx: &mut AppContext, state: &mut GitState, key: KeyEvent) {
         match key.code {
             KeyCode::Esc => {
-                if state.diff_base_ref.is_some() {
-                    state.diff_base_ref = None;
+                if state.shared.diff_base_ref.is_some() {
+                    state.shared.diff_base_ref = None;
                     refresh_diff(ctx, state);
                 }
             }
@@ -46,7 +46,7 @@ impl SelectPane<GitState> for BranchListPane {
     }
 
     fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitState, area: Rect) {
-        let border_color = if state.focused_pane == FocusedPane::BranchList {
+        let border_color = if state.shared.focused_pane == FocusedPane::BranchList {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -69,8 +69,9 @@ impl SelectPane<GitState> for BranchListPane {
 
         // Build set of matched branch entry indices
         let (match_set, current_match_idx) =
-            if state.search.origin == SearchOrigin::BranchList {
+            if state.shared.search.origin == SearchOrigin::BranchList {
                 let set: HashSet<usize> = state
+                    .shared
                     .search
                     .matches
                     .iter()
@@ -79,8 +80,8 @@ impl SelectPane<GitState> for BranchListPane {
                         _ => None,
                     })
                     .collect();
-                let current = state.search.current_match_idx.and_then(|ci| {
-                    match state.search.matches.get(ci) {
+                let current = state.shared.search.current_match_idx.and_then(|ci| {
+                    match state.shared.search.matches.get(ci) {
                         Some(SearchMatch::BranchEntry(idx)) => Some(*idx),
                         _ => None,
                     }

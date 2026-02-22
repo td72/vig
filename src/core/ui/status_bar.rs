@@ -42,13 +42,13 @@ pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect
         ),
         Span::raw(" "),
         Span::styled(
-            format!(" {} ", git.diff_state.branch_name),
+            format!(" {} ", git.shared.diff_state.branch_name),
             Style::default().fg(Color::Black).bg(Color::Magenta),
         ),
     ];
 
     {
-        let base_label = match &git.diff_base_ref {
+        let base_label = match &git.shared.diff_base_ref {
             Some(base) => format!(" vs {base} "),
             None => " vs HEAD ".to_string(),
         };
@@ -94,8 +94,8 @@ pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
 }
 
 pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
-    if git.search.active {
-        let prompt = format!("/{}\u{2588}", git.search.input);
+    if git.shared.search.active {
+        let prompt = format!("/{}\u{2588}", git.shared.search.input);
         let line = Line::from(Span::styled(
             format!(" {prompt}"),
             Style::default().fg(Color::White),
@@ -104,9 +104,9 @@ pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: 
         return;
     }
 
-    let file_count = git.diff_state.files.len();
-    let adds = git.diff_state.stats.additions;
-    let dels = git.diff_state.stats.deletions;
+    let file_count = git.shared.diff_state.files.len();
+    let adds = git.shared.diff_state.stats.additions;
+    let dels = git.shared.diff_state.stats.deletions;
 
     let status = if let Some(ref msg) = ctx.status_message {
         Line::from(Span::styled(

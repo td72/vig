@@ -70,7 +70,7 @@ impl SelectPane<GitState> for FileTreePane {
     }
 
     fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitState, area: Rect) {
-        let border_color = if state.focused_pane == FocusedPane::FileTree {
+        let border_color = if state.shared.focused_pane == FocusedPane::FileTree {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -94,27 +94,28 @@ impl SelectPane<GitState> for FileTreePane {
         }
 
         // Build set of matched tree entry indices and current match index
-        let (match_set, current_match_idx) =
-            if state.search.origin == SearchOrigin::FileTree {
-                let set: HashSet<usize> = state
-                    .search
-                    .matches
-                    .iter()
-                    .filter_map(|m| match m {
-                        SearchMatch::TreeEntry(idx) => Some(*idx),
-                        _ => None,
-                    })
-                    .collect();
-                let current = state.search.current_match_idx.and_then(|ci| {
-                    match state.search.matches.get(ci) {
-                        Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
-                        _ => None,
-                    }
-                });
-                (set, current)
-            } else {
-                (HashSet::new(), None)
-            };
+        let (match_set, current_match_idx) = if state.shared.search.origin == SearchOrigin::FileTree
+        {
+            let set: HashSet<usize> = state
+                .shared
+                .search
+                .matches
+                .iter()
+                .filter_map(|m| match m {
+                    SearchMatch::TreeEntry(idx) => Some(*idx),
+                    _ => None,
+                })
+                .collect();
+            let current = state.shared.search.current_match_idx.and_then(|ci| {
+                match state.shared.search.matches.get(ci) {
+                    Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
+                    _ => None,
+                }
+            });
+            (set, current)
+        } else {
+            (HashSet::new(), None)
+        };
 
         let items: Vec<ListItem> = entries
             .iter()
@@ -149,7 +150,7 @@ impl SelectPane<GitState> for FileTreePane {
                         ListItem::new(line)
                     }
                     TreeEntry::File { file_idx, depth } => {
-                        let file = &state.diff_state.files[*file_idx];
+                        let file = &state.shared.diff_state.files[*file_idx];
                         let indent = " ".repeat(depth * 2);
                         let icon_color = match file.status {
                             FileStatus::Modified => Color::Yellow,

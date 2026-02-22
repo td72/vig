@@ -16,9 +16,9 @@ fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
 fn select_branch(ctx: &mut AppContext, git: &mut GitState) {
     if let Some(branch) = git.branch_list.branches.get(git.branch_list.selected_idx) {
         if branch.is_head {
-            git.diff_base_ref = None;
+            git.shared.diff_base_ref = None;
         } else {
-            git.diff_base_ref = Some(branch.name.clone());
+            git.shared.diff_base_ref = Some(branch.name.clone());
         }
         refresh_diff(ctx, git);
     }
@@ -87,7 +87,7 @@ fn execute_branch_action(ctx: &mut AppContext, git: &mut GitState, action: Branc
                 ctx.status_message = Some("Already on this branch".to_string());
                 return;
             }
-            match git.repo.switch_branch(&menu.branch_name) {
+            match git.shared.repo.switch_branch(&menu.branch_name) {
                 Ok(()) => {
                     ctx.status_message = Some(format!("Switched to {}", menu.branch_name));
                     git.load_branches();
@@ -106,7 +106,7 @@ fn execute_branch_action(ctx: &mut AppContext, git: &mut GitState, action: Branc
                 ctx.status_message = Some("Cannot delete the current branch".to_string());
                 return;
             }
-            match git.repo.delete_branch(&menu.branch_name) {
+            match git.shared.repo.delete_branch(&menu.branch_name) {
                 Ok(()) => {
                     ctx.status_message = Some(format!("Deleted {}", menu.branch_name));
                     git.load_branches();

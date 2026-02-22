@@ -52,7 +52,7 @@ impl SelectPane<GitState> for ReflogPane {
             }
             KeyCode::Enter => {
                 if let Some(entry) = state.reflog.entries.get(state.reflog.selected_idx) {
-                    state.diff_base_ref = Some(entry.full_hash.clone());
+                    state.shared.diff_base_ref = Some(entry.full_hash.clone());
                     refresh_diff(ctx, state);
                 }
             }
@@ -62,7 +62,7 @@ impl SelectPane<GitState> for ReflogPane {
 
     fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitState, area: Rect) {
         state.reflog.view_height = area.height.saturating_sub(2);
-        let border_color = if state.focused_pane == FocusedPane::Reflog {
+        let border_color = if state.shared.focused_pane == FocusedPane::Reflog {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -84,27 +84,27 @@ impl SelectPane<GitState> for ReflogPane {
         }
 
         // Build set of matched reflog entry indices
-        let (match_set, current_match_idx) =
-            if state.search.origin == SearchOrigin::Reflog {
-                let set: HashSet<usize> = state
-                    .search
-                    .matches
-                    .iter()
-                    .filter_map(|m| match m {
-                        SearchMatch::ReflogEntry(idx) => Some(*idx),
-                        _ => None,
-                    })
-                    .collect();
-                let current = state.search.current_match_idx.and_then(|ci| {
-                    match state.search.matches.get(ci) {
-                        Some(SearchMatch::ReflogEntry(idx)) => Some(*idx),
-                        _ => None,
-                    }
-                });
-                (set, current)
-            } else {
-                (HashSet::new(), None)
-            };
+        let (match_set, current_match_idx) = if state.shared.search.origin == SearchOrigin::Reflog {
+            let set: HashSet<usize> = state
+                .shared
+                .search
+                .matches
+                .iter()
+                .filter_map(|m| match m {
+                    SearchMatch::ReflogEntry(idx) => Some(*idx),
+                    _ => None,
+                })
+                .collect();
+            let current = state.shared.search.current_match_idx.and_then(|ci| {
+                match state.shared.search.matches.get(ci) {
+                    Some(SearchMatch::ReflogEntry(idx)) => Some(*idx),
+                    _ => None,
+                }
+            });
+            (set, current)
+        } else {
+            (HashSet::new(), None)
+        };
 
         let items: Vec<ListItem> = state
             .reflog

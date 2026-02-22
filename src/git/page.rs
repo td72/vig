@@ -16,7 +16,7 @@ use std::path::{Path, PathBuf};
 /// Create a Git page. Returns the page and the resolved workdir path.
 pub fn new_page(cwd: &Path) -> Result<(Page, PathBuf)> {
     let git = GitState::new(cwd)?;
-    let workdir = git.repo.workdir().to_path_buf();
+    let workdir = git.shared.repo.workdir().to_path_buf();
     let page = Page::new(&GitPageHandler, git);
     Ok((page, workdir))
 }
@@ -51,7 +51,7 @@ fn is_commit_log_detail(focused: FocusedPane) -> bool {
 /// Dispatch a key event to the currently focused Git pane.
 /// Covers all 5 panes: the 3 select panes in GIT_TABS + GitLog (nested select) + DiffView (detail).
 pub fn dispatch_git_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) {
-    match git.focused_pane {
+    match git.shared.focused_pane {
         FocusedPane::GitLog => GitLogSelectPane.handle_key(ctx, git, key),
         FocusedPane::DiffView => DiffViewPane.handle_key(ctx, git, key),
         _ => GitPaneRouter.dispatch(ctx, git, key),
@@ -66,7 +66,9 @@ pub fn handle_git_view_key(
     key: KeyEvent,
 ) -> Result<PageAction> {
     // In Normal/Visual modes, keys are handled by the mode handler exclusively
-    if git.focused_pane == FocusedPane::DiffView && git.diff_view.vim.mode != DiffViewMode::Scroll {
+    if git.shared.focused_pane == FocusedPane::DiffView
+        && git.diff_view.vim.mode != DiffViewMode::Scroll
+    {
         dispatch_git_key(ctx, git, key);
         return Ok(PageAction::None);
     }
@@ -79,7 +81,9 @@ pub fn handle_git_view_key(
             ctx.show_help = true;
         }
         KeyCode::Char('/') => {
-            git.search.start(search_origin_for(git.focused_pane));
+            git.shared
+                .search
+                .start(search_origin_for(git.shared.focused_pane));
         }
         KeyCode::Char('n') => {
             search::jump_to_git_match(ctx, git, true);
@@ -162,8 +166,8 @@ impl PaneRouter<GitState, FocusedPane> for GitPaneRouter {
                 state.set_focus(target);
                 true
             }
-            KeyCode::Esc if state.search.query.is_some() => {
-                state.search.clear();
+            KeyCode::Esc if state.shared.search.query.is_some() => {
+                state.shared.search.clear();
                 true
             }
             _ => false,
@@ -241,8 +245,8 @@ impl PageHandler<GitState> for GitPageHandler {
         }
 
         // Search input mode intercepts all keys
-        if git.search.active {
-            if git.search.handle_input_key(key) {
+        if git.shared.search.active {
+            if git.shared.search.handle_input_key(key) {
                 search::execute_git_search(git);
                 search::jump_to_git_match(ctx, git, true);
             }
@@ -259,7 +263,7 @@ impl PageHandler<GitState> for GitPageHandler {
         BranchListPane.render(f, ctx, git, ly.branch_list);
         ReflogPane.render(f, ctx, git, ly.reflog);
 
-        if is_commit_log_detail(git.focused_pane) {
+        if is_commit_log_detail(git.shared.focused_pane) {
             GitLogSelectPane.render(f, ctx, git, ly.main_pane);
         } else {
             DiffViewPane.render(f, ctx, git, ly.main_pane);

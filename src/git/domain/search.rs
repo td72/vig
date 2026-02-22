@@ -3,13 +3,13 @@ use crate::core::search::{SearchMatch, SearchOrigin};
 use crate::git::state::{DiffSide, DiffViewMode, GitState, TreeEntry};
 
 pub(crate) fn execute_git_search(git: &mut GitState) {
-    git.search.matches.clear();
-    git.search.current_match_idx = None;
-    let query = match &git.search.query {
+    git.shared.search.matches.clear();
+    git.shared.search.current_match_idx = None;
+    let query = match &git.shared.search.query {
         Some(q) => q.clone(),
         None => return,
     };
-    match git.search.origin {
+    match git.shared.search.origin {
         SearchOrigin::DiffView => search_git_diff_view(git, &query),
         SearchOrigin::FileTree => search_git_file_tree(git, &query),
         SearchOrigin::CommitLog => search_git_commit_log(git, &query),
@@ -29,7 +29,7 @@ pub(crate) fn search_git_diff_view(git: &mut GitState, query: &str) {
         // Search hunk header
         for (col_start, _) in hunk.header.to_lowercase().match_indices(&query_lower) {
             let col_end = col_start + query.len();
-            git.search.matches.push(SearchMatch::DiffLine {
+            git.shared.search.matches.push(SearchMatch::DiffLine {
                 row: row_idx,
                 col_start,
                 col_end,
@@ -43,7 +43,7 @@ pub(crate) fn search_git_diff_view(git: &mut GitState, query: &str) {
             if let Some(ref side_line) = row.left {
                 for (col_start, _) in side_line.content.to_lowercase().match_indices(&query_lower) {
                     let col_end = col_start + query.len();
-                    git.search.matches.push(SearchMatch::DiffLine {
+                    git.shared.search.matches.push(SearchMatch::DiffLine {
                         row: row_idx,
                         col_start,
                         col_end,
@@ -55,7 +55,7 @@ pub(crate) fn search_git_diff_view(git: &mut GitState, query: &str) {
             if let Some(ref side_line) = row.right {
                 for (col_start, _) in side_line.content.to_lowercase().match_indices(&query_lower) {
                     let col_end = col_start + query.len();
-                    git.search.matches.push(SearchMatch::DiffLine {
+                    git.shared.search.matches.push(SearchMatch::DiffLine {
                         row: row_idx,
                         col_start,
                         col_end,
@@ -74,13 +74,13 @@ fn search_git_file_tree(git: &mut GitState, query: &str) {
     for (idx, entry) in entries.iter().enumerate() {
         let name = match entry {
             TreeEntry::Dir { path, .. } => path.clone(),
-            TreeEntry::File { file_idx, .. } => match git.diff_state.files.get(*file_idx) {
+            TreeEntry::File { file_idx, .. } => match git.shared.diff_state.files.get(*file_idx) {
                 Some(f) => f.path.clone(),
                 None => continue,
             },
         };
         if name.to_lowercase().contains(&query_lower) {
-            git.search.matches.push(SearchMatch::TreeEntry(idx));
+            git.shared.search.matches.push(SearchMatch::TreeEntry(idx));
         }
     }
 }
@@ -93,7 +93,10 @@ fn search_git_commit_log(git: &mut GitState, query: &str) {
             commit.short_hash, commit.author, commit.date, commit.message
         );
         if text.to_lowercase().contains(&query_lower) {
-            git.search.matches.push(SearchMatch::CommitEntry(idx));
+            git.shared
+                .search
+                .matches
+                .push(SearchMatch::CommitEntry(idx));
         }
     }
 }
@@ -102,7 +105,10 @@ fn search_git_branch_list(git: &mut GitState, query: &str) {
     let query_lower = query.to_lowercase();
     for (idx, branch) in git.branch_list.branches.iter().enumerate() {
         if branch.name.to_lowercase().contains(&query_lower) {
-            git.search.matches.push(SearchMatch::BranchEntry(idx));
+            git.shared
+                .search
+                .matches
+                .push(SearchMatch::BranchEntry(idx));
         }
     }
 }
@@ -115,29 +121,32 @@ fn search_git_reflog(git: &mut GitState, query: &str) {
             || entry.action.to_lowercase().contains(&query_lower)
             || entry.message.to_lowercase().contains(&query_lower)
         {
-            git.search.matches.push(SearchMatch::ReflogEntry(idx));
+            git.shared
+                .search
+                .matches
+                .push(SearchMatch::ReflogEntry(idx));
         }
     }
 }
 
 pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forward: bool) {
     // If no active query but last_query exists, re-execute search
-    if git.search.query.is_none() {
-        if let Some(last) = git.search.last_query.clone() {
-            git.search.query = Some(last);
+    if git.shared.search.query.is_none() {
+        if let Some(last) = git.shared.search.last_query.clone() {
+            git.shared.search.query = Some(last);
             execute_git_search(git);
         } else {
             return;
         }
     }
 
-    if git.search.matches.is_empty() {
+    if git.shared.search.matches.is_empty() {
         ctx.status_message = Some("Pattern not found".to_string());
         return;
     }
 
-    let total = git.search.matches.len();
-    let new_idx = match git.search.current_match_idx {
+    let total = git.shared.search.matches.len();
+    let new_idx = match git.shared.search.current_match_idx {
         Some(idx) => {
             if forward {
                 (idx + 1) % total
@@ -153,9 +162,9 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
             }
         }
     };
-    git.search.current_match_idx = Some(new_idx);
+    git.shared.search.current_match_idx = Some(new_idx);
 
-    match &git.search.matches[new_idx] {
+    match &git.shared.search.matches[new_idx] {
         SearchMatch::DiffLine {
             row,
             col_start,
@@ -199,10 +208,10 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
 
 /// Re-execute DiffView search when file selection changes (preserves query)
 pub(crate) fn re_search_on_file_change(git: &mut GitState) {
-    if git.search.origin == SearchOrigin::DiffView && git.search.query.is_some() {
-        git.search.reset_matches();
+    if git.shared.search.origin == SearchOrigin::DiffView && git.shared.search.query.is_some() {
+        git.shared.search.reset_matches();
         git.diff_view.highlight.content_lines_cache = None;
-        let query = git.search.query.clone().unwrap();
+        let query = git.shared.search.query.clone().unwrap();
         search_git_diff_view(git, &query);
     }
 }

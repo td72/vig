@@ -26,15 +26,15 @@ struct SearchHighlightInfo {
 
 impl SearchHighlightInfo {
     fn from_state(state: &GitState) -> Option<Self> {
-        let query = state.search.query.as_ref()?;
-        if query.is_empty() || state.search.matches.is_empty() {
+        let query = state.shared.search.query.as_ref()?;
+        if query.is_empty() || state.shared.search.matches.is_empty() {
             return None;
         }
 
-        let current_idx = state.search.current_match_idx;
+        let current_idx = state.shared.search.current_match_idx;
         let mut row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>> = HashMap::new();
 
-        for (i, m) in state.search.matches.iter().enumerate() {
+        for (i, m) in state.shared.search.matches.iter().enumerate() {
             if let SearchMatch::DiffLine {
                 row,
                 col_start,
@@ -81,7 +81,7 @@ struct SelectionInfo {
 }
 
 pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
-    let border_color = if state.focused_pane == FocusedPane::DiffView {
+    let border_color = if state.shared.focused_pane == FocusedPane::DiffView {
         Color::Cyan
     } else {
         Color::DarkGray

@@ -1,5 +1,5 @@
 pub(crate) mod keys;
-mod view;
+pub(crate) mod view;
 
 use crate::core::app::AppContext;
 use crate::core::pane::DetailPane;
