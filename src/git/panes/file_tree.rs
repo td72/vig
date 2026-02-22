@@ -1,8 +1,6 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
-use crate::core::pane::{FocusState, SelectPane};
-use crate::git::domain::diff::FileStatus;
-use crate::git::domain::search;
-use crate::git::state::{FocusedPane, GitState, TreeEntry};
+use crate::git::domain::diff::{FileDiff, FileStatus};
+use crate::git::state::{FocusedPane, GitShared, PaneEvent, TreeEntry};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -13,64 +11,84 @@ use ratatui::{
 };
 use std::collections::HashSet;
 
-pub struct FileTreePane;
+pub struct FileTreePane {
+    pub selected_idx: usize,
+    pub collapsed_dirs: HashSet<String>,
+}
 
-impl SelectPane<GitState> for FileTreePane {
-    fn handle_key(&self, _ctx: &mut AppContext, state: &mut GitState, key: KeyEvent) {
-        let entries = state.tree_entries();
+impl FileTreePane {
+    pub fn new() -> Self {
+        Self {
+            selected_idx: 0,
+            collapsed_dirs: HashSet::new(),
+        }
+    }
+
+    pub fn tree_entries(&self, shared: &GitShared) -> Vec<TreeEntry> {
+        crate::git::domain::tree::build_tree_entries(&shared.diff_state.files, &self.collapsed_dirs)
+    }
+
+    pub fn selected_file<'a>(&self, shared: &'a GitShared) -> Option<&'a FileDiff> {
+        let entries = self.tree_entries(shared);
+        if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.selected_idx) {
+            shared.diff_state.files.get(*file_idx)
+        } else {
+            None
+        }
+    }
+
+    pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+        let entries = self.tree_entries(shared);
         if entries.is_empty() {
-            return;
+            return vec![];
         }
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                if state.file_tree.selected_idx + 1 < entries.len() {
-                    state.file_tree.selected_idx += 1;
-                    state.diff_view.scroll.y = 0;
-                    state.diff_view.scroll.x = 0;
-                    search::re_search_on_file_change(state);
+                if self.selected_idx + 1 < entries.len() {
+                    self.selected_idx += 1;
+                    return vec![PaneEvent::ResetDiffScroll, PaneEvent::ReSearchOnFileChange];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if state.file_tree.selected_idx > 0 {
-                    state.file_tree.selected_idx -= 1;
-                    state.diff_view.scroll.y = 0;
-                    state.diff_view.scroll.x = 0;
-                    search::re_search_on_file_change(state);
+                if self.selected_idx > 0 {
+                    self.selected_idx -= 1;
+                    return vec![PaneEvent::ResetDiffScroll, PaneEvent::ReSearchOnFileChange];
                 }
             }
             KeyCode::Char(' ') => {
-                if let Some(TreeEntry::Dir { path, .. }) = entries.get(state.file_tree.selected_idx)
-                {
+                if let Some(TreeEntry::Dir { path, .. }) = entries.get(self.selected_idx) {
                     let path = path.clone();
-                    if state.file_tree.collapsed_dirs.contains(&path) {
-                        state.file_tree.collapsed_dirs.remove(&path);
+                    if self.collapsed_dirs.contains(&path) {
+                        self.collapsed_dirs.remove(&path);
                     } else {
-                        state.file_tree.collapsed_dirs.insert(path);
+                        self.collapsed_dirs.insert(path);
                     }
                 }
             }
-            KeyCode::Right | KeyCode::Enter => match entries.get(state.file_tree.selected_idx) {
+            KeyCode::Right | KeyCode::Enter => match entries.get(self.selected_idx) {
                 Some(TreeEntry::Dir { path, .. }) => {
                     let path = path.clone();
-                    if state.file_tree.collapsed_dirs.contains(&path) {
-                        state.file_tree.collapsed_dirs.remove(&path);
+                    if self.collapsed_dirs.contains(&path) {
+                        self.collapsed_dirs.remove(&path);
                     } else {
-                        state.file_tree.collapsed_dirs.insert(path);
+                        self.collapsed_dirs.insert(path);
                     }
                 }
                 Some(TreeEntry::File { .. }) => {
-                    state.set_focus(FocusedPane::DiffView);
-                    state.diff_view.scroll.y = 0;
-                    state.diff_view.scroll.x = 0;
+                    return vec![
+                        PaneEvent::SetFocus(FocusedPane::DiffView),
+                        PaneEvent::ResetDiffScroll,
+                    ];
                 }
                 None => {}
             },
             _ => {}
         }
+        vec![]
     }
 
-    fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitState, area: Rect) {
-        let border_color = if state.shared.focused_pane == FocusedPane::FileTree {
+    pub fn render(&self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
+        let border_color = if shared.focused_pane == FocusedPane::FileTree {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -81,7 +99,7 @@ impl SelectPane<GitState> for FileTreePane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        let entries = state.tree_entries();
+        let entries = self.tree_entries(shared);
 
         if entries.is_empty() {
             let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
@@ -94,10 +112,8 @@ impl SelectPane<GitState> for FileTreePane {
         }
 
         // Build set of matched tree entry indices and current match index
-        let (match_set, current_match_idx) = if state.shared.search.origin == SearchOrigin::FileTree
-        {
-            let set: HashSet<usize> = state
-                .shared
+        let (match_set, current_match_idx) = if shared.search.origin == SearchOrigin::FileTree {
+            let set: HashSet<usize> = shared
                 .search
                 .matches
                 .iter()
@@ -106,8 +122,8 @@ impl SelectPane<GitState> for FileTreePane {
                     _ => None,
                 })
                 .collect();
-            let current = state.shared.search.current_match_idx.and_then(|ci| {
-                match state.shared.search.matches.get(ci) {
+            let current = shared.search.current_match_idx.and_then(|ci| {
+                match shared.search.matches.get(ci) {
                     Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
                     _ => None,
                 }
@@ -150,7 +166,7 @@ impl SelectPane<GitState> for FileTreePane {
                         ListItem::new(line)
                     }
                     TreeEntry::File { file_idx, depth } => {
-                        let file = &state.shared.diff_state.files[*file_idx];
+                        let file = &shared.diff_state.files[*file_idx];
                         let indent = " ".repeat(depth * 2);
                         let icon_color = match file.status {
                             FileStatus::Modified => Color::Yellow,
@@ -188,7 +204,7 @@ impl SelectPane<GitState> for FileTreePane {
             })
             .collect();
 
-        let selected = state.file_tree.selected_idx;
+        let selected = self.selected_idx;
         let selected_is_match = match_set.contains(&selected);
 
         let highlight_style = if selected_is_match {
@@ -203,8 +219,8 @@ impl SelectPane<GitState> for FileTreePane {
             .block(block)
             .highlight_style(highlight_style);
 
-        let mut state2 = ListState::default();
-        state2.select(Some(selected));
-        f.render_stateful_widget(list, area, &mut state2);
+        let mut list_state = ListState::default();
+        list_state.select(Some(selected));
+        f.render_stateful_widget(list, area, &mut list_state);
     }
 }

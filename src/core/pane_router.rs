@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::core::app::AppContext;
 use crate::core::pane::{FocusState, SelectPane};
 use crossterm::event::{KeyCode, KeyEvent};

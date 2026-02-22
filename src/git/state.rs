@@ -1,11 +1,11 @@
 use crate::core::app::SearchState;
-use crate::core::pane::{DetailState, SubPaneScroll};
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::git::domain::diff::{DiffState, FileDiff};
-use crate::git::domain::graph::{self, GraphRow};
-use crate::git::domain::repository::{BranchInfo, CommitFileChange, CommitInfo, ReflogEntry, Repo};
+use crate::git::domain::graph;
+use crate::git::domain::repository::Repo;
+use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogPane, ReflogPane};
 use anyhow::Result;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::Path;
 use std::sync::mpsc;
 
@@ -34,6 +34,7 @@ pub enum PaneEvent {
     ReSearchOnFileChange,
     StartSearch(crate::core::app::SearchOrigin),
     ClearSearch,
+    JumpToMatch(bool),
     OpenEditor(String),
     Quit,
     ShowHelp,
@@ -52,34 +53,6 @@ pub struct GitShared {
     pub focused_pane: FocusedPane,
     pub previous_pane: FocusedPane,
     pub search: SearchState,
-}
-
-pub struct BranchListState {
-    pub branches: Vec<BranchInfo>,
-    pub selected_idx: usize,
-    pub action_menu: Option<BranchActionMenuState>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GitLogDetailPane {
-    Detail,
-}
-
-pub struct GitLogState {
-    pub commits: Vec<CommitInfo>,
-    pub selected_idx: usize,
-    pub view_height: u16,
-    pub ref_name: String,
-    pub graph: Vec<GraphRow>,
-    pub detail: SubPaneScroll,
-    pub detail_view_height: u16,
-    pub detail_changed_files: Vec<CommitFileChange>,
-}
-
-pub struct ReflogState {
-    pub entries: Vec<ReflogEntry>,
-    pub selected_idx: usize,
-    pub view_height: u16,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -312,39 +285,13 @@ impl HighlightState {
 
 pub use crate::git::domain::tree::TreeEntry;
 
-pub struct FileTreeState {
-    pub selected_idx: usize,
-    pub collapsed_dirs: HashSet<String>,
-}
-
-pub struct DiffViewState {
-    pub scroll: DiffScroll,
-    pub vim: VimState,
-    pub highlight: HighlightState,
-}
-
-impl DiffViewState {
-    pub fn scroll_to_cursor(&mut self) {
-        let row = self.vim.cursor.row as u16;
-        let height = self.scroll.view_height;
-        if height == 0 {
-            return;
-        }
-        if row < self.scroll.y {
-            self.scroll.y = row;
-        } else if row >= self.scroll.y + height {
-            self.scroll.y = row - height + 1;
-        }
-    }
-}
-
 pub struct GitState {
     pub shared: GitShared,
-    pub file_tree: FileTreeState,
-    pub diff_view: DiffViewState,
-    pub branch_list: BranchListState,
-    pub git_log: GitLogState,
-    pub reflog: ReflogState,
+    pub file_tree: FileTreePane,
+    pub diff_view: DiffViewPane,
+    pub branch_list: BranchListPane,
+    pub git_log: GitLogPane,
+    pub reflog: ReflogPane,
 }
 
 impl GitState {
@@ -360,35 +307,11 @@ impl GitState {
                 previous_pane: FocusedPane::FileTree,
                 search: SearchState::new(),
             },
-            file_tree: FileTreeState {
-                selected_idx: 0,
-                collapsed_dirs: HashSet::new(),
-            },
-            diff_view: DiffViewState {
-                scroll: DiffScroll::default(),
-                vim: VimState::default(),
-                highlight: HighlightState::new(),
-            },
-            branch_list: BranchListState {
-                branches: Vec::new(),
-                selected_idx: 0,
-                action_menu: None,
-            },
-            git_log: GitLogState {
-                commits: Vec::new(),
-                selected_idx: 0,
-                view_height: 0,
-                ref_name: String::new(),
-                graph: Vec::new(),
-                detail: SubPaneScroll::default(),
-                detail_view_height: 0,
-                detail_changed_files: Vec::new(),
-            },
-            reflog: ReflogState {
-                entries: Vec::new(),
-                selected_idx: 0,
-                view_height: 0,
-            },
+            file_tree: FileTreePane::new(),
+            diff_view: DiffViewPane::new(),
+            branch_list: BranchListPane::new(),
+            git_log: GitLogPane::new(),
+            reflog: ReflogPane::new(),
         };
         state.load_branches();
         state.load_reflog();
@@ -441,12 +364,11 @@ impl GitState {
     }
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
-        let entries = self.tree_entries();
-        if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.file_tree.selected_idx) {
-            self.shared.diff_state.files.get(*file_idx)
-        } else {
-            None
-        }
+        self.file_tree.selected_file(&self.shared)
+    }
+
+    pub fn tree_entries(&self) -> Vec<TreeEntry> {
+        self.file_tree.tree_entries(&self.shared)
     }
 
     pub fn load_branches(&mut self) {
@@ -490,13 +412,6 @@ impl GitState {
             self.reflog.selected_idx = 0;
         }
     }
-
-    pub fn tree_entries(&self) -> Vec<TreeEntry> {
-        crate::git::domain::tree::build_tree_entries(
-            &self.shared.diff_state.files,
-            &self.file_tree.collapsed_dirs,
-        )
-    }
 }
 
 impl crate::core::pane::FocusState<FocusedPane> for GitState {
@@ -506,32 +421,6 @@ impl crate::core::pane::FocusState<FocusedPane> for GitState {
     fn set_focus(&mut self, id: FocusedPane) {
         self.shared.previous_pane = self.shared.focused_pane;
         self.shared.focused_pane = id;
-    }
-}
-
-impl crate::core::pane::FocusState<GitLogDetailPane> for GitLogState {
-    fn focused_pane(&self) -> GitLogDetailPane {
-        GitLogDetailPane::Detail
-    }
-    fn set_focus(&mut self, _id: GitLogDetailPane) {}
-}
-
-impl DetailState for GitLogState {
-    type SubPaneId = GitLogDetailPane;
-    fn sub_scroll(&self, _id: GitLogDetailPane) -> &SubPaneScroll {
-        &self.detail
-    }
-    fn sub_scroll_mut(&mut self, _id: GitLogDetailPane) -> &mut SubPaneScroll {
-        &mut self.detail
-    }
-    fn detail_view_height(&self) -> u16 {
-        self.detail_view_height
-    }
-    fn set_detail_view_height(&mut self, h: u16) {
-        self.detail_view_height = h;
-    }
-    fn reset_sub_panes(&mut self) {
-        self.detail.reset();
     }
 }
 

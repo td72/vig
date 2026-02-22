@@ -1,6 +1,7 @@
 use crate::core::app::{SearchMatch, SearchOrigin};
 use crate::git::domain::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
-use crate::git::state::{FocusedPane, GitState};
+use crate::git::panes::GitLogPane;
+use crate::git::state::{FocusedPane, GitShared};
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -58,10 +59,10 @@ fn graph_spans(
 }
 
 /// Render the Git Log component: outer border with left (commit list) and right (detail).
-pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
-    let is_focused = state.shared.focused_pane == FocusedPane::GitLog
-        || state.shared.focused_pane == FocusedPane::BranchList
-        || state.shared.focused_pane == FocusedPane::Reflog;
+pub fn render(f: &mut Frame, pane: &mut GitLogPane, shared: &GitShared, area: Rect) {
+    let is_focused = shared.focused_pane == FocusedPane::GitLog
+        || shared.focused_pane == FocusedPane::BranchList
+        || shared.focused_pane == FocusedPane::Reflog;
     let border_color = if is_focused {
         Color::Cyan
     } else {
@@ -80,15 +81,15 @@ pub fn render(f: &mut Frame, state: &mut GitState, area: Rect) {
     let cols =
         Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).split(inner);
 
-    render_list(f, state, cols[0]);
-    render_detail(f, state, cols[1]);
+    render_list(f, pane, shared, cols[0]);
+    render_detail(f, pane, cols[1]);
 }
 
 /// Render the commit list (left pane inside Git Log).
-fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
-    state.git_log.view_height = area.height;
+fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &GitShared, area: Rect) {
+    pane.view_height = area.height;
 
-    if state.git_log.commits.is_empty() {
+    if pane.commits.is_empty() {
         let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
             "  No commits",
             Style::default().fg(Color::DarkGray),
@@ -99,49 +100,42 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
     }
 
     // Compute max graph width for alignment
-    let max_graph_width = state
-        .git_log
-        .graph
-        .iter()
-        .map(|r| r.cells.len())
-        .max()
-        .unwrap_or(0);
+    let max_graph_width = pane.graph.iter().map(|r| r.cells.len()).max().unwrap_or(0);
 
     // Build set of matched commit entry indices
-    let (match_set, current_match_idx) = if state.shared.search.origin == SearchOrigin::CommitLog {
-        let set: HashSet<usize> = state
-            .shared
-            .search
-            .matches
-            .iter()
-            .filter_map(|m| match m {
-                SearchMatch::CommitEntry(idx) => Some(*idx),
-                _ => None,
-            })
-            .collect();
-        let current = state.shared.search.current_match_idx.and_then(|ci| {
-            match state.shared.search.matches.get(ci) {
-                Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
-                _ => None,
-            }
-        });
-        (set, current)
-    } else {
-        (HashSet::new(), None)
-    };
+    let (match_set, current_match_idx) =
+        if shared.search.origin == SearchOrigin::CommitLog {
+            let set: HashSet<usize> = shared
+                .search
+                .matches
+                .iter()
+                .filter_map(|m| match m {
+                    SearchMatch::CommitEntry(idx) => Some(*idx),
+                    _ => None,
+                })
+                .collect();
+            let current = shared.search.current_match_idx.and_then(|ci| {
+                match shared.search.matches.get(ci) {
+                    Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
+                    _ => None,
+                }
+            });
+            (set, current)
+        } else {
+            (HashSet::new(), None)
+        };
 
     // Highlight pipes originating from the selected commit (lazygit-style)
-    let highlight_from = if state.shared.focused_pane == FocusedPane::GitLog
-        || state.shared.focused_pane == FocusedPane::BranchList
-        || state.shared.focused_pane == FocusedPane::Reflog
+    let highlight_from = if shared.focused_pane == FocusedPane::GitLog
+        || shared.focused_pane == FocusedPane::BranchList
+        || shared.focused_pane == FocusedPane::Reflog
     {
-        Some(state.git_log.selected_idx)
+        Some(pane.selected_idx)
     } else {
         None
     };
 
-    let items: Vec<ListItem> = state
-        .git_log
+    let items: Vec<ListItem> = pane
         .commits
         .iter()
         .enumerate()
@@ -192,7 +186,7 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
             let mut spans = Vec::new();
 
             // Graph prefix
-            if let Some(graph_row) = state.git_log.graph.get(idx) {
+            if let Some(graph_row) = pane.graph.get(idx) {
                 spans.extend(graph_spans(graph_row, max_graph_width, highlight_from));
             } else {
                 for _ in 0..max_graph_width {
@@ -213,7 +207,7 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
         })
         .collect();
 
-    let selected = state.git_log.selected_idx;
+    let selected = pane.selected_idx;
     let selected_is_match = match_set.contains(&selected);
 
     let highlight_style = if selected_is_match {
@@ -232,16 +226,16 @@ fn render_list(f: &mut Frame, state: &mut GitState, area: Rect) {
 }
 
 /// Render commit detail content (left border as separator inside the parent Git Log block).
-fn render_detail(f: &mut Frame, state: &mut GitState, area: Rect) {
+fn render_detail(f: &mut Frame, pane: &mut GitLogPane, area: Rect) {
     let separator = Block::default()
         .borders(Borders::LEFT)
         .border_style(Style::default().fg(Color::DarkGray));
     let inner = separator.inner(area);
     f.render_widget(separator, area);
 
-    state.git_log.detail_view_height = inner.height;
+    pane.detail_view_height = inner.height;
 
-    let commit = match state.git_log.commits.get(state.git_log.selected_idx) {
+    let commit = match pane.commits.get(pane.selected_idx) {
         Some(c) => c,
         None => {
             let para = Paragraph::new(Line::from(Span::styled(
@@ -319,13 +313,13 @@ fn render_detail(f: &mut Frame, state: &mut GitState, area: Rect) {
     )));
 
     // Changed files list
-    if state.git_log.detail_changed_files.is_empty() {
+    if pane.detail_changed_files.is_empty() {
         lines.push(Line::from(Span::styled(
             "  (no changes)",
             Style::default().fg(Color::DarkGray),
         )));
     } else {
-        for change in &state.git_log.detail_changed_files {
+        for change in &pane.detail_changed_files {
             let (status_char, status_color) = match change.status {
                 'A' => ("A", Color::Green),
                 'D' => ("D", Color::Red),
@@ -345,12 +339,12 @@ fn render_detail(f: &mut Frame, state: &mut GitState, area: Rect) {
 
     // Clamp scroll
     let total_lines = lines.len() as u16;
-    let view_height = state.git_log.detail_view_height;
+    let view_height = pane.detail_view_height;
     let max_scroll = total_lines.saturating_sub(view_height);
-    if state.git_log.detail.scroll_y > max_scroll {
-        state.git_log.detail.scroll_y = max_scroll;
+    if pane.detail.scroll_y > max_scroll {
+        pane.detail.scroll_y = max_scroll;
     }
 
-    let para = Paragraph::new(lines).scroll((state.git_log.detail.scroll_y, 0));
+    let para = Paragraph::new(lines).scroll((pane.detail.scroll_y, 0));
     f.render_widget(para, inner);
 }

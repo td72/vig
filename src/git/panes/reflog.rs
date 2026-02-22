@@ -1,7 +1,6 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
-use crate::core::pane::{FocusState, SelectPane};
-use crate::git::page::refresh_diff;
-use crate::git::state::{FocusedPane, GitState};
+use crate::git::domain::repository::ReflogEntry;
+use crate::git::state::{FocusedPane, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     layout::Rect,
@@ -12,57 +11,69 @@ use ratatui::{
 };
 use std::collections::HashSet;
 
-pub struct ReflogPane;
+pub struct ReflogPane {
+    pub entries: Vec<ReflogEntry>,
+    pub selected_idx: usize,
+    pub view_height: u16,
+}
 
-impl SelectPane<GitState> for ReflogPane {
-    fn handle_key(&self, ctx: &mut AppContext, state: &mut GitState, key: KeyEvent) {
+impl ReflogPane {
+    pub fn new() -> Self {
+        Self {
+            entries: Vec::new(),
+            selected_idx: 0,
+            view_height: 0,
+        }
+    }
+
+    pub fn handle_key(&mut self, _shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
         match key.code {
             KeyCode::Esc => {
-                state.set_focus(FocusedPane::BranchList);
+                return vec![PaneEvent::SetFocus(FocusedPane::BranchList)];
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                if !state.reflog.entries.is_empty()
-                    && state.reflog.selected_idx + 1 < state.reflog.entries.len()
-                {
-                    state.reflog.selected_idx += 1;
+                if !self.entries.is_empty() && self.selected_idx + 1 < self.entries.len() {
+                    self.selected_idx += 1;
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if state.reflog.selected_idx > 0 {
-                    state.reflog.selected_idx -= 1;
+                if self.selected_idx > 0 {
+                    self.selected_idx -= 1;
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (state.reflog.view_height / 2).max(1) as usize;
-                let new_idx = state.reflog.selected_idx.saturating_add(half);
-                state.reflog.selected_idx =
-                    new_idx.min(state.reflog.entries.len().saturating_sub(1));
+                let half = (self.view_height / 2).max(1) as usize;
+                let new_idx = self.selected_idx.saturating_add(half);
+                self.selected_idx = new_idx.min(self.entries.len().saturating_sub(1));
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (state.reflog.view_height / 2).max(1) as usize;
-                state.reflog.selected_idx = state.reflog.selected_idx.saturating_sub(half);
+                let half = (self.view_height / 2).max(1) as usize;
+                self.selected_idx = self.selected_idx.saturating_sub(half);
             }
             KeyCode::Char('g') => {
-                state.reflog.selected_idx = 0;
+                self.selected_idx = 0;
             }
             KeyCode::Char('G') => {
-                if !state.reflog.entries.is_empty() {
-                    state.reflog.selected_idx = state.reflog.entries.len() - 1;
+                if !self.entries.is_empty() {
+                    self.selected_idx = self.entries.len() - 1;
                 }
             }
             KeyCode::Enter => {
-                if let Some(entry) = state.reflog.entries.get(state.reflog.selected_idx) {
-                    state.shared.diff_base_ref = Some(entry.full_hash.clone());
-                    refresh_diff(ctx, state);
+                if let Some(entry) = self.entries.get(self.selected_idx) {
+                    return vec![
+                        PaneEvent::SetDiffBase(Some(entry.full_hash.clone())),
+                        PaneEvent::RefreshDiff,
+                    ];
                 }
             }
             _ => {}
         }
+        vec![]
     }
 
-    fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitState, area: Rect) {
-        state.reflog.view_height = area.height.saturating_sub(2);
-        let border_color = if state.shared.focused_pane == FocusedPane::Reflog {
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
+        self.view_height = area.height.saturating_sub(2);
+        let border_color = if shared.focused_pane == FocusedPane::Reflog {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -73,7 +84,7 @@ impl SelectPane<GitState> for ReflogPane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        if state.reflog.entries.is_empty() {
+        if self.entries.is_empty() {
             let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
                 "  No reflog entries",
                 Style::default().fg(Color::DarkGray),
@@ -84,9 +95,8 @@ impl SelectPane<GitState> for ReflogPane {
         }
 
         // Build set of matched reflog entry indices
-        let (match_set, current_match_idx) = if state.shared.search.origin == SearchOrigin::Reflog {
-            let set: HashSet<usize> = state
-                .shared
+        let (match_set, current_match_idx) = if shared.search.origin == SearchOrigin::Reflog {
+            let set: HashSet<usize> = shared
                 .search
                 .matches
                 .iter()
@@ -95,8 +105,8 @@ impl SelectPane<GitState> for ReflogPane {
                     _ => None,
                 })
                 .collect();
-            let current = state.shared.search.current_match_idx.and_then(|ci| {
-                match state.shared.search.matches.get(ci) {
+            let current = shared.search.current_match_idx.and_then(|ci| {
+                match shared.search.matches.get(ci) {
                     Some(SearchMatch::ReflogEntry(idx)) => Some(*idx),
                     _ => None,
                 }
@@ -106,8 +116,7 @@ impl SelectPane<GitState> for ReflogPane {
             (HashSet::new(), None)
         };
 
-        let items: Vec<ListItem> = state
-            .reflog
+        let items: Vec<ListItem> = self
             .entries
             .iter()
             .enumerate()
@@ -166,7 +175,7 @@ impl SelectPane<GitState> for ReflogPane {
             })
             .collect();
 
-        let selected = state.reflog.selected_idx;
+        let selected = self.selected_idx;
         let selected_is_match = match_set.contains(&selected);
 
         let highlight_style = if selected_is_match {

@@ -1,67 +1,69 @@
-use crate::core::app::AppContext;
-use crate::core::pane::FocusState;
-use crate::core::search::SearchOrigin;
-use crate::git::domain::search::jump_to_git_match;
-use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitState};
+use crate::core::app::SearchOrigin;
+use crate::git::domain::diff::FileDiff;
+use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-pub(crate) fn handle_diff_scroll_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) {
-    let max_scroll = git
-        .diff_view
+pub(crate) fn handle_diff_scroll_key(
+    pane: &mut super::DiffViewPane,
+    shared: &GitShared,
+    file: Option<&FileDiff>,
+    key: KeyEvent,
+) -> Vec<PaneEvent> {
+    let max_scroll = pane
         .scroll
         .total_lines
-        .saturating_sub(git.diff_view.scroll.view_height);
+        .saturating_sub(pane.scroll.view_height);
     match key.code {
         KeyCode::Char('j') | KeyCode::Down => {
-            git.diff_view.scroll.y = (git.diff_view.scroll.y + 1).min(max_scroll);
+            pane.scroll.y = (pane.scroll.y + 1).min(max_scroll);
         }
         KeyCode::Char('k') | KeyCode::Up => {
-            git.diff_view.scroll.y = git.diff_view.scroll.y.saturating_sub(1);
+            pane.scroll.y = pane.scroll.y.saturating_sub(1);
         }
         KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-            let half = git.diff_view.scroll.view_height / 2;
-            git.diff_view.scroll.y = (git.diff_view.scroll.y + half).min(max_scroll);
+            let half = pane.scroll.view_height / 2;
+            pane.scroll.y = (pane.scroll.y + half).min(max_scroll);
         }
         KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-            let half = git.diff_view.scroll.view_height / 2;
-            git.diff_view.scroll.y = git.diff_view.scroll.y.saturating_sub(half);
+            let half = pane.scroll.view_height / 2;
+            pane.scroll.y = pane.scroll.y.saturating_sub(half);
         }
         KeyCode::Char('g') => {
-            git.diff_view.scroll.y = 0;
+            pane.scroll.y = 0;
         }
         KeyCode::Char('G') => {
-            git.diff_view.scroll.y = max_scroll;
+            pane.scroll.y = max_scroll;
         }
         KeyCode::Char('h') | KeyCode::Left => {
-            git.diff_view.scroll.x = git.diff_view.scroll.x.saturating_sub(4);
+            pane.scroll.x = pane.scroll.x.saturating_sub(4);
         }
         KeyCode::Esc => {
-            if git.shared.search.query.is_some() {
-                git.shared.search.clear();
+            if shared.search.query.is_some() {
+                return vec![PaneEvent::ClearSearch];
             } else {
-                git.set_focus(git.shared.previous_pane);
+                return vec![PaneEvent::SetFocus(shared.previous_pane)];
             }
         }
         KeyCode::Char('l') | KeyCode::Right => {
-            git.diff_view.scroll.x = git.diff_view.scroll.x.saturating_add(4);
+            pane.scroll.x = pane.scroll.x.saturating_add(4);
         }
         KeyCode::Char('/') => {
-            git.shared.search.start(SearchOrigin::DiffView);
-            git.diff_view.vim.pending_key = None;
+            pane.vim.pending_key = None;
+            return vec![PaneEvent::StartSearch(SearchOrigin::DiffView)];
         }
         KeyCode::Char('n') => {
-            jump_to_git_match(ctx, git, true);
+            return vec![PaneEvent::JumpToMatch(true)];
         }
         KeyCode::Char('N') => {
-            jump_to_git_match(ctx, git, false);
+            return vec![PaneEvent::JumpToMatch(false)];
         }
         KeyCode::Char('i') => {
             // Enter Normal mode with cursor at top-left of visible area
-            let lines = content_lines(git);
+            let lines = content_lines(pane, file);
             if !lines.is_empty() {
-                git.diff_view.vim.mode = DiffViewMode::Normal;
-                git.diff_view.vim.cursor = CursorPos {
-                    row: git.diff_view.scroll.y as usize,
+                pane.vim.mode = DiffViewMode::Normal;
+                pane.vim.cursor = CursorPos {
+                    row: pane.scroll.y as usize,
                     col: 0,
                     side: DiffSide::Left,
                 };
@@ -69,195 +71,205 @@ pub(crate) fn handle_diff_scroll_key(ctx: &mut AppContext, git: &mut GitState, k
         }
         _ => {}
     }
+    vec![]
 }
 
-pub(crate) fn handle_diff_normal_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) {
+pub(crate) fn handle_diff_normal_key(
+    pane: &mut super::DiffViewPane,
+    shared: &GitShared,
+    file: Option<&FileDiff>,
+    key: KeyEvent,
+) -> Vec<PaneEvent> {
     // Handle Ctrl+w prefix for panel switching
     if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('w') {
-        git.diff_view.vim.pending_key = Some('w');
-        return;
+        pane.vim.pending_key = Some('w');
+        return vec![];
     }
 
     // Handle pending key sequences
-    if let Some(pending) = git.diff_view.vim.pending_key {
-        git.diff_view.vim.pending_key = None;
+    if let Some(pending) = pane.vim.pending_key {
+        pane.vim.pending_key = None;
         match pending {
             'w' => {
                 match key.code {
-                    KeyCode::Char('h') => git.diff_view.vim.cursor.side = DiffSide::Left,
-                    KeyCode::Char('l') => git.diff_view.vim.cursor.side = DiffSide::Right,
+                    KeyCode::Char('h') => pane.vim.cursor.side = DiffSide::Left,
+                    KeyCode::Char('l') => pane.vim.cursor.side = DiffSide::Right,
                     _ => {}
                 }
-                git.diff_view.vim.count = None;
-                return;
+                pane.vim.count = None;
+                return vec![];
             }
             'y' => {
-                let lines = content_lines(git);
-                let n = take_count(git);
-                execute_yank_motion(ctx, git, key.code, &lines, n);
-                return;
+                let lines = content_lines(pane, file);
+                let n = take_count(pane);
+                if let Some(text) = execute_yank_motion(pane, key.code, &lines, n) {
+                    return vec![PaneEvent::CopyToClipboard(text)];
+                }
+                return vec![];
             }
             'g' => {
-                let lines = content_lines(git);
+                let lines = content_lines(pane, file);
                 if let KeyCode::Char('g') = key.code {
                     // gg or {count}gg — go to line
-                    if let Some(n) = git.diff_view.vim.count.take() {
-                        git.diff_view.vim.cursor.row =
+                    if let Some(n) = pane.vim.count.take() {
+                        pane.vim.cursor.row =
                             (n.saturating_sub(1)).min(lines.len().saturating_sub(1));
                     } else {
-                        git.diff_view.vim.cursor.row = 0;
+                        pane.vim.cursor.row = 0;
                     }
-                    git.diff_view.vim.cursor.col = 0;
-                    clamp_col(git, &lines);
+                    pane.vim.cursor.col = 0;
+                    clamp_col(pane, &lines);
                 }
-                git.diff_view.vim.count = None;
-                git.diff_view.scroll_to_cursor();
-                return;
+                pane.vim.count = None;
+                pane.scroll_to_cursor();
+                return vec![];
             }
             _ => {}
         }
-        git.diff_view.vim.count = None;
-        return;
+        pane.vim.count = None;
+        return vec![];
     }
 
     // Accumulate digit count prefix (1-9 start, 0 appends)
     if let KeyCode::Char(c @ '1'..='9') = key.code {
         let digit = (c as usize) - ('0' as usize);
-        git.diff_view.vim.count = Some(git.diff_view.vim.count.unwrap_or(0) * 10 + digit);
-        return;
+        pane.vim.count = Some(pane.vim.count.unwrap_or(0) * 10 + digit);
+        return vec![];
     }
     if let KeyCode::Char('0') = key.code {
-        if git.diff_view.vim.count.is_some() {
-            git.diff_view.vim.count = Some(git.diff_view.vim.count.unwrap() * 10);
-            return;
+        if pane.vim.count.is_some() {
+            pane.vim.count = Some(pane.vim.count.unwrap() * 10);
+            return vec![];
         }
         // else fall through to handle '0' as go-to-line-start
     }
 
-    let n = take_count(git);
-    let lines = content_lines(git);
+    let n = take_count(pane);
+    let lines = content_lines(pane, file);
     let total = lines.len();
     if total == 0 {
-        return;
+        return vec![];
     }
+
+    let mut events = Vec::new();
 
     match key.code {
         KeyCode::Char('h') | KeyCode::Left => {
-            git.diff_view.vim.cursor.col = git.diff_view.vim.cursor.col.saturating_sub(n);
+            pane.vim.cursor.col = pane.vim.cursor.col.saturating_sub(n);
         }
         KeyCode::Char('l') | KeyCode::Right => {
-            let line_len = current_line_len(git, &lines);
-            git.diff_view.vim.cursor.col =
-                (git.diff_view.vim.cursor.col + n).min(line_len.saturating_sub(1));
+            let line_len = current_line_len(pane, &lines);
+            pane.vim.cursor.col = (pane.vim.cursor.col + n).min(line_len.saturating_sub(1));
         }
         KeyCode::Char('j') | KeyCode::Down => {
-            git.diff_view.vim.cursor.row = (git.diff_view.vim.cursor.row + n).min(total - 1);
-            clamp_col(git, &lines);
+            pane.vim.cursor.row = (pane.vim.cursor.row + n).min(total - 1);
+            clamp_col(pane, &lines);
         }
         KeyCode::Char('k') | KeyCode::Up => {
-            git.diff_view.vim.cursor.row = git.diff_view.vim.cursor.row.saturating_sub(n);
-            clamp_col(git, &lines);
+            pane.vim.cursor.row = pane.vim.cursor.row.saturating_sub(n);
+            clamp_col(pane, &lines);
         }
         KeyCode::Char('w') => {
             for _ in 0..n {
-                move_word_forward(git, &lines);
+                move_word_forward(pane, &lines);
             }
         }
         KeyCode::Char('b') => {
             for _ in 0..n {
-                move_word_backward(git, &lines);
+                move_word_backward(pane, &lines);
             }
         }
         KeyCode::Char('e') => {
             for _ in 0..n {
-                move_word_end(git, &lines);
+                move_word_end(pane, &lines);
             }
         }
         KeyCode::Char('0') => {
-            git.diff_view.vim.cursor.col = 0;
+            pane.vim.cursor.col = 0;
         }
         KeyCode::Char('$') => {
-            let line_len = current_line_len(git, &lines);
-            git.diff_view.vim.cursor.col = line_len.saturating_sub(1);
+            let line_len = current_line_len(pane, &lines);
+            pane.vim.cursor.col = line_len.saturating_sub(1);
         }
         KeyCode::Char('g') => {
-            git.diff_view.vim.pending_key = Some('g');
+            pane.vim.pending_key = Some('g');
         }
         KeyCode::Char('G') => {
             // G or {count}G — go to last line or specific line
             // Note: count was already consumed, but if n > 1, user typed {n}G
             if n > 1 {
-                git.diff_view.vim.cursor.row = (n - 1).min(total - 1);
+                pane.vim.cursor.row = (n - 1).min(total - 1);
             } else {
-                git.diff_view.vim.cursor.row = total - 1;
+                pane.vim.cursor.row = total - 1;
             }
-            git.diff_view.vim.cursor.col = 0;
-            clamp_col(git, &lines);
+            pane.vim.cursor.col = 0;
+            clamp_col(pane, &lines);
         }
         KeyCode::Char('y') => {
-            git.diff_view.vim.pending_key = Some('y');
+            pane.vim.pending_key = Some('y');
         }
         KeyCode::Char('v') => {
-            git.diff_view.vim.mode = DiffViewMode::Visual;
-            git.diff_view.vim.visual_anchor = Some(git.diff_view.vim.cursor);
+            pane.vim.mode = DiffViewMode::Visual;
+            pane.vim.visual_anchor = Some(pane.vim.cursor);
         }
         KeyCode::Char('V') => {
-            git.diff_view.vim.mode = DiffViewMode::VisualLine;
-            git.diff_view.vim.visual_anchor = Some(git.diff_view.vim.cursor);
+            pane.vim.mode = DiffViewMode::VisualLine;
+            pane.vim.visual_anchor = Some(pane.vim.cursor);
         }
         KeyCode::Char('/') => {
-            git.shared.search.start(SearchOrigin::DiffView);
-            git.diff_view.vim.pending_key = None;
-            git.diff_view.vim.count = None;
+            pane.vim.pending_key = None;
+            pane.vim.count = None;
+            events.push(PaneEvent::StartSearch(SearchOrigin::DiffView));
         }
         KeyCode::Char('n') => {
-            jump_to_git_match(ctx, git, true);
+            events.push(PaneEvent::JumpToMatch(true));
         }
         KeyCode::Char('N') => {
-            jump_to_git_match(ctx, git, false);
+            events.push(PaneEvent::JumpToMatch(false));
         }
         KeyCode::Esc => {
-            if git.shared.search.query.is_some() {
-                git.shared.search.clear();
+            if shared.search.query.is_some() {
+                events.push(PaneEvent::ClearSearch);
             } else {
-                git.diff_view.vim.mode = DiffViewMode::Scroll;
-                git.diff_view.vim.pending_key = None;
-                git.diff_view.vim.count = None;
+                pane.vim.mode = DiffViewMode::Scroll;
+                pane.vim.pending_key = None;
+                pane.vim.count = None;
             }
         }
         _ => {}
     }
-    git.diff_view.scroll_to_cursor();
+    pane.scroll_to_cursor();
+    events
 }
 
-fn take_count(git: &mut GitState) -> usize {
-    git.diff_view.vim.count.take().unwrap_or(1)
+fn take_count(pane: &mut super::DiffViewPane) -> usize {
+    pane.vim.count.take().unwrap_or(1)
 }
 
-/// Execute y + motion (yy, yw, y$, y0, yb, ye) with count
+/// Execute y + motion (yy, yw, y$, y0, yb, ye) with count.
+/// Returns the yanked text, or None if nothing to yank.
 fn execute_yank_motion(
-    ctx: &mut AppContext,
-    git: &mut GitState,
+    pane: &mut super::DiffViewPane,
     motion: KeyCode,
     lines: &[String],
     count: usize,
-) {
+) -> Option<String> {
     let text = match motion {
         // yy or {n}yy — yank current line(s)
         KeyCode::Char('y') => {
-            let start = git.diff_view.vim.cursor.row;
+            let start = pane.vim.cursor.row;
             let end = (start + count).min(lines.len());
             let yanked: Vec<&str> = lines[start..end].iter().map(|s| s.as_str()).collect();
             yanked.join("\n")
         }
         // yw — yank from cursor to next word start
         KeyCode::Char('w') => {
-            let saved = git.diff_view.vim.cursor;
+            let saved = pane.vim.cursor;
             for _ in 0..count {
-                move_word_forward(git, lines);
+                move_word_forward(pane, lines);
             }
-            let end = git.diff_view.vim.cursor;
-            git.diff_view.vim.cursor = saved;
+            let end = pane.vim.cursor;
+            pane.vim.cursor = saved;
             // If motion crossed a line boundary, clamp to end of the previous line
             // No movement — yank to end of current line
             if end == saved {
@@ -268,8 +280,7 @@ fn execute_yank_motion(
                 } else {
                     String::new()
                 };
-                copy_to_clipboard(ctx, &text);
-                return;
+                return if text.is_empty() { None } else { Some(text) };
             }
             let adjusted_end = if end.row > saved.row {
                 let prev_line_len = line_len_at(lines, end.row.saturating_sub(1));
@@ -289,29 +300,29 @@ fn execute_yank_motion(
         }
         // ye — yank from cursor to end of word
         KeyCode::Char('e') => {
-            let saved = git.diff_view.vim.cursor;
+            let saved = pane.vim.cursor;
             for _ in 0..count {
-                move_word_end(git, lines);
+                move_word_end(pane, lines);
             }
-            let end = git.diff_view.vim.cursor;
-            git.diff_view.vim.cursor = saved;
+            let end = pane.vim.cursor;
+            pane.vim.cursor = saved;
             extract_range(lines, saved, end)
         }
         // yb — yank from previous word start to cursor
         KeyCode::Char('b') => {
-            let saved = git.diff_view.vim.cursor;
+            let saved = pane.vim.cursor;
             for _ in 0..count {
-                move_word_backward(git, lines);
+                move_word_backward(pane, lines);
             }
-            let start = git.diff_view.vim.cursor;
-            git.diff_view.vim.cursor = saved;
+            let start = pane.vim.cursor;
+            pane.vim.cursor = saved;
             extract_range(lines, start, saved)
         }
         // y$ — yank to end of line
         KeyCode::Char('$') => {
-            if let Some(line) = lines.get(git.diff_view.vim.cursor.row) {
+            if let Some(line) = lines.get(pane.vim.cursor.row) {
                 let chars: Vec<char> = line.chars().collect();
-                let col = git.diff_view.vim.cursor.col.min(chars.len());
+                let col = pane.vim.cursor.col.min(chars.len());
                 chars[col..].iter().collect()
             } else {
                 String::new()
@@ -319,17 +330,21 @@ fn execute_yank_motion(
         }
         // y0 — yank to beginning of line
         KeyCode::Char('0') => {
-            if let Some(line) = lines.get(git.diff_view.vim.cursor.row) {
+            if let Some(line) = lines.get(pane.vim.cursor.row) {
                 let chars: Vec<char> = line.chars().collect();
-                let col = git.diff_view.vim.cursor.col.min(chars.len());
+                let col = pane.vim.cursor.col.min(chars.len());
                 chars[..col].iter().collect()
             } else {
                 String::new()
             }
         }
-        _ => return,
+        _ => return None,
     };
-    copy_to_clipboard(ctx, &text);
+    if text.is_empty() {
+        None
+    } else {
+        Some(text)
+    }
 }
 
 /// Extract text between two positions (inclusive)
@@ -363,190 +378,180 @@ fn extract_range(lines: &[String], start: CursorPos, end: CursorPos) -> String {
     result
 }
 
-pub(crate) fn handle_diff_visual_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) {
+pub(crate) fn handle_diff_visual_key(
+    pane: &mut super::DiffViewPane,
+    _shared: &GitShared,
+    file: Option<&FileDiff>,
+    key: KeyEvent,
+) -> Vec<PaneEvent> {
     // Handle pending key sequences
-    if let Some(prefix) = git.diff_view.vim.pending_key {
-        git.diff_view.vim.pending_key = None;
+    if let Some(prefix) = pane.vim.pending_key {
+        pane.vim.pending_key = None;
         match prefix {
             'i' | 'a' => {
-                let lines = content_lines(git);
-                apply_text_object(git, prefix, key.code, &lines);
+                let lines = content_lines(pane, file);
+                apply_text_object(pane, prefix, key.code, &lines);
             }
             'g' => {
-                let lines = content_lines(git);
+                let lines = content_lines(pane, file);
                 if key.code == KeyCode::Char('g') {
-                    if let Some(n) = git.diff_view.vim.count.take() {
-                        git.diff_view.vim.cursor.row =
+                    if let Some(n) = pane.vim.count.take() {
+                        pane.vim.cursor.row =
                             (n.saturating_sub(1)).min(lines.len().saturating_sub(1));
                     } else {
-                        git.diff_view.vim.cursor.row = 0;
+                        pane.vim.cursor.row = 0;
                     }
-                    git.diff_view.vim.cursor.col = 0;
-                    clamp_col(git, &lines);
+                    pane.vim.cursor.col = 0;
+                    clamp_col(pane, &lines);
                 }
-                git.diff_view.vim.count = None;
+                pane.vim.count = None;
             }
             _ => {}
         }
-        git.diff_view.scroll_to_cursor();
-        return;
+        pane.scroll_to_cursor();
+        return vec![];
     }
 
     // Accumulate digit count prefix
     if let KeyCode::Char(c @ '1'..='9') = key.code {
         let digit = (c as usize) - ('0' as usize);
-        git.diff_view.vim.count = Some(git.diff_view.vim.count.unwrap_or(0) * 10 + digit);
-        return;
+        pane.vim.count = Some(pane.vim.count.unwrap_or(0) * 10 + digit);
+        return vec![];
     }
     if let KeyCode::Char('0') = key.code {
-        if git.diff_view.vim.count.is_some() {
-            git.diff_view.vim.count = Some(git.diff_view.vim.count.unwrap() * 10);
-            return;
+        if pane.vim.count.is_some() {
+            pane.vim.count = Some(pane.vim.count.unwrap() * 10);
+            return vec![];
         }
     }
 
-    let n = take_count(git);
-    let lines = content_lines(git);
+    let n = take_count(pane);
+    let lines = content_lines(pane, file);
     let total = lines.len();
     if total == 0 {
-        return;
+        return vec![];
     }
+
+    let mut events = Vec::new();
 
     match key.code {
         KeyCode::Char('h') | KeyCode::Left => {
-            git.diff_view.vim.cursor.col = git.diff_view.vim.cursor.col.saturating_sub(n);
+            pane.vim.cursor.col = pane.vim.cursor.col.saturating_sub(n);
         }
         KeyCode::Char('l') | KeyCode::Right => {
-            let line_len = current_line_len(git, &lines);
-            git.diff_view.vim.cursor.col =
-                (git.diff_view.vim.cursor.col + n).min(line_len.saturating_sub(1));
+            let line_len = current_line_len(pane, &lines);
+            pane.vim.cursor.col = (pane.vim.cursor.col + n).min(line_len.saturating_sub(1));
         }
         KeyCode::Char('j') | KeyCode::Down => {
-            git.diff_view.vim.cursor.row = (git.diff_view.vim.cursor.row + n).min(total - 1);
-            clamp_col(git, &lines);
+            pane.vim.cursor.row = (pane.vim.cursor.row + n).min(total - 1);
+            clamp_col(pane, &lines);
         }
         KeyCode::Char('k') | KeyCode::Up => {
-            git.diff_view.vim.cursor.row = git.diff_view.vim.cursor.row.saturating_sub(n);
-            clamp_col(git, &lines);
+            pane.vim.cursor.row = pane.vim.cursor.row.saturating_sub(n);
+            clamp_col(pane, &lines);
         }
         KeyCode::Char('w') => {
             for _ in 0..n {
-                move_word_forward(git, &lines);
+                move_word_forward(pane, &lines);
             }
         }
         KeyCode::Char('b') => {
             for _ in 0..n {
-                move_word_backward(git, &lines);
+                move_word_backward(pane, &lines);
             }
         }
         KeyCode::Char('e') => {
             for _ in 0..n {
-                move_word_end(git, &lines);
+                move_word_end(pane, &lines);
             }
         }
         KeyCode::Char('0') => {
-            git.diff_view.vim.cursor.col = 0;
+            pane.vim.cursor.col = 0;
         }
         KeyCode::Char('$') => {
-            let line_len = current_line_len(git, &lines);
-            git.diff_view.vim.cursor.col = line_len.saturating_sub(1);
+            let line_len = current_line_len(pane, &lines);
+            pane.vim.cursor.col = line_len.saturating_sub(1);
         }
         KeyCode::Char('g') => {
-            git.diff_view.vim.pending_key = Some('g');
+            pane.vim.pending_key = Some('g');
         }
         KeyCode::Char('G') => {
             if n > 1 {
-                git.diff_view.vim.cursor.row = (n - 1).min(total - 1);
+                pane.vim.cursor.row = (n - 1).min(total - 1);
             } else {
-                git.diff_view.vim.cursor.row = total - 1;
+                pane.vim.cursor.row = total - 1;
             }
-            git.diff_view.vim.cursor.col = 0;
-            clamp_col(git, &lines);
+            pane.vim.cursor.col = 0;
+            clamp_col(pane, &lines);
         }
         KeyCode::Char('i') | KeyCode::Char('a') => {
             if let KeyCode::Char(c) = key.code {
-                git.diff_view.vim.pending_key = Some(c);
+                pane.vim.pending_key = Some(c);
             }
         }
         KeyCode::Char('y') => {
-            let text = yank_selection(git, &lines);
-            copy_to_clipboard(ctx, &text);
-            git.diff_view.vim.mode = DiffViewMode::Normal;
-            git.diff_view.vim.visual_anchor = None;
+            let text = yank_selection(pane, &lines);
+            pane.vim.mode = DiffViewMode::Normal;
+            pane.vim.visual_anchor = None;
+            if !text.is_empty() {
+                events.push(PaneEvent::CopyToClipboard(text));
+            }
         }
         KeyCode::Char('v') => {
-            if git.diff_view.vim.mode == DiffViewMode::Visual {
-                git.diff_view.vim.mode = DiffViewMode::Normal;
-                git.diff_view.vim.visual_anchor = None;
+            if pane.vim.mode == DiffViewMode::Visual {
+                pane.vim.mode = DiffViewMode::Normal;
+                pane.vim.visual_anchor = None;
             } else {
-                git.diff_view.vim.mode = DiffViewMode::Visual;
-                git.diff_view.vim.visual_anchor = Some(git.diff_view.vim.cursor);
+                pane.vim.mode = DiffViewMode::Visual;
+                pane.vim.visual_anchor = Some(pane.vim.cursor);
             }
         }
         KeyCode::Char('V') => {
-            if git.diff_view.vim.mode == DiffViewMode::VisualLine {
-                git.diff_view.vim.mode = DiffViewMode::Normal;
-                git.diff_view.vim.visual_anchor = None;
+            if pane.vim.mode == DiffViewMode::VisualLine {
+                pane.vim.mode = DiffViewMode::Normal;
+                pane.vim.visual_anchor = None;
             } else {
-                git.diff_view.vim.mode = DiffViewMode::VisualLine;
-                git.diff_view.vim.visual_anchor = Some(git.diff_view.vim.cursor);
+                pane.vim.mode = DiffViewMode::VisualLine;
+                pane.vim.visual_anchor = Some(pane.vim.cursor);
             }
         }
         KeyCode::Char('/') => {
-            git.shared.search.start(SearchOrigin::DiffView);
-            git.diff_view.vim.pending_key = None;
-            git.diff_view.vim.count = None;
+            pane.vim.pending_key = None;
+            pane.vim.count = None;
+            events.push(PaneEvent::StartSearch(SearchOrigin::DiffView));
         }
         KeyCode::Char('n') => {
-            jump_to_git_match(ctx, git, true);
+            events.push(PaneEvent::JumpToMatch(true));
         }
         KeyCode::Char('N') => {
-            jump_to_git_match(ctx, git, false);
+            events.push(PaneEvent::JumpToMatch(false));
         }
         KeyCode::Esc => {
-            git.diff_view.vim.mode = DiffViewMode::Normal;
-            git.diff_view.vim.visual_anchor = None;
-            git.diff_view.vim.pending_key = None;
-            git.diff_view.vim.count = None;
+            pane.vim.mode = DiffViewMode::Normal;
+            pane.vim.visual_anchor = None;
+            pane.vim.pending_key = None;
+            pane.vim.count = None;
         }
         _ => {}
     }
-    git.diff_view.scroll_to_cursor();
-}
-
-pub(crate) fn copy_to_clipboard(ctx: &mut AppContext, text: &str) {
-    if text.is_empty() {
-        return;
-    }
-    let line_count = text.lines().count().max(1);
-    match arboard::Clipboard::new() {
-        Ok(mut clip) => {
-            if clip.set_text(text).is_ok() {
-                ctx.status_message = Some(format!(
-                    "Yanked {line_count} line{}",
-                    if line_count == 1 { "" } else { "s" }
-                ));
-            } else {
-                ctx.status_message = Some("Clipboard error".to_string());
-            }
-        }
-        Err(_) => {
-            ctx.status_message = Some("Clipboard unavailable".to_string());
-        }
-    }
+    pane.scroll_to_cursor();
+    events
 }
 
 /// Build flat list of content strings for the current side of the diff.
 /// Results are cached and reused until the file or side changes.
-pub(crate) fn content_lines(git: &mut GitState) -> Vec<String> {
-    let file = match git.selected_file() {
-        Some(f) => f.clone(),
+pub(crate) fn content_lines(
+    pane: &mut super::DiffViewPane,
+    file: Option<&FileDiff>,
+) -> Vec<String> {
+    let file = match file {
+        Some(f) => f,
         None => return Vec::new(),
     };
-    let side = git.diff_view.vim.cursor.side;
+    let side = pane.vim.cursor.side;
 
     // Return cached result if still valid
-    if let Some((ref path, cached_side, ref lines)) = git.diff_view.highlight.content_lines_cache {
+    if let Some((ref path, cached_side, ref lines)) = pane.highlight.content_lines_cache {
         if *path == file.path && cached_side == side {
             return lines.clone();
         }
@@ -566,32 +571,32 @@ pub(crate) fn content_lines(git: &mut GitState) -> Vec<String> {
             }
         }
     }
-    git.diff_view.highlight.content_lines_cache = Some((file.path.clone(), side, lines.clone()));
+    pane.highlight.content_lines_cache = Some((file.path.clone(), side, lines.clone()));
     lines
 }
 
-fn current_line_len(git: &GitState, lines: &[String]) -> usize {
+fn current_line_len(pane: &super::DiffViewPane, lines: &[String]) -> usize {
     lines
-        .get(git.diff_view.vim.cursor.row)
+        .get(pane.vim.cursor.row)
         .map(|l| l.chars().count().max(1))
         .unwrap_or(1)
 }
 
-fn clamp_col(git: &mut GitState, lines: &[String]) {
-    let len = current_line_len(git, lines);
-    if git.diff_view.vim.cursor.col >= len {
-        git.diff_view.vim.cursor.col = len.saturating_sub(1);
+fn clamp_col(pane: &mut super::DiffViewPane, lines: &[String]) {
+    let len = current_line_len(pane, lines);
+    if pane.vim.cursor.col >= len {
+        pane.vim.cursor.col = len.saturating_sub(1);
     }
 }
 
-fn move_word_forward(git: &mut GitState, lines: &[String]) {
+fn move_word_forward(pane: &mut super::DiffViewPane, lines: &[String]) {
     let total = lines.len();
     if total == 0 {
         return;
     }
-    let line: Vec<char> = lines[git.diff_view.vim.cursor.row].chars().collect();
-    let mut col = git.diff_view.vim.cursor.col;
-    let mut row = git.diff_view.vim.cursor.row;
+    let line: Vec<char> = lines[pane.vim.cursor.row].chars().collect();
+    let mut col = pane.vim.cursor.col;
+    let mut row = pane.vim.cursor.row;
 
     // Skip current word chars
     while col < line.len() && !line[col].is_whitespace() {
@@ -611,25 +616,25 @@ fn move_word_forward(git: &mut GitState, lines: &[String]) {
             col += 1;
         }
     }
-    git.diff_view.vim.cursor.row = row;
-    git.diff_view.vim.cursor.col = col.min(line_len_at(lines, row).saturating_sub(1));
+    pane.vim.cursor.row = row;
+    pane.vim.cursor.col = col.min(line_len_at(lines, row).saturating_sub(1));
 }
 
-fn move_word_backward(git: &mut GitState, lines: &[String]) {
+fn move_word_backward(pane: &mut super::DiffViewPane, lines: &[String]) {
     if lines.is_empty() {
         return;
     }
-    let line: Vec<char> = lines[git.diff_view.vim.cursor.row].chars().collect();
-    let mut col = git.diff_view.vim.cursor.col;
-    let mut row = git.diff_view.vim.cursor.row;
+    let line: Vec<char> = lines[pane.vim.cursor.row].chars().collect();
+    let mut col = pane.vim.cursor.col;
+    let mut row = pane.vim.cursor.row;
 
     if col == 0 {
         if row > 0 {
             row -= 1;
             col = line_len_at(lines, row).saturating_sub(1);
         }
-        git.diff_view.vim.cursor.row = row;
-        git.diff_view.vim.cursor.col = col;
+        pane.vim.cursor.row = row;
+        pane.vim.cursor.col = col;
         return;
     }
 
@@ -643,18 +648,18 @@ fn move_word_backward(git: &mut GitState, lines: &[String]) {
     while col > 0 && line.get(col - 1).is_some_and(|c| !c.is_whitespace()) {
         col -= 1;
     }
-    git.diff_view.vim.cursor.row = row;
-    git.diff_view.vim.cursor.col = col;
+    pane.vim.cursor.row = row;
+    pane.vim.cursor.col = col;
 }
 
-fn move_word_end(git: &mut GitState, lines: &[String]) {
+fn move_word_end(pane: &mut super::DiffViewPane, lines: &[String]) {
     let total = lines.len();
     if total == 0 {
         return;
     }
-    let line: Vec<char> = lines[git.diff_view.vim.cursor.row].chars().collect();
-    let mut col = git.diff_view.vim.cursor.col;
-    let mut row = git.diff_view.vim.cursor.row;
+    let line: Vec<char> = lines[pane.vim.cursor.row].chars().collect();
+    let mut col = pane.vim.cursor.col;
+    let mut row = pane.vim.cursor.row;
 
     // Move forward at least one
     col += 1;
@@ -671,8 +676,8 @@ fn move_word_end(git: &mut GitState, lines: &[String]) {
     while col + 1 < cur_line.len() && !cur_line[col + 1].is_whitespace() {
         col += 1;
     }
-    git.diff_view.vim.cursor.row = row;
-    git.diff_view.vim.cursor.col = col.min(line_len_at(lines, row).saturating_sub(1));
+    pane.vim.cursor.row = row;
+    pane.vim.cursor.col = col.min(line_len_at(lines, row).saturating_sub(1));
 }
 
 fn line_len_at(lines: &[String], row: usize) -> usize {
@@ -682,15 +687,15 @@ fn line_len_at(lines: &[String], row: usize) -> usize {
         .unwrap_or(1)
 }
 
-fn yank_selection(git: &GitState, lines: &[String]) -> String {
-    let anchor = match git.diff_view.vim.visual_anchor {
+fn yank_selection(pane: &super::DiffViewPane, lines: &[String]) -> String {
+    let anchor = match pane.vim.visual_anchor {
         Some(a) => a,
         None => return String::new(),
     };
-    match git.diff_view.vim.mode {
+    match pane.vim.mode {
         DiffViewMode::VisualLine => {
-            let start_row = anchor.row.min(git.diff_view.vim.cursor.row);
-            let end_row = anchor.row.max(git.diff_view.vim.cursor.row);
+            let start_row = anchor.row.min(pane.vim.cursor.row);
+            let end_row = anchor.row.max(pane.vim.cursor.row);
             let mut result = Vec::new();
             for r in start_row..=end_row {
                 if let Some(line) = lines.get(r) {
@@ -700,7 +705,7 @@ fn yank_selection(git: &GitState, lines: &[String]) -> String {
             result.join("\n")
         }
         DiffViewMode::Visual => {
-            let (start, end) = ordered_selection(git, anchor);
+            let (start, end) = ordered_selection(pane, anchor);
             if start.row == end.row {
                 if let Some(line) = lines.get(start.row) {
                     let chars: Vec<char> = line.chars().collect();
@@ -733,42 +738,36 @@ fn yank_selection(git: &GitState, lines: &[String]) -> String {
     }
 }
 
-fn ordered_selection(git: &GitState, anchor: CursorPos) -> (CursorPos, CursorPos) {
-    if anchor.row < git.diff_view.vim.cursor.row
-        || (anchor.row == git.diff_view.vim.cursor.row
-            && anchor.col <= git.diff_view.vim.cursor.col)
+fn ordered_selection(pane: &super::DiffViewPane, anchor: CursorPos) -> (CursorPos, CursorPos) {
+    if anchor.row < pane.vim.cursor.row
+        || (anchor.row == pane.vim.cursor.row && anchor.col <= pane.vim.cursor.col)
     {
-        (anchor, git.diff_view.vim.cursor)
+        (anchor, pane.vim.cursor)
     } else {
-        (git.diff_view.vim.cursor, anchor)
+        (pane.vim.cursor, anchor)
     }
 }
 
-fn apply_text_object(git: &mut GitState, prefix: char, key: KeyCode, lines: &[String]) {
+fn apply_text_object(pane: &mut super::DiffViewPane, prefix: char, key: KeyCode, lines: &[String]) {
     let inner = prefix == 'i';
     match key {
-        KeyCode::Char('w') => select_text_object_word(git, inner, lines),
-        KeyCode::Char('"') => select_text_object_delim(git, inner, '"', '"', lines),
-        KeyCode::Char('\'') => select_text_object_delim(git, inner, '\'', '\'', lines),
+        KeyCode::Char('w') => select_text_object_word(pane, inner, lines),
+        KeyCode::Char('"') => select_text_object_delim(pane, inner, '"', '"', lines),
+        KeyCode::Char('\'') => select_text_object_delim(pane, inner, '\'', '\'', lines),
         KeyCode::Char('(') | KeyCode::Char(')') => {
-            select_text_object_delim(git, inner, '(', ')', lines);
+            select_text_object_delim(pane, inner, '(', ')', lines);
         }
         KeyCode::Char('{') | KeyCode::Char('}') => {
-            select_text_object_delim(git, inner, '{', '}', lines);
+            select_text_object_delim(pane, inner, '{', '}', lines);
         }
         _ => {}
     }
 }
 
-fn select_text_object_word(git: &mut GitState, inner: bool, lines: &[String]) {
-    if let Some(line) = lines.get(git.diff_view.vim.cursor.row) {
+fn select_text_object_word(pane: &mut super::DiffViewPane, inner: bool, lines: &[String]) {
+    if let Some(line) = lines.get(pane.vim.cursor.row) {
         let chars: Vec<char> = line.chars().collect();
-        let col = git
-            .diff_view
-            .vim
-            .cursor
-            .col
-            .min(chars.len().saturating_sub(1));
+        let col = pane.vim.cursor.col.min(chars.len().saturating_sub(1));
         if chars.is_empty() {
             return;
         }
@@ -787,30 +786,25 @@ fn select_text_object_word(git: &mut GitState, inner: bool, lines: &[String]) {
                 end += 1;
             }
         }
-        git.diff_view.vim.visual_anchor = Some(CursorPos {
-            row: git.diff_view.vim.cursor.row,
+        pane.vim.visual_anchor = Some(CursorPos {
+            row: pane.vim.cursor.row,
             col: start,
-            side: git.diff_view.vim.cursor.side,
+            side: pane.vim.cursor.side,
         });
-        git.diff_view.vim.cursor.col = end;
+        pane.vim.cursor.col = end;
     }
 }
 
 fn select_text_object_delim(
-    git: &mut GitState,
+    pane: &mut super::DiffViewPane,
     inner: bool,
     open: char,
     close: char,
     lines: &[String],
 ) {
-    if let Some(line) = lines.get(git.diff_view.vim.cursor.row) {
+    if let Some(line) = lines.get(pane.vim.cursor.row) {
         let chars: Vec<char> = line.chars().collect();
-        let col = git
-            .diff_view
-            .vim
-            .cursor
-            .col
-            .min(chars.len().saturating_sub(1));
+        let col = pane.vim.cursor.col.min(chars.len().saturating_sub(1));
         // Search backward for open
         let mut open_pos = None;
         for i in (0..=col).rev() {
@@ -829,19 +823,19 @@ fn select_text_object_delim(
         }
         if let (Some(op), Some(cp)) = (open_pos, close_pos) {
             if inner {
-                git.diff_view.vim.visual_anchor = Some(CursorPos {
-                    row: git.diff_view.vim.cursor.row,
+                pane.vim.visual_anchor = Some(CursorPos {
+                    row: pane.vim.cursor.row,
                     col: op + 1,
-                    side: git.diff_view.vim.cursor.side,
+                    side: pane.vim.cursor.side,
                 });
-                git.diff_view.vim.cursor.col = cp.saturating_sub(1);
+                pane.vim.cursor.col = cp.saturating_sub(1);
             } else {
-                git.diff_view.vim.visual_anchor = Some(CursorPos {
-                    row: git.diff_view.vim.cursor.row,
+                pane.vim.visual_anchor = Some(CursorPos {
+                    row: pane.vim.cursor.row,
                     col: op,
-                    side: git.diff_view.vim.cursor.side,
+                    side: pane.vim.cursor.side,
                 });
-                git.diff_view.vim.cursor.col = cp;
+                pane.vim.cursor.col = cp;
             }
         }
     }

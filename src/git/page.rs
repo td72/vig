@@ -1,13 +1,10 @@
-use crate::core::app::{AppContext, Page, SearchOrigin};
+use crate::core::app::{AppContext, ErrorDialogState, Page, SearchOrigin};
 use crate::core::page::{ExternalCommand, PageAction, PageHandler};
-use crate::core::pane::{DetailPane, FocusState, SelectPane};
-use crate::core::pane_router::{PaneRouter, PaneTab};
-use crate::core::ui::{branch_action_menu, status_bar};
-use crate::git::domain::branch_action;
+use crate::core::pane::FocusState;
+use crate::core::ui::status_bar;
 use crate::git::domain::search;
 use crate::git::layout;
-use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogSelectPane, ReflogPane};
-use crate::git::state::{DiffViewMode, FocusedPane, GitState};
+use crate::git::state::{BranchActionMenuState, DiffViewMode, FocusedPane, GitState, PaneEvent};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
@@ -21,22 +18,31 @@ pub fn new_page(cwd: &Path) -> Result<(Page, PathBuf)> {
     Ok((page, workdir))
 }
 
-// === Tab definitions ===
+// === Tab navigation ===
 
-pub static GIT_TABS: &[PaneTab<GitState, FocusedPane>] = &[
-    PaneTab {
-        select: &FileTreePane,
-        id: FocusedPane::FileTree,
-    },
-    PaneTab {
-        select: &BranchListPane,
-        id: FocusedPane::BranchList,
-    },
-    PaneTab {
-        select: &ReflogPane,
-        id: FocusedPane::Reflog,
-    },
+const TAB_PANES: [FocusedPane; 3] = [
+    FocusedPane::FileTree,
+    FocusedPane::BranchList,
+    FocusedPane::Reflog,
 ];
+
+fn tab_index(pane: FocusedPane) -> Option<usize> {
+    TAB_PANES.iter().position(|&p| p == pane)
+}
+
+fn next_tab_id(focused: FocusedPane) -> FocusedPane {
+    match tab_index(focused) {
+        Some(idx) => TAB_PANES[(idx + 1) % TAB_PANES.len()],
+        None => TAB_PANES[0],
+    }
+}
+
+fn prev_tab_id(focused: FocusedPane) -> FocusedPane {
+    match tab_index(focused) {
+        Some(idx) => TAB_PANES[(idx + TAB_PANES.len() - 1) % TAB_PANES.len()],
+        None => TAB_PANES[0],
+    }
+}
 
 // === Dispatch ===
 
@@ -49,12 +55,175 @@ fn is_commit_log_detail(focused: FocusedPane) -> bool {
 }
 
 /// Dispatch a key event to the currently focused Git pane.
-/// Covers all 5 panes: the 3 select panes in GIT_TABS + GitLog (nested select) + DiffView (detail).
-pub fn dispatch_git_key(ctx: &mut AppContext, git: &mut GitState, key: KeyEvent) {
-    match git.shared.focused_pane {
-        FocusedPane::GitLog => GitLogSelectPane.handle_key(ctx, git, key),
-        FocusedPane::DiffView => DiffViewPane.handle_key(ctx, git, key),
-        _ => GitPaneRouter.dispatch(ctx, git, key),
+fn dispatch_git_key(git: &mut GitState, key: KeyEvent) -> Vec<PaneEvent> {
+    let focused = git.shared.focused_pane;
+
+    // Tab pane navigation (h/l/i/Esc) for FileTree, BranchList, Reflog
+    if let Some(tab_idx) = tab_index(focused) {
+        match key.code {
+            KeyCode::Char('h') if tab_idx > 0 => {
+                return vec![PaneEvent::SetFocus(TAB_PANES[tab_idx - 1])];
+            }
+            KeyCode::Char('l') if tab_idx + 1 < TAB_PANES.len() => {
+                return vec![PaneEvent::SetFocus(TAB_PANES[tab_idx + 1])];
+            }
+            KeyCode::Char('i') => {
+                let target = if is_commit_log_detail(focused) {
+                    FocusedPane::GitLog
+                } else {
+                    FocusedPane::DiffView
+                };
+                return vec![PaneEvent::SetFocus(target)];
+            }
+            KeyCode::Esc if git.shared.search.query.is_some() => {
+                return vec![PaneEvent::ClearSearch];
+            }
+            _ => {}
+        }
+    }
+
+    // Delegate to pane
+    match focused {
+        FocusedPane::FileTree => git.file_tree.handle_key(&git.shared, key),
+        FocusedPane::BranchList => git.branch_list.handle_key(&git.shared, key),
+        FocusedPane::Reflog => git.reflog.handle_key(&git.shared, key),
+        FocusedPane::GitLog => git.git_log.handle_key(&git.shared, key),
+        FocusedPane::DiffView => {
+            let file = git.file_tree.selected_file(&git.shared).cloned();
+            git.diff_view.handle_key(&git.shared, file.as_ref(), key)
+        }
+    }
+}
+
+// === Event processing ===
+
+fn process_events(
+    ctx: &mut AppContext,
+    git: &mut GitState,
+    events: Vec<PaneEvent>,
+) -> Result<PageAction> {
+    let mut action = PageAction::None;
+    for event in events {
+        match event {
+            PaneEvent::SetFocus(pane) => {
+                git.set_focus(pane);
+            }
+            PaneEvent::ResetDiffScroll => {
+                git.diff_view.scroll.y = 0;
+                git.diff_view.scroll.x = 0;
+            }
+            PaneEvent::RefreshDiff => {
+                refresh_diff(ctx, git);
+            }
+            PaneEvent::SetDiffBase(base) => {
+                git.shared.diff_base_ref = base;
+            }
+            PaneEvent::OpenBranchActionMenu => {
+                if let Some(branch) = git.branch_list.branches.get(git.branch_list.selected_idx) {
+                    git.branch_list.action_menu = Some(BranchActionMenuState {
+                        branch_name: branch.name.clone(),
+                        is_head: branch.is_head,
+                        selected_idx: 0,
+                    });
+                }
+            }
+            PaneEvent::SwitchBranch(name) => match git.shared.repo.switch_branch(&name) {
+                Ok(()) => {
+                    ctx.status_message = Some(format!("Switched to {name}"));
+                    git.load_branches();
+                    refresh_diff(ctx, git);
+                }
+                Err(e) => {
+                    ctx.error_dialog = Some(ErrorDialogState {
+                        title: "Switch failed".to_string(),
+                        message: format!("{e}"),
+                    });
+                }
+            },
+            PaneEvent::DeleteBranch(name) => match git.shared.repo.delete_branch(&name) {
+                Ok(()) => {
+                    ctx.status_message = Some(format!("Deleted {name}"));
+                    git.load_branches();
+                }
+                Err(e) => {
+                    ctx.error_dialog = Some(ErrorDialogState {
+                        title: "Delete failed".to_string(),
+                        message: format!("{e}"),
+                    });
+                }
+            },
+            PaneEvent::UpdateBranchLog => {
+                git.update_branch_log();
+            }
+            PaneEvent::LoadCommitDetail => {
+                git.load_commit_detail();
+            }
+            PaneEvent::ReSearchOnFileChange => {
+                search::re_search_on_file_change(git);
+            }
+            PaneEvent::StartSearch(origin) => {
+                git.shared.search.start(origin);
+            }
+            PaneEvent::ClearSearch => {
+                git.shared.search.clear();
+            }
+            PaneEvent::JumpToMatch(forward) => {
+                search::jump_to_git_match(ctx, git, forward);
+            }
+            PaneEvent::OpenEditor(path) => {
+                let file_path = ctx.workdir.join(&path);
+                let editor = std::env::var("EDITOR")
+                    .or_else(|_| std::env::var("VISUAL"))
+                    .unwrap_or_else(|_| "vi".to_string());
+                action = PageAction::Suspend(ExternalCommand {
+                    program: editor,
+                    args: vec![file_path.into()],
+                });
+            }
+            PaneEvent::Quit => {
+                ctx.should_quit = true;
+            }
+            PaneEvent::ShowHelp => {
+                ctx.show_help = true;
+            }
+            PaneEvent::StatusMessage(msg) => {
+                ctx.status_message = Some(msg);
+            }
+            PaneEvent::ErrorDialog { title, message } => {
+                ctx.error_dialog = Some(ErrorDialogState { title, message });
+            }
+            PaneEvent::CopyToClipboard(text) => {
+                copy_to_clipboard(ctx, &text);
+            }
+            PaneEvent::OpenUrl(url) => {
+                if let Err(e) = crate::github::domain::client::open_url(&url) {
+                    ctx.status_message = Some(e);
+                }
+            }
+        }
+    }
+    Ok(action)
+}
+
+fn copy_to_clipboard(ctx: &mut AppContext, text: &str) {
+    if text.is_empty() {
+        return;
+    }
+    let line_count = text.lines().count().max(1);
+    match arboard::Clipboard::new() {
+        Ok(mut clip) => {
+            if clip.set_text(text).is_ok() {
+                ctx.status_message = Some(format!(
+                    "Yanked {line_count} line{}",
+                    if line_count == 1 { "" } else { "s" }
+                ));
+            } else {
+                ctx.status_message = Some("Clipboard error".to_string());
+            }
+        }
+        Err(_) => {
+            ctx.status_message = Some("Clipboard unavailable".to_string());
+        }
     }
 }
 
@@ -69,8 +238,8 @@ pub fn handle_git_view_key(
     if git.shared.focused_pane == FocusedPane::DiffView
         && git.diff_view.vim.mode != DiffViewMode::Scroll
     {
-        dispatch_git_key(ctx, git, key);
-        return Ok(PageAction::None);
+        let events = dispatch_git_key(git, key);
+        return process_events(ctx, git, events);
     }
 
     match key.code {
@@ -109,12 +278,15 @@ pub fn handle_git_view_key(
             }
         }
         KeyCode::Tab => {
-            git.set_focus(GitPaneRouter.next_tab_id(git));
+            git.set_focus(next_tab_id(git.shared.focused_pane));
         }
         KeyCode::BackTab => {
-            git.set_focus(GitPaneRouter.prev_tab_id(git));
+            git.set_focus(prev_tab_id(git.shared.focused_pane));
         }
-        _ => dispatch_git_key(ctx, git, key),
+        _ => {
+            let events = dispatch_git_key(git, key);
+            return process_events(ctx, git, events);
+        }
     }
     Ok(PageAction::None)
 }
@@ -137,41 +309,6 @@ pub(crate) fn refresh_diff(ctx: &mut AppContext, git: &mut GitState) {
         ctx.status_message = Some(msg);
     } else {
         ctx.status_message = None;
-    }
-}
-
-// === Container ===
-
-pub(crate) struct GitPaneRouter;
-
-impl PaneRouter<GitState, FocusedPane> for GitPaneRouter {
-    fn tabs(&self) -> &'static [PaneTab<GitState, FocusedPane>] {
-        GIT_TABS
-    }
-
-    fn handle_common_key(
-        &self,
-        _ctx: &mut AppContext,
-        state: &mut GitState,
-        key: KeyEvent,
-        idx: usize,
-    ) -> bool {
-        match key.code {
-            KeyCode::Char('i') => {
-                let target = if is_commit_log_detail(GIT_TABS[idx].id) {
-                    FocusedPane::GitLog
-                } else {
-                    FocusedPane::DiffView
-                };
-                state.set_focus(target);
-                true
-            }
-            KeyCode::Esc if state.shared.search.query.is_some() => {
-                state.shared.search.clear();
-                true
-            }
-            _ => false,
-        }
     }
 }
 
@@ -240,8 +377,8 @@ impl PageHandler<GitState> for GitPageHandler {
     ) -> Result<PageAction> {
         // Branch action menu intercepts all keys when open
         if git.branch_list.action_menu.is_some() {
-            branch_action::handle_branch_action_menu_key(ctx, git, key);
-            return Ok(PageAction::None);
+            let events = git.branch_list.handle_key(&git.shared, key);
+            return process_events(ctx, git, events);
         }
 
         // Search input mode intercepts all keys
@@ -259,20 +396,22 @@ impl PageHandler<GitState> for GitPageHandler {
     fn render(&self, f: &mut Frame, ctx: &AppContext, git: &mut GitState, area: Rect) {
         let ly = layout::compute_layout(area);
         status_bar::render_header(f, ctx, git, ly.header);
-        FileTreePane.render(f, ctx, git, ly.file_tree);
-        BranchListPane.render(f, ctx, git, ly.branch_list);
-        ReflogPane.render(f, ctx, git, ly.reflog);
+        git.file_tree.render(f, ctx, &git.shared, ly.file_tree);
+        git.branch_list.render(f, ctx, &git.shared, ly.branch_list);
+        git.reflog.render(f, ctx, &git.shared, ly.reflog);
 
         if is_commit_log_detail(git.shared.focused_pane) {
-            GitLogSelectPane.render(f, ctx, git, ly.main_pane);
+            git.git_log.render(f, ctx, &git.shared, ly.main_pane);
         } else {
-            DiffViewPane.render(f, ctx, git, ly.main_pane);
+            let file = git.file_tree.selected_file(&git.shared).cloned();
+            git.diff_view
+                .render(f, ctx, &git.shared, file.as_ref(), ly.main_pane);
         }
 
         status_bar::render_status_bar(f, ctx, git, ly.status_bar);
 
         if git.branch_list.action_menu.is_some() {
-            branch_action_menu::render(f, git, area);
+            git.branch_list.render_action_menu(f, area);
         }
     }
 

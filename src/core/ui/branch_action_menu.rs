@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::git::state::{BranchAction, GitState};
 use ratatui::{
     layout::Rect,

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::core::app::{AppContext, ErrorDialogState};
 use crate::git::state::{BranchAction, BranchActionMenuState, GitState};
 use crossterm::event::{KeyCode, KeyEvent};
