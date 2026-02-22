@@ -51,35 +51,40 @@ impl GhIssueListPane {
         self.issues = issues;
     }
 
+    /// Return the number of the currently selected issue, if any.
+    pub fn selected_number(&self) -> Option<u64> {
+        self.issues.get(self.selected_idx).map(|i| i.number)
+    }
+
     pub fn handle_key(&mut self, _shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.issues.is_empty() && self.selected_idx + 1 < self.issues.len() {
                     self.selected_idx += 1;
-                    return vec![GhPaneEvent::LoadSelectedIssueDetail];
+                    return vec![GhPaneEvent::LoadDetail];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    return vec![GhPaneEvent::LoadSelectedIssueDetail];
+                    return vec![GhPaneEvent::LoadDetail];
                 }
             }
             KeyCode::Char('g') => {
                 self.selected_idx = 0;
-                return vec![GhPaneEvent::LoadSelectedIssueDetail];
+                return vec![GhPaneEvent::LoadDetail];
             }
             KeyCode::Char('G') => {
                 if !self.issues.is_empty() {
                     self.selected_idx = self.issues.len() - 1;
-                    return vec![GhPaneEvent::LoadSelectedIssueDetail];
+                    return vec![GhPaneEvent::LoadDetail];
                 }
             }
             KeyCode::Char('i') | KeyCode::Enter => {
                 if !self.issues.is_empty() {
                     return vec![
                         GhPaneEvent::SetFocus(GhFocusedPane::Detail),
-                        GhPaneEvent::LoadSelectedIssueDetail,
+                        GhPaneEvent::LoadDetail,
                     ];
                 }
             }

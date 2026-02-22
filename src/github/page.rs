@@ -64,11 +64,7 @@ fn dispatch_gh_key(gh: &mut GitHubState, key: KeyEvent) -> Vec<GhPaneEvent> {
 }
 
 fn load_gh_detail_for_tab(gh: &mut GitHubState) {
-    match gh.shared.focused_pane {
-        GhFocusedPane::IssueList => gh.load_selected_issue_detail(),
-        GhFocusedPane::PrList => gh.load_selected_pr_detail(),
-        _ => {}
-    }
+    gh.load_detail();
 }
 
 fn process_gh_events(
@@ -82,11 +78,8 @@ fn process_gh_events(
                 gh.set_focus(pane);
                 load_gh_detail_for_tab(gh);
             }
-            GhPaneEvent::LoadSelectedIssueDetail => {
-                gh.load_selected_issue_detail();
-            }
-            GhPaneEvent::LoadSelectedPrDetail => {
-                gh.load_selected_pr_detail();
+            GhPaneEvent::LoadDetail => {
+                gh.load_detail();
             }
             GhPaneEvent::OpenIssueBrowser(n) => {
                 match crate::github::domain::client::open_issue_in_browser(n) {

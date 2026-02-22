@@ -57,8 +57,7 @@ pub struct GhShared {
 
 pub enum GhPaneEvent {
     SetFocus(GhFocusedPane),
-    LoadSelectedIssueDetail,
-    LoadSelectedPrDetail,
+    LoadDetail,
     OpenIssueBrowser(u64),
     OpenPrBrowser(u64),
     OpenUrl(String),
@@ -138,9 +137,7 @@ impl GitHubState {
         self.pr_list.initialize(&tx);
 
         // Auto-load detail for the first item from disk cache
-        if !self.issue_list.issues.is_empty() {
-            self.load_selected_issue_detail();
-        }
+        self.load_detail();
     }
 
     /// Drain background messages from worker threads.
@@ -217,36 +214,38 @@ impl GitHubState {
             }
         }
 
-        // Auto-load detail for the currently focused/selected list
+        // Auto-load detail when a fresh list arrives for the active tab
         let on_pr = self.shared.focused_pane == GhFocusedPane::PrList
             || (self.shared.focused_pane == GhFocusedPane::Detail
                 && self.shared.previous_pane == GhFocusedPane::PrList);
-        if on_pr {
-            if pr_list_arrived {
-                self.load_selected_pr_detail();
-            }
-        } else if issue_list_arrived {
-            self.load_selected_issue_detail();
+        if (on_pr && pr_list_arrived) || (!on_pr && issue_list_arrived) {
+            self.load_detail();
         }
     }
 
-    /// Auto-load detail for the currently selected issue.
-    pub fn load_selected_issue_detail(&mut self) {
-        if let Some(issue) = self.issue_list.issues.get(self.issue_list.selected_idx) {
-            let number = issue.number;
-            if let Some(tx) = &self.bg_tx {
-                self.detail_view.load_issue(number, tx);
+    /// Load detail for whichever list pane is currently active (or was, if in Detail).
+    pub fn load_detail(&mut self) {
+        let tx = match &self.bg_tx {
+            Some(tx) => tx,
+            None => return,
+        };
+        let origin = if self.shared.focused_pane == GhFocusedPane::Detail {
+            self.shared.previous_pane
+        } else {
+            self.shared.focused_pane
+        };
+        match origin {
+            GhFocusedPane::IssueList => {
+                if let Some(n) = self.issue_list.selected_number() {
+                    self.detail_view.load_issue(n, tx);
+                }
             }
-        }
-    }
-
-    /// Auto-load detail for the currently selected PR.
-    pub fn load_selected_pr_detail(&mut self) {
-        if let Some(pr) = self.pr_list.prs.get(self.pr_list.selected_idx) {
-            let number = pr.number;
-            if let Some(tx) = &self.bg_tx {
-                self.detail_view.load_pr(number, tx);
+            GhFocusedPane::PrList => {
+                if let Some(n) = self.pr_list.selected_number() {
+                    self.detail_view.load_pr(n, tx);
+                }
             }
+            GhFocusedPane::Detail => {}
         }
     }
 
@@ -257,11 +256,7 @@ impl GitHubState {
             GhDetailContent::Pr(detail) => (GhDetailKind::Pr, detail.number),
             GhDetailContent::Loading { kind, number } => (*kind, *number),
             GhDetailContent::Error(_) => {
-                match self.shared.previous_pane {
-                    GhFocusedPane::IssueList => self.load_selected_issue_detail(),
-                    GhFocusedPane::PrList => self.load_selected_pr_detail(),
-                    _ => {}
-                }
+                self.load_detail();
                 return;
             }
             _ => return,

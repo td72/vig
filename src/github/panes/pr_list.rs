@@ -51,35 +51,40 @@ impl GhPrListPane {
         self.prs = prs;
     }
 
+    /// Return the number of the currently selected PR, if any.
+    pub fn selected_number(&self) -> Option<u64> {
+        self.prs.get(self.selected_idx).map(|pr| pr.number)
+    }
+
     pub fn handle_key(&mut self, _shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.prs.is_empty() && self.selected_idx + 1 < self.prs.len() {
                     self.selected_idx += 1;
-                    return vec![GhPaneEvent::LoadSelectedPrDetail];
+                    return vec![GhPaneEvent::LoadDetail];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    return vec![GhPaneEvent::LoadSelectedPrDetail];
+                    return vec![GhPaneEvent::LoadDetail];
                 }
             }
             KeyCode::Char('g') => {
                 self.selected_idx = 0;
-                return vec![GhPaneEvent::LoadSelectedPrDetail];
+                return vec![GhPaneEvent::LoadDetail];
             }
             KeyCode::Char('G') => {
                 if !self.prs.is_empty() {
                     self.selected_idx = self.prs.len() - 1;
-                    return vec![GhPaneEvent::LoadSelectedPrDetail];
+                    return vec![GhPaneEvent::LoadDetail];
                 }
             }
             KeyCode::Char('i') | KeyCode::Enter => {
                 if !self.prs.is_empty() {
                     return vec![
                         GhPaneEvent::SetFocus(GhFocusedPane::Detail),
-                        GhPaneEvent::LoadSelectedPrDetail,
+                        GhPaneEvent::LoadDetail,
                     ];
                 }
             }
