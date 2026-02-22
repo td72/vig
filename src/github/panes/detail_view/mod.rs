@@ -1,12 +1,10 @@
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
-use crate::core::pane::{Pane, SubPaneScroll};
+use crate::core::pane::{Pane, PaneShared, SubPaneScroll};
 use crate::github::domain::types::*;
 use crate::github::domain::{client, disk_cache};
-use crate::github::state::{
-    GhBgMessage, GhDetailContent, GhDetailKind, GhDetailPane, GhPaneEvent, GhShared,
-};
+use crate::github::state::{GhBgMessage, GhDetailContent, GhDetailKind, GhDetailPane, GhPaneEvent};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 use std::collections::HashMap;
@@ -250,7 +248,7 @@ impl GhDetailViewPane {
         });
     }
 
-    pub fn handle_key(&mut self, shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
+    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         // Determine item count for selection-based panes
         let pane = self.active_pane;
         let item_count = match pane {
@@ -379,7 +377,7 @@ impl GhDetailViewPane {
                 return self.open_detail_item();
             }
             KeyCode::Esc => {
-                return vec![GhPaneEvent::SetFocus(shared.pane.previous_pane)];
+                return vec![GhPaneEvent::SetFocus(shared.previous_pane)];
             }
             _ => {}
         }
@@ -444,17 +442,17 @@ impl GhDetailViewPane {
         }
     }
 
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GhShared, area: Rect) {
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         view::render(f, self, shared, area);
     }
 }
 
-impl Pane<GhShared, GhPaneEvent> for GhDetailViewPane {
-    fn handle_key(&mut self, shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
+impl Pane<GhPaneEvent> for GhDetailViewPane {
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         self.handle_key(shared, key)
     }
 
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GhShared, area: Rect) {
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render(f, ctx, shared, area)
     }
 }

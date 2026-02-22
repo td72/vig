@@ -42,7 +42,7 @@ pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect
         ),
         Span::raw(" "),
         Span::styled(
-            format!(" {} ", git.shared.diff_state.branch_name),
+            format!(" {} ", git.shared.diff_meta.branch_name),
             Style::default().fg(Color::Black).bg(Color::Magenta),
         ),
     ];
@@ -104,9 +104,9 @@ pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: 
         return;
     }
 
-    let file_count = git.shared.diff_state.files.len();
-    let adds = git.shared.diff_state.stats.additions;
-    let dels = git.shared.diff_state.stats.deletions;
+    let file_count = git.shared.diff_meta.file_count;
+    let adds = git.shared.diff_meta.stats.additions;
+    let dels = git.shared.diff_meta.stats.deletions;
 
     let status = if let Some(ref msg) = ctx.status_message {
         Line::from(Span::styled(

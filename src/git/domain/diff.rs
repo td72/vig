@@ -73,11 +73,18 @@ pub struct DiffStats {
     pub deletions: usize,
 }
 
-#[derive(Debug, Clone)]
-pub struct DiffState {
+/// Result of a diff operation, returned by Repo::diff_workdir.
+pub struct DiffResult {
     pub files: Vec<FileDiff>,
     pub branch_name: String,
     pub stats: DiffStats,
+}
+
+/// Lightweight metadata kept in GitShared (no files Vec).
+pub struct DiffMeta {
+    pub branch_name: String,
+    pub stats: DiffStats,
+    pub file_count: usize,
 }
 
 struct RawHunkLine {

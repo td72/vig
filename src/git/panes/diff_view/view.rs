@@ -1,7 +1,8 @@
 use super::DiffViewPane;
 use crate::core::app::SearchMatch;
+use crate::core::pane::PaneShared;
 use crate::git::domain::diff::{FileDiff, LineType, SideBySideRow};
-use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitShared, PANE_DIFF_VIEW};
+use crate::git::state::{CursorPos, DiffSide, DiffViewMode, PANE_DIFF_VIEW};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -10,6 +11,7 @@ use ratatui::{
     Frame,
 };
 use std::collections::HashMap;
+use std::rc::Rc;
 
 const GUTTER_WIDTH: usize = 5; // "1234 "
 const SELECTION_BG: Color = Color::Rgb(60, 60, 100);
@@ -26,16 +28,16 @@ struct SearchHighlightInfo {
 }
 
 impl SearchHighlightInfo {
-    fn from_shared(shared: &GitShared) -> Option<Self> {
-        let query = shared.pane.search.query.as_ref()?;
-        if query.is_empty() || shared.pane.search.matches.is_empty() {
+    fn from_search_state(search: &crate::core::search::SearchState) -> Option<Self> {
+        let query = search.query.as_ref()?;
+        if query.is_empty() || search.matches.is_empty() {
             return None;
         }
 
-        let current_idx = shared.pane.search.current_match_idx;
+        let current_idx = search.current_match_idx;
         let mut row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>> = HashMap::new();
 
-        for (i, m) in shared.pane.search.matches.iter().enumerate() {
+        for (i, m) in search.matches.iter().enumerate() {
             if let SearchMatch::DiffLine {
                 row,
                 col_start,
@@ -81,8 +83,8 @@ struct SelectionInfo {
     cursor: CursorPos,
 }
 
-pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &GitShared, area: Rect) {
-    let border_color = if shared.pane.focused_pane == PANE_DIFF_VIEW {
+pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &PaneShared, area: Rect) {
+    let border_color = if shared.focused_pane == PANE_DIFF_VIEW {
         Color::Cyan
     } else {
         Color::DarkGray
@@ -96,14 +98,22 @@ pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &GitShared, area: 
     let inner = block.inner(area);
     f.render_widget(block, area);
 
-    let file = match pane.current_file(shared) {
-        Some(file) => file,
+    let files = Rc::clone(&pane.files);
+    let file_idx = match pane.current_file_idx {
+        Some(idx) => idx,
         None => {
             let msg = Paragraph::new(Line::from(Span::styled(
                 "  No file selected",
                 Style::default().fg(Color::DarkGray),
             )));
             f.render_widget(msg, inner);
+            pane.scroll.total_lines = 0;
+            return;
+        }
+    };
+    let file = match files.get(file_idx) {
+        Some(f) => f,
+        None => {
             pane.scroll.total_lines = 0;
             return;
         }
@@ -150,7 +160,7 @@ pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &GitShared, area: 
     let selection = build_selection_info(pane);
 
     // Build search highlight info
-    let search_hl = SearchHighlightInfo::from_shared(shared);
+    let search_hl = SearchHighlightInfo::from_search_state(&shared.search);
 
     // Access cached highlight colors by reference (no clone)
     let (left_lines, right_lines) = {

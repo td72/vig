@@ -1,9 +1,10 @@
-use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitShared, PaneEvent, PANE_DIFF_VIEW};
+use crate::core::pane::PaneShared;
+use crate::git::state::{CursorPos, DiffSide, DiffViewMode, PaneEvent, PANE_DIFF_VIEW};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub(crate) fn handle_diff_scroll_key(
     pane: &mut super::DiffViewPane,
-    shared: &GitShared,
+    shared: &PaneShared,
     key: KeyEvent,
 ) -> Vec<PaneEvent> {
     let max_scroll = pane
@@ -35,10 +36,10 @@ pub(crate) fn handle_diff_scroll_key(
             pane.scroll.x = pane.scroll.x.saturating_sub(4);
         }
         KeyCode::Esc => {
-            if shared.pane.search.query.is_some() {
+            if shared.search.query.is_some() {
                 return vec![PaneEvent::ClearSearch];
             } else {
-                return vec![PaneEvent::SetFocus(shared.pane.previous_pane)];
+                return vec![PaneEvent::SetFocus(shared.previous_pane)];
             }
         }
         KeyCode::Char('l') | KeyCode::Right => {
@@ -73,7 +74,7 @@ pub(crate) fn handle_diff_scroll_key(
 
 pub(crate) fn handle_diff_normal_key(
     pane: &mut super::DiffViewPane,
-    shared: &GitShared,
+    shared: &PaneShared,
     key: KeyEvent,
 ) -> Vec<PaneEvent> {
     // Handle Ctrl+w prefix for panel switching
@@ -224,7 +225,7 @@ pub(crate) fn handle_diff_normal_key(
             events.push(PaneEvent::JumpToMatch(false));
         }
         KeyCode::Esc => {
-            if shared.pane.search.query.is_some() {
+            if shared.search.query.is_some() {
                 events.push(PaneEvent::ClearSearch);
             } else {
                 pane.vim.mode = DiffViewMode::Scroll;
@@ -376,7 +377,7 @@ fn extract_range(lines: &[String], start: CursorPos, end: CursorPos) -> String {
 
 pub(crate) fn handle_diff_visual_key(
     pane: &mut super::DiffViewPane,
-    shared: &GitShared,
+    shared: &PaneShared,
     key: KeyEvent,
 ) -> Vec<PaneEvent> {
     // Handle pending key sequences
@@ -535,9 +536,9 @@ pub(crate) fn handle_diff_visual_key(
 
 /// Build flat list of content strings for the current side of the diff.
 /// Results are cached and reused until the file or side changes.
-pub(crate) fn content_lines(pane: &mut super::DiffViewPane, shared: &GitShared) -> Vec<String> {
-    let idx = pane.current_file_idx;
-    let file = match idx.and_then(|i| shared.diff_state.files.get(i)) {
+pub(crate) fn content_lines(pane: &mut super::DiffViewPane, _shared: &PaneShared) -> Vec<String> {
+    let files = std::rc::Rc::clone(&pane.files);
+    let file = match pane.current_file_idx.and_then(|i| files.get(i)) {
         Some(f) => f,
         None => return Vec::new(),
     };

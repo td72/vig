@@ -1,8 +1,8 @@
 use crate::core::app::AppContext;
-use crate::core::pane::Pane;
+use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{BranchInfo, Repo};
-use crate::git::state::{BranchAction, BranchActionMenuState, GitShared, PaneEvent};
+use crate::git::state::{BranchAction, BranchActionMenuState, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -43,16 +43,11 @@ impl BranchListPane {
         self.branches.get(self.selected_idx)
     }
 
-    pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+    pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         if self.action_menu.is_some() {
             return self.handle_action_menu_key(key);
         }
         match key.code {
-            KeyCode::Esc => {
-                if shared.diff_base_ref.is_some() {
-                    return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
-                }
-            }
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.branches.is_empty() && self.selected_idx + 1 < self.branches.len() {
                     self.selected_idx += 1;
@@ -150,7 +145,7 @@ impl BranchListPane {
         }
     }
 
-    pub fn collect_search_matches(&self, _shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+    pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
         let query_lower = query.to_lowercase();
         self.branches
             .iter()
@@ -165,8 +160,8 @@ impl BranchListPane {
             .collect()
     }
 
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
-        let border_color = if shared.pane.focused_pane == PANE_BRANCH_LIST {
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+        let border_color = if shared.focused_pane == PANE_BRANCH_LIST {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -188,9 +183,8 @@ impl BranchListPane {
         }
 
         // Build set of matched branch entry indices
-        let (match_set, current_match_idx) = if shared.pane.search.origin == PANE_BRANCH_LIST {
+        let (match_set, current_match_idx) = if shared.search.origin == PANE_BRANCH_LIST {
             let set: HashSet<usize> = shared
-                .pane
                 .search
                 .matches
                 .iter()
@@ -199,8 +193,8 @@ impl BranchListPane {
                     _ => None,
                 })
                 .collect();
-            let current = shared.pane.search.current_match_idx.and_then(|ci| {
-                match shared.pane.search.matches.get(ci) {
+            let current = shared.search.current_match_idx.and_then(|ci| {
+                match shared.search.matches.get(ci) {
                     Some(SearchMatch::ListEntry(idx)) => Some(*idx),
                     _ => None,
                 }
@@ -359,12 +353,12 @@ impl BranchListPane {
     }
 }
 
-impl Pane<GitShared, PaneEvent> for BranchListPane {
-    fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+impl Pane<PaneEvent> for BranchListPane {
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         self.handle_key(shared, key)
     }
 
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render(f, ctx, shared, area)
     }
 
@@ -380,11 +374,11 @@ impl Pane<GitShared, PaneEvent> for BranchListPane {
         self.selected_idx = idx;
     }
 
-    fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+    fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
         self.collect_search_matches(shared, query)
     }
 
-    fn jump_to_match(&mut self, _shared: &GitShared, search_match: &SearchMatch) {
+    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
         if let SearchMatch::ListEntry(idx) = search_match {
             self.selected_idx = *idx;
         }

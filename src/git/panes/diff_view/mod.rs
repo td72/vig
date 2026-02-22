@@ -2,29 +2,30 @@ pub(crate) mod keys;
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
-use crate::core::pane::Pane;
+use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::diff::FileDiff;
-use crate::git::state::{
-    DiffScroll, DiffSide, DiffViewMode, GitShared, HighlightState, PaneEvent, VimState,
-};
+use crate::git::state::{DiffScroll, DiffSide, DiffViewMode, HighlightState, PaneEvent, VimState};
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
+use std::rc::Rc;
 
 pub struct DiffViewPane {
     pub scroll: DiffScroll,
     pub vim: VimState,
     pub highlight: HighlightState,
     pub current_file_idx: Option<usize>,
+    pub files: Rc<Vec<FileDiff>>,
 }
 
 impl DiffViewPane {
-    pub fn new() -> Self {
+    pub fn new(files: Rc<Vec<FileDiff>>) -> Self {
         Self {
             scroll: DiffScroll::default(),
             vim: VimState::default(),
             highlight: HighlightState::new(),
             current_file_idx: None,
+            files,
         }
     }
 
@@ -32,17 +33,20 @@ impl DiffViewPane {
         self.current_file_idx = idx;
     }
 
+    pub fn set_files(&mut self, files: Rc<Vec<FileDiff>>) {
+        self.files = files;
+    }
+
     pub fn reset_scroll(&mut self) {
         self.scroll.y = 0;
         self.scroll.x = 0;
     }
 
-    pub fn current_file<'a>(&self, shared: &'a GitShared) -> Option<&'a FileDiff> {
-        self.current_file_idx
-            .and_then(|i| shared.diff_state.files.get(i))
+    pub fn current_file(&self) -> Option<&FileDiff> {
+        self.current_file_idx.and_then(|i| self.files.get(i))
     }
 
-    pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         match self.vim.mode {
             DiffViewMode::Scroll => keys::handle_diff_scroll_key(self, shared, key),
             DiffViewMode::Normal => keys::handle_diff_normal_key(self, shared, key),
@@ -52,12 +56,12 @@ impl DiffViewPane {
         }
     }
 
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         view::render(f, self, shared, area);
     }
 
-    pub fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
-        let file = match self.current_file(shared) {
+    pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+        let file = match self.current_file() {
             Some(f) => f,
             None => return vec![],
         };
@@ -134,20 +138,20 @@ impl DiffViewPane {
     }
 }
 
-impl Pane<GitShared, PaneEvent> for DiffViewPane {
-    fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+impl Pane<PaneEvent> for DiffViewPane {
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         self.handle_key(shared, key)
     }
 
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render(f, ctx, shared, area)
     }
 
-    fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+    fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
         self.collect_search_matches(shared, query)
     }
 
-    fn jump_to_match(&mut self, _shared: &GitShared, search_match: &SearchMatch) {
+    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
         if let SearchMatch::DiffLine {
             row,
             col_start,

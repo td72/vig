@@ -274,15 +274,15 @@ impl GitHubState {
                 KeyCode::Char('l') | KeyCode::Tab => {
                     vec![GhPaneEvent::SetFocus(GH_PANE_PR_LIST)]
                 }
-                _ => self.issue_list.handle_key(&self.shared, key),
+                _ => self.issue_list.handle_key(&self.shared.pane, key),
             },
             GH_PANE_PR_LIST => match key.code {
                 KeyCode::Char('h') | KeyCode::BackTab => {
                     vec![GhPaneEvent::SetFocus(GH_PANE_ISSUE_LIST)]
                 }
-                _ => self.pr_list.handle_key(&self.shared, key),
+                _ => self.pr_list.handle_key(&self.shared.pane, key),
             },
-            GH_PANE_DETAIL => self.detail_view.handle_key(&self.shared, key),
+            GH_PANE_DETAIL => self.detail_view.handle_key(&self.shared.pane, key),
             _ => vec![],
         }
     }
@@ -395,9 +395,11 @@ impl GitHubState {
     pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let gl = crate::github::layout::compute_gh_layout(area);
         status_bar::render_gh_header(f, ctx, gl.header);
-        self.issue_list.render(f, ctx, &self.shared, gl.issue_list);
-        self.pr_list.render(f, ctx, &self.shared, gl.pr_list);
-        self.detail_view.render(f, ctx, &self.shared, gl.main_pane);
+        self.issue_list
+            .render(f, ctx, &self.shared.pane, gl.issue_list);
+        self.pr_list.render(f, ctx, &self.shared.pane, gl.pr_list);
+        self.detail_view
+            .render(f, ctx, &self.shared.pane, gl.main_pane);
         status_bar::render_gh_status_bar(f, ctx, self, gl.status_bar);
     }
 

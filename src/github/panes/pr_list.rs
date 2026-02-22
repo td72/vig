@@ -1,8 +1,8 @@
 use crate::core::app::AppContext;
-use crate::core::pane::Pane;
+use crate::core::pane::{Pane, PaneShared};
 use crate::github::domain::types::GhPrListItem;
 use crate::github::domain::{client, disk_cache};
-use crate::github::state::{GhBgMessage, GhPaneEvent, GhShared, GH_PANE_DETAIL, GH_PANE_PR_LIST};
+use crate::github::state::{GhBgMessage, GhPaneEvent, GH_PANE_DETAIL, GH_PANE_PR_LIST};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -58,7 +58,7 @@ impl GhPrListPane {
         self.prs.get(self.selected_idx).map(|pr| pr.number)
     }
 
-    pub fn handle_key(&mut self, _shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
+    pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.prs.is_empty() && self.selected_idx + 1 < self.prs.len() {
@@ -97,8 +97,8 @@ impl GhPrListPane {
         vec![]
     }
 
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GhShared, area: Rect) {
-        let is_focused = shared.pane.focused_pane == GH_PANE_PR_LIST;
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+        let is_focused = shared.focused_pane == GH_PANE_PR_LIST;
         let border_color = if is_focused {
             Color::Cyan
         } else {
@@ -190,8 +190,7 @@ impl GhPrListPane {
 
         let mut list_state = ListState::default();
         if is_focused
-            || (shared.pane.focused_pane == GH_PANE_DETAIL
-                && shared.pane.previous_pane == GH_PANE_PR_LIST)
+            || (shared.focused_pane == GH_PANE_DETAIL && shared.previous_pane == GH_PANE_PR_LIST)
         {
             list_state.select(Some(self.selected_idx));
         }
@@ -199,12 +198,12 @@ impl GhPrListPane {
     }
 }
 
-impl Pane<GhShared, GhPaneEvent> for GhPrListPane {
-    fn handle_key(&mut self, shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
+impl Pane<GhPaneEvent> for GhPrListPane {
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         self.handle_key(shared, key)
     }
 
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GhShared, area: Rect) {
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render(f, ctx, shared, area)
     }
 

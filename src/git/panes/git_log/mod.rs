@@ -1,9 +1,9 @@
 pub(crate) mod view;
 
-use crate::core::pane::{DetailState, Pane, SubPaneScroll};
+use crate::core::pane::{DetailState, Pane, PaneShared, SubPaneScroll};
 use crate::git::domain::graph::{self, GraphRow};
 use crate::git::domain::repository::{CommitFileChange, CommitInfo, Repo};
-use crate::git::state::{GitShared, PaneEvent, PANE_REFLOG};
+use crate::git::state::{PaneEvent, PANE_REFLOG};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 
@@ -67,49 +67,49 @@ impl GitLogPane {
         self.detail_changed_files.clear();
     }
 
-    pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         match key.code {
             KeyCode::Char('h') => {
                 return vec![PaneEvent::SetFocus(PANE_REFLOG)];
             }
             KeyCode::Esc => {
-                if shared.pane.search.query.is_some() {
+                if shared.search.query.is_some() {
                     return vec![PaneEvent::ClearSearch];
                 } else {
-                    return vec![PaneEvent::SetFocus(shared.pane.previous_pane)];
+                    return vec![PaneEvent::SetFocus(shared.previous_pane)];
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.commits.is_empty() && self.selected_idx + 1 < self.commits.len() {
                     self.selected_idx += 1;
-                    self.load_detail(&shared.repo);
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    self.load_detail(&shared.repo);
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.view_height / 2).max(1) as usize;
                 let new_idx = self.selected_idx.saturating_add(half);
                 self.selected_idx = new_idx.min(self.commits.len().saturating_sub(1));
-                self.load_detail(&shared.repo);
+                return vec![PaneEvent::SelectionChanged];
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.view_height / 2).max(1) as usize;
                 self.selected_idx = self.selected_idx.saturating_sub(half);
-                self.load_detail(&shared.repo);
+                return vec![PaneEvent::SelectionChanged];
             }
             KeyCode::Char('g') => {
                 self.selected_idx = 0;
-                self.load_detail(&shared.repo);
+                return vec![PaneEvent::SelectionChanged];
             }
             KeyCode::Char('G') => {
                 if !self.commits.is_empty() {
                     self.selected_idx = self.commits.len() - 1;
-                    self.load_detail(&shared.repo);
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('y') => {
@@ -144,7 +144,7 @@ impl GitLogPane {
         vec![]
     }
 
-    pub fn collect_search_matches(&self, _shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+    pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
         let query_lower = query.to_lowercase();
         self.commits
             .iter()
@@ -163,17 +163,17 @@ impl GitLogPane {
             .collect()
     }
 
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         view::render(f, self, shared, area);
     }
 }
 
-impl Pane<GitShared, PaneEvent> for GitLogPane {
-    fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+impl Pane<PaneEvent> for GitLogPane {
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         self.handle_key(shared, key)
     }
 
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render(f, ctx, shared, area)
     }
 
@@ -185,14 +185,13 @@ impl Pane<GitShared, PaneEvent> for GitLogPane {
         self.selected_idx = idx;
     }
 
-    fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+    fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
         self.collect_search_matches(shared, query)
     }
 
-    fn jump_to_match(&mut self, shared: &GitShared, search_match: &SearchMatch) {
+    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
         if let SearchMatch::ListEntry(idx) = search_match {
             self.selected_idx = *idx;
-            self.load_detail(&shared.repo);
         }
     }
 }

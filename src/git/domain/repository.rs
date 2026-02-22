@@ -1,4 +1,4 @@
-use crate::git::domain::diff::{compute_stats, parse_diff, DiffState};
+use crate::git::domain::diff::{compute_stats, parse_diff, DiffResult};
 use anyhow::{Context, Result};
 use git2::Repository;
 use std::path::Path;
@@ -60,11 +60,11 @@ impl Repo {
             .unwrap_or_else(|| "HEAD".to_string())
     }
 
-    pub fn diff_workdir(&self, base_ref: Option<&str>) -> Result<DiffState> {
+    pub fn diff_workdir(&self, base_ref: Option<&str>) -> Result<DiffResult> {
         let files = parse_diff(&self.inner, base_ref)?;
         let stats = compute_stats(&files);
         let branch_name = self.branch_name();
-        Ok(DiffState {
+        Ok(DiffResult {
             files,
             branch_name,
             stats,

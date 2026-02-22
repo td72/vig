@@ -10,9 +10,9 @@ pub struct PaneShared {
 }
 
 #[allow(dead_code)]
-pub trait Pane<Shared, Event> {
-    fn handle_key(&mut self, shared: &Shared, key: KeyEvent) -> Vec<Event>;
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &Shared, area: Rect);
+pub trait Pane<Event> {
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<Event>;
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect);
 
     fn is_modal(&self) -> bool {
         false
@@ -22,10 +22,10 @@ pub trait Pane<Shared, Event> {
     }
     fn set_selected_idx(&mut self, _idx: usize) {}
 
-    fn collect_search_matches(&self, _shared: &Shared, _query: &str) -> Vec<SearchMatch> {
+    fn collect_search_matches(&self, _shared: &PaneShared, _query: &str) -> Vec<SearchMatch> {
         vec![]
     }
-    fn jump_to_match(&mut self, _shared: &Shared, _search_match: &SearchMatch) {}
+    fn jump_to_match(&mut self, _shared: &PaneShared, _search_match: &SearchMatch) {}
 }
 
 #[allow(dead_code)]
