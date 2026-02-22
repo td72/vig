@@ -1,7 +1,6 @@
 use crate::core::app::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::git::domain::diff::{DiffState, FileDiff};
-use crate::git::domain::graph;
 use crate::git::domain::repository::Repo;
 use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogPane, ReflogPane};
 use anyhow::Result;
@@ -367,45 +366,25 @@ impl GitState {
     }
 
     pub fn load_branches(&mut self) {
-        self.branch_list.branches = self.shared.repo.list_local_branches();
-        if self.branch_list.selected_idx >= self.branch_list.branches.len() {
-            self.branch_list.selected_idx = 0;
-        }
+        self.branch_list.load(&self.shared.repo);
         self.update_branch_log();
     }
 
     pub fn update_branch_log(&mut self) {
-        if let Some(branch) = self.branch_list.branches.get(self.branch_list.selected_idx) {
-            self.git_log.ref_name = branch.name.clone();
-            self.git_log.commits = self.shared.repo.log_for_ref(&branch.name, 100);
-            self.git_log.graph = graph::build_graph(&self.git_log.commits);
-            self.git_log.selected_idx = 0;
-            self.git_log.detail.reset();
-            self.git_log.detail_changed_files.clear();
-            self.load_commit_detail();
+        if let Some(branch) = self.branch_list.selected_branch() {
+            let name = branch.name.clone();
+            self.git_log.load_for_ref(&self.shared.repo, &name);
         } else {
-            self.git_log.commits.clear();
-            self.git_log.graph.clear();
-            self.git_log.ref_name.clear();
-            self.git_log.detail_changed_files.clear();
+            self.git_log.clear_log();
         }
     }
 
     pub fn load_commit_detail(&mut self) {
-        if let Some(commit) = self.git_log.commits.get(self.git_log.selected_idx) {
-            self.git_log.detail_changed_files =
-                self.shared.repo.commit_changed_files(&commit.full_hash);
-            self.git_log.detail.reset();
-        } else {
-            self.git_log.detail_changed_files.clear();
-        }
+        self.git_log.load_detail(&self.shared.repo);
     }
 
     pub fn load_reflog(&mut self) {
-        self.reflog.entries = self.shared.repo.reflog(500);
-        if self.reflog.selected_idx >= self.reflog.entries.len() {
-            self.reflog.selected_idx = 0;
-        }
+        self.reflog.load(&self.shared.repo);
     }
 }
 

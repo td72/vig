@@ -1,6 +1,4 @@
-use crate::core::app::AppContext;
-use crate::core::pane::{FocusState, SelectPane};
-use crate::github::state::{GhFocusedPane, GitHubState};
+use crate::github::state::{GhFocusedPane, GhPaneEvent, GhPrListPane, GhShared};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -10,59 +8,51 @@ use ratatui::{
     Frame,
 };
 
-pub struct GhPrListPane;
-
-impl SelectPane<GitHubState> for GhPrListPane {
-    fn handle_key(&self, ctx: &mut AppContext, state: &mut GitHubState, key: KeyEvent) {
+impl GhPrListPane {
+    pub fn handle_key(&mut self, _shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                if !state.prs.is_empty() && state.pr_selected_idx + 1 < state.prs.len() {
-                    state.pr_selected_idx += 1;
-                    state.load_selected_pr_detail();
+                if !self.prs.is_empty() && self.selected_idx + 1 < self.prs.len() {
+                    self.selected_idx += 1;
+                    return vec![GhPaneEvent::LoadSelectedPrDetail];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if state.pr_selected_idx > 0 {
-                    state.pr_selected_idx -= 1;
-                    state.load_selected_pr_detail();
+                if self.selected_idx > 0 {
+                    self.selected_idx -= 1;
+                    return vec![GhPaneEvent::LoadSelectedPrDetail];
                 }
             }
             KeyCode::Char('g') => {
-                state.pr_selected_idx = 0;
-                state.load_selected_pr_detail();
+                self.selected_idx = 0;
+                return vec![GhPaneEvent::LoadSelectedPrDetail];
             }
             KeyCode::Char('G') => {
-                if !state.prs.is_empty() {
-                    state.pr_selected_idx = state.prs.len() - 1;
-                    state.load_selected_pr_detail();
+                if !self.prs.is_empty() {
+                    self.selected_idx = self.prs.len() - 1;
+                    return vec![GhPaneEvent::LoadSelectedPrDetail];
                 }
             }
             KeyCode::Char('i') | KeyCode::Enter => {
-                if !state.prs.is_empty() {
-                    state.set_focus(GhFocusedPane::Detail);
-                    state.load_selected_pr_detail();
+                if !self.prs.is_empty() {
+                    return vec![
+                        GhPaneEvent::SetFocus(GhFocusedPane::Detail),
+                        GhPaneEvent::LoadSelectedPrDetail,
+                    ];
                 }
             }
             KeyCode::Char('o') => {
-                if let Some(pr) = state.prs.get(state.pr_selected_idx) {
-                    let number = pr.number;
-                    match crate::github::domain::client::open_pr_in_browser(number) {
-                        Ok(()) => {
-                            ctx.status_message =
-                                Some(format!("Opening PR #{number} in browser..."));
-                        }
-                        Err(e) => {
-                            ctx.status_message = Some(format!("Failed to open browser: {e}"));
-                        }
-                    }
+                if let Some(pr) = self.prs.get(self.selected_idx) {
+                    return vec![GhPaneEvent::OpenPrBrowser(pr.number)];
                 }
             }
             _ => {}
         }
+        vec![]
     }
 
-    fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitHubState, area: Rect) {
-        let is_focused = state.focused_pane == GhFocusedPane::PrList;
+    pub fn render(&self, f: &mut Frame, shared: &GhShared, area: Rect) {
+        let is_focused = shared.focused_pane == GhFocusedPane::PrList;
         let border_color = if is_focused {
             Color::Cyan
         } else {
@@ -74,7 +64,7 @@ impl SelectPane<GitHubState> for GhPrListPane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        if state.prs_loading && state.prs.is_empty() {
+        if self.loading && self.prs.is_empty() {
             let items = vec![ListItem::new(Line::from(Span::styled(
                 "  Loading...",
                 Style::default().fg(Color::DarkGray),
@@ -84,7 +74,7 @@ impl SelectPane<GitHubState> for GhPrListPane {
             return;
         }
 
-        if state.prs.is_empty() {
+        if self.prs.is_empty() {
             let items = vec![ListItem::new(Line::from(Span::styled(
                 "  No pull requests",
                 Style::default().fg(Color::DarkGray),
@@ -94,7 +84,7 @@ impl SelectPane<GitHubState> for GhPrListPane {
             return;
         }
 
-        let items: Vec<ListItem> = state
+        let items: Vec<ListItem> = self
             .prs
             .iter()
             .map(|pr| {
@@ -154,10 +144,10 @@ impl SelectPane<GitHubState> for GhPrListPane {
 
         let mut list_state = ListState::default();
         if is_focused
-            || (state.focused_pane == GhFocusedPane::Detail
-                && state.previous_pane == GhFocusedPane::PrList)
+            || (shared.focused_pane == GhFocusedPane::Detail
+                && shared.previous_pane == GhFocusedPane::PrList)
         {
-            list_state.select(Some(state.pr_selected_idx));
+            list_state.select(Some(self.selected_idx));
         }
         f.render_stateful_widget(list, area, &mut list_state);
     }

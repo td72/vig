@@ -1,5 +1,5 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
-use crate::git::domain::repository::BranchInfo;
+use crate::git::domain::repository::{BranchInfo, Repo};
 use crate::git::state::{BranchAction, BranchActionMenuState, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -28,6 +28,17 @@ impl BranchListPane {
             selected_idx: 0,
             action_menu: None,
         }
+    }
+
+    pub fn load(&mut self, repo: &Repo) {
+        self.branches = repo.list_local_branches();
+        if self.selected_idx >= self.branches.len() {
+            self.selected_idx = 0;
+        }
+    }
+
+    pub fn selected_branch(&self) -> Option<&BranchInfo> {
+        self.branches.get(self.selected_idx)
     }
 
     pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {

@@ -1,5 +1,7 @@
 use crate::github::domain::types::*;
-use crate::github::state::{GhDetailContent, GhDetailPane, GhFocusedPane, GitHubState};
+use crate::github::state::{
+    GhDetailContent, GhDetailPane, GhDetailViewPane, GhFocusedPane, GhShared,
+};
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -31,8 +33,8 @@ pub fn meaningful_reviews(reviews: &[GhReview]) -> Vec<&GhReview> {
         .collect()
 }
 
-pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
-    let is_focused = state.focused_pane == GhFocusedPane::Detail;
+pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &GhShared, area: Rect) {
+    let is_focused = shared.focused_pane == GhFocusedPane::Detail;
     let border_color = if is_focused {
         Color::Cyan
     } else {
@@ -48,7 +50,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
     f.render_widget(block, area);
 
     // Early return for non-loaded states
-    match &state.detail {
+    match &dv.content {
         GhDetailContent::None => {
             let para = Paragraph::new(Line::from(Span::styled(
                 "  Select an issue or PR to view details",
@@ -81,7 +83,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
     }
 
     // Build header lines
-    let header_lines = match &state.detail {
+    let header_lines = match &dv.content {
         GhDetailContent::Issue(detail) => build_issue_header(detail),
         GhDetailContent::Pr(detail) => build_pr_header(detail),
         _ => unreachable!(),
@@ -101,10 +103,10 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
     let cols =
         Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)]).split(vert[1]);
 
-    let active_pane = state.detail_pane;
+    let active_pane = dv.active_pane;
 
     // Left pane: Body
-    let body_lines = match &state.detail {
+    let body_lines = match &dv.content {
         GhDetailContent::Issue(detail) => build_body_lines(&detail.body),
         GhDetailContent::Pr(detail) => build_body_lines(&detail.body),
         _ => unreachable!(),
@@ -116,22 +118,22 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
         body_lines,
         active_pane == GhDetailPane::Body,
         is_focused,
-        state.detail_body.scroll_y,
+        dv.body.scroll_y,
     );
 
     // Right side
-    match &state.detail {
+    match &dv.content {
         GhDetailContent::Issue(detail) => {
             // Issue: single Comments pane on the right
             let count = detail.comments.len();
             let title = format!("Comments ({count})");
             if active_pane == GhDetailPane::Body {
-                state.detail_view_height = cols[0].height;
+                dv.view_height = cols[0].height;
             } else {
-                state.detail_view_height = cols[1].height;
+                dv.view_height = cols[1].height;
             }
             let (comments_lines, sel_scroll) =
-                build_comments_lines(&detail.comments, state.detail_comments.selected_idx);
+                build_comments_lines(&detail.comments, dv.comments.selected_idx);
             render_pane(
                 f,
                 cols[1],
@@ -139,7 +141,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 comments_lines,
                 active_pane == GhDetailPane::Comments,
                 is_focused,
-                sel_scroll + state.detail_comments.scroll_y,
+                sel_scroll + dv.comments.scroll_y,
             );
         }
         GhDetailContent::Pr(detail) => {
@@ -151,7 +153,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
             ])
             .split(cols[1]);
 
-            state.detail_view_height = match active_pane {
+            dv.view_height = match active_pane {
                 GhDetailPane::Body => cols[0].height,
                 GhDetailPane::Status => right_rows[0].height,
                 GhDetailPane::Reviews => right_rows[1].height,
@@ -167,7 +169,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 detail,
                 active_pane == GhDetailPane::Status,
                 is_focused,
-                state.detail_status.selected_idx,
+                dv.status.selected_idx,
             );
 
             let review_count = detail
@@ -177,7 +179,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 .count();
             let reviews_title = format!("Reviews ({review_count})");
             let (reviews_lines, rev_scroll) =
-                build_reviews_lines(&detail.reviews, state.detail_reviews.selected_idx);
+                build_reviews_lines(&detail.reviews, dv.reviews.selected_idx);
             render_pane(
                 f,
                 right_rows[1],
@@ -185,13 +187,13 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 reviews_lines,
                 active_pane == GhDetailPane::Reviews,
                 is_focused,
-                rev_scroll + state.detail_reviews.scroll_y,
+                rev_scroll + dv.reviews.scroll_y,
             );
 
             let comments_count = detail.comments.len();
             let comments_title = format!("Comments ({comments_count})");
             let (comments_lines, cmt_scroll) =
-                build_comments_lines(&detail.comments, state.detail_comments.selected_idx);
+                build_comments_lines(&detail.comments, dv.comments.selected_idx);
             render_pane(
                 f,
                 right_rows[2],
@@ -199,7 +201,7 @@ pub fn render(f: &mut Frame, state: &mut GitHubState, area: Rect) {
                 comments_lines,
                 active_pane == GhDetailPane::Comments,
                 is_focused,
-                cmt_scroll + state.detail_comments.scroll_y,
+                cmt_scroll + dv.comments.scroll_y,
             );
         }
         _ => unreachable!(),
@@ -522,14 +524,11 @@ fn format_duration(started: Option<&str>, completed: Option<&str>) -> String {
         let h: i64 = iso[11..13].parse().ok()?;
         let mi: i64 = iso[14..16].parse().ok()?;
         let se: i64 = iso[17..19].parse().ok()?;
-        // Days from year 0 to start of year y (accounting for leap years)
         let mut days = 365 * y + y / 4 - y / 100 + y / 400;
-        // Add days for each completed month
         const MONTH_DAYS: [i64; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
         for m in 1..mo {
             days += MONTH_DAYS[(m - 1) as usize];
         }
-        // Leap day for current year if past February
         if mo > 2 && (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) {
             days += 1;
         }

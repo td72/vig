@@ -1,6 +1,4 @@
-use crate::core::app::AppContext;
-use crate::core::pane::{FocusState, SelectPane};
-use crate::github::state::{GhFocusedPane, GitHubState};
+use crate::github::state::{GhFocusedPane, GhIssueListPane, GhPaneEvent, GhShared};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -10,59 +8,51 @@ use ratatui::{
     Frame,
 };
 
-pub struct GhIssueListPane;
-
-impl SelectPane<GitHubState> for GhIssueListPane {
-    fn handle_key(&self, ctx: &mut AppContext, state: &mut GitHubState, key: KeyEvent) {
+impl GhIssueListPane {
+    pub fn handle_key(&mut self, _shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
-                if !state.issues.is_empty() && state.issue_selected_idx + 1 < state.issues.len() {
-                    state.issue_selected_idx += 1;
-                    state.load_selected_issue_detail();
+                if !self.issues.is_empty() && self.selected_idx + 1 < self.issues.len() {
+                    self.selected_idx += 1;
+                    return vec![GhPaneEvent::LoadSelectedIssueDetail];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                if state.issue_selected_idx > 0 {
-                    state.issue_selected_idx -= 1;
-                    state.load_selected_issue_detail();
+                if self.selected_idx > 0 {
+                    self.selected_idx -= 1;
+                    return vec![GhPaneEvent::LoadSelectedIssueDetail];
                 }
             }
             KeyCode::Char('g') => {
-                state.issue_selected_idx = 0;
-                state.load_selected_issue_detail();
+                self.selected_idx = 0;
+                return vec![GhPaneEvent::LoadSelectedIssueDetail];
             }
             KeyCode::Char('G') => {
-                if !state.issues.is_empty() {
-                    state.issue_selected_idx = state.issues.len() - 1;
-                    state.load_selected_issue_detail();
+                if !self.issues.is_empty() {
+                    self.selected_idx = self.issues.len() - 1;
+                    return vec![GhPaneEvent::LoadSelectedIssueDetail];
                 }
             }
             KeyCode::Char('i') | KeyCode::Enter => {
-                if !state.issues.is_empty() {
-                    state.set_focus(GhFocusedPane::Detail);
-                    state.load_selected_issue_detail();
+                if !self.issues.is_empty() {
+                    return vec![
+                        GhPaneEvent::SetFocus(GhFocusedPane::Detail),
+                        GhPaneEvent::LoadSelectedIssueDetail,
+                    ];
                 }
             }
             KeyCode::Char('o') => {
-                if let Some(issue) = state.issues.get(state.issue_selected_idx) {
-                    let number = issue.number;
-                    match crate::github::domain::client::open_issue_in_browser(number) {
-                        Ok(()) => {
-                            ctx.status_message =
-                                Some(format!("Opening issue #{number} in browser..."));
-                        }
-                        Err(e) => {
-                            ctx.status_message = Some(format!("Failed to open browser: {e}"));
-                        }
-                    }
+                if let Some(issue) = self.issues.get(self.selected_idx) {
+                    return vec![GhPaneEvent::OpenIssueBrowser(issue.number)];
                 }
             }
             _ => {}
         }
+        vec![]
     }
 
-    fn render(&self, f: &mut Frame, _ctx: &AppContext, state: &mut GitHubState, area: Rect) {
-        let is_focused = state.focused_pane == GhFocusedPane::IssueList;
+    pub fn render(&self, f: &mut Frame, shared: &GhShared, area: Rect) {
+        let is_focused = shared.focused_pane == GhFocusedPane::IssueList;
         let border_color = if is_focused {
             Color::Cyan
         } else {
@@ -74,7 +64,7 @@ impl SelectPane<GitHubState> for GhIssueListPane {
             .borders(Borders::ALL)
             .border_style(Style::default().fg(border_color));
 
-        if state.issues_loading && state.issues.is_empty() {
+        if self.loading && self.issues.is_empty() {
             let items = vec![ListItem::new(Line::from(Span::styled(
                 "  Loading...",
                 Style::default().fg(Color::DarkGray),
@@ -84,7 +74,7 @@ impl SelectPane<GitHubState> for GhIssueListPane {
             return;
         }
 
-        if state.issues.is_empty() {
+        if self.issues.is_empty() {
             let items = vec![ListItem::new(Line::from(Span::styled(
                 "  No issues",
                 Style::default().fg(Color::DarkGray),
@@ -94,7 +84,7 @@ impl SelectPane<GitHubState> for GhIssueListPane {
             return;
         }
 
-        let items: Vec<ListItem> = state
+        let items: Vec<ListItem> = self
             .issues
             .iter()
             .map(|issue| {
@@ -129,10 +119,10 @@ impl SelectPane<GitHubState> for GhIssueListPane {
 
         let mut list_state = ListState::default();
         if is_focused
-            || (state.focused_pane == GhFocusedPane::Detail
-                && state.previous_pane == GhFocusedPane::IssueList)
+            || (shared.focused_pane == GhFocusedPane::Detail
+                && shared.previous_pane == GhFocusedPane::IssueList)
         {
-            list_state.select(Some(state.issue_selected_idx));
+            list_state.select(Some(self.selected_idx));
         }
         f.render_stateful_widget(list, area, &mut list_state);
     }

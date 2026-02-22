@@ -1,15 +1,7 @@
-use crate::core::app::AppContext;
-use crossterm::event::KeyEvent;
-use ratatui::{layout::Rect, Frame};
-
+#[allow(dead_code)]
 pub trait FocusState<P: Copy + PartialEq + 'static> {
     fn focused_pane(&self) -> P;
     fn set_focus(&mut self, id: P);
-}
-
-pub trait SelectPane<S>: Sync {
-    fn handle_key(&self, ctx: &mut AppContext, state: &mut S, key: KeyEvent);
-    fn render(&self, f: &mut Frame, ctx: &AppContext, state: &mut S, area: Rect);
 }
 
 #[derive(Debug, Default, Clone)]
@@ -41,9 +33,4 @@ pub trait DetailState: FocusState<Self::SubPaneId> {
         let id = self.focused_pane();
         self.sub_scroll_mut(id)
     }
-}
-
-pub trait DetailPane<S>: Sync {
-    fn handle_key(&self, ctx: &mut AppContext, state: &mut S, key: KeyEvent);
-    fn render(&self, f: &mut Frame, ctx: &AppContext, state: &mut S, area: Rect);
 }

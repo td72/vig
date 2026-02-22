@@ -1,31 +1,15 @@
-use crate::core::app::{AppContext, Page};
+use crate::core::app::AppContext;
 use crate::core::page::{PageAction, PageHandler};
-use crate::core::pane::{DetailPane, SelectPane};
-use crate::core::pane_router::{PaneRouter, PaneTab};
 use crate::core::ui::status_bar;
-use crate::github::panes::{GhDetailViewPane, GhIssueListPane, GhPrListPane};
-use crate::github::state::{GhFocusedPane, GitHubState};
+use crate::github::state::{GhFocusedPane, GhPaneEvent, GitHubState};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
 
 /// Create a GitHub page.
-pub fn new_page() -> Page {
-    Page::new(&GhPageHandler, GitHubState::new())
+pub fn new_page() -> crate::core::app::Page {
+    crate::core::app::Page::new(&GhPageHandler, GitHubState::new())
 }
-
-// === Tab definitions ===
-
-pub static GH_TABS: &[PaneTab<GitHubState, GhFocusedPane>] = &[
-    PaneTab {
-        select: &GhIssueListPane,
-        id: GhFocusedPane::IssueList,
-    },
-    PaneTab {
-        select: &GhPrListPane,
-        id: GhFocusedPane::PrList,
-    },
-];
 
 // === View-level key handling ===
 
@@ -42,7 +26,7 @@ pub fn handle_gh_view_key(
             ctx.show_help = true;
         }
         KeyCode::Char('r') => {
-            if gh.focused_pane == GhFocusedPane::Detail {
+            if gh.shared.focused_pane == GhFocusedPane::Detail {
                 gh.refresh_detail();
             } else {
                 gh.refresh();
@@ -51,47 +35,90 @@ pub fn handle_gh_view_key(
         KeyCode::Char('w') => {
             gh.toggle_watch_mode();
         }
-        _ => dispatch_gh_key(ctx, gh, key),
+        _ => {
+            let events = dispatch_gh_key(gh, key);
+            return process_gh_events(ctx, gh, events);
+        }
     }
     Ok(PageAction::None)
 }
 
 // === Dispatch ===
 
-/// Dispatch a key event to the currently focused GitHub pane.
-pub fn dispatch_gh_key(ctx: &mut AppContext, gh: &mut GitHubState, key: KeyEvent) {
-    match gh.focused_pane {
-        GhFocusedPane::Detail => GhDetailViewPane.handle_key(ctx, gh, key),
-        _ => GhPaneRouter.dispatch(ctx, gh, key),
+fn dispatch_gh_key(gh: &mut GitHubState, key: KeyEvent) -> Vec<GhPaneEvent> {
+    match gh.shared.focused_pane {
+        GhFocusedPane::IssueList => match key.code {
+            KeyCode::Char('l') | KeyCode::Tab => {
+                vec![GhPaneEvent::SetFocus(GhFocusedPane::PrList)]
+            }
+            _ => gh.issue_list.handle_key(&gh.shared, key),
+        },
+        GhFocusedPane::PrList => match key.code {
+            KeyCode::Char('h') | KeyCode::BackTab => {
+                vec![GhPaneEvent::SetFocus(GhFocusedPane::IssueList)]
+            }
+            _ => gh.pr_list.handle_key(&gh.shared, key),
+        },
+        GhFocusedPane::Detail => gh.detail_view.handle_key(&gh.shared, key),
     }
 }
 
-// === Container ===
-
-pub(crate) struct GhPaneRouter;
-
-impl PaneRouter<GitHubState, GhFocusedPane> for GhPaneRouter {
-    fn tabs(&self) -> &'static [PaneTab<GitHubState, GhFocusedPane>] {
-        GH_TABS
-    }
-    fn on_focus_change(&self, _ctx: &mut AppContext, state: &mut GitHubState) {
-        load_gh_detail_for_tab(state);
-    }
-
-    fn is_prev_key(&self, key: &KeyEvent) -> bool {
-        matches!(key.code, KeyCode::Char('h') | KeyCode::BackTab)
-    }
-    fn is_next_key(&self, key: &KeyEvent) -> bool {
-        matches!(key.code, KeyCode::Char('l') | KeyCode::Tab)
-    }
-}
-
-fn load_gh_detail_for_tab(state: &mut GitHubState) {
-    match state.focused_pane {
-        GhFocusedPane::IssueList => state.load_selected_issue_detail(),
-        GhFocusedPane::PrList => state.load_selected_pr_detail(),
+fn load_gh_detail_for_tab(gh: &mut GitHubState) {
+    match gh.shared.focused_pane {
+        GhFocusedPane::IssueList => gh.load_selected_issue_detail(),
+        GhFocusedPane::PrList => gh.load_selected_pr_detail(),
         _ => {}
     }
+}
+
+fn process_gh_events(
+    ctx: &mut AppContext,
+    gh: &mut GitHubState,
+    events: Vec<GhPaneEvent>,
+) -> Result<PageAction> {
+    for event in events {
+        match event {
+            GhPaneEvent::SetFocus(pane) => {
+                gh.set_focus(pane);
+                load_gh_detail_for_tab(gh);
+            }
+            GhPaneEvent::LoadSelectedIssueDetail => {
+                gh.load_selected_issue_detail();
+            }
+            GhPaneEvent::LoadSelectedPrDetail => {
+                gh.load_selected_pr_detail();
+            }
+            GhPaneEvent::OpenIssueBrowser(n) => {
+                match crate::github::domain::client::open_issue_in_browser(n) {
+                    Ok(()) => {
+                        ctx.status_message = Some(format!("Opening issue #{n} in browser..."));
+                    }
+                    Err(e) => {
+                        ctx.status_message = Some(format!("Failed to open browser: {e}"));
+                    }
+                }
+            }
+            GhPaneEvent::OpenPrBrowser(n) => {
+                match crate::github::domain::client::open_pr_in_browser(n) {
+                    Ok(()) => {
+                        ctx.status_message = Some(format!("Opening PR #{n} in browser..."));
+                    }
+                    Err(e) => {
+                        ctx.status_message = Some(format!("Failed to open browser: {e}"));
+                    }
+                }
+            }
+            GhPaneEvent::OpenUrl(url) => match crate::github::domain::client::open_url(&url) {
+                Ok(()) => {
+                    ctx.status_message = Some("Opening in browser...".to_string());
+                }
+                Err(e) => {
+                    ctx.status_message = Some(e);
+                }
+            },
+        }
+    }
+    Ok(PageAction::None)
 }
 
 // === View ===
@@ -135,9 +162,9 @@ impl PageHandler<GitHubState> for GhPageHandler {
     fn render(&self, f: &mut Frame, ctx: &AppContext, gh: &mut GitHubState, area: Rect) {
         let gl = crate::github::layout::compute_gh_layout(area);
         status_bar::render_gh_header(f, ctx, gl.header);
-        GhIssueListPane.render(f, ctx, gh, gl.issue_list);
-        GhPrListPane.render(f, ctx, gh, gl.pr_list);
-        GhDetailViewPane.render(f, ctx, gh, gl.main_pane);
+        gh.issue_list.render(f, &gh.shared, gl.issue_list);
+        gh.pr_list.render(f, &gh.shared, gl.pr_list);
+        gh.detail_view.render(f, &gh.shared, gl.main_pane);
         status_bar::render_gh_status_bar(f, ctx, gh, gl.status_bar);
     }
 

@@ -1,5 +1,5 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
-use crate::git::domain::repository::ReflogEntry;
+use crate::git::domain::repository::{ReflogEntry, Repo};
 use crate::git::state::{FocusedPane, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
@@ -23,6 +23,13 @@ impl ReflogPane {
             entries: Vec::new(),
             selected_idx: 0,
             view_height: 0,
+        }
+    }
+
+    pub fn load(&mut self, repo: &Repo) {
+        self.entries = repo.reflog(500);
+        if self.selected_idx >= self.entries.len() {
+            self.selected_idx = 0;
         }
     }
 

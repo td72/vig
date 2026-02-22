@@ -147,10 +147,10 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         return;
     }
 
-    let issue_count = gh.issues.len();
-    let pr_count = gh.prs.len();
+    let issue_count = gh.issue_list.issues.len();
+    let pr_count = gh.pr_list.prs.len();
 
-    let loading = gh.issues_loading || gh.prs_loading;
+    let loading = gh.issue_list.loading || gh.pr_list.loading;
     let has_data = issue_count > 0 || pr_count > 0;
 
     let mut spans = Vec::new();

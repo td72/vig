@@ -1,8 +1,8 @@
 pub(crate) mod view;
 
 use crate::core::pane::{DetailState, SubPaneScroll};
-use crate::git::domain::graph::GraphRow;
-use crate::git::domain::repository::{CommitFileChange, CommitInfo};
+use crate::git::domain::graph::{self, GraphRow};
+use crate::git::domain::repository::{CommitFileChange, CommitInfo, Repo};
 use crate::git::state::{FocusedPane, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
@@ -10,6 +10,7 @@ use ratatui::{layout::Rect, Frame};
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum GitLogDetailPane {
     Detail,
 }
@@ -37,6 +38,32 @@ impl GitLogPane {
             detail_view_height: 0,
             detail_changed_files: Vec::new(),
         }
+    }
+
+    pub fn load_for_ref(&mut self, repo: &Repo, ref_name: &str) {
+        self.ref_name = ref_name.to_string();
+        self.commits = repo.log_for_ref(ref_name, 100);
+        self.graph = graph::build_graph(&self.commits);
+        self.selected_idx = 0;
+        self.detail.reset();
+        self.detail_changed_files.clear();
+        self.load_detail(repo);
+    }
+
+    pub fn load_detail(&mut self, repo: &Repo) {
+        if let Some(commit) = self.commits.get(self.selected_idx) {
+            self.detail_changed_files = repo.commit_changed_files(&commit.full_hash);
+            self.detail.reset();
+        } else {
+            self.detail_changed_files.clear();
+        }
+    }
+
+    pub fn clear_log(&mut self) {
+        self.commits.clear();
+        self.graph.clear();
+        self.ref_name.clear();
+        self.detail_changed_files.clear();
     }
 
     pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
