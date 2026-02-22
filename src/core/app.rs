@@ -1,5 +1,5 @@
-use crate::core::page::{PageAction, PageHandler};
-pub use crate::core::search::{SearchMatch, SearchOrigin, SearchState};
+use crate::core::page::PageAction;
+pub use crate::core::search::{SearchMatch, SearchOrigin};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::path::PathBuf;
@@ -19,83 +19,62 @@ pub struct AppContext {
     pub workdir: PathBuf,
 }
 
-pub trait PageState {
-    fn drain_background(&mut self);
-    fn search(&self) -> &SearchState;
-    #[allow(dead_code)]
-    fn search_mut(&mut self) -> &mut SearchState;
+impl AppContext {
+    pub fn copy_to_clipboard(&mut self, text: &str) {
+        if text.is_empty() {
+            return;
+        }
+        let line_count = text.lines().count().max(1);
+        match arboard::Clipboard::new() {
+            Ok(mut clip) => {
+                if clip.set_text(text).is_ok() {
+                    self.status_message = Some(format!(
+                        "Yanked {line_count} line{}",
+                        if line_count == 1 { "" } else { "s" }
+                    ));
+                } else {
+                    self.status_message = Some("Clipboard error".to_string());
+                }
+            }
+            Err(_) => {
+                self.status_message = Some("Clipboard unavailable".to_string());
+            }
+        }
+    }
 }
 
-// --- Type-erasure layer (private) ---
-
-trait PageInner {
+pub trait PageState {
     fn label(&self) -> &'static str;
-    fn help_bindings(&self) -> Vec<(&'static str, &'static str)>;
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        vec![]
+    }
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction>;
     fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect);
-    fn intercepts_all_keys(&self, ctx: &AppContext) -> bool;
-    fn on_tick(&mut self, ctx: &mut AppContext);
-    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()>;
-    fn on_suspend_return(
-        &mut self,
-        ctx: &mut AppContext,
-        status: std::io::Result<std::process::ExitStatus>,
-    ) -> Result<()>;
-    fn on_activate(&mut self, ctx: &mut AppContext);
-    fn drain_background(&mut self);
-}
-
-struct TypedPage<S: 'static> {
-    handler: &'static dyn PageHandler<S>,
-    state: S,
-}
-
-impl<S: PageState + 'static> PageInner for TypedPage<S> {
-    fn label(&self) -> &'static str {
-        self.handler.label()
+    fn intercepts_all_keys(&self) -> bool {
+        false
     }
-    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
-        self.handler.help_bindings()
-    }
-    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
-        self.handler.handle_key(ctx, &mut self.state, key)
-    }
-    fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect) {
-        self.handler.render(f, ctx, &mut self.state, area);
-    }
-    fn intercepts_all_keys(&self, ctx: &AppContext) -> bool {
-        // Search input is a shared concern: when active, intercept all keys
-        // regardless of individual PageHandler logic.
-        self.state.search().active || self.handler.intercepts_all_keys(ctx, &self.state)
-    }
-    fn on_tick(&mut self, ctx: &mut AppContext) {
-        self.handler.on_tick(ctx, &mut self.state);
-    }
-    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
-        self.handler.on_fs_change(ctx, &mut self.state)
+    fn on_tick(&mut self, _ctx: &mut AppContext) {}
+    fn on_fs_change(&mut self, _ctx: &mut AppContext) -> Result<()> {
+        Ok(())
     }
     fn on_suspend_return(
         &mut self,
-        ctx: &mut AppContext,
-        status: std::io::Result<std::process::ExitStatus>,
+        _ctx: &mut AppContext,
+        _status: std::io::Result<std::process::ExitStatus>,
     ) -> Result<()> {
-        self.handler.on_suspend_return(ctx, &mut self.state, status)
+        Ok(())
     }
-    fn on_activate(&mut self, ctx: &mut AppContext) {
-        self.handler.on_activate(ctx, &mut self.state);
-    }
-    fn drain_background(&mut self) {
-        self.state.drain_background();
-    }
+    fn on_activate(&mut self, _ctx: &mut AppContext) {}
+    fn drain_background(&mut self) {}
 }
 
 // --- Public Page wrapper ---
 
-pub struct Page(Box<dyn PageInner>);
+pub struct Page(Box<dyn PageState>);
 
 impl Page {
-    pub fn new<S: PageState + 'static>(handler: &'static dyn PageHandler<S>, state: S) -> Self {
-        Self(Box::new(TypedPage { handler, state }))
+    pub fn new(state: impl PageState + 'static) -> Self {
+        Self(Box::new(state))
     }
 
     pub fn label(&self) -> &'static str {
@@ -114,8 +93,8 @@ impl Page {
         self.0.render(f, ctx, area);
     }
 
-    fn intercepts_all_keys(&self, ctx: &AppContext) -> bool {
-        self.0.intercepts_all_keys(ctx)
+    fn intercepts_all_keys(&self) -> bool {
+        self.0.intercepts_all_keys()
     }
 
     fn on_tick(&mut self, ctx: &mut AppContext) {
@@ -203,7 +182,7 @@ impl App {
         let idx = self.ctx.active_page;
 
         // If the page intercepts all keys (modal menu, search input), delegate immediately
-        if self.pages[idx].intercepts_all_keys(&self.ctx) {
+        if self.pages[idx].intercepts_all_keys() {
             return self.pages[idx].handle_key(&mut self.ctx, key);
         }
 

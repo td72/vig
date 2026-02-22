@@ -1,10 +1,17 @@
-use crate::core::pane::PaneShared;
+use crate::core::app::{AppContext, ErrorDialogState, SearchOrigin};
+use crate::core::page::{ExternalCommand, PageAction};
+use crate::core::pane::{FocusState, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
+use crate::core::ui::status_bar;
 use crate::git::domain::diff::{DiffState, FileDiff};
 use crate::git::domain::repository::Repo;
+use crate::git::domain::search;
+use crate::git::layout;
 use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogPane, ReflogPane};
 use anyhow::Result;
+use crossterm::event::{KeyCode, KeyEvent};
+use ratatui::{layout::Rect, Frame};
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::mpsc;
@@ -381,6 +388,356 @@ impl GitState {
     pub fn load_reflog(&mut self) {
         self.reflog.load(&self.shared.repo);
     }
+
+    // === Tab navigation (private helpers) ===
+
+    const TAB_PANES: [usize; 3] = [PANE_FILE_TREE, PANE_BRANCH_LIST, PANE_REFLOG];
+
+    fn tab_index(pane: usize) -> Option<usize> {
+        Self::TAB_PANES.iter().position(|&p| p == pane)
+    }
+
+    fn next_tab_id(focused: usize) -> usize {
+        match Self::tab_index(focused) {
+            Some(idx) => Self::TAB_PANES[(idx + 1) % Self::TAB_PANES.len()],
+            None => Self::TAB_PANES[0],
+        }
+    }
+
+    fn prev_tab_id(focused: usize) -> usize {
+        match Self::tab_index(focused) {
+            Some(idx) => Self::TAB_PANES[(idx + Self::TAB_PANES.len() - 1) % Self::TAB_PANES.len()],
+            None => Self::TAB_PANES[0],
+        }
+    }
+
+    fn is_commit_log_detail(focused: usize) -> bool {
+        matches!(focused, PANE_BRANCH_LIST | PANE_REFLOG | PANE_GIT_LOG)
+    }
+
+    fn search_origin_for(pane: usize) -> SearchOrigin {
+        match pane {
+            PANE_DIFF_VIEW => SearchOrigin::DiffView,
+            PANE_FILE_TREE => SearchOrigin::FileTree,
+            PANE_BRANCH_LIST => SearchOrigin::BranchList,
+            PANE_GIT_LOG => SearchOrigin::CommitLog,
+            PANE_REFLOG => SearchOrigin::Reflog,
+            _ => SearchOrigin::DiffView,
+        }
+    }
+
+    // === Dispatch ===
+
+    pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
+        let focused = self.shared.pane.focused_pane;
+
+        if let Some(tab_idx) = Self::tab_index(focused) {
+            match key.code {
+                KeyCode::Char('h') if tab_idx > 0 => {
+                    return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx - 1])];
+                }
+                KeyCode::Char('l') if tab_idx + 1 < Self::TAB_PANES.len() => {
+                    return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx + 1])];
+                }
+                KeyCode::Char('i') => {
+                    let target = if Self::is_commit_log_detail(focused) {
+                        PANE_GIT_LOG
+                    } else {
+                        PANE_DIFF_VIEW
+                    };
+                    return vec![PaneEvent::SetFocus(target)];
+                }
+                KeyCode::Esc if self.shared.pane.search.query.is_some() => {
+                    return vec![PaneEvent::ClearSearch];
+                }
+                _ => {}
+            }
+        }
+
+        match focused {
+            PANE_FILE_TREE => self.file_tree.handle_key(&self.shared, key),
+            PANE_BRANCH_LIST => self.branch_list.handle_key(&self.shared, key),
+            PANE_REFLOG => self.reflog.handle_key(&self.shared, key),
+            PANE_GIT_LOG => self.git_log.handle_key(&self.shared, key),
+            PANE_DIFF_VIEW => self.diff_view.handle_key(&self.shared, key),
+            _ => vec![],
+        }
+    }
+
+    // === Event processing ===
+
+    pub fn process_events(
+        &mut self,
+        ctx: &mut AppContext,
+        events: Vec<PaneEvent>,
+    ) -> Result<PageAction> {
+        let action = PageAction::None;
+        for event in events {
+            match event {
+                PaneEvent::SetFocus(pane) => {
+                    self.set_focus(pane);
+                }
+                PaneEvent::SelectFile(idx) => {
+                    self.diff_view.set_file(idx);
+                }
+                PaneEvent::ResetDiffScroll => {
+                    self.diff_view.reset_scroll();
+                }
+                PaneEvent::RefreshDiff => {
+                    self.apply_refresh(ctx);
+                }
+                PaneEvent::SetDiffBase(base) => {
+                    self.shared.diff_base_ref = base;
+                }
+                PaneEvent::SwitchBranch(name) => match self.shared.repo.switch_branch(&name) {
+                    Ok(()) => {
+                        ctx.status_message = Some(format!("Switched to {name}"));
+                        self.load_branches();
+                        self.apply_refresh(ctx);
+                    }
+                    Err(e) => {
+                        ctx.error_dialog = Some(ErrorDialogState {
+                            title: "Switch failed".to_string(),
+                            message: format!("{e}"),
+                        });
+                    }
+                },
+                PaneEvent::DeleteBranch(name) => match self.shared.repo.delete_branch(&name) {
+                    Ok(()) => {
+                        ctx.status_message = Some(format!("Deleted {name}"));
+                        self.load_branches();
+                    }
+                    Err(e) => {
+                        ctx.error_dialog = Some(ErrorDialogState {
+                            title: "Delete failed".to_string(),
+                            message: format!("{e}"),
+                        });
+                    }
+                },
+                PaneEvent::UpdateBranchLog(ref ref_name) => {
+                    self.git_log.load_for_ref(&self.shared.repo, ref_name);
+                }
+                PaneEvent::ReSearchOnFileChange => {
+                    search::re_search_on_file_change(self);
+                }
+                PaneEvent::StartSearch(origin) => {
+                    self.shared.pane.search.start(origin);
+                }
+                PaneEvent::ClearSearch => {
+                    self.shared.pane.search.clear();
+                }
+                PaneEvent::JumpToMatch(forward) => {
+                    search::jump_to_git_match(ctx, self, forward);
+                }
+                PaneEvent::StatusMessage(msg) => {
+                    ctx.status_message = Some(msg);
+                }
+                PaneEvent::CopyToClipboard(text) => {
+                    ctx.copy_to_clipboard(&text);
+                }
+                PaneEvent::OpenUrl(url) => {
+                    if let Err(e) = crate::github::domain::client::open_url(&url) {
+                        ctx.status_message = Some(e);
+                    }
+                }
+            }
+        }
+        Ok(action)
+    }
+
+    // === Refresh helper ===
+
+    pub fn apply_refresh(&mut self, ctx: &mut AppContext) {
+        if let Some(msg) = self
+            .refresh_diff()
+            .unwrap_or_else(|e| Some(format!("Diff error: {e}")))
+        {
+            ctx.status_message = Some(msg);
+        } else {
+            ctx.status_message = None;
+        }
+    }
+
+    // === View-level key handling ===
+
+    pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        // In Normal/Visual modes, keys are handled by the mode handler exclusively
+        if self.shared.pane.focused_pane == PANE_DIFF_VIEW
+            && self.diff_view.vim.mode != DiffViewMode::Scroll
+        {
+            let events = self.dispatch_key(key);
+            return self.process_events(ctx, events);
+        }
+
+        match key.code {
+            KeyCode::Char('q') => {
+                ctx.should_quit = true;
+            }
+            KeyCode::Char('?') => {
+                ctx.show_help = true;
+            }
+            KeyCode::Char('/') => {
+                self.shared
+                    .pane
+                    .search
+                    .start(Self::search_origin_for(self.shared.pane.focused_pane));
+            }
+            KeyCode::Char('n') => {
+                search::jump_to_git_match(ctx, self, true);
+            }
+            KeyCode::Char('N') => {
+                search::jump_to_git_match(ctx, self, false);
+            }
+            KeyCode::Char('r') => {
+                self.apply_refresh(ctx);
+                self.load_branches();
+                self.load_reflog();
+            }
+            KeyCode::Char('e') => {
+                if let Some(file) = self.selected_file() {
+                    let file_path = ctx.workdir.join(&file.path);
+                    let editor = std::env::var("EDITOR")
+                        .or_else(|_| std::env::var("VISUAL"))
+                        .unwrap_or_else(|_| "vi".to_string());
+                    return Ok(PageAction::Suspend(ExternalCommand {
+                        program: editor,
+                        args: vec![file_path.into()],
+                    }));
+                }
+            }
+            KeyCode::Tab => {
+                self.set_focus(Self::next_tab_id(self.shared.pane.focused_pane));
+            }
+            KeyCode::BackTab => {
+                self.set_focus(Self::prev_tab_id(self.shared.pane.focused_pane));
+            }
+            _ => {
+                let events = self.dispatch_key(key);
+                return self.process_events(ctx, events);
+            }
+        }
+        Ok(PageAction::None)
+    }
+
+    // === Unified handle_key ===
+
+    pub fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        // Branch action menu intercepts all keys when open
+        if self.branch_list.action_menu.is_some() {
+            let events = self.branch_list.handle_key(&self.shared, key);
+            return self.process_events(ctx, events);
+        }
+
+        // Search input mode intercepts all keys
+        if self.shared.pane.search.active {
+            if self.shared.pane.search.handle_input_key(key) {
+                search::execute_git_search(self);
+                search::jump_to_git_match(ctx, self, true);
+            }
+            return Ok(PageAction::None);
+        }
+
+        self.handle_view_key(ctx, key)
+    }
+
+    // === Help bindings ===
+
+    pub fn help_bindings_list() -> Vec<(&'static str, &'static str)> {
+        vec![
+            ("1 / 2", "Switch view"),
+            ("j / ↓", "Next item / Scroll down"),
+            ("k / ↑", "Prev item / Scroll up"),
+            ("Enter", "Select file/branch"),
+            ("Tab", "Next pane"),
+            ("Shift+Tab", "Prev pane"),
+            ("Ctrl+d", "Half page down"),
+            ("Ctrl+u", "Half page up"),
+            ("g / G", "Top / Bottom"),
+            ("h / l", "Scroll left / right"),
+            ("i", "Normal mode (cursor)"),
+            ("v / V", "Visual / Visual Line"),
+            ("y", "Yank (copy) selection"),
+            ("/", "Search"),
+            ("n / N", "Next / Prev match"),
+            ("Esc", "Clear search / Back"),
+            ("e", "Open in $EDITOR"),
+            ("r", "Refresh diff + branches"),
+            ("?", "Toggle help"),
+            ("q", "Quit"),
+            ("", ""),
+            ("", "── Branch List ──"),
+            ("/", "Search branches"),
+            ("Enter", "Action menu"),
+            ("", ""),
+            ("", "── Git Log ──"),
+            ("j / k", "Navigate commits"),
+            ("Ctrl+d/u", "Half page scroll"),
+            ("g / G", "Top / Bottom"),
+            ("y", "Copy commit hash"),
+            ("o", "Open in GitHub"),
+            ("/", "Search commits"),
+            ("", ""),
+            ("", "── Reflog ──"),
+            ("j / k", "Navigate entries"),
+            ("Ctrl+d/u", "Half page scroll"),
+            ("g / G", "Top / Bottom"),
+            ("Enter", "Set as diff base"),
+            ("/", "Search reflog"),
+        ]
+    }
+
+    // === Render ===
+
+    pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
+        let ly = layout::compute_layout(area);
+        status_bar::render_header(f, ctx, self, ly.header);
+        self.file_tree.render(f, ctx, &self.shared, ly.file_tree);
+        self.branch_list
+            .render(f, ctx, &self.shared, ly.branch_list);
+        self.reflog.render(f, ctx, &self.shared, ly.reflog);
+
+        if Self::is_commit_log_detail(self.shared.pane.focused_pane) {
+            self.git_log.render(f, ctx, &self.shared, ly.main_pane);
+        } else {
+            self.diff_view.render(f, ctx, &self.shared, ly.main_pane);
+        }
+
+        status_bar::render_status_bar(f, ctx, self, ly.status_bar);
+
+        if self.branch_list.action_menu.is_some() {
+            self.branch_list.render_action_menu(f, area);
+        }
+    }
+
+    // === Lifecycle ===
+
+    pub fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
+        self.load_branches();
+        self.load_reflog();
+        self.apply_refresh(ctx);
+        Ok(())
+    }
+
+    pub fn on_suspend_return(
+        &mut self,
+        ctx: &mut AppContext,
+        status: std::io::Result<std::process::ExitStatus>,
+    ) -> Result<()> {
+        match status {
+            Ok(s) if s.success() => {
+                self.apply_refresh(ctx);
+                Ok(())
+            }
+            Ok(s) => {
+                ctx.status_message = Some(format!("Editor exited with: {s}"));
+                Ok(())
+            }
+            Err(e) => {
+                ctx.status_message = Some(format!("Failed to open editor: {e}"));
+                Ok(())
+            }
+        }
+    }
 }
 
 impl crate::core::pane::FocusState<usize> for GitState {
@@ -394,13 +751,32 @@ impl crate::core::pane::FocusState<usize> for GitState {
 }
 
 impl crate::core::app::PageState for GitState {
+    fn label(&self) -> &'static str {
+        "Git"
+    }
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        Self::help_bindings_list()
+    }
+    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        GitState::handle_key(self, ctx, key)
+    }
+    fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect) {
+        GitState::render(self, f, ctx, area);
+    }
+    fn intercepts_all_keys(&self) -> bool {
+        self.shared.pane.search.active || self.branch_list.action_menu.is_some()
+    }
+    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
+        GitState::on_fs_change(self, ctx)
+    }
+    fn on_suspend_return(
+        &mut self,
+        ctx: &mut AppContext,
+        status: std::io::Result<std::process::ExitStatus>,
+    ) -> Result<()> {
+        GitState::on_suspend_return(self, ctx, status)
+    }
     fn drain_background(&mut self) {
         self.diff_view.highlight.drain_bg_highlights();
-    }
-    fn search(&self) -> &crate::core::app::SearchState {
-        &self.shared.pane.search
-    }
-    fn search_mut(&mut self) -> &mut crate::core::app::SearchState {
-        &mut self.shared.pane.search
     }
 }

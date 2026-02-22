@@ -1,10 +1,16 @@
+use crate::core::app::AppContext;
+use crate::core::page::PageAction;
 use crate::core::pane::PaneShared;
 use crate::core::search::SearchState;
+use crate::core::ui::status_bar;
 use crate::github::domain::client;
 use crate::github::domain::types::*;
 use crate::github::panes::detail_view::GhDetailViewPane;
 use crate::github::panes::issue_list::GhIssueListPane;
 use crate::github::panes::pr_list::GhPrListPane;
+use anyhow::Result;
+use crossterm::event::{KeyCode, KeyEvent};
+use ratatui::{layout::Rect, Frame};
 use std::sync::mpsc;
 
 pub const GH_PANE_ISSUE_LIST: usize = 0;
@@ -259,16 +265,176 @@ impl GitHubState {
             self.pr_list.spawn_fetch(tx);
         }
     }
+
+    // === Dispatch ===
+
+    pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<GhPaneEvent> {
+        match self.shared.pane.focused_pane {
+            GH_PANE_ISSUE_LIST => match key.code {
+                KeyCode::Char('l') | KeyCode::Tab => {
+                    vec![GhPaneEvent::SetFocus(GH_PANE_PR_LIST)]
+                }
+                _ => self.issue_list.handle_key(&self.shared, key),
+            },
+            GH_PANE_PR_LIST => match key.code {
+                KeyCode::Char('h') | KeyCode::BackTab => {
+                    vec![GhPaneEvent::SetFocus(GH_PANE_ISSUE_LIST)]
+                }
+                _ => self.pr_list.handle_key(&self.shared, key),
+            },
+            GH_PANE_DETAIL => self.detail_view.handle_key(&self.shared, key),
+            _ => vec![],
+        }
+    }
+
+    // === Event processing ===
+
+    pub fn process_events(
+        &mut self,
+        ctx: &mut AppContext,
+        events: Vec<GhPaneEvent>,
+    ) -> Result<PageAction> {
+        for event in events {
+            match event {
+                GhPaneEvent::SetFocus(pane) => {
+                    self.set_focus(pane);
+                    self.load_detail();
+                }
+                GhPaneEvent::LoadDetail => {
+                    self.load_detail();
+                }
+                GhPaneEvent::OpenIssueBrowser(n) => match client::open_issue_in_browser(n) {
+                    Ok(()) => {
+                        ctx.status_message = Some(format!("Opening issue #{n} in browser..."));
+                    }
+                    Err(e) => {
+                        ctx.status_message = Some(format!("Failed to open browser: {e}"));
+                    }
+                },
+                GhPaneEvent::OpenPrBrowser(n) => match client::open_pr_in_browser(n) {
+                    Ok(()) => {
+                        ctx.status_message = Some(format!("Opening PR #{n} in browser..."));
+                    }
+                    Err(e) => {
+                        ctx.status_message = Some(format!("Failed to open browser: {e}"));
+                    }
+                },
+                GhPaneEvent::OpenUrl(url) => match client::open_url(&url) {
+                    Ok(()) => {
+                        ctx.status_message = Some("Opening in browser...".to_string());
+                    }
+                    Err(e) => {
+                        ctx.status_message = Some(e);
+                    }
+                },
+            }
+        }
+        Ok(PageAction::None)
+    }
+
+    // === View-level key handling ===
+
+    pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        match key.code {
+            KeyCode::Char('q') => {
+                ctx.should_quit = true;
+            }
+            KeyCode::Char('?') => {
+                ctx.show_help = true;
+            }
+            KeyCode::Char('r') => {
+                if self.shared.pane.focused_pane == GH_PANE_DETAIL {
+                    self.refresh_detail();
+                } else {
+                    self.refresh();
+                }
+            }
+            KeyCode::Char('w') => {
+                self.detail_view.toggle_watch_mode();
+            }
+            _ => {
+                let events = self.dispatch_key(key);
+                return self.process_events(ctx, events);
+            }
+        }
+        Ok(PageAction::None)
+    }
+
+    // === Unified handle_key ===
+
+    pub fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        self.handle_view_key(ctx, key)
+    }
+
+    // === Help bindings ===
+
+    pub fn help_bindings_list() -> Vec<(&'static str, &'static str)> {
+        vec![
+            ("1 / 2", "Switch view"),
+            ("h / l", "Issues ↔ PRs (list)"),
+            ("j / k", "Navigate list"),
+            ("i / Enter", "Open detail"),
+            ("o", "Open in browser"),
+            ("Esc", "Back to list"),
+            ("h / l", "Body ↔ Right pane (detail)"),
+            ("Tab / S-Tab", "Cycle right panes (detail)"),
+            ("Ctrl+d", "Half page down (detail)"),
+            ("Ctrl+u", "Half page up (detail)"),
+            ("g / G", "Top / Bottom"),
+            ("r", "Refresh data"),
+            ("w", "Toggle watch mode (PR)"),
+            ("?", "Toggle help"),
+            ("q", "Quit"),
+        ]
+    }
+
+    // === Render ===
+
+    pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
+        let gl = crate::github::layout::compute_gh_layout(area);
+        status_bar::render_gh_header(f, ctx, gl.header);
+        self.issue_list.render(f, ctx, &self.shared, gl.issue_list);
+        self.pr_list.render(f, ctx, &self.shared, gl.pr_list);
+        self.detail_view.render(f, ctx, &self.shared, gl.main_pane);
+        status_bar::render_gh_status_bar(f, ctx, self, gl.status_bar);
+    }
+
+    // === Lifecycle ===
+
+    pub fn on_tick(&mut self) {
+        if let Some(tx) = &self.bg_tx {
+            self.detail_view.handle_watch_tick(tx);
+        }
+    }
+
+    pub fn on_activate(&mut self) {
+        self.initialize();
+    }
 }
 
 impl crate::core::app::PageState for GitHubState {
+    fn label(&self) -> &'static str {
+        "GitHub"
+    }
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+        Self::help_bindings_list()
+    }
+    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        GitHubState::handle_key(self, ctx, key)
+    }
+    fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect) {
+        GitHubState::render(self, f, ctx, area);
+    }
+    fn intercepts_all_keys(&self) -> bool {
+        self.shared.pane.search.active
+    }
+    fn on_tick(&mut self, _ctx: &mut AppContext) {
+        GitHubState::on_tick(self);
+    }
+    fn on_activate(&mut self, _ctx: &mut AppContext) {
+        GitHubState::on_activate(self);
+    }
     fn drain_background(&mut self) {
         self.drain_bg_messages();
-    }
-    fn search(&self) -> &SearchState {
-        &self.shared.pane.search
-    }
-    fn search_mut(&mut self) -> &mut SearchState {
-        &mut self.shared.pane.search
     }
 }
