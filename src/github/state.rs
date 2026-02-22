@@ -5,7 +5,6 @@ use crate::github::panes::detail_view::GhDetailViewPane;
 use crate::github::panes::issue_list::GhIssueListPane;
 use crate::github::panes::pr_list::GhPrListPane;
 use std::sync::mpsc;
-use std::time::{Instant, SystemTime};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GhFocusedPane {
@@ -74,14 +73,8 @@ pub struct GitHubState {
     pub gh_available: Option<bool>,
     pub gh_error: Option<String>,
     bg_rx: Option<mpsc::Receiver<GhBgMessage>>,
-    bg_tx: Option<mpsc::Sender<GhBgMessage>>,
+    pub(crate) bg_tx: Option<mpsc::Sender<GhBgMessage>>,
     pub initialized: bool,
-    // Watch mode
-    pub watch_mode: bool,
-    watch_last_refresh: Option<Instant>,
-    watch_last_update: Option<SystemTime>,
-    watch_in_flight_since: Option<Instant>,
-    pub watch_error: Option<String>,
 }
 
 impl GitHubState {
@@ -100,11 +93,6 @@ impl GitHubState {
             bg_rx: None,
             bg_tx: None,
             initialized: false,
-            watch_mode: false,
-            watch_last_refresh: None,
-            watch_last_update: None,
-            watch_in_flight_since: None,
-            watch_error: None,
         }
     }
 
@@ -196,20 +184,7 @@ impl GitHubState {
                     Err(e) => self.detail_view.content = GhDetailContent::Error(e),
                 },
                 GhBgMessage::PrDetail(result) => {
-                    self.watch_in_flight_since = None;
-                    match result {
-                        Ok(detail) => {
-                            self.watch_error = None;
-                            self.detail_view.apply_pr_detail(detail);
-                        }
-                        Err(e) => {
-                            if self.watch_mode {
-                                self.watch_error = Some(e);
-                            } else {
-                                self.detail_view.content = GhDetailContent::Error(e);
-                            }
-                        }
-                    }
+                    self.detail_view.apply_pr_detail_result(result);
                 }
             }
         }
@@ -277,89 +252,6 @@ impl GitHubState {
         }
     }
 
-    /// Returns the wall-clock time of the last watch refresh as "HH:MM:SS", if active.
-    pub fn watch_last_update_time(&self) -> Option<String> {
-        if !self.watch_mode {
-            return None;
-        }
-        self.watch_last_update.map(|t| {
-            let secs = t
-                .duration_since(std::time::SystemTime::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_secs();
-            let local_secs = secs as i64 + local_utc_offset_secs();
-            let time_of_day = local_secs.rem_euclid(86400);
-            let h = time_of_day / 3600;
-            let m = (time_of_day % 3600) / 60;
-            let s = time_of_day % 60;
-            format!("{h:02}:{m:02}:{s:02}")
-        })
-    }
-
-    /// Toggle watch mode (auto-refresh checks every 10s). Only activates on PR detail.
-    pub fn toggle_watch_mode(&mut self) {
-        if !matches!(&self.detail_view.content, GhDetailContent::Pr(_)) {
-            return;
-        }
-        self.watch_mode = !self.watch_mode;
-        if self.watch_mode {
-            self.watch_last_refresh = Some(Instant::now());
-            self.watch_last_update = Some(SystemTime::now());
-        } else {
-            self.watch_last_refresh = None;
-            self.watch_last_update = None;
-            self.watch_in_flight_since = None;
-            self.watch_error = None;
-        }
-    }
-
-    /// Called on every tick. If watch mode is active and 10s have elapsed, refresh the detail.
-    pub fn handle_watch_tick(&mut self) {
-        if !self.watch_mode {
-            return;
-        }
-        if !matches!(
-            &self.detail_view.content,
-            GhDetailContent::Pr(_)
-                | GhDetailContent::Loading {
-                    kind: GhDetailKind::Pr,
-                    ..
-                }
-        ) {
-            self.watch_mode = false;
-            return;
-        }
-        if let Some(since) = self.watch_in_flight_since {
-            if since.elapsed() < std::time::Duration::from_secs(30) {
-                return;
-            }
-        }
-        if let Some(last) = self.watch_last_refresh {
-            if last.elapsed() >= std::time::Duration::from_secs(10) {
-                self.watch_last_refresh = Some(Instant::now());
-                self.watch_last_update = Some(SystemTime::now());
-                self.refresh_detail_silent();
-            }
-        }
-    }
-
-    /// Silently re-fetch the current PR detail in the background.
-    fn refresh_detail_silent(&mut self) {
-        let number = match &self.detail_view.content {
-            GhDetailContent::Pr(detail) => detail.number,
-            _ => return,
-        };
-        self.detail_view.invalidate_pr(number);
-        self.watch_in_flight_since = Some(Instant::now());
-        if let Some(tx) = &self.bg_tx {
-            let tx = tx.clone();
-            std::thread::spawn(move || {
-                let result = client::get_pr(number);
-                let _ = tx.send(GhBgMessage::PrDetail(result));
-            });
-        }
-    }
-
     /// Refresh: re-fetch issue and PR lists, clear caches.
     pub fn refresh(&mut self) {
         self.gh_error = None;
@@ -369,29 +261,6 @@ impl GitHubState {
             self.pr_list.spawn_fetch(tx);
         }
     }
-}
-
-/// Get local UTC offset in seconds, cached after first call.
-fn local_utc_offset_secs() -> i64 {
-    use std::sync::OnceLock;
-    static OFFSET: OnceLock<i64> = OnceLock::new();
-    *OFFSET.get_or_init(|| {
-        std::process::Command::new("date")
-            .arg("+%z")
-            .output()
-            .ok()
-            .and_then(|o| {
-                let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
-                if s.len() < 5 {
-                    return None;
-                }
-                let sign: i64 = if s.starts_with('-') { -1 } else { 1 };
-                let hours: i64 = s[1..3].parse().ok()?;
-                let mins: i64 = s[3..5].parse().ok()?;
-                Some(sign * (hours * 3600 + mins * 60))
-            })
-            .unwrap_or(0)
-    })
 }
 
 impl crate::core::app::PageState for GitHubState {

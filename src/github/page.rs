@@ -33,7 +33,7 @@ pub fn handle_gh_view_key(
             }
         }
         KeyCode::Char('w') => {
-            gh.toggle_watch_mode();
+            gh.detail_view.toggle_watch_mode();
         }
         _ => {
             let events = dispatch_gh_key(gh, key);
@@ -162,7 +162,9 @@ impl PageHandler<GitHubState> for GhPageHandler {
     }
 
     fn on_tick(&self, _ctx: &mut AppContext, gh: &mut GitHubState) {
-        gh.handle_watch_tick();
+        if let Some(tx) = &gh.bg_tx {
+            gh.detail_view.handle_watch_tick(tx);
+        }
     }
 
     fn on_activate(&self, _ctx: &mut AppContext, gh: &mut GitHubState) {

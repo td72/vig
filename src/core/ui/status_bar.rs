@@ -184,9 +184,9 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         }
     }
 
-    if let Some(time) = gh.watch_last_update_time() {
+    if let Some(time) = gh.detail_view.watch_last_update_time() {
         spans.push(Span::raw("  "));
-        if let Some(ref err) = gh.watch_error {
+        if let Some(ref err) = gh.detail_view.watch_error {
             spans.push(Span::styled(
                 format!("\u{23f1} Watch (err: {err})"),
                 Style::default().fg(Color::Red),
