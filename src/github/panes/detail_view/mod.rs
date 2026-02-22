@@ -122,6 +122,20 @@ impl GhDetailViewPane {
         self.pr_cache.remove(&number);
     }
 
+    /// Apply a fetched issue detail — save to disk cache and display.
+    pub fn apply_issue_detail(&mut self, detail: GhIssueDetail) {
+        disk_cache::save_issue_detail(&detail);
+        self.issue_cache.insert(detail.number, detail.clone());
+        self.content = GhDetailContent::Issue(Box::new(detail));
+    }
+
+    /// Apply a fetched PR detail — save to disk cache and display.
+    pub fn apply_pr_detail(&mut self, detail: GhPrDetail) {
+        disk_cache::save_pr_detail(&detail);
+        self.pr_cache.insert(detail.number, detail.clone());
+        self.content = GhDetailContent::Pr(Box::new(detail));
+    }
+
     pub fn handle_key(&mut self, shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         // Determine item count for selection-based panes
         let pane = self.active_pane;

@@ -1,3 +1,4 @@
+use crate::github::domain::disk_cache;
 use crate::github::domain::types::GhPrListItem;
 use crate::github::state::{GhFocusedPane, GhPaneEvent, GhShared};
 use crossterm::event::{KeyCode, KeyEvent};
@@ -22,6 +23,19 @@ impl GhPrListPane {
             selected_idx: 0,
             loading: false,
         }
+    }
+
+    /// Load cached list from disk for instant display.
+    pub fn load_from_cache(&mut self) {
+        if let Some(prs) = disk_cache::load_pr_list() {
+            self.prs = prs;
+        }
+    }
+
+    /// Apply a freshly fetched list — save to disk cache and update state.
+    pub fn apply_list(&mut self, prs: Vec<GhPrListItem>) {
+        disk_cache::save_pr_list(&prs);
+        self.prs = prs;
     }
 
     pub fn handle_key(&mut self, _shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {

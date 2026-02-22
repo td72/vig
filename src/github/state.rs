@@ -1,6 +1,6 @@
 use crate::core::app::SearchState;
+use crate::github::domain::client;
 use crate::github::domain::types::*;
-use crate::github::domain::{client, disk_cache};
 use crate::github::panes::detail_view::GhDetailViewPane;
 use crate::github::panes::issue_list::GhIssueListPane;
 use crate::github::panes::pr_list::GhPrListPane;
@@ -127,12 +127,8 @@ impl GitHubState {
         self.bg_rx = Some(rx);
 
         // Load cached lists from disk (instant display, will be refreshed in background)
-        if let Some(issues) = disk_cache::load_issue_list() {
-            self.issue_list.issues = issues;
-        }
-        if let Some(prs) = disk_cache::load_pr_list() {
-            self.pr_list.prs = prs;
-        }
+        self.issue_list.load_from_cache();
+        self.pr_list.load_from_cache();
 
         // Auto-load detail for the first item from disk cache
         if !self.issue_list.issues.is_empty() {
@@ -188,8 +184,7 @@ impl GitHubState {
                     self.issue_list.loading = false;
                     match result {
                         Ok(issues) => {
-                            disk_cache::save_issue_list(&issues);
-                            self.issue_list.issues = issues;
+                            self.issue_list.apply_list(issues);
                             issue_list_arrived = true;
                         }
                         Err(e) => {
@@ -203,8 +198,7 @@ impl GitHubState {
                     self.pr_list.loading = false;
                     match result {
                         Ok(prs) => {
-                            disk_cache::save_pr_list(&prs);
-                            self.pr_list.prs = prs;
+                            self.pr_list.apply_list(prs);
                             pr_list_arrived = true;
                         }
                         Err(e) => {
@@ -215,13 +209,7 @@ impl GitHubState {
                     }
                 }
                 GhBgMessage::IssueDetail(result) => match result {
-                    Ok(detail) => {
-                        disk_cache::save_issue_detail(&detail);
-                        self.detail_view
-                            .issue_cache
-                            .insert(detail.number, detail.clone());
-                        self.detail_view.content = GhDetailContent::Issue(Box::new(detail));
-                    }
+                    Ok(detail) => self.detail_view.apply_issue_detail(detail),
                     Err(e) => self.detail_view.content = GhDetailContent::Error(e),
                 },
                 GhBgMessage::PrDetail(result) => {
@@ -229,11 +217,7 @@ impl GitHubState {
                     match result {
                         Ok(detail) => {
                             self.watch_error = None;
-                            disk_cache::save_pr_detail(&detail);
-                            self.detail_view
-                                .pr_cache
-                                .insert(detail.number, detail.clone());
-                            self.detail_view.content = GhDetailContent::Pr(Box::new(detail));
+                            self.detail_view.apply_pr_detail(detail);
                         }
                         Err(e) => {
                             if self.watch_mode {

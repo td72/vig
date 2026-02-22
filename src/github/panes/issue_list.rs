@@ -1,3 +1,4 @@
+use crate::github::domain::disk_cache;
 use crate::github::domain::types::GhIssueListItem;
 use crate::github::state::{GhFocusedPane, GhPaneEvent, GhShared};
 use crossterm::event::{KeyCode, KeyEvent};
@@ -22,6 +23,19 @@ impl GhIssueListPane {
             selected_idx: 0,
             loading: false,
         }
+    }
+
+    /// Load cached list from disk for instant display.
+    pub fn load_from_cache(&mut self) {
+        if let Some(issues) = disk_cache::load_issue_list() {
+            self.issues = issues;
+        }
+    }
+
+    /// Apply a freshly fetched list — save to disk cache and update state.
+    pub fn apply_list(&mut self, issues: Vec<GhIssueListItem>) {
+        disk_cache::save_issue_list(&issues);
+        self.issues = issues;
     }
 
     pub fn handle_key(&mut self, _shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
