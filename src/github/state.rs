@@ -126,35 +126,21 @@ impl GitHubState {
         self.bg_tx = Some(tx.clone());
         self.bg_rx = Some(rx);
 
-        // Load cached lists from disk (instant display, will be refreshed in background)
-        self.issue_list.load_from_cache();
-        self.pr_list.load_from_cache();
+        // Auth check (page-level concern)
+        let tx_auth = tx.clone();
+        std::thread::spawn(move || {
+            let auth = client::check_gh_available();
+            let _ = tx_auth.send(GhBgMessage::AuthStatus(auth));
+        });
+
+        // Each pane loads its disk cache + spawns background fetch
+        self.issue_list.initialize(&tx);
+        self.pr_list.initialize(&tx);
 
         // Auto-load detail for the first item from disk cache
         if !self.issue_list.issues.is_empty() {
             self.load_selected_issue_detail();
         }
-
-        self.issue_list.loading = true;
-        self.pr_list.loading = true;
-
-        // Auth check + issue list
-        let tx2 = tx.clone();
-        std::thread::spawn(move || {
-            let auth = client::check_gh_available();
-            let _ = tx2.send(GhBgMessage::AuthStatus(auth.clone()));
-            if auth.is_ok() {
-                let issues = client::list_issues(50);
-                let _ = tx2.send(GhBgMessage::IssueList(issues));
-            }
-        });
-
-        // PR list (parallel)
-        let tx3 = tx;
-        std::thread::spawn(move || {
-            let prs = client::list_prs(50);
-            let _ = tx3.send(GhBgMessage::PrList(prs));
-        });
     }
 
     /// Drain background messages from worker threads.
@@ -381,22 +367,11 @@ impl GitHubState {
 
     /// Refresh: re-fetch issue and PR lists, clear caches.
     pub fn refresh(&mut self) {
-        self.issue_list.loading = true;
-        self.pr_list.loading = true;
         self.gh_error = None;
         self.detail_view.clear_caches();
-
         if let Some(tx) = &self.bg_tx {
-            let tx2 = tx.clone();
-            std::thread::spawn(move || {
-                let issues = client::list_issues(50);
-                let _ = tx2.send(GhBgMessage::IssueList(issues));
-            });
-            let tx3 = tx.clone();
-            std::thread::spawn(move || {
-                let prs = client::list_prs(50);
-                let _ = tx3.send(GhBgMessage::PrList(prs));
-            });
+            self.issue_list.spawn_fetch(tx);
+            self.pr_list.spawn_fetch(tx);
         }
     }
 }

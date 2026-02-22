@@ -1,6 +1,6 @@
-use crate::github::domain::disk_cache;
 use crate::github::domain::types::GhIssueListItem;
-use crate::github::state::{GhFocusedPane, GhPaneEvent, GhShared};
+use crate::github::domain::{client, disk_cache};
+use crate::github::state::{GhBgMessage, GhFocusedPane, GhPaneEvent, GhShared};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -9,6 +9,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
     Frame,
 };
+use std::sync::mpsc;
 
 pub struct GhIssueListPane {
     pub issues: Vec<GhIssueListItem>,
@@ -25,11 +26,23 @@ impl GhIssueListPane {
         }
     }
 
-    /// Load cached list from disk for instant display.
-    pub fn load_from_cache(&mut self) {
+    /// Load disk cache + spawn background fetch.
+    pub fn initialize(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         if let Some(issues) = disk_cache::load_issue_list() {
             self.issues = issues;
         }
+        self.loading = true;
+        self.spawn_fetch(tx);
+    }
+
+    /// Spawn background fetch thread.
+    pub fn spawn_fetch(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        self.loading = true;
+        let tx = tx.clone();
+        std::thread::spawn(move || {
+            let issues = client::list_issues(50);
+            let _ = tx.send(GhBgMessage::IssueList(issues));
+        });
     }
 
     /// Apply a freshly fetched list — save to disk cache and update state.
