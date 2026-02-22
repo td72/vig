@@ -131,6 +131,21 @@ impl BranchListPane {
         }
     }
 
+    pub fn collect_search_matches(&self, query: &str) -> Vec<SearchMatch> {
+        let query_lower = query.to_lowercase();
+        self.branches
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, branch)| {
+                if branch.name.to_lowercase().contains(&query_lower) {
+                    Some(SearchMatch::BranchEntry(idx))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
     pub fn render(&self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
         let border_color = if shared.focused_pane == FocusedPane::BranchList {
             Color::Cyan

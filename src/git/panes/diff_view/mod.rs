@@ -2,8 +2,11 @@ pub(crate) mod keys;
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
+use crate::core::search::SearchMatch;
 use crate::git::domain::diff::FileDiff;
-use crate::git::state::{DiffScroll, DiffViewMode, GitShared, HighlightState, PaneEvent, VimState};
+use crate::git::state::{
+    DiffScroll, DiffSide, DiffViewMode, GitShared, HighlightState, PaneEvent, VimState,
+};
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 
@@ -46,6 +49,70 @@ impl DiffViewPane {
         area: Rect,
     ) {
         view::render(f, self, shared, file, area);
+    }
+
+    pub fn collect_search_matches(&self, file: Option<&FileDiff>, query: &str) -> Vec<SearchMatch> {
+        let file = match file {
+            Some(f) => f,
+            None => return vec![],
+        };
+        let query_lower = query.to_lowercase();
+        let mut matches = Vec::new();
+        let mut row_idx: usize = 0;
+        for hunk in &file.hunks {
+            for (col_start, _) in hunk.header.to_lowercase().match_indices(&query_lower) {
+                let col_end = col_start + query.len();
+                matches.push(SearchMatch::DiffLine {
+                    row: row_idx,
+                    col_start,
+                    col_end,
+                    side: DiffSide::Left,
+                });
+            }
+            row_idx += 1;
+            for row in &hunk.rows {
+                if let Some(ref side_line) = row.left {
+                    for (col_start, _) in
+                        side_line.content.to_lowercase().match_indices(&query_lower)
+                    {
+                        let col_end = col_start + query.len();
+                        matches.push(SearchMatch::DiffLine {
+                            row: row_idx,
+                            col_start,
+                            col_end,
+                            side: DiffSide::Left,
+                        });
+                    }
+                }
+                if let Some(ref side_line) = row.right {
+                    for (col_start, _) in
+                        side_line.content.to_lowercase().match_indices(&query_lower)
+                    {
+                        let col_end = col_start + query.len();
+                        matches.push(SearchMatch::DiffLine {
+                            row: row_idx,
+                            col_start,
+                            col_end,
+                            side: DiffSide::Right,
+                        });
+                    }
+                }
+                row_idx += 1;
+            }
+        }
+        matches
+    }
+
+    pub fn navigate_to_search_match(&mut self, row: usize, col_start: usize, side: DiffSide) {
+        if self.vim.mode == DiffViewMode::Scroll {
+            self.scroll.y = row.saturating_sub((self.scroll.view_height / 3) as usize) as u16;
+        } else {
+            self.vim.cursor.row = row;
+            self.vim.cursor.col = col_start;
+            self.vim.cursor.side = side;
+            self.highlight.content_lines_cache = None;
+            self.scroll_to_cursor();
+        }
     }
 
     pub fn scroll_to_cursor(&mut self) {

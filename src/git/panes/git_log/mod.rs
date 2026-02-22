@@ -7,7 +7,7 @@ use crate::git::state::{FocusedPane, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 
-use crate::core::app::{AppContext, SearchOrigin};
+use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GitLogDetailPane {
@@ -114,6 +114,25 @@ impl GitLogPane {
             _ => {}
         }
         vec![]
+    }
+
+    pub fn collect_search_matches(&self, query: &str) -> Vec<SearchMatch> {
+        let query_lower = query.to_lowercase();
+        self.commits
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, commit)| {
+                let text = format!(
+                    "{} {} {} {}",
+                    commit.short_hash, commit.author, commit.date, commit.message
+                );
+                if text.to_lowercase().contains(&query_lower) {
+                    Some(SearchMatch::CommitEntry(idx))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {

@@ -71,6 +71,25 @@ impl ReflogPane {
         vec![]
     }
 
+    pub fn collect_search_matches(&self, query: &str) -> Vec<SearchMatch> {
+        let query_lower = query.to_lowercase();
+        self.entries
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, entry)| {
+                if entry.short_hash.to_lowercase().contains(&query_lower)
+                    || entry.selector.to_lowercase().contains(&query_lower)
+                    || entry.action.to_lowercase().contains(&query_lower)
+                    || entry.message.to_lowercase().contains(&query_lower)
+                {
+                    Some(SearchMatch::ReflogEntry(idx))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
         let border_color = if shared.focused_pane == FocusedPane::Reflog {

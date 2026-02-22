@@ -87,6 +87,28 @@ impl FileTreePane {
         vec![]
     }
 
+    pub fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+        let query_lower = query.to_lowercase();
+        let entries = self.tree_entries(shared);
+        entries
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, entry)| {
+                let name = match entry {
+                    TreeEntry::Dir { path, .. } => path.clone(),
+                    TreeEntry::File { file_idx, .. } => {
+                        shared.diff_state.files.get(*file_idx)?.path.clone()
+                    }
+                };
+                if name.to_lowercase().contains(&query_lower) {
+                    Some(SearchMatch::TreeEntry(idx))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
     pub fn render(&self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
         let border_color = if shared.focused_pane == FocusedPane::FileTree {
             Color::Cyan
