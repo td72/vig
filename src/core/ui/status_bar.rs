@@ -94,8 +94,8 @@ pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
 }
 
 pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
-    if git.shared.search.active {
-        let prompt = format!("/{}\u{2588}", git.shared.search.input);
+    if git.shared.pane.search.active {
+        let prompt = format!("/{}\u{2588}", git.shared.pane.search.input);
         let line = Line::from(Span::styled(
             format!(" {prompt}"),
             Style::default().fg(Color::White),

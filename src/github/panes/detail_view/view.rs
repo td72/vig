@@ -1,6 +1,6 @@
 use super::GhDetailViewPane;
 use crate::github::domain::types::*;
-use crate::github::state::{GhDetailContent, GhDetailPane, GhFocusedPane, GhShared};
+use crate::github::state::{GhDetailContent, GhDetailPane, GhShared, GH_PANE_DETAIL};
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -33,7 +33,7 @@ pub fn meaningful_reviews(reviews: &[GhReview]) -> Vec<&GhReview> {
 }
 
 pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &GhShared, area: Rect) {
-    let is_focused = shared.focused_pane == GhFocusedPane::Detail;
+    let is_focused = shared.pane.focused_pane == GH_PANE_DETAIL;
     let border_color = if is_focused {
         Color::Cyan
     } else {

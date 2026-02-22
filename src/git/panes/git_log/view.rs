@@ -1,7 +1,7 @@
 use crate::core::app::{SearchMatch, SearchOrigin};
 use crate::git::domain::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
 use crate::git::panes::GitLogPane;
-use crate::git::state::{FocusedPane, GitShared};
+use crate::git::state::{GitShared, PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -60,9 +60,9 @@ fn graph_spans(
 
 /// Render the Git Log component: outer border with left (commit list) and right (detail).
 pub fn render(f: &mut Frame, pane: &mut GitLogPane, shared: &GitShared, area: Rect) {
-    let is_focused = shared.focused_pane == FocusedPane::GitLog
-        || shared.focused_pane == FocusedPane::BranchList
-        || shared.focused_pane == FocusedPane::Reflog;
+    let is_focused = shared.pane.focused_pane == PANE_GIT_LOG
+        || shared.pane.focused_pane == PANE_BRANCH_LIST
+        || shared.pane.focused_pane == PANE_REFLOG;
     let border_color = if is_focused {
         Color::Cyan
     } else {
@@ -103,32 +103,32 @@ fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &GitShared, area: R
     let max_graph_width = pane.graph.iter().map(|r| r.cells.len()).max().unwrap_or(0);
 
     // Build set of matched commit entry indices
-    let (match_set, current_match_idx) =
-        if shared.search.origin == SearchOrigin::CommitLog {
-            let set: HashSet<usize> = shared
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::CommitEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = shared.search.current_match_idx.and_then(|ci| {
-                match shared.search.matches.get(ci) {
-                    Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+    let (match_set, current_match_idx) = if shared.pane.search.origin == SearchOrigin::CommitLog {
+        let set: HashSet<usize> = shared
+            .pane
+            .search
+            .matches
+            .iter()
+            .filter_map(|m| match m {
+                SearchMatch::CommitEntry(idx) => Some(*idx),
+                _ => None,
+            })
+            .collect();
+        let current = shared.pane.search.current_match_idx.and_then(|ci| {
+            match shared.pane.search.matches.get(ci) {
+                Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
+                _ => None,
+            }
+        });
+        (set, current)
+    } else {
+        (HashSet::new(), None)
+    };
 
     // Highlight pipes originating from the selected commit (lazygit-style)
-    let highlight_from = if shared.focused_pane == FocusedPane::GitLog
-        || shared.focused_pane == FocusedPane::BranchList
-        || shared.focused_pane == FocusedPane::Reflog
+    let highlight_from = if shared.pane.focused_pane == PANE_GIT_LOG
+        || shared.pane.focused_pane == PANE_BRANCH_LIST
+        || shared.pane.focused_pane == PANE_REFLOG
     {
         Some(pane.selected_idx)
     } else {

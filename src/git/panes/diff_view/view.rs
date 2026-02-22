@@ -1,7 +1,7 @@
 use super::DiffViewPane;
 use crate::core::app::SearchMatch;
 use crate::git::domain::diff::{FileDiff, LineType, SideBySideRow};
-use crate::git::state::{CursorPos, DiffSide, DiffViewMode, FocusedPane, GitShared};
+use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitShared, PANE_DIFF_VIEW};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -27,15 +27,15 @@ struct SearchHighlightInfo {
 
 impl SearchHighlightInfo {
     fn from_shared(shared: &GitShared) -> Option<Self> {
-        let query = shared.search.query.as_ref()?;
-        if query.is_empty() || shared.search.matches.is_empty() {
+        let query = shared.pane.search.query.as_ref()?;
+        if query.is_empty() || shared.pane.search.matches.is_empty() {
             return None;
         }
 
-        let current_idx = shared.search.current_match_idx;
+        let current_idx = shared.pane.search.current_match_idx;
         let mut row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>> = HashMap::new();
 
-        for (i, m) in shared.search.matches.iter().enumerate() {
+        for (i, m) in shared.pane.search.matches.iter().enumerate() {
             if let SearchMatch::DiffLine {
                 row,
                 col_start,
@@ -81,14 +81,8 @@ struct SelectionInfo {
     cursor: CursorPos,
 }
 
-pub fn render(
-    f: &mut Frame,
-    pane: &mut DiffViewPane,
-    shared: &GitShared,
-    file: Option<&FileDiff>,
-    area: Rect,
-) {
-    let border_color = if shared.focused_pane == FocusedPane::DiffView {
+pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &GitShared, area: Rect) {
+    let border_color = if shared.pane.focused_pane == PANE_DIFF_VIEW {
         Color::Cyan
     } else {
         Color::DarkGray
@@ -102,7 +96,7 @@ pub fn render(
     let inner = block.inner(area);
     f.render_widget(block, area);
 
-    let file = match file {
+    let file = match pane.current_file(shared) {
         Some(file) => file,
         None => {
             let msg = Paragraph::new(Line::from(Span::styled(

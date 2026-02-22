@@ -1,4 +1,5 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::core::pane::Pane;
 use crate::git::domain::repository::{BranchInfo, Repo};
 use crate::git::state::{BranchAction, BranchActionMenuState, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent};
@@ -11,7 +12,7 @@ use ratatui::{
 };
 use std::collections::HashSet;
 
-use crate::git::state::FocusedPane;
+use crate::git::state::PANE_BRANCH_LIST;
 
 const ACTION_MENU_BG: Color = Color::Rgb(30, 30, 30);
 
@@ -157,8 +158,8 @@ impl BranchListPane {
             .collect()
     }
 
-    pub fn render(&self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
-        let border_color = if shared.focused_pane == FocusedPane::BranchList {
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
+        let border_color = if shared.pane.focused_pane == PANE_BRANCH_LIST {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -180,26 +181,28 @@ impl BranchListPane {
         }
 
         // Build set of matched branch entry indices
-        let (match_set, current_match_idx) = if shared.search.origin == SearchOrigin::BranchList {
-            let set: HashSet<usize> = shared
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::BranchEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = shared.search.current_match_idx.and_then(|ci| {
-                match shared.search.matches.get(ci) {
-                    Some(SearchMatch::BranchEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+        let (match_set, current_match_idx) =
+            if shared.pane.search.origin == SearchOrigin::BranchList {
+                let set: HashSet<usize> = shared
+                    .pane
+                    .search
+                    .matches
+                    .iter()
+                    .filter_map(|m| match m {
+                        SearchMatch::BranchEntry(idx) => Some(*idx),
+                        _ => None,
+                    })
+                    .collect();
+                let current = shared.pane.search.current_match_idx.and_then(|ci| {
+                    match shared.pane.search.matches.get(ci) {
+                        Some(SearchMatch::BranchEntry(idx)) => Some(*idx),
+                        _ => None,
+                    }
+                });
+                (set, current)
+            } else {
+                (HashSet::new(), None)
+            };
 
         let items: Vec<ListItem> = self
             .branches
@@ -347,6 +350,16 @@ impl BranchListPane {
 
         let para = Paragraph::new(lines).block(block);
         f.render_widget(para, menu_area);
+    }
+}
+
+impl Pane<GitShared, PaneEvent> for BranchListPane {
+    fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+        self.handle_key(shared, key)
+    }
+
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
+        self.render(f, ctx, shared, area)
     }
 }
 

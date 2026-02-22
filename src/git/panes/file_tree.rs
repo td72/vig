@@ -1,6 +1,7 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::core::pane::Pane;
 use crate::git::domain::diff::{FileDiff, FileStatus};
-use crate::git::state::{FocusedPane, GitShared, PaneEvent, TreeEntry};
+use crate::git::state::{GitShared, PaneEvent, TreeEntry, PANE_DIFF_VIEW, PANE_FILE_TREE};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -37,6 +38,15 @@ impl FileTreePane {
         }
     }
 
+    pub fn selected_file_idx(&self, shared: &GitShared) -> Option<usize> {
+        let entries = self.tree_entries(shared);
+        if let Some(TreeEntry::File { file_idx, .. }) = entries.get(self.selected_idx) {
+            Some(*file_idx)
+        } else {
+            None
+        }
+    }
+
     pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
         let entries = self.tree_entries(shared);
         if entries.is_empty() {
@@ -46,13 +56,21 @@ impl FileTreePane {
             KeyCode::Char('j') | KeyCode::Down => {
                 if self.selected_idx + 1 < entries.len() {
                     self.selected_idx += 1;
-                    return vec![PaneEvent::ResetDiffScroll, PaneEvent::ReSearchOnFileChange];
+                    return vec![
+                        PaneEvent::SelectFile(self.selected_file_idx(shared)),
+                        PaneEvent::ResetDiffScroll,
+                        PaneEvent::ReSearchOnFileChange,
+                    ];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    return vec![PaneEvent::ResetDiffScroll, PaneEvent::ReSearchOnFileChange];
+                    return vec![
+                        PaneEvent::SelectFile(self.selected_file_idx(shared)),
+                        PaneEvent::ResetDiffScroll,
+                        PaneEvent::ReSearchOnFileChange,
+                    ];
                 }
             }
             KeyCode::Char(' ') => {
@@ -76,7 +94,7 @@ impl FileTreePane {
                 }
                 Some(TreeEntry::File { .. }) => {
                     return vec![
-                        PaneEvent::SetFocus(FocusedPane::DiffView),
+                        PaneEvent::SetFocus(PANE_DIFF_VIEW),
                         PaneEvent::ResetDiffScroll,
                     ];
                 }
@@ -109,8 +127,8 @@ impl FileTreePane {
             .collect()
     }
 
-    pub fn render(&self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
-        let border_color = if shared.focused_pane == FocusedPane::FileTree {
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
+        let border_color = if shared.pane.focused_pane == PANE_FILE_TREE {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -134,8 +152,10 @@ impl FileTreePane {
         }
 
         // Build set of matched tree entry indices and current match index
-        let (match_set, current_match_idx) = if shared.search.origin == SearchOrigin::FileTree {
+        let (match_set, current_match_idx) = if shared.pane.search.origin == SearchOrigin::FileTree
+        {
             let set: HashSet<usize> = shared
+                .pane
                 .search
                 .matches
                 .iter()
@@ -144,8 +164,8 @@ impl FileTreePane {
                     _ => None,
                 })
                 .collect();
-            let current = shared.search.current_match_idx.and_then(|ci| {
-                match shared.search.matches.get(ci) {
+            let current = shared.pane.search.current_match_idx.and_then(|ci| {
+                match shared.pane.search.matches.get(ci) {
                     Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
                     _ => None,
                 }
@@ -244,5 +264,15 @@ impl FileTreePane {
         let mut list_state = ListState::default();
         list_state.select(Some(selected));
         f.render_stateful_widget(list, area, &mut list_state);
+    }
+}
+
+impl Pane<GitShared, PaneEvent> for FileTreePane {
+    fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+        self.handle_key(shared, key)
+    }
+
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
+        self.render(f, ctx, shared, area)
     }
 }

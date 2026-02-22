@@ -1,6 +1,7 @@
 pub(crate) mod view;
 
-use crate::core::pane::SubPaneScroll;
+use crate::core::app::AppContext;
+use crate::core::pane::{Pane, SubPaneScroll};
 use crate::github::domain::types::*;
 use crate::github::domain::{client, disk_cache};
 use crate::github::state::{
@@ -378,7 +379,7 @@ impl GhDetailViewPane {
                 return self.open_detail_item();
             }
             KeyCode::Esc => {
-                return vec![GhPaneEvent::SetFocus(shared.previous_pane)];
+                return vec![GhPaneEvent::SetFocus(shared.pane.previous_pane)];
             }
             _ => {}
         }
@@ -443,8 +444,18 @@ impl GhDetailViewPane {
         }
     }
 
-    pub fn render(&mut self, f: &mut Frame, shared: &GhShared, area: Rect) {
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GhShared, area: Rect) {
         view::render(f, self, shared, area);
+    }
+}
+
+impl Pane<GhShared, GhPaneEvent> for GhDetailViewPane {
+    fn handle_key(&mut self, shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
+        self.handle_key(shared, key)
+    }
+
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GhShared, area: Rect) {
+        self.render(f, ctx, shared, area)
     }
 }
 

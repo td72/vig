@@ -1,3 +1,20 @@
+use crate::core::app::AppContext;
+use crate::core::search::SearchState;
+use crossterm::event::KeyEvent;
+use ratatui::{layout::Rect, Frame};
+
+pub struct PaneShared {
+    pub focused_pane: usize,
+    pub previous_pane: usize,
+    pub search: SearchState,
+}
+
+#[allow(dead_code)]
+pub trait Pane<Shared, Event> {
+    fn handle_key(&mut self, shared: &Shared, key: KeyEvent) -> Vec<Event>;
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &Shared, area: Rect);
+}
+
 #[allow(dead_code)]
 pub trait FocusState<P: Copy + PartialEq + 'static> {
     fn focused_pane(&self) -> P;

@@ -1,7 +1,9 @@
 use crate::core::app::AppContext;
 use crate::core::page::{PageAction, PageHandler};
 use crate::core::ui::status_bar;
-use crate::github::state::{GhFocusedPane, GhPaneEvent, GitHubState};
+use crate::github::state::{
+    GhPaneEvent, GitHubState, GH_PANE_DETAIL, GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST,
+};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
@@ -26,7 +28,7 @@ pub fn handle_gh_view_key(
             ctx.show_help = true;
         }
         KeyCode::Char('r') => {
-            if gh.shared.focused_pane == GhFocusedPane::Detail {
+            if gh.shared.pane.focused_pane == GH_PANE_DETAIL {
                 gh.refresh_detail();
             } else {
                 gh.refresh();
@@ -46,20 +48,21 @@ pub fn handle_gh_view_key(
 // === Dispatch ===
 
 fn dispatch_gh_key(gh: &mut GitHubState, key: KeyEvent) -> Vec<GhPaneEvent> {
-    match gh.shared.focused_pane {
-        GhFocusedPane::IssueList => match key.code {
+    match gh.shared.pane.focused_pane {
+        GH_PANE_ISSUE_LIST => match key.code {
             KeyCode::Char('l') | KeyCode::Tab => {
-                vec![GhPaneEvent::SetFocus(GhFocusedPane::PrList)]
+                vec![GhPaneEvent::SetFocus(GH_PANE_PR_LIST)]
             }
             _ => gh.issue_list.handle_key(&gh.shared, key),
         },
-        GhFocusedPane::PrList => match key.code {
+        GH_PANE_PR_LIST => match key.code {
             KeyCode::Char('h') | KeyCode::BackTab => {
-                vec![GhPaneEvent::SetFocus(GhFocusedPane::IssueList)]
+                vec![GhPaneEvent::SetFocus(GH_PANE_ISSUE_LIST)]
             }
             _ => gh.pr_list.handle_key(&gh.shared, key),
         },
-        GhFocusedPane::Detail => gh.detail_view.handle_key(&gh.shared, key),
+        GH_PANE_DETAIL => gh.detail_view.handle_key(&gh.shared, key),
+        _ => vec![],
     }
 }
 
@@ -155,9 +158,9 @@ impl PageHandler<GitHubState> for GhPageHandler {
     fn render(&self, f: &mut Frame, ctx: &AppContext, gh: &mut GitHubState, area: Rect) {
         let gl = crate::github::layout::compute_gh_layout(area);
         status_bar::render_gh_header(f, ctx, gl.header);
-        gh.issue_list.render(f, &gh.shared, gl.issue_list);
-        gh.pr_list.render(f, &gh.shared, gl.pr_list);
-        gh.detail_view.render(f, &gh.shared, gl.main_pane);
+        gh.issue_list.render(f, ctx, &gh.shared, gl.issue_list);
+        gh.pr_list.render(f, ctx, &gh.shared, gl.pr_list);
+        gh.detail_view.render(f, ctx, &gh.shared, gl.main_pane);
         status_bar::render_gh_status_bar(f, ctx, gh, gl.status_bar);
     }
 

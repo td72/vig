@@ -1,12 +1,10 @@
 use crate::core::app::SearchOrigin;
-use crate::git::domain::diff::FileDiff;
 use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub(crate) fn handle_diff_scroll_key(
     pane: &mut super::DiffViewPane,
     shared: &GitShared,
-    file: Option<&FileDiff>,
     key: KeyEvent,
 ) -> Vec<PaneEvent> {
     let max_scroll = pane
@@ -38,10 +36,10 @@ pub(crate) fn handle_diff_scroll_key(
             pane.scroll.x = pane.scroll.x.saturating_sub(4);
         }
         KeyCode::Esc => {
-            if shared.search.query.is_some() {
+            if shared.pane.search.query.is_some() {
                 return vec![PaneEvent::ClearSearch];
             } else {
-                return vec![PaneEvent::SetFocus(shared.previous_pane)];
+                return vec![PaneEvent::SetFocus(shared.pane.previous_pane)];
             }
         }
         KeyCode::Char('l') | KeyCode::Right => {
@@ -59,7 +57,7 @@ pub(crate) fn handle_diff_scroll_key(
         }
         KeyCode::Char('i') => {
             // Enter Normal mode with cursor at top-left of visible area
-            let lines = content_lines(pane, file);
+            let lines = content_lines(pane, shared);
             if !lines.is_empty() {
                 pane.vim.mode = DiffViewMode::Normal;
                 pane.vim.cursor = CursorPos {
@@ -77,7 +75,6 @@ pub(crate) fn handle_diff_scroll_key(
 pub(crate) fn handle_diff_normal_key(
     pane: &mut super::DiffViewPane,
     shared: &GitShared,
-    file: Option<&FileDiff>,
     key: KeyEvent,
 ) -> Vec<PaneEvent> {
     // Handle Ctrl+w prefix for panel switching
@@ -100,7 +97,7 @@ pub(crate) fn handle_diff_normal_key(
                 return vec![];
             }
             'y' => {
-                let lines = content_lines(pane, file);
+                let lines = content_lines(pane, shared);
                 let n = take_count(pane);
                 if let Some(text) = execute_yank_motion(pane, key.code, &lines, n) {
                     return vec![PaneEvent::CopyToClipboard(text)];
@@ -108,7 +105,7 @@ pub(crate) fn handle_diff_normal_key(
                 return vec![];
             }
             'g' => {
-                let lines = content_lines(pane, file);
+                let lines = content_lines(pane, shared);
                 if let KeyCode::Char('g') = key.code {
                     // gg or {count}gg — go to line
                     if let Some(n) = pane.vim.count.take() {
@@ -145,7 +142,7 @@ pub(crate) fn handle_diff_normal_key(
     }
 
     let n = take_count(pane);
-    let lines = content_lines(pane, file);
+    let lines = content_lines(pane, shared);
     let total = lines.len();
     if total == 0 {
         return vec![];
@@ -228,7 +225,7 @@ pub(crate) fn handle_diff_normal_key(
             events.push(PaneEvent::JumpToMatch(false));
         }
         KeyCode::Esc => {
-            if shared.search.query.is_some() {
+            if shared.pane.search.query.is_some() {
                 events.push(PaneEvent::ClearSearch);
             } else {
                 pane.vim.mode = DiffViewMode::Scroll;
@@ -380,8 +377,7 @@ fn extract_range(lines: &[String], start: CursorPos, end: CursorPos) -> String {
 
 pub(crate) fn handle_diff_visual_key(
     pane: &mut super::DiffViewPane,
-    _shared: &GitShared,
-    file: Option<&FileDiff>,
+    shared: &GitShared,
     key: KeyEvent,
 ) -> Vec<PaneEvent> {
     // Handle pending key sequences
@@ -389,11 +385,11 @@ pub(crate) fn handle_diff_visual_key(
         pane.vim.pending_key = None;
         match prefix {
             'i' | 'a' => {
-                let lines = content_lines(pane, file);
+                let lines = content_lines(pane, shared);
                 apply_text_object(pane, prefix, key.code, &lines);
             }
             'g' => {
-                let lines = content_lines(pane, file);
+                let lines = content_lines(pane, shared);
                 if key.code == KeyCode::Char('g') {
                     if let Some(n) = pane.vim.count.take() {
                         pane.vim.cursor.row =
@@ -426,7 +422,7 @@ pub(crate) fn handle_diff_visual_key(
     }
 
     let n = take_count(pane);
-    let lines = content_lines(pane, file);
+    let lines = content_lines(pane, shared);
     let total = lines.len();
     if total == 0 {
         return vec![];
@@ -540,11 +536,9 @@ pub(crate) fn handle_diff_visual_key(
 
 /// Build flat list of content strings for the current side of the diff.
 /// Results are cached and reused until the file or side changes.
-pub(crate) fn content_lines(
-    pane: &mut super::DiffViewPane,
-    file: Option<&FileDiff>,
-) -> Vec<String> {
-    let file = match file {
+pub(crate) fn content_lines(pane: &mut super::DiffViewPane, shared: &GitShared) -> Vec<String> {
+    let idx = pane.current_file_idx;
+    let file = match idx.and_then(|i| shared.diff_state.files.get(i)) {
         Some(f) => f,
         None => return Vec::new(),
     };

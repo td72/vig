@@ -1,9 +1,9 @@
 pub(crate) mod view;
 
-use crate::core::pane::{DetailState, SubPaneScroll};
+use crate::core::pane::{DetailState, Pane, SubPaneScroll};
 use crate::git::domain::graph::{self, GraphRow};
 use crate::git::domain::repository::{CommitFileChange, CommitInfo, Repo};
-use crate::git::state::{FocusedPane, GitShared, PaneEvent};
+use crate::git::state::{GitShared, PaneEvent, PANE_REFLOG};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 
@@ -69,13 +69,13 @@ impl GitLogPane {
     pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
         match key.code {
             KeyCode::Char('h') => {
-                return vec![PaneEvent::SetFocus(FocusedPane::Reflog)];
+                return vec![PaneEvent::SetFocus(PANE_REFLOG)];
             }
             KeyCode::Esc => {
-                if shared.search.query.is_some() {
+                if shared.pane.search.query.is_some() {
                     return vec![PaneEvent::ClearSearch];
                 } else {
-                    return vec![PaneEvent::SetFocus(shared.previous_pane)];
+                    return vec![PaneEvent::SetFocus(shared.pane.previous_pane)];
                 }
             }
             KeyCode::Char('j') | KeyCode::Down => {
@@ -164,6 +164,16 @@ impl GitLogPane {
 
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
         view::render(f, self, shared, area);
+    }
+}
+
+impl Pane<GitShared, PaneEvent> for GitLogPane {
+    fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+        self.handle_key(shared, key)
+    }
+
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
+        self.render(f, ctx, shared, area)
     }
 }
 

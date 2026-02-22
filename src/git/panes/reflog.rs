@@ -1,6 +1,7 @@
 use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::core::pane::Pane;
 use crate::git::domain::repository::{ReflogEntry, Repo};
-use crate::git::state::{FocusedPane, GitShared, PaneEvent};
+use crate::git::state::{GitShared, PaneEvent, PANE_BRANCH_LIST, PANE_REFLOG};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     layout::Rect,
@@ -36,7 +37,7 @@ impl ReflogPane {
     pub fn handle_key(&mut self, _shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
         match key.code {
             KeyCode::Esc => {
-                return vec![PaneEvent::SetFocus(FocusedPane::BranchList)];
+                return vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)];
             }
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.entries.is_empty() && self.selected_idx + 1 < self.entries.len() {
@@ -99,7 +100,7 @@ impl ReflogPane {
 
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
-        let border_color = if shared.focused_pane == FocusedPane::Reflog {
+        let border_color = if shared.pane.focused_pane == PANE_REFLOG {
             Color::Cyan
         } else {
             Color::DarkGray
@@ -121,8 +122,9 @@ impl ReflogPane {
         }
 
         // Build set of matched reflog entry indices
-        let (match_set, current_match_idx) = if shared.search.origin == SearchOrigin::Reflog {
+        let (match_set, current_match_idx) = if shared.pane.search.origin == SearchOrigin::Reflog {
             let set: HashSet<usize> = shared
+                .pane
                 .search
                 .matches
                 .iter()
@@ -131,8 +133,8 @@ impl ReflogPane {
                     _ => None,
                 })
                 .collect();
-            let current = shared.search.current_match_idx.and_then(|ci| {
-                match shared.search.matches.get(ci) {
+            let current = shared.pane.search.current_match_idx.and_then(|ci| {
+                match shared.pane.search.matches.get(ci) {
                     Some(SearchMatch::ReflogEntry(idx)) => Some(*idx),
                     _ => None,
                 }
@@ -219,5 +221,15 @@ impl ReflogPane {
         let mut list_state = ListState::default();
         list_state.select(Some(selected));
         f.render_stateful_widget(list, area, &mut list_state);
+    }
+}
+
+impl Pane<GitShared, PaneEvent> for ReflogPane {
+    fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+        self.handle_key(shared, key)
+    }
+
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
+        self.render(f, ctx, shared, area)
     }
 }

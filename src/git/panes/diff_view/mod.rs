@@ -2,6 +2,7 @@ pub(crate) mod keys;
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
+use crate::core::pane::Pane;
 use crate::core::search::SearchMatch;
 use crate::git::domain::diff::FileDiff;
 use crate::git::state::{
@@ -14,6 +15,7 @@ pub struct DiffViewPane {
     pub scroll: DiffScroll,
     pub vim: VimState,
     pub highlight: HighlightState,
+    pub current_file_idx: Option<usize>,
 }
 
 impl DiffViewPane {
@@ -22,37 +24,31 @@ impl DiffViewPane {
             scroll: DiffScroll::default(),
             vim: VimState::default(),
             highlight: HighlightState::new(),
+            current_file_idx: None,
         }
     }
 
-    pub fn handle_key(
-        &mut self,
-        shared: &GitShared,
-        file: Option<&FileDiff>,
-        key: KeyEvent,
-    ) -> Vec<PaneEvent> {
+    pub fn current_file<'a>(&self, shared: &'a GitShared) -> Option<&'a FileDiff> {
+        self.current_file_idx
+            .and_then(|i| shared.diff_state.files.get(i))
+    }
+
+    pub fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
         match self.vim.mode {
-            DiffViewMode::Scroll => keys::handle_diff_scroll_key(self, shared, file, key),
-            DiffViewMode::Normal => keys::handle_diff_normal_key(self, shared, file, key),
+            DiffViewMode::Scroll => keys::handle_diff_scroll_key(self, shared, key),
+            DiffViewMode::Normal => keys::handle_diff_normal_key(self, shared, key),
             DiffViewMode::Visual | DiffViewMode::VisualLine => {
-                keys::handle_diff_visual_key(self, shared, file, key)
+                keys::handle_diff_visual_key(self, shared, key)
             }
         }
     }
 
-    pub fn render(
-        &mut self,
-        f: &mut Frame,
-        _ctx: &AppContext,
-        shared: &GitShared,
-        file: Option<&FileDiff>,
-        area: Rect,
-    ) {
-        view::render(f, self, shared, file, area);
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GitShared, area: Rect) {
+        view::render(f, self, shared, area);
     }
 
-    pub fn collect_search_matches(&self, file: Option<&FileDiff>, query: &str) -> Vec<SearchMatch> {
-        let file = match file {
+    pub fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+        let file = match self.current_file(shared) {
             Some(f) => f,
             None => return vec![],
         };
@@ -126,5 +122,15 @@ impl DiffViewPane {
         } else if row >= self.scroll.y + height {
             self.scroll.y = row - height + 1;
         }
+    }
+}
+
+impl Pane<GitShared, PaneEvent> for DiffViewPane {
+    fn handle_key(&mut self, shared: &GitShared, key: KeyEvent) -> Vec<PaneEvent> {
+        self.handle_key(shared, key)
+    }
+
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
+        self.render(f, ctx, shared, area)
     }
 }

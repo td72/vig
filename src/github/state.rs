@@ -1,4 +1,5 @@
-use crate::core::app::SearchState;
+use crate::core::pane::PaneShared;
+use crate::core::search::SearchState;
 use crate::github::domain::client;
 use crate::github::domain::types::*;
 use crate::github::panes::detail_view::GhDetailViewPane;
@@ -6,12 +7,9 @@ use crate::github::panes::issue_list::GhIssueListPane;
 use crate::github::panes::pr_list::GhPrListPane;
 use std::sync::mpsc;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GhFocusedPane {
-    IssueList,
-    PrList,
-    Detail,
-}
+pub const GH_PANE_ISSUE_LIST: usize = 0;
+pub const GH_PANE_PR_LIST: usize = 1;
+pub const GH_PANE_DETAIL: usize = 2;
 
 #[derive(Debug, Clone)]
 pub enum GhDetailContent {
@@ -47,15 +45,13 @@ pub enum GhBgMessage {
 // === GhShared: shared state passed to pane handle_key ===
 
 pub struct GhShared {
-    pub focused_pane: GhFocusedPane,
-    pub previous_pane: GhFocusedPane,
-    pub search: SearchState,
+    pub pane: PaneShared,
 }
 
 // === GhPaneEvent: cross-pane side effects ===
 
 pub enum GhPaneEvent {
-    SetFocus(GhFocusedPane),
+    SetFocus(usize),
     LoadDetail,
     OpenIssueBrowser(u64),
     OpenPrBrowser(u64),
@@ -81,9 +77,11 @@ impl GitHubState {
     pub fn new() -> Self {
         Self {
             shared: GhShared {
-                focused_pane: GhFocusedPane::IssueList,
-                previous_pane: GhFocusedPane::IssueList,
-                search: SearchState::new(),
+                pane: PaneShared {
+                    focused_pane: GH_PANE_ISSUE_LIST,
+                    previous_pane: GH_PANE_ISSUE_LIST,
+                    search: SearchState::new(),
+                },
             },
             issue_list: GhIssueListPane::new(),
             pr_list: GhPrListPane::new(),
@@ -96,9 +94,9 @@ impl GitHubState {
         }
     }
 
-    pub fn set_focus(&mut self, id: GhFocusedPane) {
-        self.shared.previous_pane = self.shared.focused_pane;
-        self.shared.focused_pane = id;
+    pub fn set_focus(&mut self, id: usize) {
+        self.shared.pane.previous_pane = self.shared.pane.focused_pane;
+        self.shared.pane.focused_pane = id;
     }
 
     /// Initialize on first switch to GitHub View.
@@ -190,9 +188,9 @@ impl GitHubState {
         }
 
         // Auto-load detail when a fresh list arrives for the active tab
-        let on_pr = self.shared.focused_pane == GhFocusedPane::PrList
-            || (self.shared.focused_pane == GhFocusedPane::Detail
-                && self.shared.previous_pane == GhFocusedPane::PrList);
+        let on_pr = self.shared.pane.focused_pane == GH_PANE_PR_LIST
+            || (self.shared.pane.focused_pane == GH_PANE_DETAIL
+                && self.shared.pane.previous_pane == GH_PANE_PR_LIST);
         if (on_pr && pr_list_arrived) || (!on_pr && issue_list_arrived) {
             self.load_detail();
         }
@@ -204,23 +202,23 @@ impl GitHubState {
             Some(tx) => tx,
             None => return,
         };
-        let origin = if self.shared.focused_pane == GhFocusedPane::Detail {
-            self.shared.previous_pane
+        let origin = if self.shared.pane.focused_pane == GH_PANE_DETAIL {
+            self.shared.pane.previous_pane
         } else {
-            self.shared.focused_pane
+            self.shared.pane.focused_pane
         };
         match origin {
-            GhFocusedPane::IssueList => {
+            GH_PANE_ISSUE_LIST => {
                 if let Some(n) = self.issue_list.selected_number() {
                     self.detail_view.load_issue(n, tx);
                 }
             }
-            GhFocusedPane::PrList => {
+            GH_PANE_PR_LIST => {
                 if let Some(n) = self.pr_list.selected_number() {
                     self.detail_view.load_pr(n, tx);
                 }
             }
-            GhFocusedPane::Detail => {}
+            _ => {}
         }
     }
 
@@ -268,9 +266,9 @@ impl crate::core::app::PageState for GitHubState {
         self.drain_bg_messages();
     }
     fn search(&self) -> &SearchState {
-        &self.shared.search
+        &self.shared.pane.search
     }
     fn search_mut(&mut self) -> &mut SearchState {
-        &mut self.shared.search
+        &mut self.shared.pane.search
     }
 }

@@ -4,7 +4,10 @@ use crate::core::pane::FocusState;
 use crate::core::ui::status_bar;
 use crate::git::domain::search;
 use crate::git::layout;
-use crate::git::state::{BranchActionMenuState, DiffViewMode, FocusedPane, GitState, PaneEvent};
+use crate::git::state::{
+    BranchActionMenuState, DiffViewMode, GitState, PaneEvent, PANE_BRANCH_LIST, PANE_DIFF_VIEW,
+    PANE_FILE_TREE, PANE_GIT_LOG, PANE_REFLOG,
+};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
@@ -20,24 +23,20 @@ pub fn new_page(cwd: &Path) -> Result<(Page, PathBuf)> {
 
 // === Tab navigation ===
 
-const TAB_PANES: [FocusedPane; 3] = [
-    FocusedPane::FileTree,
-    FocusedPane::BranchList,
-    FocusedPane::Reflog,
-];
+const TAB_PANES: [usize; 3] = [PANE_FILE_TREE, PANE_BRANCH_LIST, PANE_REFLOG];
 
-fn tab_index(pane: FocusedPane) -> Option<usize> {
+fn tab_index(pane: usize) -> Option<usize> {
     TAB_PANES.iter().position(|&p| p == pane)
 }
 
-fn next_tab_id(focused: FocusedPane) -> FocusedPane {
+fn next_tab_id(focused: usize) -> usize {
     match tab_index(focused) {
         Some(idx) => TAB_PANES[(idx + 1) % TAB_PANES.len()],
         None => TAB_PANES[0],
     }
 }
 
-fn prev_tab_id(focused: FocusedPane) -> FocusedPane {
+fn prev_tab_id(focused: usize) -> usize {
     match tab_index(focused) {
         Some(idx) => TAB_PANES[(idx + TAB_PANES.len() - 1) % TAB_PANES.len()],
         None => TAB_PANES[0],
@@ -47,16 +46,13 @@ fn prev_tab_id(focused: FocusedPane) -> FocusedPane {
 // === Dispatch ===
 
 /// Returns true if the focused pane should show the commit log detail.
-fn is_commit_log_detail(focused: FocusedPane) -> bool {
-    matches!(
-        focused,
-        FocusedPane::BranchList | FocusedPane::Reflog | FocusedPane::GitLog
-    )
+fn is_commit_log_detail(focused: usize) -> bool {
+    matches!(focused, PANE_BRANCH_LIST | PANE_REFLOG | PANE_GIT_LOG)
 }
 
 /// Dispatch a key event to the currently focused Git pane.
 fn dispatch_git_key(git: &mut GitState, key: KeyEvent) -> Vec<PaneEvent> {
-    let focused = git.shared.focused_pane;
+    let focused = git.shared.pane.focused_pane;
 
     // Tab pane navigation (h/l/i/Esc) for FileTree, BranchList, Reflog
     if let Some(tab_idx) = tab_index(focused) {
@@ -69,13 +65,13 @@ fn dispatch_git_key(git: &mut GitState, key: KeyEvent) -> Vec<PaneEvent> {
             }
             KeyCode::Char('i') => {
                 let target = if is_commit_log_detail(focused) {
-                    FocusedPane::GitLog
+                    PANE_GIT_LOG
                 } else {
-                    FocusedPane::DiffView
+                    PANE_DIFF_VIEW
                 };
                 return vec![PaneEvent::SetFocus(target)];
             }
-            KeyCode::Esc if git.shared.search.query.is_some() => {
+            KeyCode::Esc if git.shared.pane.search.query.is_some() => {
                 return vec![PaneEvent::ClearSearch];
             }
             _ => {}
@@ -84,14 +80,12 @@ fn dispatch_git_key(git: &mut GitState, key: KeyEvent) -> Vec<PaneEvent> {
 
     // Delegate to pane
     match focused {
-        FocusedPane::FileTree => git.file_tree.handle_key(&git.shared, key),
-        FocusedPane::BranchList => git.branch_list.handle_key(&git.shared, key),
-        FocusedPane::Reflog => git.reflog.handle_key(&git.shared, key),
-        FocusedPane::GitLog => git.git_log.handle_key(&git.shared, key),
-        FocusedPane::DiffView => {
-            let file = git.file_tree.selected_file(&git.shared).cloned();
-            git.diff_view.handle_key(&git.shared, file.as_ref(), key)
-        }
+        PANE_FILE_TREE => git.file_tree.handle_key(&git.shared, key),
+        PANE_BRANCH_LIST => git.branch_list.handle_key(&git.shared, key),
+        PANE_REFLOG => git.reflog.handle_key(&git.shared, key),
+        PANE_GIT_LOG => git.git_log.handle_key(&git.shared, key),
+        PANE_DIFF_VIEW => git.diff_view.handle_key(&git.shared, key),
+        _ => vec![],
     }
 }
 
@@ -107,6 +101,9 @@ fn process_events(
         match event {
             PaneEvent::SetFocus(pane) => {
                 git.set_focus(pane);
+            }
+            PaneEvent::SelectFile(idx) => {
+                git.diff_view.current_file_idx = idx;
             }
             PaneEvent::ResetDiffScroll => {
                 git.diff_view.scroll.y = 0;
@@ -162,10 +159,10 @@ fn process_events(
                 search::re_search_on_file_change(git);
             }
             PaneEvent::StartSearch(origin) => {
-                git.shared.search.start(origin);
+                git.shared.pane.search.start(origin);
             }
             PaneEvent::ClearSearch => {
-                git.shared.search.clear();
+                git.shared.pane.search.clear();
             }
             PaneEvent::JumpToMatch(forward) => {
                 search::jump_to_git_match(ctx, git, forward);
@@ -216,7 +213,7 @@ pub fn handle_git_view_key(
     key: KeyEvent,
 ) -> Result<PageAction> {
     // In Normal/Visual modes, keys are handled by the mode handler exclusively
-    if git.shared.focused_pane == FocusedPane::DiffView
+    if git.shared.pane.focused_pane == PANE_DIFF_VIEW
         && git.diff_view.vim.mode != DiffViewMode::Scroll
     {
         let events = dispatch_git_key(git, key);
@@ -232,8 +229,9 @@ pub fn handle_git_view_key(
         }
         KeyCode::Char('/') => {
             git.shared
+                .pane
                 .search
-                .start(search_origin_for(git.shared.focused_pane));
+                .start(search_origin_for(git.shared.pane.focused_pane));
         }
         KeyCode::Char('n') => {
             search::jump_to_git_match(ctx, git, true);
@@ -259,10 +257,10 @@ pub fn handle_git_view_key(
             }
         }
         KeyCode::Tab => {
-            git.set_focus(next_tab_id(git.shared.focused_pane));
+            git.set_focus(next_tab_id(git.shared.pane.focused_pane));
         }
         KeyCode::BackTab => {
-            git.set_focus(prev_tab_id(git.shared.focused_pane));
+            git.set_focus(prev_tab_id(git.shared.pane.focused_pane));
         }
         _ => {
             let events = dispatch_git_key(git, key);
@@ -272,13 +270,14 @@ pub fn handle_git_view_key(
     Ok(PageAction::None)
 }
 
-fn search_origin_for(pane: FocusedPane) -> SearchOrigin {
+fn search_origin_for(pane: usize) -> SearchOrigin {
     match pane {
-        FocusedPane::DiffView => SearchOrigin::DiffView,
-        FocusedPane::FileTree => SearchOrigin::FileTree,
-        FocusedPane::BranchList => SearchOrigin::BranchList,
-        FocusedPane::GitLog => SearchOrigin::CommitLog,
-        FocusedPane::Reflog => SearchOrigin::Reflog,
+        PANE_DIFF_VIEW => SearchOrigin::DiffView,
+        PANE_FILE_TREE => SearchOrigin::FileTree,
+        PANE_BRANCH_LIST => SearchOrigin::BranchList,
+        PANE_GIT_LOG => SearchOrigin::CommitLog,
+        PANE_REFLOG => SearchOrigin::Reflog,
+        _ => SearchOrigin::DiffView,
     }
 }
 
@@ -363,8 +362,8 @@ impl PageHandler<GitState> for GitPageHandler {
         }
 
         // Search input mode intercepts all keys
-        if git.shared.search.active {
-            if git.shared.search.handle_input_key(key) {
+        if git.shared.pane.search.active {
+            if git.shared.pane.search.handle_input_key(key) {
                 search::execute_git_search(git);
                 search::jump_to_git_match(ctx, git, true);
             }
@@ -381,12 +380,10 @@ impl PageHandler<GitState> for GitPageHandler {
         git.branch_list.render(f, ctx, &git.shared, ly.branch_list);
         git.reflog.render(f, ctx, &git.shared, ly.reflog);
 
-        if is_commit_log_detail(git.shared.focused_pane) {
+        if is_commit_log_detail(git.shared.pane.focused_pane) {
             git.git_log.render(f, ctx, &git.shared, ly.main_pane);
         } else {
-            let file = git.file_tree.selected_file(&git.shared).cloned();
-            git.diff_view
-                .render(f, ctx, &git.shared, file.as_ref(), ly.main_pane);
+            git.diff_view.render(f, ctx, &git.shared, ly.main_pane);
         }
 
         status_bar::render_status_bar(f, ctx, git, ly.status_bar);

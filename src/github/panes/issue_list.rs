@@ -1,6 +1,10 @@
+use crate::core::app::AppContext;
+use crate::core::pane::Pane;
 use crate::github::domain::types::GhIssueListItem;
 use crate::github::domain::{client, disk_cache};
-use crate::github::state::{GhBgMessage, GhFocusedPane, GhPaneEvent, GhShared};
+use crate::github::state::{
+    GhBgMessage, GhPaneEvent, GhShared, GH_PANE_DETAIL, GH_PANE_ISSUE_LIST,
+};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -83,7 +87,7 @@ impl GhIssueListPane {
             KeyCode::Char('i') | KeyCode::Enter => {
                 if !self.issues.is_empty() {
                     return vec![
-                        GhPaneEvent::SetFocus(GhFocusedPane::Detail),
+                        GhPaneEvent::SetFocus(GH_PANE_DETAIL),
                         GhPaneEvent::LoadDetail,
                     ];
                 }
@@ -98,8 +102,8 @@ impl GhIssueListPane {
         vec![]
     }
 
-    pub fn render(&self, f: &mut Frame, shared: &GhShared, area: Rect) {
-        let is_focused = shared.focused_pane == GhFocusedPane::IssueList;
+    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &GhShared, area: Rect) {
+        let is_focused = shared.pane.focused_pane == GH_PANE_ISSUE_LIST;
         let border_color = if is_focused {
             Color::Cyan
         } else {
@@ -166,11 +170,21 @@ impl GhIssueListPane {
 
         let mut list_state = ListState::default();
         if is_focused
-            || (shared.focused_pane == GhFocusedPane::Detail
-                && shared.previous_pane == GhFocusedPane::IssueList)
+            || (shared.pane.focused_pane == GH_PANE_DETAIL
+                && shared.pane.previous_pane == GH_PANE_ISSUE_LIST)
         {
             list_state.select(Some(self.selected_idx));
         }
         f.render_stateful_widget(list, area, &mut list_state);
+    }
+}
+
+impl Pane<GhShared, GhPaneEvent> for GhIssueListPane {
+    fn handle_key(&mut self, shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
+        self.handle_key(shared, key)
+    }
+
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GhShared, area: Rect) {
+        self.render(f, ctx, shared, area)
     }
 }

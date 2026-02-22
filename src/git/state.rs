@@ -1,4 +1,5 @@
-use crate::core::app::SearchState;
+use crate::core::pane::PaneShared;
+use crate::core::search::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::git::domain::diff::{DiffState, FileDiff};
 use crate::git::domain::repository::Repo;
@@ -8,19 +9,17 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::mpsc;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum FocusedPane {
-    FileTree,
-    BranchList,
-    GitLog,
-    Reflog,
-    DiffView,
-}
+pub const PANE_FILE_TREE: usize = 0;
+pub const PANE_BRANCH_LIST: usize = 1;
+pub const PANE_GIT_LOG: usize = 2;
+pub const PANE_REFLOG: usize = 3;
+pub const PANE_DIFF_VIEW: usize = 4;
 
 // === PaneEvent: cross-pane side effects ===
 
 pub enum PaneEvent {
-    SetFocus(FocusedPane),
+    SetFocus(usize),
+    SelectFile(Option<usize>),
     ResetDiffScroll,
     RefreshDiff,
     SetDiffBase(Option<String>),
@@ -41,12 +40,10 @@ pub enum PaneEvent {
 // === GitShared: immutable shared state for pane handle_key ===
 
 pub struct GitShared {
+    pub pane: PaneShared,
     pub repo: Repo,
     pub diff_state: DiffState,
     pub diff_base_ref: Option<String>,
-    pub focused_pane: FocusedPane,
-    pub previous_pane: FocusedPane,
-    pub search: SearchState,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -294,12 +291,14 @@ impl GitState {
         let diff_state = repo.diff_workdir(None)?;
         let mut state = Self {
             shared: GitShared {
+                pane: PaneShared {
+                    focused_pane: PANE_FILE_TREE,
+                    previous_pane: PANE_FILE_TREE,
+                    search: SearchState::new(),
+                },
                 repo,
                 diff_state,
                 diff_base_ref: None,
-                focused_pane: FocusedPane::FileTree,
-                previous_pane: FocusedPane::FileTree,
-                search: SearchState::new(),
             },
             file_tree: FileTreePane::new(),
             diff_view: DiffViewPane::new(),
@@ -307,6 +306,7 @@ impl GitState {
             git_log: GitLogPane::new(),
             reflog: ReflogPane::new(),
         };
+        state.diff_view.current_file_idx = state.file_tree.selected_file_idx(&state.shared);
         state.load_branches();
         state.load_reflog();
         state
@@ -347,10 +347,11 @@ impl GitState {
         if self.file_tree.selected_idx >= entries.len() && !entries.is_empty() {
             self.file_tree.selected_idx = entries.len() - 1;
         }
+        self.diff_view.current_file_idx = self.file_tree.selected_file_idx(&self.shared);
         self.diff_view.scroll.y = 0;
         self.diff_view.scroll.x = 0;
         self.diff_view.highlight.reset();
-        self.shared.search.reset_matches();
+        self.shared.pane.search.reset_matches();
         self.diff_view
             .highlight
             .spawn_bg_highlight(&self.shared.diff_state.files);
@@ -388,13 +389,13 @@ impl GitState {
     }
 }
 
-impl crate::core::pane::FocusState<FocusedPane> for GitState {
-    fn focused_pane(&self) -> FocusedPane {
-        self.shared.focused_pane
+impl crate::core::pane::FocusState<usize> for GitState {
+    fn focused_pane(&self) -> usize {
+        self.shared.pane.focused_pane
     }
-    fn set_focus(&mut self, id: FocusedPane) {
-        self.shared.previous_pane = self.shared.focused_pane;
-        self.shared.focused_pane = id;
+    fn set_focus(&mut self, id: usize) {
+        self.shared.pane.previous_pane = self.shared.pane.focused_pane;
+        self.shared.pane.focused_pane = id;
     }
 }
 
@@ -403,9 +404,9 @@ impl crate::core::app::PageState for GitState {
         self.diff_view.highlight.drain_bg_highlights();
     }
     fn search(&self) -> &crate::core::app::SearchState {
-        &self.shared.search
+        &self.shared.pane.search
     }
     fn search_mut(&mut self) -> &mut crate::core::app::SearchState {
-        &mut self.shared.search
+        &mut self.shared.pane.search
     }
 }
