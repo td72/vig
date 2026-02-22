@@ -1,4 +1,5 @@
-use crate::github::state::{GhFocusedPane, GhIssueListPane, GhPaneEvent, GhShared};
+use crate::github::domain::types::GhIssueListItem;
+use crate::github::state::{GhFocusedPane, GhPaneEvent, GhShared};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -8,7 +9,21 @@ use ratatui::{
     Frame,
 };
 
+pub struct GhIssueListPane {
+    pub issues: Vec<GhIssueListItem>,
+    pub selected_idx: usize,
+    pub loading: bool,
+}
+
 impl GhIssueListPane {
+    pub fn new() -> Self {
+        Self {
+            issues: Vec::new(),
+            selected_idx: 0,
+            loading: false,
+        }
+    }
+
     pub fn handle_key(&mut self, _shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {

@@ -1,3 +1,3 @@
 pub(crate) mod detail_view;
-mod issue_list;
-mod pr_list;
+pub(crate) mod issue_list;
+pub(crate) mod pr_list;

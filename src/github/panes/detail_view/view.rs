@@ -1,7 +1,6 @@
+use super::GhDetailViewPane;
 use crate::github::domain::types::*;
-use crate::github::state::{
-    GhDetailContent, GhDetailPane, GhDetailViewPane, GhFocusedPane, GhShared,
-};
+use crate::github::state::{GhDetailContent, GhDetailPane, GhFocusedPane, GhShared};
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},

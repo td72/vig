@@ -1,12 +1,127 @@
 pub(crate) mod view;
 
+use crate::core::pane::SubPaneScroll;
+use crate::github::domain::types::*;
+use crate::github::domain::{client, disk_cache};
 use crate::github::state::{
-    GhDetailContent, GhDetailPane, GhDetailViewPane, GhPaneEvent, GhShared,
+    GhBgMessage, GhDetailContent, GhDetailKind, GhDetailPane, GhPaneEvent, GhShared,
 };
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
+use std::collections::HashMap;
+use std::sync::mpsc;
+
+pub struct GhDetailViewPane {
+    pub content: GhDetailContent,
+    pub active_pane: GhDetailPane,
+    pub body: SubPaneScroll,
+    pub status: SubPaneScroll,
+    pub reviews: SubPaneScroll,
+    pub comments: SubPaneScroll,
+    pub view_height: u16,
+    pub(crate) issue_cache: HashMap<u64, GhIssueDetail>,
+    pub(crate) pr_cache: HashMap<u64, GhPrDetail>,
+}
 
 impl GhDetailViewPane {
+    pub fn new() -> Self {
+        Self {
+            content: GhDetailContent::None,
+            active_pane: GhDetailPane::Body,
+            body: SubPaneScroll::default(),
+            status: SubPaneScroll::default(),
+            reviews: SubPaneScroll::default(),
+            comments: SubPaneScroll::default(),
+            view_height: 0,
+            issue_cache: HashMap::new(),
+            pr_cache: HashMap::new(),
+        }
+    }
+
+    pub fn is_pr(&self) -> bool {
+        matches!(&self.content, GhDetailContent::Pr(_))
+    }
+
+    pub fn active_scroll_mut(&mut self) -> &mut SubPaneScroll {
+        match self.active_pane {
+            GhDetailPane::Body => &mut self.body,
+            GhDetailPane::Status => &mut self.status,
+            GhDetailPane::Reviews => &mut self.reviews,
+            GhDetailPane::Comments => &mut self.comments,
+        }
+    }
+
+    pub fn reset_sub_panes(&mut self) {
+        self.active_pane = GhDetailPane::Body;
+        self.body.reset();
+        self.status.reset();
+        self.reviews.reset();
+        self.comments.reset();
+    }
+
+    /// Load issue detail — serves from cache if available, otherwise fetches in background.
+    pub fn load_issue(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
+        if let Some(cached) = self.issue_cache.get(&number) {
+            self.content = GhDetailContent::Issue(Box::new(cached.clone()));
+            self.reset_sub_panes();
+            return;
+        }
+        if let Some(cached) = disk_cache::load_issue_detail(number) {
+            self.issue_cache.insert(number, cached.clone());
+            self.content = GhDetailContent::Issue(Box::new(cached));
+            self.reset_sub_panes();
+            return;
+        }
+        self.content = GhDetailContent::Loading {
+            kind: GhDetailKind::Issue,
+            number,
+        };
+        self.reset_sub_panes();
+        let tx = tx.clone();
+        std::thread::spawn(move || {
+            let result = client::get_issue(number);
+            let _ = tx.send(GhBgMessage::IssueDetail(result));
+        });
+    }
+
+    /// Load PR detail — serves from cache if available, otherwise fetches in background.
+    pub fn load_pr(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
+        if let Some(cached) = self.pr_cache.get(&number) {
+            self.content = GhDetailContent::Pr(Box::new(cached.clone()));
+            self.reset_sub_panes();
+            return;
+        }
+        if let Some(cached) = disk_cache::load_pr_detail(number) {
+            self.pr_cache.insert(number, cached.clone());
+            self.content = GhDetailContent::Pr(Box::new(cached));
+            self.reset_sub_panes();
+            return;
+        }
+        self.content = GhDetailContent::Loading {
+            kind: GhDetailKind::Pr,
+            number,
+        };
+        self.reset_sub_panes();
+        let tx = tx.clone();
+        std::thread::spawn(move || {
+            let result = client::get_pr(number);
+            let _ = tx.send(GhBgMessage::PrDetail(result));
+        });
+    }
+
+    pub fn clear_caches(&mut self) {
+        self.issue_cache.clear();
+        self.pr_cache.clear();
+    }
+
+    pub fn invalidate_issue(&mut self, number: u64) {
+        self.issue_cache.remove(&number);
+    }
+
+    pub fn invalidate_pr(&mut self, number: u64) {
+        self.pr_cache.remove(&number);
+    }
+
     pub fn handle_key(&mut self, shared: &GhShared, key: KeyEvent) -> Vec<GhPaneEvent> {
         // Determine item count for selection-based panes
         let pane = self.active_pane;
