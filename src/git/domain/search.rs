@@ -12,9 +12,9 @@ pub(crate) fn execute_git_search(git: &mut GitState) {
     let matches = match git.shared.pane.search.origin {
         SearchOrigin::DiffView => git.diff_view.collect_search_matches(&git.shared, &query),
         SearchOrigin::FileTree => git.file_tree.collect_search_matches(&git.shared, &query),
-        SearchOrigin::CommitLog => git.git_log.collect_search_matches(&query),
-        SearchOrigin::BranchList => git.branch_list.collect_search_matches(&query),
-        SearchOrigin::Reflog => git.reflog.collect_search_matches(&query),
+        SearchOrigin::CommitLog => git.git_log.collect_search_matches(&git.shared, &query),
+        SearchOrigin::BranchList => git.branch_list.collect_search_matches(&git.shared, &query),
+        SearchOrigin::Reflog => git.reflog.collect_search_matches(&git.shared, &query),
     };
     git.shared.pane.search.matches = matches;
 }
@@ -68,11 +68,14 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
         }
         crate::core::search::SearchMatch::CommitEntry(idx) => {
             git.git_log.selected_idx = idx;
-            git.load_commit_detail();
+            git.git_log.load_detail(&git.shared.repo);
         }
         crate::core::search::SearchMatch::BranchEntry(idx) => {
             git.branch_list.selected_idx = idx;
-            git.update_branch_log();
+            if let Some(branch) = git.branch_list.branches.get(idx) {
+                let name = branch.name.clone();
+                git.git_log.load_for_ref(&git.shared.repo, &name);
+            }
         }
         crate::core::search::SearchMatch::ReflogEntry(idx) => {
             git.reflog.selected_idx = idx;

@@ -55,17 +55,27 @@ impl BranchListPane {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.branches.is_empty() && self.selected_idx + 1 < self.branches.len() {
                     self.selected_idx += 1;
-                    return vec![PaneEvent::UpdateBranchLog];
+                    if let Some(branch) = self.branches.get(self.selected_idx) {
+                        return vec![PaneEvent::UpdateBranchLog(branch.name.clone())];
+                    }
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    return vec![PaneEvent::UpdateBranchLog];
+                    if let Some(branch) = self.branches.get(self.selected_idx) {
+                        return vec![PaneEvent::UpdateBranchLog(branch.name.clone())];
+                    }
                 }
             }
             KeyCode::Enter => {
-                return vec![PaneEvent::OpenBranchActionMenu];
+                if let Some(branch) = self.branches.get(self.selected_idx) {
+                    self.action_menu = Some(BranchActionMenuState {
+                        branch_name: branch.name.clone(),
+                        is_head: branch.is_head,
+                        selected_idx: 0,
+                    });
+                }
             }
             _ => {}
         }
@@ -143,7 +153,7 @@ impl BranchListPane {
         }
     }
 
-    pub fn collect_search_matches(&self, query: &str) -> Vec<SearchMatch> {
+    pub fn collect_search_matches(&self, _shared: &GitShared, query: &str) -> Vec<SearchMatch> {
         let query_lower = query.to_lowercase();
         self.branches
             .iter()

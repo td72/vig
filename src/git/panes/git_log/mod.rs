@@ -81,34 +81,34 @@ impl GitLogPane {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.commits.is_empty() && self.selected_idx + 1 < self.commits.len() {
                     self.selected_idx += 1;
-                    return vec![PaneEvent::LoadCommitDetail];
+                    self.load_detail(&shared.repo);
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    return vec![PaneEvent::LoadCommitDetail];
+                    self.load_detail(&shared.repo);
                 }
             }
             KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.view_height / 2).max(1) as usize;
                 let new_idx = self.selected_idx.saturating_add(half);
                 self.selected_idx = new_idx.min(self.commits.len().saturating_sub(1));
-                return vec![PaneEvent::LoadCommitDetail];
+                self.load_detail(&shared.repo);
             }
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 let half = (self.view_height / 2).max(1) as usize;
                 self.selected_idx = self.selected_idx.saturating_sub(half);
-                return vec![PaneEvent::LoadCommitDetail];
+                self.load_detail(&shared.repo);
             }
             KeyCode::Char('g') => {
                 self.selected_idx = 0;
-                return vec![PaneEvent::LoadCommitDetail];
+                self.load_detail(&shared.repo);
             }
             KeyCode::Char('G') => {
                 if !self.commits.is_empty() {
                     self.selected_idx = self.commits.len() - 1;
-                    return vec![PaneEvent::LoadCommitDetail];
+                    self.load_detail(&shared.repo);
                 }
             }
             KeyCode::Char('y') => {
@@ -143,7 +143,7 @@ impl GitLogPane {
         vec![]
     }
 
-    pub fn collect_search_matches(&self, query: &str) -> Vec<SearchMatch> {
+    pub fn collect_search_matches(&self, _shared: &GitShared, query: &str) -> Vec<SearchMatch> {
         let query_lower = query.to_lowercase();
         self.commits
             .iter()

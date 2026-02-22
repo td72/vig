@@ -79,7 +79,7 @@ impl ReflogPane {
         vec![]
     }
 
-    pub fn collect_search_matches(&self, query: &str) -> Vec<SearchMatch> {
+    pub fn collect_search_matches(&self, _shared: &GitShared, query: &str) -> Vec<SearchMatch> {
         let query_lower = query.to_lowercase();
         self.entries
             .iter()

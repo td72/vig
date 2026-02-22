@@ -5,8 +5,8 @@ use crate::core::ui::status_bar;
 use crate::git::domain::search;
 use crate::git::layout;
 use crate::git::state::{
-    BranchActionMenuState, DiffViewMode, GitState, PaneEvent, PANE_BRANCH_LIST, PANE_DIFF_VIEW,
-    PANE_FILE_TREE, PANE_GIT_LOG, PANE_REFLOG,
+    DiffViewMode, GitState, PaneEvent, PANE_BRANCH_LIST, PANE_DIFF_VIEW, PANE_FILE_TREE,
+    PANE_GIT_LOG, PANE_REFLOG,
 };
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
@@ -103,26 +103,16 @@ fn process_events(
                 git.set_focus(pane);
             }
             PaneEvent::SelectFile(idx) => {
-                git.diff_view.current_file_idx = idx;
+                git.diff_view.set_file(idx);
             }
             PaneEvent::ResetDiffScroll => {
-                git.diff_view.scroll.y = 0;
-                git.diff_view.scroll.x = 0;
+                git.diff_view.reset_scroll();
             }
             PaneEvent::RefreshDiff => {
                 refresh_diff(ctx, git);
             }
             PaneEvent::SetDiffBase(base) => {
                 git.shared.diff_base_ref = base;
-            }
-            PaneEvent::OpenBranchActionMenu => {
-                if let Some(branch) = git.branch_list.branches.get(git.branch_list.selected_idx) {
-                    git.branch_list.action_menu = Some(BranchActionMenuState {
-                        branch_name: branch.name.clone(),
-                        is_head: branch.is_head,
-                        selected_idx: 0,
-                    });
-                }
             }
             PaneEvent::SwitchBranch(name) => match git.shared.repo.switch_branch(&name) {
                 Ok(()) => {
@@ -149,11 +139,8 @@ fn process_events(
                     });
                 }
             },
-            PaneEvent::UpdateBranchLog => {
-                git.update_branch_log();
-            }
-            PaneEvent::LoadCommitDetail => {
-                git.load_commit_detail();
+            PaneEvent::UpdateBranchLog(ref ref_name) => {
+                git.git_log.load_for_ref(&git.shared.repo, ref_name);
             }
             PaneEvent::ReSearchOnFileChange => {
                 search::re_search_on_file_change(git);

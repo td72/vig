@@ -23,11 +23,9 @@ pub enum PaneEvent {
     ResetDiffScroll,
     RefreshDiff,
     SetDiffBase(Option<String>),
-    OpenBranchActionMenu,
     SwitchBranch(String),
     DeleteBranch(String),
-    UpdateBranchLog,
-    LoadCommitDetail,
+    UpdateBranchLog(String),
     ReSearchOnFileChange,
     StartSearch(crate::core::app::SearchOrigin),
     ClearSearch,
@@ -378,10 +376,6 @@ impl GitState {
         } else {
             self.git_log.clear_log();
         }
-    }
-
-    pub fn load_commit_detail(&mut self) {
-        self.git_log.load_detail(&self.shared.repo);
     }
 
     pub fn load_reflog(&mut self) {

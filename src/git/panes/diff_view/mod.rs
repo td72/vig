@@ -28,6 +28,15 @@ impl DiffViewPane {
         }
     }
 
+    pub fn set_file(&mut self, idx: Option<usize>) {
+        self.current_file_idx = idx;
+    }
+
+    pub fn reset_scroll(&mut self) {
+        self.scroll.y = 0;
+        self.scroll.x = 0;
+    }
+
     pub fn current_file<'a>(&self, shared: &'a GitShared) -> Option<&'a FileDiff> {
         self.current_file_idx
             .and_then(|i| shared.diff_state.files.get(i))
