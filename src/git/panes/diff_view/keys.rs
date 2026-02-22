@@ -1,5 +1,4 @@
-use crate::core::app::SearchOrigin;
-use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitShared, PaneEvent};
+use crate::git::state::{CursorPos, DiffSide, DiffViewMode, GitShared, PaneEvent, PANE_DIFF_VIEW};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub(crate) fn handle_diff_scroll_key(
@@ -47,7 +46,7 @@ pub(crate) fn handle_diff_scroll_key(
         }
         KeyCode::Char('/') => {
             pane.vim.pending_key = None;
-            return vec![PaneEvent::StartSearch(SearchOrigin::DiffView)];
+            return vec![PaneEvent::StartSearch(PANE_DIFF_VIEW)];
         }
         KeyCode::Char('n') => {
             return vec![PaneEvent::JumpToMatch(true)];
@@ -216,7 +215,7 @@ pub(crate) fn handle_diff_normal_key(
         KeyCode::Char('/') => {
             pane.vim.pending_key = None;
             pane.vim.count = None;
-            events.push(PaneEvent::StartSearch(SearchOrigin::DiffView));
+            events.push(PaneEvent::StartSearch(PANE_DIFF_VIEW));
         }
         KeyCode::Char('n') => {
             events.push(PaneEvent::JumpToMatch(true));
@@ -514,7 +513,7 @@ pub(crate) fn handle_diff_visual_key(
         KeyCode::Char('/') => {
             pane.vim.pending_key = None;
             pane.vim.count = None;
-            events.push(PaneEvent::StartSearch(SearchOrigin::DiffView));
+            events.push(PaneEvent::StartSearch(PANE_DIFF_VIEW));
         }
         KeyCode::Char('n') => {
             events.push(PaneEvent::JumpToMatch(true));

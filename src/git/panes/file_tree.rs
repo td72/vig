@@ -1,5 +1,6 @@
-use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::core::app::AppContext;
 use crate::core::pane::Pane;
+use crate::core::search::SearchMatch;
 use crate::git::domain::diff::{FileDiff, FileStatus};
 use crate::git::state::{GitShared, PaneEvent, TreeEntry, PANE_DIFF_VIEW, PANE_FILE_TREE};
 use crossterm::event::{KeyCode, KeyEvent};
@@ -56,21 +57,13 @@ impl FileTreePane {
             KeyCode::Char('j') | KeyCode::Down => {
                 if self.selected_idx + 1 < entries.len() {
                     self.selected_idx += 1;
-                    return vec![
-                        PaneEvent::SelectFile(self.selected_file_idx(shared)),
-                        PaneEvent::ResetDiffScroll,
-                        PaneEvent::ReSearchOnFileChange,
-                    ];
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    return vec![
-                        PaneEvent::SelectFile(self.selected_file_idx(shared)),
-                        PaneEvent::ResetDiffScroll,
-                        PaneEvent::ReSearchOnFileChange,
-                    ];
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char(' ') => {
@@ -93,10 +86,7 @@ impl FileTreePane {
                     }
                 }
                 Some(TreeEntry::File { .. }) => {
-                    return vec![
-                        PaneEvent::SetFocus(PANE_DIFF_VIEW),
-                        PaneEvent::ResetDiffScroll,
-                    ];
+                    return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
                 }
                 None => {}
             },
@@ -119,7 +109,7 @@ impl FileTreePane {
                     }
                 };
                 if name.to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::TreeEntry(idx))
+                    Some(SearchMatch::ListEntry(idx))
                 } else {
                     None
                 }
@@ -152,21 +142,20 @@ impl FileTreePane {
         }
 
         // Build set of matched tree entry indices and current match index
-        let (match_set, current_match_idx) = if shared.pane.search.origin == SearchOrigin::FileTree
-        {
+        let (match_set, current_match_idx) = if shared.pane.search.origin == PANE_FILE_TREE {
             let set: HashSet<usize> = shared
                 .pane
                 .search
                 .matches
                 .iter()
                 .filter_map(|m| match m {
-                    SearchMatch::TreeEntry(idx) => Some(*idx),
+                    SearchMatch::ListEntry(idx) => Some(*idx),
                     _ => None,
                 })
                 .collect();
             let current = shared.pane.search.current_match_idx.and_then(|ci| {
                 match shared.pane.search.matches.get(ci) {
-                    Some(SearchMatch::TreeEntry(idx)) => Some(*idx),
+                    Some(SearchMatch::ListEntry(idx)) => Some(*idx),
                     _ => None,
                 }
             });
@@ -274,5 +263,23 @@ impl Pane<GitShared, PaneEvent> for FileTreePane {
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
         self.render(f, ctx, shared, area)
+    }
+
+    fn selected_idx(&self) -> usize {
+        self.selected_idx
+    }
+
+    fn set_selected_idx(&mut self, idx: usize) {
+        self.selected_idx = idx;
+    }
+
+    fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+        self.collect_search_matches(shared, query)
+    }
+
+    fn jump_to_match(&mut self, _shared: &GitShared, search_match: &SearchMatch) {
+        if let SearchMatch::ListEntry(idx) = search_match {
+            self.selected_idx = *idx;
+        }
     }
 }

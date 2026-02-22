@@ -7,7 +7,8 @@ use crate::git::state::{GitShared, PaneEvent, PANE_REFLOG};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 
-use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::core::app::AppContext;
+use crate::core::search::SearchMatch;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(dead_code)]
@@ -130,7 +131,7 @@ impl GitLogPane {
                 }
             }
             KeyCode::Char('/') => {
-                return vec![PaneEvent::StartSearch(SearchOrigin::CommitLog)];
+                return vec![PaneEvent::StartSearch(crate::git::state::PANE_GIT_LOG)];
             }
             KeyCode::Char('n') => {
                 return vec![PaneEvent::JumpToMatch(true)];
@@ -154,7 +155,7 @@ impl GitLogPane {
                     commit.short_hash, commit.author, commit.date, commit.message
                 );
                 if text.to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::CommitEntry(idx))
+                    Some(SearchMatch::ListEntry(idx))
                 } else {
                     None
                 }
@@ -174,6 +175,25 @@ impl Pane<GitShared, PaneEvent> for GitLogPane {
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
         self.render(f, ctx, shared, area)
+    }
+
+    fn selected_idx(&self) -> usize {
+        self.selected_idx
+    }
+
+    fn set_selected_idx(&mut self, idx: usize) {
+        self.selected_idx = idx;
+    }
+
+    fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+        self.collect_search_matches(shared, query)
+    }
+
+    fn jump_to_match(&mut self, shared: &GitShared, search_match: &SearchMatch) {
+        if let SearchMatch::ListEntry(idx) = search_match {
+            self.selected_idx = *idx;
+            self.load_detail(&shared.repo);
+        }
     }
 }
 

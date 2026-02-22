@@ -1,5 +1,5 @@
 use crate::core::page::PageAction;
-pub use crate::core::search::{SearchMatch, SearchOrigin};
+pub use crate::core::search::SearchMatch;
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::path::PathBuf;

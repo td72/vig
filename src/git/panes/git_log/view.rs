@@ -1,4 +1,4 @@
-use crate::core::app::{SearchMatch, SearchOrigin};
+use crate::core::search::SearchMatch;
 use crate::git::domain::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
 use crate::git::panes::GitLogPane;
 use crate::git::state::{GitShared, PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
@@ -103,20 +103,20 @@ fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &GitShared, area: R
     let max_graph_width = pane.graph.iter().map(|r| r.cells.len()).max().unwrap_or(0);
 
     // Build set of matched commit entry indices
-    let (match_set, current_match_idx) = if shared.pane.search.origin == SearchOrigin::CommitLog {
+    let (match_set, current_match_idx) = if shared.pane.search.origin == PANE_GIT_LOG {
         let set: HashSet<usize> = shared
             .pane
             .search
             .matches
             .iter()
             .filter_map(|m| match m {
-                SearchMatch::CommitEntry(idx) => Some(*idx),
+                SearchMatch::ListEntry(idx) => Some(*idx),
                 _ => None,
             })
             .collect();
         let current = shared.pane.search.current_match_idx.and_then(|ci| {
             match shared.pane.search.matches.get(ci) {
-                Some(SearchMatch::CommitEntry(idx)) => Some(*idx),
+                Some(SearchMatch::ListEntry(idx)) => Some(*idx),
                 _ => None,
             }
         });

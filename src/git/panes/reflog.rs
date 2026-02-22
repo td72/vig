@@ -1,5 +1,6 @@
-use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::core::app::AppContext;
 use crate::core::pane::Pane;
+use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{ReflogEntry, Repo};
 use crate::git::state::{GitShared, PaneEvent, PANE_BRANCH_LIST, PANE_REFLOG};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -90,7 +91,7 @@ impl ReflogPane {
                     || entry.action.to_lowercase().contains(&query_lower)
                     || entry.message.to_lowercase().contains(&query_lower)
                 {
-                    Some(SearchMatch::ReflogEntry(idx))
+                    Some(SearchMatch::ListEntry(idx))
                 } else {
                     None
                 }
@@ -122,20 +123,20 @@ impl ReflogPane {
         }
 
         // Build set of matched reflog entry indices
-        let (match_set, current_match_idx) = if shared.pane.search.origin == SearchOrigin::Reflog {
+        let (match_set, current_match_idx) = if shared.pane.search.origin == PANE_REFLOG {
             let set: HashSet<usize> = shared
                 .pane
                 .search
                 .matches
                 .iter()
                 .filter_map(|m| match m {
-                    SearchMatch::ReflogEntry(idx) => Some(*idx),
+                    SearchMatch::ListEntry(idx) => Some(*idx),
                     _ => None,
                 })
                 .collect();
             let current = shared.pane.search.current_match_idx.and_then(|ci| {
                 match shared.pane.search.matches.get(ci) {
-                    Some(SearchMatch::ReflogEntry(idx)) => Some(*idx),
+                    Some(SearchMatch::ListEntry(idx)) => Some(*idx),
                     _ => None,
                 }
             });
@@ -231,5 +232,23 @@ impl Pane<GitShared, PaneEvent> for ReflogPane {
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
         self.render(f, ctx, shared, area)
+    }
+
+    fn selected_idx(&self) -> usize {
+        self.selected_idx
+    }
+
+    fn set_selected_idx(&mut self, idx: usize) {
+        self.selected_idx = idx;
+    }
+
+    fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+        self.collect_search_matches(shared, query)
+    }
+
+    fn jump_to_match(&mut self, _shared: &GitShared, search_match: &SearchMatch) {
+        if let SearchMatch::ListEntry(idx) = search_match {
+            self.selected_idx = *idx;
+        }
     }
 }

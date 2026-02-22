@@ -142,4 +142,20 @@ impl Pane<GitShared, PaneEvent> for DiffViewPane {
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
         self.render(f, ctx, shared, area)
     }
+
+    fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+        self.collect_search_matches(shared, query)
+    }
+
+    fn jump_to_match(&mut self, _shared: &GitShared, search_match: &SearchMatch) {
+        if let SearchMatch::DiffLine {
+            row,
+            col_start,
+            side,
+            ..
+        } = search_match
+        {
+            self.navigate_to_search_match(*row, *col_start, *side);
+        }
+    }
 }

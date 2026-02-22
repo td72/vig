@@ -1,6 +1,6 @@
-use crate::core::app::{AppContext, ErrorDialogState, SearchOrigin};
+use crate::core::app::{AppContext, ErrorDialogState};
 use crate::core::page::{ExternalCommand, PageAction};
-use crate::core::pane::{FocusState, PaneShared};
+use crate::core::pane::{FocusState, Pane, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::core::ui::status_bar;
@@ -26,15 +26,12 @@ pub const PANE_DIFF_VIEW: usize = 4;
 
 pub enum PaneEvent {
     SetFocus(usize),
-    SelectFile(Option<usize>),
-    ResetDiffScroll,
+    SelectionChanged,
     RefreshDiff,
     SetDiffBase(Option<String>),
     SwitchBranch(String),
     DeleteBranch(String),
-    UpdateBranchLog(String),
-    ReSearchOnFileChange,
-    StartSearch(crate::core::app::SearchOrigin),
+    StartSearch(usize),
     ClearSearch,
     JumpToMatch(bool),
     StatusMessage(String),
@@ -415,17 +412,6 @@ impl GitState {
         matches!(focused, PANE_BRANCH_LIST | PANE_REFLOG | PANE_GIT_LOG)
     }
 
-    fn search_origin_for(pane: usize) -> SearchOrigin {
-        match pane {
-            PANE_DIFF_VIEW => SearchOrigin::DiffView,
-            PANE_FILE_TREE => SearchOrigin::FileTree,
-            PANE_BRANCH_LIST => SearchOrigin::BranchList,
-            PANE_GIT_LOG => SearchOrigin::CommitLog,
-            PANE_REFLOG => SearchOrigin::Reflog,
-            _ => SearchOrigin::DiffView,
-        }
-    }
-
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
@@ -477,11 +463,8 @@ impl GitState {
                 PaneEvent::SetFocus(pane) => {
                     self.set_focus(pane);
                 }
-                PaneEvent::SelectFile(idx) => {
-                    self.diff_view.set_file(idx);
-                }
-                PaneEvent::ResetDiffScroll => {
-                    self.diff_view.reset_scroll();
+                PaneEvent::SelectionChanged => {
+                    self.sync_detail(self.shared.pane.focused_pane);
                 }
                 PaneEvent::RefreshDiff => {
                     self.apply_refresh(ctx);
@@ -514,12 +497,6 @@ impl GitState {
                         });
                     }
                 },
-                PaneEvent::UpdateBranchLog(ref ref_name) => {
-                    self.git_log.load_for_ref(&self.shared.repo, ref_name);
-                }
-                PaneEvent::ReSearchOnFileChange => {
-                    search::re_search_on_file_change(self);
-                }
                 PaneEvent::StartSearch(origin) => {
                     self.shared.pane.search.start(origin);
                 }
@@ -543,6 +520,22 @@ impl GitState {
             }
         }
         Ok(action)
+    }
+
+    /// Synchronize detail pane when the selected item in `selected` pane changes.
+    fn sync_detail(&mut self, selected: usize) {
+        match selected {
+            PANE_FILE_TREE => {
+                self.diff_view
+                    .set_file(self.file_tree.selected_file_idx(&self.shared));
+                self.diff_view.reset_scroll();
+                search::re_search_on_file_change(self);
+            }
+            PANE_BRANCH_LIST => {
+                self.update_branch_log();
+            }
+            _ => {}
+        }
     }
 
     // === Refresh helper ===
@@ -577,10 +570,7 @@ impl GitState {
                 ctx.show_help = true;
             }
             KeyCode::Char('/') => {
-                self.shared
-                    .pane
-                    .search
-                    .start(Self::search_origin_for(self.shared.pane.focused_pane));
+                self.shared.pane.search.start(self.shared.pane.focused_pane);
             }
             KeyCode::Char('n') => {
                 search::jump_to_git_match(ctx, self, true);
@@ -623,7 +613,7 @@ impl GitState {
 
     pub fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // Branch action menu intercepts all keys when open
-        if self.branch_list.action_menu.is_some() {
+        if Pane::<GitShared, PaneEvent>::is_modal(&self.branch_list) {
             let events = self.branch_list.handle_key(&self.shared, key);
             return self.process_events(ctx, events);
         }
@@ -764,7 +754,7 @@ impl crate::core::app::PageState for GitState {
         GitState::render(self, f, ctx, area);
     }
     fn intercepts_all_keys(&self) -> bool {
-        self.shared.pane.search.active || self.branch_list.action_menu.is_some()
+        self.shared.pane.search.active || Pane::<GitShared, PaneEvent>::is_modal(&self.branch_list)
     }
     fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
         GitState::on_fs_change(self, ctx)

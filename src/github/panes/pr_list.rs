@@ -63,31 +63,28 @@ impl GhPrListPane {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.prs.is_empty() && self.selected_idx + 1 < self.prs.len() {
                     self.selected_idx += 1;
-                    return vec![GhPaneEvent::LoadDetail];
+                    return vec![GhPaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    return vec![GhPaneEvent::LoadDetail];
+                    return vec![GhPaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('g') => {
                 self.selected_idx = 0;
-                return vec![GhPaneEvent::LoadDetail];
+                return vec![GhPaneEvent::SelectionChanged];
             }
             KeyCode::Char('G') => {
                 if !self.prs.is_empty() {
                     self.selected_idx = self.prs.len() - 1;
-                    return vec![GhPaneEvent::LoadDetail];
+                    return vec![GhPaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('i') | KeyCode::Enter => {
                 if !self.prs.is_empty() {
-                    return vec![
-                        GhPaneEvent::SetFocus(GH_PANE_DETAIL),
-                        GhPaneEvent::LoadDetail,
-                    ];
+                    return vec![GhPaneEvent::SetFocus(GH_PANE_DETAIL)];
                 }
             }
             KeyCode::Char('o') => {
@@ -209,5 +206,13 @@ impl Pane<GhShared, GhPaneEvent> for GhPrListPane {
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GhShared, area: Rect) {
         self.render(f, ctx, shared, area)
+    }
+
+    fn selected_idx(&self) -> usize {
+        self.selected_idx
+    }
+
+    fn set_selected_idx(&mut self, idx: usize) {
+        self.selected_idx = idx;
     }
 }

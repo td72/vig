@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::search::SearchState;
+use crate::core::search::{SearchMatch, SearchState};
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 
@@ -13,6 +13,19 @@ pub struct PaneShared {
 pub trait Pane<Shared, Event> {
     fn handle_key(&mut self, shared: &Shared, key: KeyEvent) -> Vec<Event>;
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &Shared, area: Rect);
+
+    fn is_modal(&self) -> bool {
+        false
+    }
+    fn selected_idx(&self) -> usize {
+        0
+    }
+    fn set_selected_idx(&mut self, _idx: usize) {}
+
+    fn collect_search_matches(&self, _shared: &Shared, _query: &str) -> Vec<SearchMatch> {
+        vec![]
+    }
+    fn jump_to_match(&mut self, _shared: &Shared, _search_match: &SearchMatch) {}
 }
 
 #[allow(dead_code)]

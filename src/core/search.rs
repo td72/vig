@@ -1,27 +1,20 @@
 use crate::git::state::DiffSide;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SearchOrigin {
-    DiffView,
-    FileTree,
-    CommitLog,
-    BranchList,
-    Reflog,
-}
+/// SearchOrigin is the pane index where the search was initiated.
+pub type SearchOrigin = usize;
 
 #[derive(Debug, Clone)]
 pub enum SearchMatch {
+    /// Matches in a list-based pane (file tree, branch list, commit log, reflog, etc.)
+    ListEntry(usize),
+    /// Matches in the diff view
     DiffLine {
         row: usize,
         col_start: usize,
         col_end: usize,
         side: DiffSide,
     },
-    TreeEntry(usize),
-    CommitEntry(usize),
-    BranchEntry(usize),
-    ReflogEntry(usize),
 }
 
 #[derive(Debug, Clone)]
@@ -48,7 +41,7 @@ impl SearchState {
             active: false,
             input: String::new(),
             query: None,
-            origin: SearchOrigin::DiffView,
+            origin: 0,
             matches: Vec::new(),
             current_match_idx: None,
             last_query: None,

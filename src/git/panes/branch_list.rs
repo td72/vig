@@ -1,5 +1,6 @@
-use crate::core::app::{AppContext, SearchMatch, SearchOrigin};
+use crate::core::app::AppContext;
 use crate::core::pane::Pane;
+use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{BranchInfo, Repo};
 use crate::git::state::{BranchAction, BranchActionMenuState, GitShared, PaneEvent};
 use crossterm::event::{KeyCode, KeyEvent};
@@ -55,17 +56,13 @@ impl BranchListPane {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.branches.is_empty() && self.selected_idx + 1 < self.branches.len() {
                     self.selected_idx += 1;
-                    if let Some(branch) = self.branches.get(self.selected_idx) {
-                        return vec![PaneEvent::UpdateBranchLog(branch.name.clone())];
-                    }
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    if let Some(branch) = self.branches.get(self.selected_idx) {
-                        return vec![PaneEvent::UpdateBranchLog(branch.name.clone())];
-                    }
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Enter => {
@@ -160,7 +157,7 @@ impl BranchListPane {
             .enumerate()
             .filter_map(|(idx, branch)| {
                 if branch.name.to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::BranchEntry(idx))
+                    Some(SearchMatch::ListEntry(idx))
                 } else {
                     None
                 }
@@ -191,28 +188,27 @@ impl BranchListPane {
         }
 
         // Build set of matched branch entry indices
-        let (match_set, current_match_idx) =
-            if shared.pane.search.origin == SearchOrigin::BranchList {
-                let set: HashSet<usize> = shared
-                    .pane
-                    .search
-                    .matches
-                    .iter()
-                    .filter_map(|m| match m {
-                        SearchMatch::BranchEntry(idx) => Some(*idx),
-                        _ => None,
-                    })
-                    .collect();
-                let current = shared.pane.search.current_match_idx.and_then(|ci| {
-                    match shared.pane.search.matches.get(ci) {
-                        Some(SearchMatch::BranchEntry(idx)) => Some(*idx),
-                        _ => None,
-                    }
-                });
-                (set, current)
-            } else {
-                (HashSet::new(), None)
-            };
+        let (match_set, current_match_idx) = if shared.pane.search.origin == PANE_BRANCH_LIST {
+            let set: HashSet<usize> = shared
+                .pane
+                .search
+                .matches
+                .iter()
+                .filter_map(|m| match m {
+                    SearchMatch::ListEntry(idx) => Some(*idx),
+                    _ => None,
+                })
+                .collect();
+            let current = shared.pane.search.current_match_idx.and_then(|ci| {
+                match shared.pane.search.matches.get(ci) {
+                    Some(SearchMatch::ListEntry(idx)) => Some(*idx),
+                    _ => None,
+                }
+            });
+            (set, current)
+        } else {
+            (HashSet::new(), None)
+        };
 
         let items: Vec<ListItem> = self
             .branches
@@ -370,6 +366,28 @@ impl Pane<GitShared, PaneEvent> for BranchListPane {
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &GitShared, area: Rect) {
         self.render(f, ctx, shared, area)
+    }
+
+    fn is_modal(&self) -> bool {
+        self.action_menu.is_some()
+    }
+
+    fn selected_idx(&self) -> usize {
+        self.selected_idx
+    }
+
+    fn set_selected_idx(&mut self, idx: usize) {
+        self.selected_idx = idx;
+    }
+
+    fn collect_search_matches(&self, shared: &GitShared, query: &str) -> Vec<SearchMatch> {
+        self.collect_search_matches(shared, query)
+    }
+
+    fn jump_to_match(&mut self, _shared: &GitShared, search_match: &SearchMatch) {
+        if let SearchMatch::ListEntry(idx) = search_match {
+            self.selected_idx = *idx;
+        }
     }
 }
 

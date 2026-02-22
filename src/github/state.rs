@@ -58,7 +58,7 @@ pub struct GhShared {
 
 pub enum GhPaneEvent {
     SetFocus(usize),
-    LoadDetail,
+    SelectionChanged,
     OpenIssueBrowser(u64),
     OpenPrBrowser(u64),
     OpenUrl(String),
@@ -298,9 +298,11 @@ impl GitHubState {
             match event {
                 GhPaneEvent::SetFocus(pane) => {
                     self.set_focus(pane);
-                    self.load_detail();
+                    if pane == GH_PANE_DETAIL {
+                        self.load_detail();
+                    }
                 }
-                GhPaneEvent::LoadDetail => {
+                GhPaneEvent::SelectionChanged => {
                     self.load_detail();
                 }
                 GhPaneEvent::OpenIssueBrowser(n) => match client::open_issue_in_browser(n) {
