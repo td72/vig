@@ -48,12 +48,6 @@ pub enum GhBgMessage {
     PrDetail(Result<GhPrDetail, String>),
 }
 
-// === GhShared: shared state passed to pane handle_key ===
-
-pub struct GhShared {
-    pub pane: PaneShared,
-}
-
 // === GhPaneEvent: cross-pane side effects ===
 
 pub enum GhPaneEvent {
@@ -67,7 +61,7 @@ pub enum GhPaneEvent {
 // === GitHubState ===
 
 pub struct GitHubState {
-    pub shared: GhShared,
+    pub pane: PaneShared,
     pub issue_list: GhIssueListPane,
     pub pr_list: GhPrListPane,
     pub detail_view: GhDetailViewPane,
@@ -82,12 +76,10 @@ pub struct GitHubState {
 impl GitHubState {
     pub fn new() -> Self {
         Self {
-            shared: GhShared {
-                pane: PaneShared {
-                    focused_pane: GH_PANE_ISSUE_LIST,
-                    previous_pane: GH_PANE_ISSUE_LIST,
-                    search: SearchState::new(),
-                },
+            pane: PaneShared {
+                focused_pane: GH_PANE_ISSUE_LIST,
+                previous_pane: GH_PANE_ISSUE_LIST,
+                search: SearchState::new(),
             },
             issue_list: GhIssueListPane::new(),
             pr_list: GhPrListPane::new(),
@@ -101,8 +93,8 @@ impl GitHubState {
     }
 
     pub fn set_focus(&mut self, id: usize) {
-        self.shared.pane.previous_pane = self.shared.pane.focused_pane;
-        self.shared.pane.focused_pane = id;
+        self.pane.previous_pane = self.pane.focused_pane;
+        self.pane.focused_pane = id;
     }
 
     /// Initialize on first switch to GitHub View.
@@ -194,9 +186,9 @@ impl GitHubState {
         }
 
         // Auto-load detail when a fresh list arrives for the active tab
-        let on_pr = self.shared.pane.focused_pane == GH_PANE_PR_LIST
-            || (self.shared.pane.focused_pane == GH_PANE_DETAIL
-                && self.shared.pane.previous_pane == GH_PANE_PR_LIST);
+        let on_pr = self.pane.focused_pane == GH_PANE_PR_LIST
+            || (self.pane.focused_pane == GH_PANE_DETAIL
+                && self.pane.previous_pane == GH_PANE_PR_LIST);
         if (on_pr && pr_list_arrived) || (!on_pr && issue_list_arrived) {
             self.load_detail();
         }
@@ -208,10 +200,10 @@ impl GitHubState {
             Some(tx) => tx,
             None => return,
         };
-        let origin = if self.shared.pane.focused_pane == GH_PANE_DETAIL {
-            self.shared.pane.previous_pane
+        let origin = if self.pane.focused_pane == GH_PANE_DETAIL {
+            self.pane.previous_pane
         } else {
-            self.shared.pane.focused_pane
+            self.pane.focused_pane
         };
         match origin {
             GH_PANE_ISSUE_LIST => {
@@ -269,20 +261,20 @@ impl GitHubState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<GhPaneEvent> {
-        match self.shared.pane.focused_pane {
+        match self.pane.focused_pane {
             GH_PANE_ISSUE_LIST => match key.code {
                 KeyCode::Char('l') | KeyCode::Tab => {
                     vec![GhPaneEvent::SetFocus(GH_PANE_PR_LIST)]
                 }
-                _ => self.issue_list.handle_key(&self.shared.pane, key),
+                _ => self.issue_list.handle_key(&self.pane, key),
             },
             GH_PANE_PR_LIST => match key.code {
                 KeyCode::Char('h') | KeyCode::BackTab => {
                     vec![GhPaneEvent::SetFocus(GH_PANE_ISSUE_LIST)]
                 }
-                _ => self.pr_list.handle_key(&self.shared.pane, key),
+                _ => self.pr_list.handle_key(&self.pane, key),
             },
-            GH_PANE_DETAIL => self.detail_view.handle_key(&self.shared.pane, key),
+            GH_PANE_DETAIL => self.detail_view.handle_key(&self.pane, key),
             _ => vec![],
         }
     }
@@ -345,7 +337,7 @@ impl GitHubState {
                 ctx.show_help = true;
             }
             KeyCode::Char('r') => {
-                if self.shared.pane.focused_pane == GH_PANE_DETAIL {
+                if self.pane.focused_pane == GH_PANE_DETAIL {
                     self.refresh_detail();
                 } else {
                     self.refresh();
@@ -395,11 +387,9 @@ impl GitHubState {
     pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let gl = crate::github::layout::compute_gh_layout(area);
         status_bar::render_gh_header(f, ctx, gl.header);
-        self.issue_list
-            .render(f, ctx, &self.shared.pane, gl.issue_list);
-        self.pr_list.render(f, ctx, &self.shared.pane, gl.pr_list);
-        self.detail_view
-            .render(f, ctx, &self.shared.pane, gl.main_pane);
+        self.issue_list.render(f, ctx, &self.pane, gl.issue_list);
+        self.pr_list.render(f, ctx, &self.pane, gl.pr_list);
+        self.detail_view.render(f, ctx, &self.pane, gl.main_pane);
         status_bar::render_gh_status_bar(f, ctx, self, gl.status_bar);
     }
 
@@ -430,7 +420,7 @@ impl crate::core::app::PageState for GitHubState {
         GitHubState::render(self, f, ctx, area);
     }
     fn intercepts_all_keys(&self) -> bool {
-        self.shared.pane.search.active
+        self.pane.search.active
     }
     fn on_tick(&mut self, _ctx: &mut AppContext) {
         GitHubState::on_tick(self);

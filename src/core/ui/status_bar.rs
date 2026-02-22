@@ -48,7 +48,7 @@ pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect
     ];
 
     {
-        let base_label = match &git.shared.diff_base_ref {
+        let base_label = match &git.diff_base_ref {
             Some(base) => format!(" vs {base} "),
             None => " vs HEAD ".to_string(),
         };

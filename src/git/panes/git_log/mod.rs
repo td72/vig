@@ -177,10 +177,6 @@ impl Pane<PaneEvent> for GitLogPane {
         self.render(f, ctx, shared, area)
     }
 
-    fn selected_idx(&self) -> usize {
-        self.selected_idx
-    }
-
     fn set_selected_idx(&mut self, idx: usize) {
         self.selected_idx = idx;
     }

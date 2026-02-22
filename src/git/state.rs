@@ -46,7 +46,6 @@ pub struct GitShared {
     pub pane: PaneShared,
     pub repo: Repo,
     pub diff_meta: DiffMeta,
-    pub diff_base_ref: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -281,6 +280,7 @@ pub use crate::git::domain::tree::TreeEntry;
 
 pub struct GitState {
     pub shared: GitShared,
+    pub diff_base_ref: Option<String>,
     pub file_tree: FileTreePane,
     pub diff_view: DiffViewPane,
     pub branch_list: BranchListPane,
@@ -306,8 +306,8 @@ impl GitState {
                     stats: result.stats,
                     file_count: files.len(),
                 },
-                diff_base_ref: None,
             },
+            diff_base_ref: None,
             file_tree: FileTreePane::new(Rc::clone(&files)),
             diff_view: DiffViewPane::new(Rc::clone(&files)),
             branch_list: BranchListPane::new(),
@@ -325,11 +325,7 @@ impl GitState {
     /// Returns `Ok(Some(message))` if a fallback occurred, `Ok(None)` on clean refresh.
     pub fn refresh_diff(&mut self) -> Result<Option<String>> {
         let old_path = self.selected_file().map(|f| f.path.clone());
-        let fallback_msg = match self
-            .shared
-            .repo
-            .diff_workdir(self.shared.diff_base_ref.as_deref())
-        {
+        let fallback_msg = match self.shared.repo.diff_workdir(self.diff_base_ref.as_deref()) {
             Ok(result) => {
                 let files = Rc::new(result.files);
                 self.shared.diff_meta = DiffMeta {
@@ -342,7 +338,7 @@ impl GitState {
                 None
             }
             Err(e) => {
-                self.shared.diff_base_ref = None;
+                self.diff_base_ref = None;
                 let result = self.shared.repo.diff_workdir(None)?;
                 let files = Rc::new(result.files);
                 self.shared.diff_meta = DiffMeta {
@@ -485,7 +481,7 @@ impl GitState {
         match focused {
             PANE_FILE_TREE => self.file_tree.handle_key(&self.shared.pane, key),
             PANE_BRANCH_LIST => {
-                if key.code == KeyCode::Esc && self.shared.diff_base_ref.is_some() {
+                if key.code == KeyCode::Esc && self.diff_base_ref.is_some() {
                     return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
                 }
                 self.branch_list.handle_key(&self.shared.pane, key)
@@ -517,7 +513,7 @@ impl GitState {
                     self.apply_refresh(ctx);
                 }
                 PaneEvent::SetDiffBase(base) => {
-                    self.shared.diff_base_ref = base;
+                    self.diff_base_ref = base;
                 }
                 PaneEvent::SwitchBranch(name) => match self.shared.repo.switch_branch(&name) {
                     Ok(()) => {

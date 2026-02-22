@@ -366,10 +366,6 @@ impl Pane<PaneEvent> for BranchListPane {
         self.action_menu.is_some()
     }
 
-    fn selected_idx(&self) -> usize {
-        self.selected_idx
-    }
-
     fn set_selected_idx(&mut self, idx: usize) {
         self.selected_idx = idx;
     }

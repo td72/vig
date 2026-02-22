@@ -17,9 +17,6 @@ pub trait Pane<Event> {
     fn is_modal(&self) -> bool {
         false
     }
-    fn selected_idx(&self) -> usize {
-        0
-    }
     fn set_selected_idx(&mut self, _idx: usize) {}
 
     fn collect_search_matches(&self, _shared: &PaneShared, _query: &str) -> Vec<SearchMatch> {
