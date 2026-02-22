@@ -225,7 +225,7 @@ impl PageHandler<GitState> for GitPageHandler {
     }
 
     fn intercepts_all_keys(&self, _ctx: &AppContext, git: &GitState) -> bool {
-        git.branch_action_menu.is_some()
+        git.branch_list.action_menu.is_some()
     }
 
     fn handle_key(
@@ -235,7 +235,7 @@ impl PageHandler<GitState> for GitPageHandler {
         key: KeyEvent,
     ) -> Result<PageAction> {
         // Branch action menu intercepts all keys when open
-        if git.branch_action_menu.is_some() {
+        if git.branch_list.action_menu.is_some() {
             branch_action::handle_branch_action_menu_key(ctx, git, key);
             return Ok(PageAction::None);
         }
@@ -267,7 +267,7 @@ impl PageHandler<GitState> for GitPageHandler {
 
         status_bar::render_status_bar(f, ctx, git, ly.status_bar);
 
-        if git.branch_action_menu.is_some() {
+        if git.branch_list.action_menu.is_some() {
             branch_action_menu::render(f, git, area);
         }
     }

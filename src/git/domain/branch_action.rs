@@ -26,7 +26,7 @@ fn select_branch(ctx: &mut AppContext, git: &mut GitState) {
 
 pub(crate) fn open_branch_action_menu(git: &mut GitState) {
     if let Some(branch) = git.branch_list.branches.get(git.branch_list.selected_idx) {
-        git.branch_action_menu = Some(BranchActionMenuState {
+        git.branch_list.action_menu = Some(BranchActionMenuState {
             branch_name: branch.name.clone(),
             is_head: branch.is_head,
             selected_idx: 0,
@@ -39,14 +39,14 @@ pub(crate) fn handle_branch_action_menu_key(
     git: &mut GitState,
     key: KeyEvent,
 ) {
-    let menu = match git.branch_action_menu.as_mut() {
+    let menu = match git.branch_list.action_menu.as_mut() {
         Some(m) => m,
         None => return,
     };
 
     match key.code {
         KeyCode::Esc | KeyCode::Char('q') => {
-            git.branch_action_menu = None;
+            git.branch_list.action_menu = None;
         }
         KeyCode::Char('j') | KeyCode::Down => {
             if menu.selected_idx + 1 < BranchAction::ALL.len() {
@@ -76,7 +76,7 @@ pub(crate) fn handle_branch_action_menu_key(
 }
 
 fn execute_branch_action(ctx: &mut AppContext, git: &mut GitState, action: BranchAction) {
-    let menu = match git.branch_action_menu.take() {
+    let menu = match git.branch_list.action_menu.take() {
         Some(m) => m,
         None => return,
     };

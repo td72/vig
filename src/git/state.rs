@@ -21,6 +21,7 @@ pub enum FocusedPane {
 pub struct BranchListState {
     pub branches: Vec<BranchInfo>,
     pub selected_idx: usize,
+    pub action_menu: Option<BranchActionMenuState>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -312,7 +313,6 @@ pub struct GitState {
     pub branch_list: BranchListState,
     pub git_log: GitLogState,
     pub reflog: ReflogState,
-    pub branch_action_menu: Option<BranchActionMenuState>,
     pub search: SearchState,
 }
 
@@ -338,6 +338,7 @@ impl GitState {
             branch_list: BranchListState {
                 branches: Vec::new(),
                 selected_idx: 0,
+                action_menu: None,
             },
             git_log: GitLogState {
                 commits: Vec::new(),
@@ -354,7 +355,6 @@ impl GitState {
                 selected_idx: 0,
                 view_height: 0,
             },
-            branch_action_menu: None,
             search: SearchState::new(),
         };
         state.load_branches();

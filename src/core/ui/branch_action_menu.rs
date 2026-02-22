@@ -24,7 +24,7 @@ fn pad_line(line: Line<'static>, width: usize) -> Line<'static> {
 }
 
 pub fn render(f: &mut Frame, git: &GitState, area: Rect) {
-    let menu = match &git.branch_action_menu {
+    let menu = match &git.branch_list.action_menu {
         Some(m) => m,
         None => return,
     };
