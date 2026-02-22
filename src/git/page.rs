@@ -102,7 +102,7 @@ fn process_events(
     git: &mut GitState,
     events: Vec<PaneEvent>,
 ) -> Result<PageAction> {
-    let mut action = PageAction::None;
+    let action = PageAction::None;
     for event in events {
         match event {
             PaneEvent::SetFocus(pane) => {
@@ -170,27 +170,8 @@ fn process_events(
             PaneEvent::JumpToMatch(forward) => {
                 search::jump_to_git_match(ctx, git, forward);
             }
-            PaneEvent::OpenEditor(path) => {
-                let file_path = ctx.workdir.join(&path);
-                let editor = std::env::var("EDITOR")
-                    .or_else(|_| std::env::var("VISUAL"))
-                    .unwrap_or_else(|_| "vi".to_string());
-                action = PageAction::Suspend(ExternalCommand {
-                    program: editor,
-                    args: vec![file_path.into()],
-                });
-            }
-            PaneEvent::Quit => {
-                ctx.should_quit = true;
-            }
-            PaneEvent::ShowHelp => {
-                ctx.show_help = true;
-            }
             PaneEvent::StatusMessage(msg) => {
                 ctx.status_message = Some(msg);
-            }
-            PaneEvent::ErrorDialog { title, message } => {
-                ctx.error_dialog = Some(ErrorDialogState { title, message });
             }
             PaneEvent::CopyToClipboard(text) => {
                 copy_to_clipboard(ctx, &text);

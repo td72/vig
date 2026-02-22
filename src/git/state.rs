@@ -20,7 +20,6 @@ pub enum FocusedPane {
 
 // === PaneEvent: cross-pane side effects ===
 
-#[allow(dead_code)]
 pub enum PaneEvent {
     SetFocus(FocusedPane),
     ResetDiffScroll,
@@ -35,11 +34,7 @@ pub enum PaneEvent {
     StartSearch(crate::core::app::SearchOrigin),
     ClearSearch,
     JumpToMatch(bool),
-    OpenEditor(String),
-    Quit,
-    ShowHelp,
     StatusMessage(String),
-    ErrorDialog { title: String, message: String },
     CopyToClipboard(String),
     OpenUrl(String),
 }
