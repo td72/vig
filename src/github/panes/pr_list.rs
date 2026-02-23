@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::pane::{Pane, PaneShared};
+use crate::core::pane::PaneShared;
 use crate::github::domain::types::GhPrListItem;
 use crate::github::domain::{client, disk_cache};
 use crate::github::state::{GhBgMessage, GhPaneEvent, GH_PANE_DETAIL, GH_PANE_PR_LIST};
@@ -195,19 +195,5 @@ impl GhPrListPane {
             list_state.select(Some(self.selected_idx));
         }
         f.render_stateful_widget(list, area, &mut list_state);
-    }
-}
-
-impl Pane<GhPaneEvent> for GhPrListPane {
-    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<GhPaneEvent> {
-        self.handle_key(shared, key)
-    }
-
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        self.render(f, ctx, shared, area)
-    }
-
-    fn set_selected_idx(&mut self, idx: usize) {
-        self.selected_idx = idx;
     }
 }

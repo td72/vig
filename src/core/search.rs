@@ -1,5 +1,10 @@
-use crate::git::state::DiffSide;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DiffSide {
+    Left,
+    Right,
+}
 
 /// SearchOrigin is the pane index where the search was initiated.
 pub type SearchOrigin = usize;

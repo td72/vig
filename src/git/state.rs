@@ -93,11 +93,7 @@ pub enum DiffViewMode {
     VisualLine,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DiffSide {
-    Left,
-    Right,
-}
+pub use crate::core::search::DiffSide;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CursorPos {

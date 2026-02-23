@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::page::PageAction;
-use crate::core::pane::PaneShared;
+use crate::core::pane::{FocusState, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::ui::status_bar;
 use crate::github::domain::client;
@@ -90,11 +90,6 @@ impl GitHubState {
             bg_tx: None,
             initialized: false,
         }
-    }
-
-    pub fn set_focus(&mut self, id: usize) {
-        self.pane.previous_pane = self.pane.focused_pane;
-        self.pane.focused_pane = id;
     }
 
     /// Initialize on first switch to GitHub View.
@@ -403,6 +398,16 @@ impl GitHubState {
 
     pub fn on_activate(&mut self) {
         self.initialize();
+    }
+}
+
+impl FocusState<usize> for GitHubState {
+    fn focused_pane(&self) -> usize {
+        self.pane.focused_pane
+    }
+    fn set_focus(&mut self, id: usize) {
+        self.pane.previous_pane = self.pane.focused_pane;
+        self.pane.focused_pane = id;
     }
 }
 
