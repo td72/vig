@@ -1,8 +1,7 @@
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
-use crate::core::pane::PaneEvent;
-use crate::core::pane::{PaneShared, SubPaneScroll};
+use crate::core::pane::{Pane, PaneEvent, PaneShared, SubPaneScroll};
 use crate::github::domain::types::*;
 use crate::github::domain::{client, disk_cache};
 use crate::github::state::{GhBgMessage, GhDetailContent, GhDetailKind, GhDetailPane};
@@ -445,6 +444,15 @@ impl GhDetailViewPane {
 
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         view::render(f, self, shared, area);
+    }
+}
+
+impl Pane<PaneEvent> for GhDetailViewPane {
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+        self.handle_key(shared, key)
+    }
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
+        self.render(f, ctx, shared, area)
     }
 }
 

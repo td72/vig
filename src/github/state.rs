@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::page::PageAction;
-use crate::core::pane::{FocusState, PaneEvent, PaneShared};
+use crate::core::pane::{FocusState, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::ui::status_bar;
 use crate::github::domain::client;
@@ -240,6 +240,26 @@ impl GitHubState {
         if let Some(tx) = &self.bg_tx {
             self.issue_list.spawn_fetch(tx);
             self.pr_list.spawn_fetch(tx);
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn pane(&self, idx: usize) -> Option<&dyn Pane<PaneEvent>> {
+        match idx {
+            GH_PANE_ISSUE_LIST => Some(&self.issue_list),
+            GH_PANE_PR_LIST => Some(&self.pr_list),
+            GH_PANE_DETAIL => Some(&self.detail_view),
+            _ => None,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn pane_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
+        match idx {
+            GH_PANE_ISSUE_LIST => Some(&mut self.issue_list),
+            GH_PANE_PR_LIST => Some(&mut self.pr_list),
+            GH_PANE_DETAIL => Some(&mut self.detail_view),
+            _ => None,
         }
     }
 
