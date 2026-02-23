@@ -80,7 +80,7 @@ pub struct DiffResult {
     pub stats: DiffStats,
 }
 
-/// Lightweight metadata kept in GitShared (no files Vec).
+/// Lightweight metadata kept in GitState (no files Vec).
 pub struct DiffMeta {
     pub branch_name: String,
     pub stats: DiffStats,

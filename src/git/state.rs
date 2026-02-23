@@ -40,14 +40,6 @@ pub enum PaneEvent {
     OpenUrl(String),
 }
 
-// === GitShared: immutable shared state for pane handle_key ===
-
-pub struct GitShared {
-    pub pane: PaneShared,
-    pub repo: Repo,
-    pub diff_meta: DiffMeta,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BranchAction {
     Switch,
@@ -275,7 +267,9 @@ impl HighlightState {
 pub use crate::git::domain::tree::TreeEntry;
 
 pub struct GitState {
-    pub shared: GitShared,
+    pub pane: PaneShared,
+    pub repo: Repo,
+    pub diff_meta: DiffMeta,
     pub diff_base_ref: Option<String>,
     pub file_tree: FileTreePane,
     pub diff_view: DiffViewPane,
@@ -290,18 +284,16 @@ impl GitState {
         let result = repo.diff_workdir(None)?;
         let files = Rc::new(result.files);
         let mut state = Self {
-            shared: GitShared {
-                pane: PaneShared {
-                    focused_pane: PANE_FILE_TREE,
-                    previous_pane: PANE_FILE_TREE,
-                    search: SearchState::new(),
-                },
-                repo,
-                diff_meta: DiffMeta {
-                    branch_name: result.branch_name,
-                    stats: result.stats,
-                    file_count: files.len(),
-                },
+            pane: PaneShared {
+                focused_pane: PANE_FILE_TREE,
+                previous_pane: PANE_FILE_TREE,
+                search: SearchState::new(),
+            },
+            repo,
+            diff_meta: DiffMeta {
+                branch_name: result.branch_name,
+                stats: result.stats,
+                file_count: files.len(),
             },
             diff_base_ref: None,
             file_tree: FileTreePane::new(Rc::clone(&files)),
@@ -321,10 +313,10 @@ impl GitState {
     /// Returns `Ok(Some(message))` if a fallback occurred, `Ok(None)` on clean refresh.
     pub fn refresh_diff(&mut self) -> Result<Option<String>> {
         let old_path = self.selected_file().map(|f| f.path.clone());
-        let fallback_msg = match self.shared.repo.diff_workdir(self.diff_base_ref.as_deref()) {
+        let fallback_msg = match self.repo.diff_workdir(self.diff_base_ref.as_deref()) {
             Ok(result) => {
                 let files = Rc::new(result.files);
-                self.shared.diff_meta = DiffMeta {
+                self.diff_meta = DiffMeta {
                     branch_name: result.branch_name,
                     stats: result.stats,
                     file_count: files.len(),
@@ -335,9 +327,9 @@ impl GitState {
             }
             Err(e) => {
                 self.diff_base_ref = None;
-                let result = self.shared.repo.diff_workdir(None)?;
+                let result = self.repo.diff_workdir(None)?;
                 let files = Rc::new(result.files);
-                self.shared.diff_meta = DiffMeta {
+                self.diff_meta = DiffMeta {
                     branch_name: result.branch_name,
                     stats: result.stats,
                     file_count: files.len(),
@@ -363,7 +355,7 @@ impl GitState {
         self.diff_view.scroll.y = 0;
         self.diff_view.scroll.x = 0;
         self.diff_view.highlight.reset();
-        self.shared.pane.search.reset_matches();
+        self.pane.search.reset_matches();
         self.diff_view
             .highlight
             .spawn_bg_highlight(&self.file_tree.files);
@@ -379,21 +371,21 @@ impl GitState {
     }
 
     pub fn load_branches(&mut self) {
-        self.branch_list.load(&self.shared.repo);
+        self.branch_list.load(&self.repo);
         self.update_branch_log();
     }
 
     pub fn update_branch_log(&mut self) {
         if let Some(branch) = self.branch_list.selected_branch() {
             let name = branch.name.clone();
-            self.git_log.load_for_ref(&self.shared.repo, &name);
+            self.git_log.load_for_ref(&self.repo, &name);
         } else {
             self.git_log.clear_log();
         }
     }
 
     pub fn load_reflog(&mut self) {
-        self.reflog.load(&self.shared.repo);
+        self.reflog.load(&self.repo);
     }
 
     // === Dynamic dispatch helpers ===
@@ -449,7 +441,7 @@ impl GitState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        let focused = self.shared.pane.focused_pane;
+        let focused = self.pane.focused_pane;
 
         if let Some(tab_idx) = Self::tab_index(focused) {
             match key.code {
@@ -467,7 +459,7 @@ impl GitState {
                     };
                     return vec![PaneEvent::SetFocus(target)];
                 }
-                KeyCode::Esc if self.shared.pane.search.query.is_some() => {
+                KeyCode::Esc if self.pane.search.query.is_some() => {
                     return vec![PaneEvent::ClearSearch];
                 }
                 _ => {}
@@ -475,16 +467,16 @@ impl GitState {
         }
 
         match focused {
-            PANE_FILE_TREE => self.file_tree.handle_key(&self.shared.pane, key),
+            PANE_FILE_TREE => self.file_tree.handle_key(&self.pane, key),
             PANE_BRANCH_LIST => {
                 if key.code == KeyCode::Esc && self.diff_base_ref.is_some() {
                     return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
                 }
-                self.branch_list.handle_key(&self.shared.pane, key)
+                self.branch_list.handle_key(&self.pane, key)
             }
-            PANE_REFLOG => self.reflog.handle_key(&self.shared.pane, key),
-            PANE_GIT_LOG => self.git_log.handle_key(&self.shared.pane, key),
-            PANE_DIFF_VIEW => self.diff_view.handle_key(&self.shared.pane, key),
+            PANE_REFLOG => self.reflog.handle_key(&self.pane, key),
+            PANE_GIT_LOG => self.git_log.handle_key(&self.pane, key),
+            PANE_DIFF_VIEW => self.diff_view.handle_key(&self.pane, key),
             _ => vec![],
         }
     }
@@ -503,7 +495,7 @@ impl GitState {
                     self.set_focus(pane);
                 }
                 PaneEvent::SelectionChanged => {
-                    self.sync_detail(self.shared.pane.focused_pane);
+                    self.sync_detail(self.pane.focused_pane);
                 }
                 PaneEvent::RefreshDiff => {
                     self.apply_refresh(ctx);
@@ -511,7 +503,7 @@ impl GitState {
                 PaneEvent::SetDiffBase(base) => {
                     self.diff_base_ref = base;
                 }
-                PaneEvent::SwitchBranch(name) => match self.shared.repo.switch_branch(&name) {
+                PaneEvent::SwitchBranch(name) => match self.repo.switch_branch(&name) {
                     Ok(()) => {
                         ctx.status_message = Some(format!("Switched to {name}"));
                         self.load_branches();
@@ -524,7 +516,7 @@ impl GitState {
                         });
                     }
                 },
-                PaneEvent::DeleteBranch(name) => match self.shared.repo.delete_branch(&name) {
+                PaneEvent::DeleteBranch(name) => match self.repo.delete_branch(&name) {
                     Ok(()) => {
                         ctx.status_message = Some(format!("Deleted {name}"));
                         self.load_branches();
@@ -537,10 +529,10 @@ impl GitState {
                     }
                 },
                 PaneEvent::StartSearch(origin) => {
-                    self.shared.pane.search.start(origin);
+                    self.pane.search.start(origin);
                 }
                 PaneEvent::ClearSearch => {
-                    self.shared.pane.search.clear();
+                    self.pane.search.clear();
                 }
                 PaneEvent::JumpToMatch(forward) => {
                     search::jump_to_git_match(ctx, self, forward);
@@ -573,7 +565,7 @@ impl GitState {
                 self.update_branch_log();
             }
             PANE_GIT_LOG => {
-                self.git_log.load_detail(&self.shared.repo);
+                self.git_log.load_detail(&self.repo);
             }
             _ => {}
         }
@@ -596,7 +588,7 @@ impl GitState {
 
     pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // In Normal/Visual modes, keys are handled by the mode handler exclusively
-        if self.shared.pane.focused_pane == PANE_DIFF_VIEW
+        if self.pane.focused_pane == PANE_DIFF_VIEW
             && self.diff_view.vim.mode != DiffViewMode::Scroll
         {
             let events = self.dispatch_key(key);
@@ -611,7 +603,7 @@ impl GitState {
                 ctx.show_help = true;
             }
             KeyCode::Char('/') => {
-                self.shared.pane.search.start(self.shared.pane.focused_pane);
+                self.pane.search.start(self.pane.focused_pane);
             }
             KeyCode::Char('n') => {
                 search::jump_to_git_match(ctx, self, true);
@@ -637,10 +629,10 @@ impl GitState {
                 }
             }
             KeyCode::Tab => {
-                self.set_focus(Self::next_tab_id(self.shared.pane.focused_pane));
+                self.set_focus(Self::next_tab_id(self.pane.focused_pane));
             }
             KeyCode::BackTab => {
-                self.set_focus(Self::prev_tab_id(self.shared.pane.focused_pane));
+                self.set_focus(Self::prev_tab_id(self.pane.focused_pane));
             }
             _ => {
                 let events = self.dispatch_key(key);
@@ -655,13 +647,13 @@ impl GitState {
     pub fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // Branch action menu intercepts all keys when open
         if Pane::<PaneEvent>::is_modal(&self.branch_list) {
-            let events = self.branch_list.handle_key(&self.shared.pane, key);
+            let events = self.branch_list.handle_key(&self.pane, key);
             return self.process_events(ctx, events);
         }
 
         // Search input mode intercepts all keys
-        if self.shared.pane.search.active {
-            if self.shared.pane.search.handle_input_key(key) {
+        if self.pane.search.active {
+            if self.pane.search.handle_input_key(key) {
                 search::execute_git_search(self);
                 search::jump_to_git_match(ctx, self, true);
             }
@@ -722,17 +714,14 @@ impl GitState {
     pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let ly = layout::compute_layout(area);
         status_bar::render_header(f, ctx, self, ly.header);
-        self.file_tree
-            .render(f, ctx, &self.shared.pane, ly.file_tree);
-        self.branch_list
-            .render(f, ctx, &self.shared.pane, ly.branch_list);
-        self.reflog.render(f, ctx, &self.shared.pane, ly.reflog);
+        self.file_tree.render(f, ctx, &self.pane, ly.file_tree);
+        self.branch_list.render(f, ctx, &self.pane, ly.branch_list);
+        self.reflog.render(f, ctx, &self.pane, ly.reflog);
 
-        if Self::is_commit_log_detail(self.shared.pane.focused_pane) {
-            self.git_log.render(f, ctx, &self.shared.pane, ly.main_pane);
+        if Self::is_commit_log_detail(self.pane.focused_pane) {
+            self.git_log.render(f, ctx, &self.pane, ly.main_pane);
         } else {
-            self.diff_view
-                .render(f, ctx, &self.shared.pane, ly.main_pane);
+            self.diff_view.render(f, ctx, &self.pane, ly.main_pane);
         }
 
         status_bar::render_status_bar(f, ctx, self, ly.status_bar);
@@ -775,11 +764,11 @@ impl GitState {
 
 impl crate::core::pane::FocusState<usize> for GitState {
     fn focused_pane(&self) -> usize {
-        self.shared.pane.focused_pane
+        self.pane.focused_pane
     }
     fn set_focus(&mut self, id: usize) {
-        self.shared.pane.previous_pane = self.shared.pane.focused_pane;
-        self.shared.pane.focused_pane = id;
+        self.pane.previous_pane = self.pane.focused_pane;
+        self.pane.focused_pane = id;
     }
 }
 
@@ -797,7 +786,7 @@ impl crate::core::app::PageState for GitState {
         GitState::render(self, f, ctx, area);
     }
     fn intercepts_all_keys(&self) -> bool {
-        self.shared.pane.search.active || Pane::<PaneEvent>::is_modal(&self.branch_list)
+        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.branch_list)
     }
     fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
         GitState::on_fs_change(self, ctx)
