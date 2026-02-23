@@ -48,13 +48,40 @@ pub enum GhBgMessage {
     PrDetail(Result<GhPrDetail, String>),
 }
 
+// === GhPanes (grouping struct for disjoint borrows) ===
+
+pub struct GhPanes {
+    pub issue_list: GhIssueListPane,
+    pub pr_list: GhPrListPane,
+    pub detail_view: GhDetailViewPane,
+}
+
+impl GhPanes {
+    #[allow(dead_code)]
+    pub fn get(&self, idx: usize) -> Option<&dyn Pane<PaneEvent>> {
+        match idx {
+            GH_PANE_ISSUE_LIST => Some(&self.issue_list),
+            GH_PANE_PR_LIST => Some(&self.pr_list),
+            GH_PANE_DETAIL => Some(&self.detail_view),
+            _ => None,
+        }
+    }
+
+    pub fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
+        match idx {
+            GH_PANE_ISSUE_LIST => Some(&mut self.issue_list),
+            GH_PANE_PR_LIST => Some(&mut self.pr_list),
+            GH_PANE_DETAIL => Some(&mut self.detail_view),
+            _ => None,
+        }
+    }
+}
+
 // === GitHubState ===
 
 pub struct GitHubState {
     pub pane: PaneShared,
-    pub issue_list: GhIssueListPane,
-    pub pr_list: GhPrListPane,
-    pub detail_view: GhDetailViewPane,
+    pub panes: GhPanes,
     // Page-level
     pub gh_available: Option<bool>,
     pub gh_error: Option<String>,
@@ -71,9 +98,11 @@ impl GitHubState {
                 previous_pane: GH_PANE_ISSUE_LIST,
                 search: SearchState::new(),
             },
-            issue_list: GhIssueListPane::new(),
-            pr_list: GhPrListPane::new(),
-            detail_view: GhDetailViewPane::new(),
+            panes: GhPanes {
+                issue_list: GhIssueListPane::new(),
+                pr_list: GhPrListPane::new(),
+                detail_view: GhDetailViewPane::new(),
+            },
             gh_available: None,
             gh_error: None,
             bg_rx: None,
@@ -102,8 +131,8 @@ impl GitHubState {
         });
 
         // Each pane loads its disk cache + spawns background fetch
-        self.issue_list.initialize(&tx);
-        self.pr_list.initialize(&tx);
+        self.panes.issue_list.initialize(&tx);
+        self.panes.pr_list.initialize(&tx);
 
         // Auto-load detail for the first item from disk cache
         self.load_detail();
@@ -128,15 +157,15 @@ impl GitHubState {
                     Err(e) => {
                         self.gh_available = Some(false);
                         self.gh_error = Some(e);
-                        self.issue_list.loading = false;
-                        self.pr_list.loading = false;
+                        self.panes.issue_list.loading = false;
+                        self.panes.pr_list.loading = false;
                     }
                 },
                 GhBgMessage::IssueList(result) => {
-                    self.issue_list.loading = false;
+                    self.panes.issue_list.loading = false;
                     match result {
                         Ok(issues) => {
-                            self.issue_list.apply_list(issues);
+                            self.panes.issue_list.apply_list(issues);
                             issue_list_arrived = true;
                         }
                         Err(e) => {
@@ -147,10 +176,10 @@ impl GitHubState {
                     }
                 }
                 GhBgMessage::PrList(result) => {
-                    self.pr_list.loading = false;
+                    self.panes.pr_list.loading = false;
                     match result {
                         Ok(prs) => {
-                            self.pr_list.apply_list(prs);
+                            self.panes.pr_list.apply_list(prs);
                             pr_list_arrived = true;
                         }
                         Err(e) => {
@@ -161,11 +190,11 @@ impl GitHubState {
                     }
                 }
                 GhBgMessage::IssueDetail(result) => match result {
-                    Ok(detail) => self.detail_view.apply_issue_detail(detail),
-                    Err(e) => self.detail_view.content = GhDetailContent::Error(e),
+                    Ok(detail) => self.panes.detail_view.apply_issue_detail(detail),
+                    Err(e) => self.panes.detail_view.content = GhDetailContent::Error(e),
                 },
                 GhBgMessage::PrDetail(result) => {
-                    self.detail_view.apply_pr_detail_result(result);
+                    self.panes.detail_view.apply_pr_detail_result(result);
                 }
             }
         }
@@ -192,13 +221,13 @@ impl GitHubState {
         };
         match origin {
             GH_PANE_ISSUE_LIST => {
-                if let Some(n) = self.issue_list.selected_number() {
-                    self.detail_view.load_issue(n, tx);
+                if let Some(n) = self.panes.issue_list.selected_number() {
+                    self.panes.detail_view.load_issue(n, tx);
                 }
             }
             GH_PANE_PR_LIST => {
-                if let Some(n) = self.pr_list.selected_number() {
-                    self.detail_view.load_pr(n, tx);
+                if let Some(n) = self.panes.pr_list.selected_number() {
+                    self.panes.detail_view.load_pr(n, tx);
                 }
             }
             _ => {}
@@ -207,7 +236,7 @@ impl GitHubState {
 
     /// Refresh only the currently displayed detail item (cache-bust + re-fetch).
     pub fn refresh_detail(&mut self) {
-        let (kind, number) = match &self.detail_view.content {
+        let (kind, number) = match &self.panes.detail_view.content {
             GhDetailContent::Issue(detail) => (GhDetailKind::Issue, detail.number),
             GhDetailContent::Pr(detail) => (GhDetailKind::Pr, detail.number),
             GhDetailContent::Loading { kind, number } => (*kind, *number),
@@ -219,15 +248,15 @@ impl GitHubState {
         };
         match kind {
             GhDetailKind::Issue => {
-                self.detail_view.invalidate_issue(number);
+                self.panes.detail_view.invalidate_issue(number);
                 if let Some(tx) = &self.bg_tx {
-                    self.detail_view.load_issue(number, tx);
+                    self.panes.detail_view.load_issue(number, tx);
                 }
             }
             GhDetailKind::Pr => {
-                self.detail_view.invalidate_pr(number);
+                self.panes.detail_view.invalidate_pr(number);
                 if let Some(tx) = &self.bg_tx {
-                    self.detail_view.load_pr(number, tx);
+                    self.panes.detail_view.load_pr(number, tx);
                 }
             }
         }
@@ -236,52 +265,44 @@ impl GitHubState {
     /// Refresh: re-fetch issue and PR lists, clear caches.
     pub fn refresh(&mut self) {
         self.gh_error = None;
-        self.detail_view.clear_caches();
+        self.panes.detail_view.clear_caches();
         if let Some(tx) = &self.bg_tx {
-            self.issue_list.spawn_fetch(tx);
-            self.pr_list.spawn_fetch(tx);
+            self.panes.issue_list.spawn_fetch(tx);
+            self.panes.pr_list.spawn_fetch(tx);
         }
     }
 
-    #[allow(dead_code)]
-    pub fn pane(&self, idx: usize) -> Option<&dyn Pane<PaneEvent>> {
-        match idx {
-            GH_PANE_ISSUE_LIST => Some(&self.issue_list),
-            GH_PANE_PR_LIST => Some(&self.pr_list),
-            GH_PANE_DETAIL => Some(&self.detail_view),
-            _ => None,
-        }
-    }
+    // === Tab navigation (private helpers) ===
 
-    #[allow(dead_code)]
-    pub fn pane_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
-        match idx {
-            GH_PANE_ISSUE_LIST => Some(&mut self.issue_list),
-            GH_PANE_PR_LIST => Some(&mut self.pr_list),
-            GH_PANE_DETAIL => Some(&mut self.detail_view),
-            _ => None,
-        }
+    const TAB_PANES: [usize; 2] = [GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST];
+
+    fn tab_index(pane: usize) -> Option<usize> {
+        Self::TAB_PANES.iter().position(|&p| p == pane)
     }
 
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        match self.pane.focused_pane {
-            GH_PANE_ISSUE_LIST => match key.code {
-                KeyCode::Char('l') | KeyCode::Tab => {
-                    vec![PaneEvent::SetFocus(GH_PANE_PR_LIST)]
+        let focused = self.pane.focused_pane;
+
+        // Phase 1: cross-pane navigation (tab panes only)
+        if let Some(tab_idx) = Self::tab_index(focused) {
+            match key.code {
+                KeyCode::Char('l') | KeyCode::Tab if tab_idx + 1 < Self::TAB_PANES.len() => {
+                    return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx + 1])];
                 }
-                _ => self.issue_list.handle_key(&self.pane, key),
-            },
-            GH_PANE_PR_LIST => match key.code {
-                KeyCode::Char('h') | KeyCode::BackTab => {
-                    vec![PaneEvent::SetFocus(GH_PANE_ISSUE_LIST)]
+                KeyCode::Char('h') | KeyCode::BackTab if tab_idx > 0 => {
+                    return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx - 1])];
                 }
-                _ => self.pr_list.handle_key(&self.pane, key),
-            },
-            GH_PANE_DETAIL => self.detail_view.handle_key(&self.pane, key),
-            _ => vec![],
+                _ => {}
+            }
         }
+
+        // Phase 2: per-pane delegation (dynamic dispatch)
+        self.panes
+            .get_mut(focused)
+            .map(|p| p.handle_key(&self.pane, key))
+            .unwrap_or_default()
     }
 
     // === Event processing ===
@@ -350,7 +371,7 @@ impl GitHubState {
                 }
             }
             KeyCode::Char('w') => {
-                self.detail_view.toggle_watch_mode();
+                self.panes.detail_view.toggle_watch_mode();
             }
             _ => {
                 let events = self.dispatch_key(key);
@@ -393,9 +414,14 @@ impl GitHubState {
     pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let gl = crate::github::layout::compute_gh_layout(area);
         status_bar::render_gh_header(f, ctx, gl.header);
-        self.issue_list.render(f, ctx, &self.pane, gl.issue_list);
-        self.pr_list.render(f, ctx, &self.pane, gl.pr_list);
-        self.detail_view.render(f, ctx, &self.pane, gl.main_pane);
+
+        for (idx, rect) in gl.pane_areas() {
+            self.panes
+                .get_mut(idx)
+                .unwrap()
+                .render(f, ctx, &self.pane, rect);
+        }
+
         status_bar::render_gh_status_bar(f, ctx, self, gl.status_bar);
     }
 
@@ -403,7 +429,7 @@ impl GitHubState {
 
     pub fn on_tick(&mut self) {
         if let Some(tx) = &self.bg_tx {
-            self.detail_view.handle_watch_tick(tx);
+            self.panes.detail_view.handle_watch_tick(tx);
         }
     }
 

@@ -147,10 +147,10 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         return;
     }
 
-    let issue_count = gh.issue_list.issues.len();
-    let pr_count = gh.pr_list.prs.len();
+    let issue_count = gh.panes.issue_list.issues.len();
+    let pr_count = gh.panes.pr_list.prs.len();
 
-    let loading = gh.issue_list.loading || gh.pr_list.loading;
+    let loading = gh.panes.issue_list.loading || gh.panes.pr_list.loading;
     let has_data = issue_count > 0 || pr_count > 0;
 
     let mut spans = Vec::new();
@@ -184,9 +184,9 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         }
     }
 
-    if let Some(time) = gh.detail_view.watch_last_update_time() {
+    if let Some(time) = gh.panes.detail_view.watch_last_update_time() {
         spans.push(Span::raw("  "));
-        if let Some(ref err) = gh.detail_view.watch_error {
+        if let Some(ref err) = gh.panes.detail_view.watch_error {
             spans.push(Span::styled(
                 format!("\u{23f1} Watch (err: {err})"),
                 Style::default().fg(Color::Red),

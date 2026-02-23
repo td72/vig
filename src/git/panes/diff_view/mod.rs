@@ -151,6 +151,10 @@ impl Pane<PaneEvent> for DiffViewPane {
         self.collect_search_matches(shared, query)
     }
 
+    fn drain_background(&mut self) {
+        self.highlight.drain_bg_highlights();
+    }
+
     fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
         if let SearchMatch::DiffLine {
             row,

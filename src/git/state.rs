@@ -784,6 +784,6 @@ impl crate::core::app::PageState for GitState {
         GitState::on_suspend_return(self, ctx, status)
     }
     fn drain_background(&mut self) {
-        self.diff_view.highlight.drain_bg_highlights();
+        self.diff_view.drain_background();
     }
 }

@@ -1,11 +1,23 @@
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 
+use crate::github::state::{GH_PANE_DETAIL, GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST};
+
 pub struct GhLayout {
     pub header: Rect,
     pub issue_list: Rect,
     pub pr_list: Rect,
     pub main_pane: Rect,
     pub status_bar: Rect,
+}
+
+impl GhLayout {
+    pub fn pane_areas(&self) -> [(usize, Rect); 3] {
+        [
+            (GH_PANE_ISSUE_LIST, self.issue_list),
+            (GH_PANE_PR_LIST, self.pr_list),
+            (GH_PANE_DETAIL, self.main_pane),
+        ]
+    }
 }
 
 pub fn compute_gh_layout(area: Rect) -> GhLayout {

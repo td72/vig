@@ -44,6 +44,7 @@ pub trait Pane<Event> {
         vec![]
     }
     fn jump_to_match(&mut self, _shared: &PaneShared, _search_match: &SearchMatch) {}
+    fn drain_background(&mut self) {}
 }
 
 // Note: #[allow(dead_code)] needed because set_focus is resolved as a trait method
