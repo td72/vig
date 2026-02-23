@@ -9,6 +9,7 @@ pub struct PaneShared {
     pub search: SearchState,
 }
 
+// Note: #[allow(dead_code)] needed because rustc doesn't track usage through dyn dispatch.
 #[allow(dead_code)]
 pub trait Pane<Event> {
     fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<Event>;
@@ -25,6 +26,8 @@ pub trait Pane<Event> {
     fn jump_to_match(&mut self, _shared: &PaneShared, _search_match: &SearchMatch) {}
 }
 
+// Note: #[allow(dead_code)] needed because set_focus is resolved as a trait method
+// but rustc doesn't always track inherent-looking calls to trait methods.
 #[allow(dead_code)]
 pub trait FocusState<P: Copy + PartialEq + 'static> {
     fn focused_pane(&self) -> P;
@@ -41,23 +44,5 @@ impl SubPaneScroll {
     pub fn reset(&mut self) {
         self.scroll_y = 0;
         self.selected_idx = 0;
-    }
-}
-
-#[allow(dead_code)]
-pub trait DetailState: FocusState<Self::SubPaneId> {
-    type SubPaneId: Copy + PartialEq + 'static;
-    fn sub_scroll(&self, id: Self::SubPaneId) -> &SubPaneScroll;
-    fn sub_scroll_mut(&mut self, id: Self::SubPaneId) -> &mut SubPaneScroll;
-    fn detail_view_height(&self) -> u16;
-    fn set_detail_view_height(&mut self, h: u16);
-    fn reset_sub_panes(&mut self);
-
-    fn active_scroll(&self) -> &SubPaneScroll {
-        self.sub_scroll(self.focused_pane())
-    }
-    fn active_scroll_mut(&mut self) -> &mut SubPaneScroll {
-        let id = self.focused_pane();
-        self.sub_scroll_mut(id)
     }
 }

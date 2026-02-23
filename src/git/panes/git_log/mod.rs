@@ -1,6 +1,6 @@
 pub(crate) mod view;
 
-use crate::core::pane::{DetailState, Pane, PaneShared, SubPaneScroll};
+use crate::core::pane::{Pane, PaneShared, SubPaneScroll};
 use crate::git::domain::graph::{self, GraphRow};
 use crate::git::domain::repository::{CommitFileChange, CommitInfo, Repo};
 use crate::git::state::{PaneEvent, PANE_REFLOG};
@@ -9,12 +9,6 @@ use ratatui::{layout::Rect, Frame};
 
 use crate::core::app::AppContext;
 use crate::core::search::SearchMatch;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
-pub enum GitLogDetailPane {
-    Detail,
-}
 
 pub struct GitLogPane {
     pub commits: Vec<CommitInfo>,
@@ -189,31 +183,5 @@ impl Pane<PaneEvent> for GitLogPane {
         if let SearchMatch::ListEntry(idx) = search_match {
             self.selected_idx = *idx;
         }
-    }
-}
-
-impl crate::core::pane::FocusState<GitLogDetailPane> for GitLogPane {
-    fn focused_pane(&self) -> GitLogDetailPane {
-        GitLogDetailPane::Detail
-    }
-    fn set_focus(&mut self, _id: GitLogDetailPane) {}
-}
-
-impl DetailState for GitLogPane {
-    type SubPaneId = GitLogDetailPane;
-    fn sub_scroll(&self, _id: GitLogDetailPane) -> &SubPaneScroll {
-        &self.detail
-    }
-    fn sub_scroll_mut(&mut self, _id: GitLogDetailPane) -> &mut SubPaneScroll {
-        &mut self.detail
-    }
-    fn detail_view_height(&self) -> u16 {
-        self.detail_view_height
-    }
-    fn set_detail_view_height(&mut self, h: u16) {
-        self.detail_view_height = h;
-    }
-    fn reset_sub_panes(&mut self) {
-        self.detail.reset();
     }
 }
