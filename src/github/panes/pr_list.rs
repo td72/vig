@@ -1,8 +1,9 @@
 use crate::core::app::AppContext;
+use crate::core::pane::PaneEvent;
 use crate::core::pane::PaneShared;
 use crate::github::domain::types::GhPrListItem;
 use crate::github::domain::{client, disk_cache};
-use crate::github::state::{GhBgMessage, GhPaneEvent, GH_PANE_DETAIL, GH_PANE_PR_LIST};
+use crate::github::state::{GhBgMessage, GH_PANE_DETAIL, GH_PANE_PR_LIST};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -58,38 +59,38 @@ impl GhPrListPane {
         self.prs.get(self.selected_idx).map(|pr| pr.number)
     }
 
-    pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<GhPaneEvent> {
+    pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.prs.is_empty() && self.selected_idx + 1 < self.prs.len() {
                     self.selected_idx += 1;
-                    return vec![GhPaneEvent::SelectionChanged];
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 if self.selected_idx > 0 {
                     self.selected_idx -= 1;
-                    return vec![GhPaneEvent::SelectionChanged];
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('g') => {
                 self.selected_idx = 0;
-                return vec![GhPaneEvent::SelectionChanged];
+                return vec![PaneEvent::SelectionChanged];
             }
             KeyCode::Char('G') => {
                 if !self.prs.is_empty() {
                     self.selected_idx = self.prs.len() - 1;
-                    return vec![GhPaneEvent::SelectionChanged];
+                    return vec![PaneEvent::SelectionChanged];
                 }
             }
             KeyCode::Char('i') | KeyCode::Enter => {
                 if !self.prs.is_empty() {
-                    return vec![GhPaneEvent::SetFocus(GH_PANE_DETAIL)];
+                    return vec![PaneEvent::SetFocus(GH_PANE_DETAIL)];
                 }
             }
             KeyCode::Char('o') => {
                 if let Some(pr) = self.prs.get(self.selected_idx) {
-                    return vec![GhPaneEvent::OpenPrBrowser(pr.number)];
+                    return vec![PaneEvent::OpenPrBrowser(pr.number)];
                 }
             }
             _ => {}

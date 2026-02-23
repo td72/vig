@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::page::PageAction;
-use crate::core::pane::{FocusState, PaneShared};
+use crate::core::pane::{FocusState, PaneEvent, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::ui::status_bar;
 use crate::github::domain::client;
@@ -46,16 +46,6 @@ pub enum GhBgMessage {
     PrList(Result<Vec<GhPrListItem>, String>),
     IssueDetail(Result<GhIssueDetail, String>),
     PrDetail(Result<GhPrDetail, String>),
-}
-
-// === GhPaneEvent: cross-pane side effects ===
-
-pub enum GhPaneEvent {
-    SetFocus(usize),
-    SelectionChanged,
-    OpenIssueBrowser(u64),
-    OpenPrBrowser(u64),
-    OpenUrl(String),
 }
 
 // === GitHubState ===
@@ -255,17 +245,17 @@ impl GitHubState {
 
     // === Dispatch ===
 
-    pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<GhPaneEvent> {
+    pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
         match self.pane.focused_pane {
             GH_PANE_ISSUE_LIST => match key.code {
                 KeyCode::Char('l') | KeyCode::Tab => {
-                    vec![GhPaneEvent::SetFocus(GH_PANE_PR_LIST)]
+                    vec![PaneEvent::SetFocus(GH_PANE_PR_LIST)]
                 }
                 _ => self.issue_list.handle_key(&self.pane, key),
             },
             GH_PANE_PR_LIST => match key.code {
                 KeyCode::Char('h') | KeyCode::BackTab => {
-                    vec![GhPaneEvent::SetFocus(GH_PANE_ISSUE_LIST)]
+                    vec![PaneEvent::SetFocus(GH_PANE_ISSUE_LIST)]
                 }
                 _ => self.pr_list.handle_key(&self.pane, key),
             },
@@ -279,20 +269,20 @@ impl GitHubState {
     pub fn process_events(
         &mut self,
         ctx: &mut AppContext,
-        events: Vec<GhPaneEvent>,
+        events: Vec<PaneEvent>,
     ) -> Result<PageAction> {
         for event in events {
             match event {
-                GhPaneEvent::SetFocus(pane) => {
+                PaneEvent::SetFocus(pane) => {
                     self.set_focus(pane);
                     if pane == GH_PANE_DETAIL {
                         self.load_detail();
                     }
                 }
-                GhPaneEvent::SelectionChanged => {
+                PaneEvent::SelectionChanged => {
                     self.load_detail();
                 }
-                GhPaneEvent::OpenIssueBrowser(n) => match client::open_issue_in_browser(n) {
+                PaneEvent::OpenIssueBrowser(n) => match client::open_issue_in_browser(n) {
                     Ok(()) => {
                         ctx.status_message = Some(format!("Opening issue #{n} in browser..."));
                     }
@@ -300,7 +290,7 @@ impl GitHubState {
                         ctx.status_message = Some(format!("Failed to open browser: {e}"));
                     }
                 },
-                GhPaneEvent::OpenPrBrowser(n) => match client::open_pr_in_browser(n) {
+                PaneEvent::OpenPrBrowser(n) => match client::open_pr_in_browser(n) {
                     Ok(()) => {
                         ctx.status_message = Some(format!("Opening PR #{n} in browser..."));
                     }
@@ -308,7 +298,7 @@ impl GitHubState {
                         ctx.status_message = Some(format!("Failed to open browser: {e}"));
                     }
                 },
-                GhPaneEvent::OpenUrl(url) => match client::open_url(&url) {
+                PaneEvent::OpenUrl(url) => match client::open_url(&url) {
                     Ok(()) => {
                         ctx.status_message = Some("Opening in browser...".to_string());
                     }
@@ -316,6 +306,7 @@ impl GitHubState {
                         ctx.status_message = Some(e);
                     }
                 },
+                _ => {} // Git-specific events — not applicable here
             }
         }
         Ok(PageAction::None)

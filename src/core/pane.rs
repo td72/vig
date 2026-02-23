@@ -3,6 +3,26 @@ use crate::core::search::{SearchMatch, SearchState};
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 
+pub enum PaneEvent {
+    // Common
+    SetFocus(usize),
+    SelectionChanged,
+    StatusMessage(String),
+    CopyToClipboard(String),
+    OpenUrl(String),
+    // Git-specific
+    RefreshDiff,
+    SetDiffBase(Option<String>),
+    SwitchBranch(String),
+    DeleteBranch(String),
+    StartSearch(usize),
+    ClearSearch,
+    JumpToMatch(bool),
+    // GitHub-specific
+    OpenIssueBrowser(u64),
+    OpenPrBrowser(u64),
+}
+
 pub struct PaneShared {
     pub focused_pane: usize,
     pub previous_pane: usize,

@@ -1,5 +1,6 @@
 use crate::core::app::{AppContext, ErrorDialogState};
 use crate::core::page::{ExternalCommand, PageAction};
+pub use crate::core::pane::PaneEvent;
 use crate::core::pane::{FocusState, Pane, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
@@ -22,23 +23,6 @@ pub const PANE_BRANCH_LIST: usize = 1;
 pub const PANE_GIT_LOG: usize = 2;
 pub const PANE_REFLOG: usize = 3;
 pub const PANE_DIFF_VIEW: usize = 4;
-
-// === PaneEvent: cross-pane side effects ===
-
-pub enum PaneEvent {
-    SetFocus(usize),
-    SelectionChanged,
-    RefreshDiff,
-    SetDiffBase(Option<String>),
-    SwitchBranch(String),
-    DeleteBranch(String),
-    StartSearch(usize),
-    ClearSearch,
-    JumpToMatch(bool),
-    StatusMessage(String),
-    CopyToClipboard(String),
-    OpenUrl(String),
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BranchAction {
@@ -548,6 +532,7 @@ impl GitState {
                         ctx.status_message = Some(e);
                     }
                 }
+                _ => {} // GitHub-specific events — not applicable here
             }
         }
         Ok(action)

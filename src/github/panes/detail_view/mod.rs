@@ -1,10 +1,11 @@
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
+use crate::core::pane::PaneEvent;
 use crate::core::pane::{PaneShared, SubPaneScroll};
 use crate::github::domain::types::*;
 use crate::github::domain::{client, disk_cache};
-use crate::github::state::{GhBgMessage, GhDetailContent, GhDetailKind, GhDetailPane, GhPaneEvent};
+use crate::github::state::{GhBgMessage, GhDetailContent, GhDetailKind, GhDetailPane};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 use std::collections::HashMap;
@@ -248,7 +249,7 @@ impl GhDetailViewPane {
         });
     }
 
-    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<GhPaneEvent> {
+    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         // Determine item count for selection-based panes
         let pane = self.active_pane;
         let item_count = match pane {
@@ -377,14 +378,14 @@ impl GhDetailViewPane {
                 return self.open_detail_item();
             }
             KeyCode::Esc => {
-                return vec![GhPaneEvent::SetFocus(shared.previous_pane)];
+                return vec![PaneEvent::SetFocus(shared.previous_pane)];
             }
             _ => {}
         }
         vec![]
     }
 
-    fn open_detail_item(&self) -> Vec<GhPaneEvent> {
+    fn open_detail_item(&self) -> Vec<PaneEvent> {
         let url: Option<String> = match self.active_pane {
             GhDetailPane::Status => {
                 if let GhDetailContent::Pr(ref detail) = self.content {
@@ -426,17 +427,17 @@ impl GhDetailViewPane {
             },
             GhDetailPane::Body => match &self.content {
                 GhDetailContent::Issue(issue) => {
-                    return vec![GhPaneEvent::OpenIssueBrowser(issue.number)];
+                    return vec![PaneEvent::OpenIssueBrowser(issue.number)];
                 }
                 GhDetailContent::Pr(pr) => {
-                    return vec![GhPaneEvent::OpenPrBrowser(pr.number)];
+                    return vec![PaneEvent::OpenPrBrowser(pr.number)];
                 }
                 _ => return vec![],
             },
         };
 
         if let Some(url) = url {
-            vec![GhPaneEvent::OpenUrl(url)]
+            vec![PaneEvent::OpenUrl(url)]
         } else {
             vec![]
         }
