@@ -10,7 +10,7 @@ pub(crate) fn execute_git_search(git: &mut GitState) {
         None => return,
     };
     let origin = git.pane.search.origin;
-    let matches = if let Some(pane) = git.pane(origin) {
+    let matches = if let Some(pane) = git.panes.get(origin) {
         pane.collect_search_matches(&git.pane, &query)
     } else {
         vec![]
@@ -57,25 +57,31 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
     let origin = git.pane.search.origin;
 
     // Jump + post-jump cross-pane sync
-    // Note: pane_mut() can't be used here due to borrow conflict with &git.pane
+    // Disjoint borrows: git.panes.* fields can be borrowed independently from git.pane
     match origin {
         PANE_DIFF_VIEW => {
-            git.diff_view.jump_to_match(&git.pane, &search_match);
+            git.panes.diff_view.jump_to_match(&git.pane, &search_match);
         }
         PANE_GIT_LOG => {
-            git.git_log.jump_to_match(&git.pane, &search_match);
-            git.git_log.load_detail(&git.repo);
+            git.panes.git_log.jump_to_match(&git.pane, &search_match);
+            git.panes.git_log.load_detail(&git.repo);
         }
         PANE_BRANCH_LIST => {
-            git.branch_list.jump_to_match(&git.pane, &search_match);
-            if let Some(branch) = git.branch_list.branches.get(git.branch_list.selected_idx) {
+            git.panes
+                .branch_list
+                .jump_to_match(&git.pane, &search_match);
+            if let Some(branch) = git
+                .panes
+                .branch_list
+                .branches
+                .get(git.panes.branch_list.selected_idx)
+            {
                 let name = branch.name.clone();
-                git.git_log.load_for_ref(&git.repo, &name);
+                git.panes.git_log.load_for_ref(&git.repo, &name);
             }
         }
         _ => {
-            // FileTree, Reflog, etc. — use dynamic dispatch via set_selected_idx
-            if let Some(pane) = git.pane_mut(origin) {
+            if let Some(pane) = git.panes.get_mut(origin) {
                 if let crate::core::search::SearchMatch::ListEntry(idx) = search_match {
                     pane.set_selected_idx(idx);
                 }
@@ -90,8 +96,11 @@ pub(crate) fn jump_to_git_match(ctx: &mut AppContext, git: &mut GitState, forwar
 pub(crate) fn re_search_on_file_change(git: &mut GitState) {
     if git.pane.search.origin == PANE_DIFF_VIEW && git.pane.search.query.is_some() {
         git.pane.search.reset_matches();
-        git.diff_view.highlight.content_lines_cache = None;
+        git.panes.diff_view.highlight.content_lines_cache = None;
         let query = git.pane.search.query.clone().unwrap();
-        git.pane.search.matches = git.diff_view.collect_search_matches(&git.pane, &query);
+        git.pane.search.matches = git
+            .panes
+            .diff_view
+            .collect_search_matches(&git.pane, &query);
     }
 }

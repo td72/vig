@@ -1,3 +1,4 @@
+use crate::git::state::{PANE_BRANCH_LIST, PANE_FILE_TREE, PANE_REFLOG};
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 
 pub struct AppLayout {
@@ -7,6 +8,17 @@ pub struct AppLayout {
     pub reflog: Rect,
     pub main_pane: Rect,
     pub status_bar: Rect,
+}
+
+impl AppLayout {
+    pub fn pane_areas(&self, main_pane_idx: usize) -> [(usize, Rect); 4] {
+        [
+            (PANE_FILE_TREE, self.file_tree),
+            (PANE_BRANCH_LIST, self.branch_list),
+            (PANE_REFLOG, self.reflog),
+            (main_pane_idx, self.main_pane),
+        ]
+    }
 }
 
 pub fn compute_layout(area: Rect) -> AppLayout {

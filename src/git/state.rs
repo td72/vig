@@ -250,16 +250,46 @@ impl HighlightState {
 
 pub use crate::git::domain::tree::TreeEntry;
 
-pub struct GitState {
-    pub pane: PaneShared,
-    pub repo: Repo,
-    pub diff_meta: DiffMeta,
-    pub diff_base_ref: Option<String>,
+// === GitPanes (grouping struct for disjoint borrows) ===
+
+pub struct GitPanes {
     pub file_tree: FileTreePane,
     pub diff_view: DiffViewPane,
     pub branch_list: BranchListPane,
     pub git_log: GitLogPane,
     pub reflog: ReflogPane,
+}
+
+impl GitPanes {
+    pub fn get(&self, idx: usize) -> Option<&dyn Pane<PaneEvent>> {
+        match idx {
+            PANE_FILE_TREE => Some(&self.file_tree),
+            PANE_BRANCH_LIST => Some(&self.branch_list),
+            PANE_GIT_LOG => Some(&self.git_log),
+            PANE_REFLOG => Some(&self.reflog),
+            PANE_DIFF_VIEW => Some(&self.diff_view),
+            _ => None,
+        }
+    }
+
+    pub fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
+        match idx {
+            PANE_FILE_TREE => Some(&mut self.file_tree),
+            PANE_BRANCH_LIST => Some(&mut self.branch_list),
+            PANE_GIT_LOG => Some(&mut self.git_log),
+            PANE_REFLOG => Some(&mut self.reflog),
+            PANE_DIFF_VIEW => Some(&mut self.diff_view),
+            _ => None,
+        }
+    }
+}
+
+pub struct GitState {
+    pub pane: PaneShared,
+    pub panes: GitPanes,
+    pub repo: Repo,
+    pub diff_meta: DiffMeta,
+    pub diff_base_ref: Option<String>,
 }
 
 impl GitState {
@@ -273,6 +303,13 @@ impl GitState {
                 previous_pane: PANE_FILE_TREE,
                 search: SearchState::new(),
             },
+            panes: GitPanes {
+                file_tree: FileTreePane::new(Rc::clone(&files)),
+                diff_view: DiffViewPane::new(Rc::clone(&files)),
+                branch_list: BranchListPane::new(),
+                git_log: GitLogPane::new(),
+                reflog: ReflogPane::new(),
+            },
             repo,
             diff_meta: DiffMeta {
                 branch_name: result.branch_name,
@@ -280,16 +317,11 @@ impl GitState {
                 file_count: files.len(),
             },
             diff_base_ref: None,
-            file_tree: FileTreePane::new(Rc::clone(&files)),
-            diff_view: DiffViewPane::new(Rc::clone(&files)),
-            branch_list: BranchListPane::new(),
-            git_log: GitLogPane::new(),
-            reflog: ReflogPane::new(),
         };
-        state.diff_view.current_file_idx = state.file_tree.selected_file_idx();
+        state.panes.diff_view.current_file_idx = state.panes.file_tree.selected_file_idx();
         state.load_branches();
         state.load_reflog();
-        state.diff_view.highlight.spawn_bg_highlight(&files);
+        state.panes.diff_view.highlight.spawn_bg_highlight(&files);
         Ok(state)
     }
 
@@ -305,8 +337,8 @@ impl GitState {
                     stats: result.stats,
                     file_count: files.len(),
                 };
-                self.file_tree.set_files(Rc::clone(&files));
-                self.diff_view.set_files(Rc::clone(&files));
+                self.panes.file_tree.set_files(Rc::clone(&files));
+                self.panes.diff_view.set_files(Rc::clone(&files));
                 None
             }
             Err(e) => {
@@ -318,82 +350,59 @@ impl GitState {
                     stats: result.stats,
                     file_count: files.len(),
                 };
-                self.file_tree.set_files(Rc::clone(&files));
-                self.diff_view.set_files(Rc::clone(&files));
+                self.panes.file_tree.set_files(Rc::clone(&files));
+                self.panes.diff_view.set_files(Rc::clone(&files));
                 Some(format!("Invalid ref, fell back to HEAD: {e}"))
             }
         };
         // Preserve selection by path
         if let Some(path) = old_path {
             let entries = self.tree_entries();
-            self.file_tree.selected_idx = entries
+            self.panes.file_tree.selected_idx = entries
                 .iter()
-                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.file_tree.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
+                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.panes.file_tree.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
                 .unwrap_or(0);
         }
         let entries = self.tree_entries();
-        if self.file_tree.selected_idx >= entries.len() && !entries.is_empty() {
-            self.file_tree.selected_idx = entries.len() - 1;
+        if self.panes.file_tree.selected_idx >= entries.len() && !entries.is_empty() {
+            self.panes.file_tree.selected_idx = entries.len() - 1;
         }
-        self.diff_view.current_file_idx = self.file_tree.selected_file_idx();
-        self.diff_view.scroll.y = 0;
-        self.diff_view.scroll.x = 0;
-        self.diff_view.highlight.reset();
+        self.panes.diff_view.current_file_idx = self.panes.file_tree.selected_file_idx();
+        self.panes.diff_view.scroll.y = 0;
+        self.panes.diff_view.scroll.x = 0;
+        self.panes.diff_view.highlight.reset();
         self.pane.search.reset_matches();
-        self.diff_view
+        self.panes
+            .diff_view
             .highlight
-            .spawn_bg_highlight(&self.file_tree.files);
+            .spawn_bg_highlight(&self.panes.file_tree.files);
         Ok(fallback_msg)
     }
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
-        self.file_tree.selected_file()
+        self.panes.file_tree.selected_file()
     }
 
     pub fn tree_entries(&self) -> Vec<TreeEntry> {
-        self.file_tree.tree_entries()
+        self.panes.file_tree.tree_entries()
     }
 
     pub fn load_branches(&mut self) {
-        self.branch_list.load(&self.repo);
+        self.panes.branch_list.load(&self.repo);
         self.update_branch_log();
     }
 
     pub fn update_branch_log(&mut self) {
-        if let Some(branch) = self.branch_list.selected_branch() {
+        if let Some(branch) = self.panes.branch_list.selected_branch() {
             let name = branch.name.clone();
-            self.git_log.load_for_ref(&self.repo, &name);
+            self.panes.git_log.load_for_ref(&self.repo, &name);
         } else {
-            self.git_log.clear_log();
+            self.panes.git_log.clear_log();
         }
     }
 
     pub fn load_reflog(&mut self) {
-        self.reflog.load(&self.repo);
-    }
-
-    // === Dynamic dispatch helpers ===
-
-    pub fn pane(&self, idx: usize) -> Option<&dyn Pane<PaneEvent>> {
-        match idx {
-            PANE_FILE_TREE => Some(&self.file_tree),
-            PANE_BRANCH_LIST => Some(&self.branch_list),
-            PANE_GIT_LOG => Some(&self.git_log),
-            PANE_REFLOG => Some(&self.reflog),
-            PANE_DIFF_VIEW => Some(&self.diff_view),
-            _ => None,
-        }
-    }
-
-    pub fn pane_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
-        match idx {
-            PANE_FILE_TREE => Some(&mut self.file_tree),
-            PANE_BRANCH_LIST => Some(&mut self.branch_list),
-            PANE_GIT_LOG => Some(&mut self.git_log),
-            PANE_REFLOG => Some(&mut self.reflog),
-            PANE_DIFF_VIEW => Some(&mut self.diff_view),
-            _ => None,
-        }
+        self.panes.reflog.load(&self.repo);
     }
 
     // === Tab navigation (private helpers) ===
@@ -450,19 +459,16 @@ impl GitState {
             }
         }
 
-        match focused {
-            PANE_FILE_TREE => self.file_tree.handle_key(&self.pane, key),
-            PANE_BRANCH_LIST => {
-                if key.code == KeyCode::Esc && self.diff_base_ref.is_some() {
-                    return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
-                }
-                self.branch_list.handle_key(&self.pane, key)
-            }
-            PANE_REFLOG => self.reflog.handle_key(&self.pane, key),
-            PANE_GIT_LOG => self.git_log.handle_key(&self.pane, key),
-            PANE_DIFF_VIEW => self.diff_view.handle_key(&self.pane, key),
-            _ => vec![],
+        // Phase 2: per-pane delegation
+        if focused == PANE_BRANCH_LIST && key.code == KeyCode::Esc && self.diff_base_ref.is_some() {
+            return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
         }
+
+        // Dynamic dispatch
+        self.panes
+            .get_mut(focused)
+            .map(|p| p.handle_key(&self.pane, key))
+            .unwrap_or_default()
     }
 
     // === Event processing ===
@@ -542,15 +548,17 @@ impl GitState {
     fn sync_detail(&mut self, selected: usize) {
         match selected {
             PANE_FILE_TREE => {
-                self.diff_view.set_file(self.file_tree.selected_file_idx());
-                self.diff_view.reset_scroll();
+                self.panes
+                    .diff_view
+                    .set_file(self.panes.file_tree.selected_file_idx());
+                self.panes.diff_view.reset_scroll();
                 search::re_search_on_file_change(self);
             }
             PANE_BRANCH_LIST => {
                 self.update_branch_log();
             }
             PANE_GIT_LOG => {
-                self.git_log.load_detail(&self.repo);
+                self.panes.git_log.load_detail(&self.repo);
             }
             _ => {}
         }
@@ -574,7 +582,7 @@ impl GitState {
     pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // In Normal/Visual modes, keys are handled by the mode handler exclusively
         if self.pane.focused_pane == PANE_DIFF_VIEW
-            && self.diff_view.vim.mode != DiffViewMode::Scroll
+            && self.panes.diff_view.vim.mode != DiffViewMode::Scroll
         {
             let events = self.dispatch_key(key);
             return self.process_events(ctx, events);
@@ -631,8 +639,8 @@ impl GitState {
 
     pub fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // Branch action menu intercepts all keys when open
-        if Pane::<PaneEvent>::is_modal(&self.branch_list) {
-            let events = self.branch_list.handle_key(&self.pane, key);
+        if Pane::<PaneEvent>::is_modal(&self.panes.branch_list) {
+            let events = self.panes.branch_list.handle_key(&self.pane, key);
             return self.process_events(ctx, events);
         }
 
@@ -699,20 +707,23 @@ impl GitState {
     pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let ly = layout::compute_layout(area);
         status_bar::render_header(f, ctx, self, ly.header);
-        self.file_tree.render(f, ctx, &self.pane, ly.file_tree);
-        self.branch_list.render(f, ctx, &self.pane, ly.branch_list);
-        self.reflog.render(f, ctx, &self.pane, ly.reflog);
 
-        if Self::is_commit_log_detail(self.pane.focused_pane) {
-            self.git_log.render(f, ctx, &self.pane, ly.main_pane);
+        let main_idx = if Self::is_commit_log_detail(self.pane.focused_pane) {
+            PANE_GIT_LOG
         } else {
-            self.diff_view.render(f, ctx, &self.pane, ly.main_pane);
+            PANE_DIFF_VIEW
+        };
+        for (idx, rect) in ly.pane_areas(main_idx) {
+            self.panes
+                .get_mut(idx)
+                .unwrap()
+                .render(f, ctx, &self.pane, rect);
         }
 
         status_bar::render_status_bar(f, ctx, self, ly.status_bar);
 
-        if self.branch_list.action_menu.is_some() {
-            self.branch_list.render_action_menu(f, area);
+        if self.panes.branch_list.action_menu.is_some() {
+            self.panes.branch_list.render_action_menu(f, area);
         }
     }
 
@@ -771,7 +782,7 @@ impl crate::core::app::PageState for GitState {
         GitState::render(self, f, ctx, area);
     }
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.branch_list)
+        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.panes.branch_list)
     }
     fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
         GitState::on_fs_change(self, ctx)
@@ -784,6 +795,6 @@ impl crate::core::app::PageState for GitState {
         GitState::on_suspend_return(self, ctx, status)
     }
     fn drain_background(&mut self) {
-        self.diff_view.drain_background();
+        self.panes.diff_view.drain_background();
     }
 }
