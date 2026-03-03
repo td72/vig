@@ -400,12 +400,8 @@ impl GitHubState {
         let gl = crate::github::layout::compute_gh_layout(area);
         status_bar::render_gh_header(f, ctx, gl.header);
 
-        for (idx, rect) in gl.pane_areas() {
-            self.panes
-                .get_mut(idx)
-                .unwrap()
-                .render(f, ctx, &self.pane, rect);
-        }
+        self.pane
+            .render_panes(&mut self.panes, f, ctx, &gl.pane_areas());
 
         status_bar::render_gh_status_bar(f, ctx, self, gl.status_bar);
     }

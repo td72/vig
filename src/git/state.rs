@@ -686,12 +686,8 @@ impl GitState {
         } else {
             PANE_DIFF_VIEW
         };
-        for (idx, rect) in ly.pane_areas(main_idx) {
-            self.panes
-                .get_mut(idx)
-                .unwrap()
-                .render(f, ctx, &self.pane, rect);
-        }
+        self.pane
+            .render_panes(&mut self.panes, f, ctx, &ly.pane_areas(main_idx));
 
         status_bar::render_status_bar(f, ctx, self, ly.status_bar);
 

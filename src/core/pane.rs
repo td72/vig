@@ -67,6 +67,29 @@ impl PaneShared {
             _ => None,
         }
     }
+
+    /// Delegate a key event to the currently focused pane via dynamic dispatch.
+    pub fn dispatch_to_pane(&self, panes: &mut impl PaneSet, key: KeyEvent) -> Vec<PaneEvent> {
+        panes
+            .get_mut(self.focused_pane)
+            .map(|p| p.handle_key(self, key))
+            .unwrap_or_default()
+    }
+
+    /// Render all panes for the given layout areas.
+    pub fn render_panes(
+        &self,
+        panes: &mut impl PaneSet,
+        f: &mut Frame,
+        ctx: &AppContext,
+        areas: &[(usize, Rect)],
+    ) {
+        for &(idx, rect) in areas {
+            if let Some(p) = panes.get_mut(idx) {
+                p.render(f, ctx, self, rect);
+            }
+        }
+    }
 }
 
 use crate::core::page::PageAction;
@@ -105,16 +128,6 @@ pub fn handle_common_view_key(ctx: &mut AppContext, key: KeyEvent) -> Option<Pag
 #[allow(dead_code)]
 pub trait PaneSet {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>>;
-}
-
-impl PaneShared {
-    /// Delegate a key event to the currently focused pane via dynamic dispatch.
-    pub fn dispatch_to_pane(&self, panes: &mut impl PaneSet, key: KeyEvent) -> Vec<PaneEvent> {
-        panes
-            .get_mut(self.focused_pane)
-            .map(|p| p.handle_key(self, key))
-            .unwrap_or_default()
-    }
 }
 
 #[allow(dead_code)]
