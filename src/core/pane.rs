@@ -29,17 +29,12 @@ pub struct PaneShared {
     pub search: SearchState,
 }
 
-impl FocusState<usize> for PaneShared {
-    fn focused_pane(&self) -> usize {
-        self.focused_pane
-    }
-    fn set_focus(&mut self, id: usize) {
+impl PaneShared {
+    pub fn set_focus(&mut self, id: usize) {
         self.previous_pane = self.focused_pane;
         self.focused_pane = id;
     }
-}
 
-impl PaneShared {
     pub fn tab_index(&self, tab_panes: &[usize]) -> Option<usize> {
         tab_panes.iter().position(|&p| p == self.focused_pane)
     }
@@ -55,6 +50,21 @@ impl PaneShared {
         match self.tab_index(tab_panes) {
             Some(idx) => tab_panes[(idx + tab_panes.len() - 1) % tab_panes.len()],
             None => tab_panes[0],
+        }
+    }
+
+    /// Handle h/l tab navigation common to all pages.
+    /// Returns `Some(events)` if the key was consumed, `None` otherwise.
+    pub fn dispatch_tab_key(&self, tab_panes: &[usize], key: KeyEvent) -> Option<Vec<PaneEvent>> {
+        let tab_idx = self.tab_index(tab_panes)?;
+        match key.code {
+            KeyCode::Char('h') if tab_idx > 0 => {
+                Some(vec![PaneEvent::SetFocus(tab_panes[tab_idx - 1])])
+            }
+            KeyCode::Char('l') if tab_idx + 1 < tab_panes.len() => {
+                Some(vec![PaneEvent::SetFocus(tab_panes[tab_idx + 1])])
+            }
+            _ => None,
         }
     }
 }
@@ -107,14 +117,6 @@ pub trait Pane<Event> {
     }
     fn jump_to_match(&mut self, _shared: &PaneShared, _search_match: &SearchMatch) {}
     fn drain_background(&mut self) {}
-}
-
-// Note: #[allow(dead_code)] needed because set_focus is resolved as a trait method
-// but rustc doesn't always track inherent-looking calls to trait methods.
-#[allow(dead_code)]
-pub trait FocusState<P: Copy + PartialEq + 'static> {
-    fn focused_pane(&self) -> P;
-    fn set_focus(&mut self, id: P);
 }
 
 #[derive(Debug, Default, Clone)]

@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::page::PageAction;
-use crate::core::pane::{self, FocusState, Pane, PaneEvent, PaneShared};
+use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::ui::status_bar;
 use crate::github::domain::client;
@@ -57,16 +57,6 @@ pub struct GhPanes {
 }
 
 impl GhPanes {
-    #[allow(dead_code)]
-    pub fn get(&self, idx: usize) -> Option<&dyn Pane<PaneEvent>> {
-        match idx {
-            GH_PANE_ISSUE_LIST => Some(&self.issue_list),
-            GH_PANE_PR_LIST => Some(&self.pr_list),
-            GH_PANE_DETAIL => Some(&self.detail_view),
-            _ => None,
-        }
-    }
-
     pub fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
         match idx {
             GH_PANE_ISSUE_LIST => Some(&mut self.issue_list),
@@ -279,13 +269,18 @@ impl GitHubState {
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
         let focused = self.pane.focused_pane;
 
-        // Phase 1: cross-pane navigation (tab panes only)
+        // Phase 1: shared h/l tab navigation
+        if let Some(events) = self.pane.dispatch_tab_key(&Self::TAB_PANES, key) {
+            return events;
+        }
+
+        // Phase 1b: page-specific tab-pane keys (Tab/BackTab)
         if let Some(tab_idx) = self.pane.tab_index(&Self::TAB_PANES) {
             match key.code {
-                KeyCode::Char('l') | KeyCode::Tab if tab_idx + 1 < Self::TAB_PANES.len() => {
+                KeyCode::Tab if tab_idx + 1 < Self::TAB_PANES.len() => {
                     return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx + 1])];
                 }
-                KeyCode::Char('h') | KeyCode::BackTab if tab_idx > 0 => {
+                KeyCode::BackTab if tab_idx > 0 => {
                     return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx - 1])];
                 }
                 _ => {}

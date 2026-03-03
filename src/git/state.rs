@@ -1,7 +1,7 @@
 use crate::core::app::{AppContext, ErrorDialogState};
 use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
-use crate::core::pane::{self, FocusState, Pane, PaneShared};
+use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::core::ui::status_bar;
@@ -416,14 +416,14 @@ impl GitState {
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
         let focused = self.pane.focused_pane;
 
-        if let Some(tab_idx) = self.pane.tab_index(&Self::TAB_PANES) {
+        // Phase 1: shared h/l tab navigation
+        if let Some(events) = self.pane.dispatch_tab_key(&Self::TAB_PANES, key) {
+            return events;
+        }
+
+        // Phase 1b: page-specific tab-pane keys (i, Esc)
+        if self.pane.tab_index(&Self::TAB_PANES).is_some() {
             match key.code {
-                KeyCode::Char('h') if tab_idx > 0 => {
-                    return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx - 1])];
-                }
-                KeyCode::Char('l') if tab_idx + 1 < Self::TAB_PANES.len() => {
-                    return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx + 1])];
-                }
                 KeyCode::Char('i') => {
                     let target = if Self::is_commit_log_detail(focused) {
                         PANE_GIT_LOG
