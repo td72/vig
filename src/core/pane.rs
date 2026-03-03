@@ -103,6 +103,21 @@ pub fn handle_common_view_key(ctx: &mut AppContext, key: KeyEvent) -> Option<Pag
 
 // Note: #[allow(dead_code)] needed because rustc doesn't track usage through dyn dispatch.
 #[allow(dead_code)]
+pub trait PaneSet {
+    fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>>;
+}
+
+impl PaneShared {
+    /// Delegate a key event to the currently focused pane via dynamic dispatch.
+    pub fn dispatch_to_pane(&self, panes: &mut impl PaneSet, key: KeyEvent) -> Vec<PaneEvent> {
+        panes
+            .get_mut(self.focused_pane)
+            .map(|p| p.handle_key(self, key))
+            .unwrap_or_default()
+    }
+}
+
+#[allow(dead_code)]
 pub trait Pane<Event> {
     fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<Event>;
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect);

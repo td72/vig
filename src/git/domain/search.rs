@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::pane::Pane;
+use crate::core::pane::{Pane, PaneSet};
 use crate::git::state::{GitState, PANE_BRANCH_LIST, PANE_DIFF_VIEW, PANE_GIT_LOG};
 
 pub(crate) fn execute_git_search(git: &mut GitState) {

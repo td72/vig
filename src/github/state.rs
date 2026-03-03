@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::page::PageAction;
-use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
+use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::ui::status_bar;
 use crate::github::domain::client;
@@ -56,8 +56,8 @@ pub struct GhPanes {
     pub detail_view: GhDetailViewPane,
 }
 
-impl GhPanes {
-    pub fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
+impl PaneSet for GhPanes {
+    fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
         match idx {
             GH_PANE_ISSUE_LIST => Some(&mut self.issue_list),
             GH_PANE_PR_LIST => Some(&mut self.pr_list),
@@ -267,8 +267,6 @@ impl GitHubState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        let focused = self.pane.focused_pane;
-
         // Phase 1: shared h/l tab navigation
         if let Some(events) = self.pane.dispatch_tab_key(&Self::TAB_PANES, key) {
             return events;
@@ -288,10 +286,7 @@ impl GitHubState {
         }
 
         // Phase 2: per-pane delegation (dynamic dispatch)
-        self.panes
-            .get_mut(focused)
-            .map(|p| p.handle_key(&self.pane, key))
-            .unwrap_or_default()
+        self.pane.dispatch_to_pane(&mut self.panes, key)
     }
 
     // === Event processing ===

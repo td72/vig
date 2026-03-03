@@ -1,7 +1,7 @@
 use crate::core::app::{AppContext, ErrorDialogState};
 use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
-use crate::core::pane::{self, Pane, PaneShared};
+use crate::core::pane::{self, Pane, PaneSet, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::core::ui::status_bar;
@@ -271,8 +271,10 @@ impl GitPanes {
             _ => None,
         }
     }
+}
 
-    pub fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
+impl PaneSet for GitPanes {
+    fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
         match idx {
             PANE_FILE_TREE => Some(&mut self.file_tree),
             PANE_BRANCH_LIST => Some(&mut self.branch_list),
@@ -445,10 +447,7 @@ impl GitState {
         }
 
         // Dynamic dispatch
-        self.panes
-            .get_mut(focused)
-            .map(|p| p.handle_key(&self.pane, key))
-            .unwrap_or_default()
+        self.pane.dispatch_to_pane(&mut self.panes, key)
     }
 
     // === Event processing ===
@@ -458,7 +457,6 @@ impl GitState {
         ctx: &mut AppContext,
         events: Vec<PaneEvent>,
     ) -> Result<PageAction> {
-        let action = PageAction::None;
         for event in events {
             if pane::process_common_event(ctx, &event) {
                 continue;
@@ -518,7 +516,7 @@ impl GitState {
                 _ => {} // GitHub-specific events — not applicable here
             }
         }
-        Ok(action)
+        Ok(PageAction::None)
     }
 
     /// Synchronize detail pane when the selected item in `selected` pane changes.
