@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::search::{SearchMatch, SearchState};
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
 
 pub enum PaneEvent {
@@ -27,6 +27,68 @@ pub struct PaneShared {
     pub focused_pane: usize,
     pub previous_pane: usize,
     pub search: SearchState,
+}
+
+impl FocusState<usize> for PaneShared {
+    fn focused_pane(&self) -> usize {
+        self.focused_pane
+    }
+    fn set_focus(&mut self, id: usize) {
+        self.previous_pane = self.focused_pane;
+        self.focused_pane = id;
+    }
+}
+
+impl PaneShared {
+    pub fn tab_index(&self, tab_panes: &[usize]) -> Option<usize> {
+        tab_panes.iter().position(|&p| p == self.focused_pane)
+    }
+
+    pub fn next_tab_id(&self, tab_panes: &[usize]) -> usize {
+        match self.tab_index(tab_panes) {
+            Some(idx) => tab_panes[(idx + 1) % tab_panes.len()],
+            None => tab_panes[0],
+        }
+    }
+
+    pub fn prev_tab_id(&self, tab_panes: &[usize]) -> usize {
+        match self.tab_index(tab_panes) {
+            Some(idx) => tab_panes[(idx + tab_panes.len() - 1) % tab_panes.len()],
+            None => tab_panes[0],
+        }
+    }
+}
+
+use crate::core::page::PageAction;
+
+/// Handle common PaneEvents shared by all pages.
+/// Returns `true` if the event was consumed (caller should skip page-specific handling).
+pub fn process_common_event(ctx: &mut AppContext, event: &PaneEvent) -> bool {
+    match event {
+        PaneEvent::StatusMessage(msg) => {
+            ctx.status_message = Some(msg.clone());
+            true
+        }
+        PaneEvent::CopyToClipboard(text) => {
+            ctx.copy_to_clipboard(text);
+            true
+        }
+        _ => false,
+    }
+}
+
+pub fn handle_common_view_key(ctx: &mut AppContext, key: KeyEvent) -> Option<PageAction> {
+    match key.code {
+        KeyCode::Char('q') => {
+            ctx.should_quit = true;
+            Some(PageAction::None)
+        }
+        KeyCode::Char('?') => {
+            ctx.show_help = true;
+            Some(PageAction::None)
+        }
+        _ => None,
+    }
 }
 
 // Note: #[allow(dead_code)] needed because rustc doesn't track usage through dyn dispatch.

@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::page::PageAction;
-use crate::core::pane::{FocusState, Pane, PaneEvent, PaneShared};
+use crate::core::pane::{self, FocusState, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::ui::status_bar;
 use crate::github::domain::client;
@@ -272,13 +272,7 @@ impl GitHubState {
         }
     }
 
-    // === Tab navigation (private helpers) ===
-
     const TAB_PANES: [usize; 2] = [GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST];
-
-    fn tab_index(pane: usize) -> Option<usize> {
-        Self::TAB_PANES.iter().position(|&p| p == pane)
-    }
 
     // === Dispatch ===
 
@@ -286,7 +280,7 @@ impl GitHubState {
         let focused = self.pane.focused_pane;
 
         // Phase 1: cross-pane navigation (tab panes only)
-        if let Some(tab_idx) = Self::tab_index(focused) {
+        if let Some(tab_idx) = self.pane.tab_index(&Self::TAB_PANES) {
             match key.code {
                 KeyCode::Char('l') | KeyCode::Tab if tab_idx + 1 < Self::TAB_PANES.len() => {
                     return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx + 1])];
@@ -313,9 +307,12 @@ impl GitHubState {
         events: Vec<PaneEvent>,
     ) -> Result<PageAction> {
         for event in events {
+            if pane::process_common_event(ctx, &event) {
+                continue;
+            }
             match event {
                 PaneEvent::SetFocus(pane) => {
-                    self.set_focus(pane);
+                    self.pane.set_focus(pane);
                     if pane == GH_PANE_DETAIL {
                         self.load_detail();
                     }
@@ -356,13 +353,11 @@ impl GitHubState {
     // === View-level key handling ===
 
     pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        if let Some(action) = pane::handle_common_view_key(ctx, key) {
+            return Ok(action);
+        }
+
         match key.code {
-            KeyCode::Char('q') => {
-                ctx.should_quit = true;
-            }
-            KeyCode::Char('?') => {
-                ctx.show_help = true;
-            }
             KeyCode::Char('r') => {
                 if self.pane.focused_pane == GH_PANE_DETAIL {
                     self.refresh_detail();
@@ -435,16 +430,6 @@ impl GitHubState {
 
     pub fn on_activate(&mut self) {
         self.initialize();
-    }
-}
-
-impl FocusState<usize> for GitHubState {
-    fn focused_pane(&self) -> usize {
-        self.pane.focused_pane
-    }
-    fn set_focus(&mut self, id: usize) {
-        self.pane.previous_pane = self.pane.focused_pane;
-        self.pane.focused_pane = id;
     }
 }
 

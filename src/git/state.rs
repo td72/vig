@@ -1,7 +1,7 @@
 use crate::core::app::{AppContext, ErrorDialogState};
 use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
-use crate::core::pane::{FocusState, Pane, PaneShared};
+use crate::core::pane::{self, FocusState, Pane, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
 use crate::core::ui::status_bar;
@@ -405,27 +405,7 @@ impl GitState {
         self.panes.reflog.load(&self.repo);
     }
 
-    // === Tab navigation (private helpers) ===
-
     const TAB_PANES: [usize; 3] = [PANE_FILE_TREE, PANE_BRANCH_LIST, PANE_REFLOG];
-
-    fn tab_index(pane: usize) -> Option<usize> {
-        Self::TAB_PANES.iter().position(|&p| p == pane)
-    }
-
-    fn next_tab_id(focused: usize) -> usize {
-        match Self::tab_index(focused) {
-            Some(idx) => Self::TAB_PANES[(idx + 1) % Self::TAB_PANES.len()],
-            None => Self::TAB_PANES[0],
-        }
-    }
-
-    fn prev_tab_id(focused: usize) -> usize {
-        match Self::tab_index(focused) {
-            Some(idx) => Self::TAB_PANES[(idx + Self::TAB_PANES.len() - 1) % Self::TAB_PANES.len()],
-            None => Self::TAB_PANES[0],
-        }
-    }
 
     fn is_commit_log_detail(focused: usize) -> bool {
         matches!(focused, PANE_BRANCH_LIST | PANE_REFLOG | PANE_GIT_LOG)
@@ -436,7 +416,7 @@ impl GitState {
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
         let focused = self.pane.focused_pane;
 
-        if let Some(tab_idx) = Self::tab_index(focused) {
+        if let Some(tab_idx) = self.pane.tab_index(&Self::TAB_PANES) {
             match key.code {
                 KeyCode::Char('h') if tab_idx > 0 => {
                     return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx - 1])];
@@ -480,9 +460,12 @@ impl GitState {
     ) -> Result<PageAction> {
         let action = PageAction::None;
         for event in events {
+            if pane::process_common_event(ctx, &event) {
+                continue;
+            }
             match event {
                 PaneEvent::SetFocus(pane) => {
-                    self.set_focus(pane);
+                    self.pane.set_focus(pane);
                 }
                 PaneEvent::SelectionChanged => {
                     self.sync_detail(self.pane.focused_pane);
@@ -526,12 +509,6 @@ impl GitState {
                 }
                 PaneEvent::JumpToMatch(forward) => {
                     search::jump_to_git_match(ctx, self, forward);
-                }
-                PaneEvent::StatusMessage(msg) => {
-                    ctx.status_message = Some(msg);
-                }
-                PaneEvent::CopyToClipboard(text) => {
-                    ctx.copy_to_clipboard(&text);
                 }
                 PaneEvent::OpenUrl(url) => {
                     if let Err(e) = crate::github::domain::client::open_url(&url) {
@@ -588,13 +565,11 @@ impl GitState {
             return self.process_events(ctx, events);
         }
 
+        if let Some(action) = pane::handle_common_view_key(ctx, key) {
+            return Ok(action);
+        }
+
         match key.code {
-            KeyCode::Char('q') => {
-                ctx.should_quit = true;
-            }
-            KeyCode::Char('?') => {
-                ctx.show_help = true;
-            }
             KeyCode::Char('/') => {
                 self.pane.search.start(self.pane.focused_pane);
             }
@@ -622,10 +597,10 @@ impl GitState {
                 }
             }
             KeyCode::Tab => {
-                self.set_focus(Self::next_tab_id(self.pane.focused_pane));
+                self.pane.set_focus(self.pane.next_tab_id(&Self::TAB_PANES));
             }
             KeyCode::BackTab => {
-                self.set_focus(Self::prev_tab_id(self.pane.focused_pane));
+                self.pane.set_focus(self.pane.prev_tab_id(&Self::TAB_PANES));
             }
             _ => {
                 let events = self.dispatch_key(key);
@@ -755,16 +730,6 @@ impl GitState {
                 Ok(())
             }
         }
-    }
-}
-
-impl crate::core::pane::FocusState<usize> for GitState {
-    fn focused_pane(&self) -> usize {
-        self.pane.focused_pane
-    }
-    fn set_focus(&mut self, id: usize) {
-        self.pane.previous_pane = self.pane.focused_pane;
-        self.pane.focused_pane = id;
     }
 }
 
