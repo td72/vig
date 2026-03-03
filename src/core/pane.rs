@@ -124,12 +124,11 @@ pub fn handle_common_view_key(ctx: &mut AppContext, key: KeyEvent) -> Option<Pag
     }
 }
 
-// Note: #[allow(dead_code)] needed because rustc doesn't track usage through dyn dispatch.
-#[allow(dead_code)]
 pub trait PaneSet {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>>;
 }
 
+// Note: #[allow(dead_code)] needed because rustc doesn't track usage through dyn dispatch.
 #[allow(dead_code)]
 pub trait Pane<Event> {
     fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<Event>;
