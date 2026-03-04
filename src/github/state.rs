@@ -272,20 +272,7 @@ impl GitHubState {
             return events;
         }
 
-        // Phase 1b: page-specific tab-pane keys (Tab/BackTab)
-        if let Some(tab_idx) = self.pane.tab_index(&Self::TAB_PANES) {
-            match key.code {
-                KeyCode::Tab if tab_idx + 1 < Self::TAB_PANES.len() => {
-                    return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx + 1])];
-                }
-                KeyCode::BackTab if tab_idx > 0 => {
-                    return vec![PaneEvent::SetFocus(Self::TAB_PANES[tab_idx - 1])];
-                }
-                _ => {}
-            }
-        }
-
-        // Phase 2: per-pane delegation (dynamic dispatch)
+        // Per-pane delegation (dynamic dispatch)
         self.pane.dispatch_to_pane(&mut self.panes, key)
     }
 

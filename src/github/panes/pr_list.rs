@@ -2,7 +2,7 @@ use crate::core::app::AppContext;
 use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::github::domain::types::GhPrListItem;
 use crate::github::domain::{client, disk_cache};
-use crate::github::state::{GhBgMessage, GH_PANE_DETAIL, GH_PANE_PR_LIST};
+use crate::github::state::{GhBgMessage, GH_PANE_DETAIL, GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
@@ -86,6 +86,9 @@ impl GhPrListPane {
                 if !self.prs.is_empty() {
                     return vec![PaneEvent::SetFocus(GH_PANE_DETAIL)];
                 }
+            }
+            KeyCode::BackTab => {
+                return vec![PaneEvent::SetFocus(GH_PANE_ISSUE_LIST)];
             }
             KeyCode::Char('o') => {
                 if let Some(pr) = self.prs.get(self.selected_idx) {
