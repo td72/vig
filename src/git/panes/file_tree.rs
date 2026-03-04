@@ -66,6 +66,9 @@ impl FileTreePane {
             KeyCode::Char('N') => {
                 return vec![PaneEvent::JumpToMatch(false)];
             }
+            KeyCode::Char('i') => {
+                return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
+            }
             _ => {}
         }
         let entries = self.tree_entries();

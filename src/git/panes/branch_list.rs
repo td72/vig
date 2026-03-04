@@ -13,7 +13,7 @@ use ratatui::{
 };
 use std::collections::HashSet;
 
-use crate::git::state::PANE_BRANCH_LIST;
+use crate::git::state::{PANE_BRANCH_LIST, PANE_GIT_LOG};
 
 const ACTION_MENU_BG: Color = Color::Rgb(30, 30, 30);
 
@@ -56,6 +56,9 @@ impl BranchListPane {
             }
             KeyCode::Char('N') => {
                 return vec![PaneEvent::JumpToMatch(false)];
+            }
+            KeyCode::Char('i') => {
+                return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
             _ => {}
         }

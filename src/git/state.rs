@@ -423,22 +423,12 @@ impl GitState {
             return events;
         }
 
-        // Phase 1b: page-specific tab-pane keys (i, Esc)
-        if self.pane.tab_index(&Self::TAB_PANES).is_some() {
-            match key.code {
-                KeyCode::Char('i') => {
-                    let target = if Self::is_commit_log_detail(focused) {
-                        PANE_GIT_LOG
-                    } else {
-                        PANE_DIFF_VIEW
-                    };
-                    return vec![PaneEvent::SetFocus(target)];
-                }
-                KeyCode::Esc if self.pane.search.query.is_some() => {
-                    return vec![PaneEvent::ClearSearch];
-                }
-                _ => {}
-            }
+        // Esc: clear search when on a tab pane
+        if self.pane.tab_index(&Self::TAB_PANES).is_some()
+            && key.code == KeyCode::Esc
+            && self.pane.search.query.is_some()
+        {
+            return vec![PaneEvent::ClearSearch];
         }
 
         // Tab/BackTab: cycle tab panes (works from any pane)

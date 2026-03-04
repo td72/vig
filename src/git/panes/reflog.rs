@@ -2,7 +2,7 @@ use crate::core::app::AppContext;
 use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{ReflogEntry, Repo};
-use crate::git::state::{PaneEvent, PANE_BRANCH_LIST, PANE_REFLOG};
+use crate::git::state::{PaneEvent, PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     layout::Rect,
@@ -45,6 +45,9 @@ impl ReflogPane {
             }
             KeyCode::Char('N') => {
                 return vec![PaneEvent::JumpToMatch(false)];
+            }
+            KeyCode::Char('i') => {
+                return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
             KeyCode::Esc => {
                 return vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)];
