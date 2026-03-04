@@ -416,19 +416,9 @@ impl GitState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        let focused = self.pane.focused_pane;
-
-        // Phase 1: shared h/l tab navigation
+        // h/l tab navigation
         if let Some(events) = self.pane.dispatch_tab_key(&Self::TAB_PANES, key) {
             return events;
-        }
-
-        // Esc: clear search when on a tab pane
-        if self.pane.tab_index(&Self::TAB_PANES).is_some()
-            && key.code == KeyCode::Esc
-            && self.pane.search.query.is_some()
-        {
-            return vec![PaneEvent::ClearSearch];
         }
 
         // Tab/BackTab: cycle tab panes (works from any pane)
@@ -442,12 +432,17 @@ impl GitState {
             _ => {}
         }
 
-        // Phase 2: per-pane delegation
-        if focused == PANE_BRANCH_LIST && key.code == KeyCode::Esc && self.diff_base_ref.is_some() {
-            return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
+        // Esc on tab pane: clear search first, then diff_base
+        if key.code == KeyCode::Esc && self.pane.tab_index(&Self::TAB_PANES).is_some() {
+            if self.pane.search.query.is_some() {
+                return vec![PaneEvent::ClearSearch];
+            }
+            if self.pane.focused_pane == PANE_BRANCH_LIST && self.diff_base_ref.is_some() {
+                return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
+            }
         }
 
-        // Dynamic dispatch
+        // Per-pane delegation
         self.pane.dispatch_to_pane(&mut self.panes, key)
     }
 
