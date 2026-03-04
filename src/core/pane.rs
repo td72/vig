@@ -76,6 +76,77 @@ impl PaneShared {
             .unwrap_or_default()
     }
 
+    /// Collect search matches from the origin pane and store them in the search state.
+    pub fn execute_search(&mut self, panes: &mut impl PaneSet) {
+        self.search.matches.clear();
+        self.search.current_match_idx = None;
+        let query = match &self.search.query {
+            Some(q) => q.clone(),
+            None => return,
+        };
+        let origin = self.search.origin;
+        let matches = if let Some(pane) = panes.get_mut(origin) {
+            pane.collect_search_matches(self, &query)
+        } else {
+            vec![]
+        };
+        self.search.matches = matches;
+    }
+
+    /// Advance to the next/prev search match and jump the origin pane.
+    /// Returns `Some(origin_pane_idx)` if a jump occurred, so the caller
+    /// can perform page-specific post-jump sync (e.g. loading detail views).
+    pub fn jump_to_search_match(
+        &mut self,
+        panes: &mut impl PaneSet,
+        ctx: &mut AppContext,
+        forward: bool,
+    ) -> Option<usize> {
+        // Re-execute search if no active query but last_query exists (n/N reuse)
+        if self.search.query.is_none() {
+            if let Some(last) = self.search.last_query.clone() {
+                self.search.query = Some(last);
+                self.execute_search(panes);
+            } else {
+                return None;
+            }
+        }
+
+        if self.search.matches.is_empty() {
+            ctx.status_message = Some("Pattern not found".to_string());
+            return None;
+        }
+
+        let total = self.search.matches.len();
+        let new_idx = match self.search.current_match_idx {
+            Some(idx) => {
+                if forward {
+                    (idx + 1) % total
+                } else {
+                    (idx + total - 1) % total
+                }
+            }
+            None => {
+                if forward {
+                    0
+                } else {
+                    total - 1
+                }
+            }
+        };
+        self.search.current_match_idx = Some(new_idx);
+
+        let search_match = self.search.matches[new_idx].clone();
+        let origin = self.search.origin;
+
+        if let Some(pane) = panes.get_mut(origin) {
+            pane.jump_to_match(self, &search_match);
+        }
+
+        ctx.status_message = Some(format!("[{}/{}]", new_idx + 1, total));
+        Some(origin)
+    }
+
     /// Render all panes for the given layout areas.
     pub fn render_panes(
         &self,

@@ -260,19 +260,6 @@ pub struct GitPanes {
     pub reflog: ReflogPane,
 }
 
-impl GitPanes {
-    pub fn get(&self, idx: usize) -> Option<&dyn Pane<PaneEvent>> {
-        match idx {
-            PANE_FILE_TREE => Some(&self.file_tree),
-            PANE_BRANCH_LIST => Some(&self.branch_list),
-            PANE_GIT_LOG => Some(&self.git_log),
-            PANE_REFLOG => Some(&self.reflog),
-            PANE_DIFF_VIEW => Some(&self.diff_view),
-            _ => None,
-        }
-    }
-}
-
 impl PaneSet for GitPanes {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
         match idx {
@@ -493,7 +480,16 @@ impl GitState {
                     }
                 },
                 PaneEvent::JumpToMatch(forward) => {
-                    search::jump_to_git_match(ctx, self, forward);
+                    if let Some(origin) =
+                        self.pane
+                            .jump_to_search_match(&mut self.panes, ctx, forward)
+                    {
+                        match origin {
+                            PANE_GIT_LOG => self.panes.git_log.load_detail(&self.repo),
+                            PANE_BRANCH_LIST => self.update_branch_log(),
+                            _ => {}
+                        }
+                    }
                 }
                 PaneEvent::OpenUrl(url) => {
                     if let Err(e) = crate::github::domain::client::open_url(&url) {
@@ -640,8 +636,8 @@ impl crate::core::app::PageState for GitState {
         // Search input mode intercepts all keys
         if self.pane.search.active {
             if self.pane.search.handle_input_key(key) {
-                search::execute_git_search(self);
-                search::jump_to_git_match(ctx, self, true);
+                self.pane.execute_search(&mut self.panes);
+                self.pane.jump_to_search_match(&mut self.panes, ctx, true);
             }
             return Ok(PageAction::None);
         }
