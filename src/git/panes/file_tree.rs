@@ -56,6 +56,18 @@ impl FileTreePane {
     }
 
     pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+        match key.code {
+            KeyCode::Char('/') => {
+                return vec![PaneEvent::StartSearch(PANE_FILE_TREE)];
+            }
+            KeyCode::Char('n') => {
+                return vec![PaneEvent::JumpToMatch(true)];
+            }
+            KeyCode::Char('N') => {
+                return vec![PaneEvent::JumpToMatch(false)];
+            }
+            _ => {}
+        }
         let entries = self.tree_entries();
         if entries.is_empty() {
             return vec![];

@@ -352,9 +352,6 @@ impl GitHubState {
                     self.refresh();
                 }
             }
-            KeyCode::Char('w') => {
-                self.panes.detail_view.toggle_watch_mode();
-            }
             _ => {
                 let events = self.dispatch_key(key);
                 return self.process_events(ctx, events);

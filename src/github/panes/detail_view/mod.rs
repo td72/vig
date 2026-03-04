@@ -373,6 +373,10 @@ impl GhDetailViewPane {
                     };
                 }
             }
+            KeyCode::Char('w') => {
+                self.toggle_watch_mode();
+                return vec![];
+            }
             KeyCode::Char('o') => {
                 return self.open_detail_item();
             }

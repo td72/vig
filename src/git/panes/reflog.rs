@@ -37,6 +37,15 @@ impl ReflogPane {
 
     pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         match key.code {
+            KeyCode::Char('/') => {
+                return vec![PaneEvent::StartSearch(PANE_REFLOG)];
+            }
+            KeyCode::Char('n') => {
+                return vec![PaneEvent::JumpToMatch(true)];
+            }
+            KeyCode::Char('N') => {
+                return vec![PaneEvent::JumpToMatch(false)];
+            }
             KeyCode::Esc => {
                 return vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)];
             }

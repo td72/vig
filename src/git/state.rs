@@ -559,15 +559,6 @@ impl GitState {
         }
 
         match key.code {
-            KeyCode::Char('/') => {
-                self.pane.search.start(self.pane.focused_pane);
-            }
-            KeyCode::Char('n') => {
-                search::jump_to_git_match(ctx, self, true);
-            }
-            KeyCode::Char('N') => {
-                search::jump_to_git_match(ctx, self, false);
-            }
             KeyCode::Char('r') => {
                 self.apply_refresh(ctx);
                 self.load_branches();

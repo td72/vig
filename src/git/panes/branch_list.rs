@@ -48,6 +48,18 @@ impl BranchListPane {
             return self.handle_action_menu_key(key);
         }
         match key.code {
+            KeyCode::Char('/') => {
+                return vec![PaneEvent::StartSearch(PANE_BRANCH_LIST)];
+            }
+            KeyCode::Char('n') => {
+                return vec![PaneEvent::JumpToMatch(true)];
+            }
+            KeyCode::Char('N') => {
+                return vec![PaneEvent::JumpToMatch(false)];
+            }
+            _ => {}
+        }
+        match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 if !self.branches.is_empty() && self.selected_idx + 1 < self.branches.len() {
                     self.selected_idx += 1;
