@@ -441,6 +441,17 @@ impl GitState {
             }
         }
 
+        // Tab/BackTab: cycle tab panes (works from any pane)
+        match key.code {
+            KeyCode::Tab => {
+                return vec![PaneEvent::SetFocus(self.pane.next_tab_id(&Self::TAB_PANES))];
+            }
+            KeyCode::BackTab => {
+                return vec![PaneEvent::SetFocus(self.pane.prev_tab_id(&Self::TAB_PANES))];
+            }
+            _ => {}
+        }
+
         // Phase 2: per-pane delegation
         if focused == PANE_BRANCH_LIST && key.code == KeyCode::Esc && self.diff_base_ref.is_some() {
             return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
@@ -575,12 +586,6 @@ impl GitState {
                         args: vec![file_path.into()],
                     }));
                 }
-            }
-            KeyCode::Tab => {
-                self.pane.set_focus(self.pane.next_tab_id(&Self::TAB_PANES));
-            }
-            KeyCode::BackTab => {
-                self.pane.set_focus(self.pane.prev_tab_id(&Self::TAB_PANES));
             }
             _ => {
                 let events = self.dispatch_key(key);
