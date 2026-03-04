@@ -458,13 +458,10 @@ impl GitState {
         events: Vec<PaneEvent>,
     ) -> Result<PageAction> {
         for event in events {
-            if pane::process_common_event(ctx, &event) {
+            if pane::process_common_event(&mut self.pane, ctx, &event) {
                 continue;
             }
             match event {
-                PaneEvent::SetFocus(pane) => {
-                    self.pane.set_focus(pane);
-                }
                 PaneEvent::SelectionChanged => {
                     self.sync_detail(self.pane.focused_pane);
                 }
@@ -499,12 +496,6 @@ impl GitState {
                         });
                     }
                 },
-                PaneEvent::StartSearch(origin) => {
-                    self.pane.search.start(origin);
-                }
-                PaneEvent::ClearSearch => {
-                    self.pane.search.clear();
-                }
                 PaneEvent::JumpToMatch(forward) => {
                     search::jump_to_git_match(ctx, self, forward);
                 }
@@ -513,7 +504,7 @@ impl GitState {
                         ctx.status_message = Some(e);
                     }
                 }
-                _ => {} // GitHub-specific events — not applicable here
+                _ => {}
             }
         }
         Ok(PageAction::None)

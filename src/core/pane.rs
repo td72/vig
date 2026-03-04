@@ -95,9 +95,27 @@ impl PaneShared {
 use crate::core::page::PageAction;
 
 /// Handle common PaneEvents shared by all pages.
-/// Returns `true` if the event was consumed (caller should skip page-specific handling).
-pub fn process_common_event(ctx: &mut AppContext, event: &PaneEvent) -> bool {
+/// Returns `true` if the event was fully consumed (caller should skip page-specific handling).
+/// `SetFocus` is partially consumed: `set_focus()` is called, but returns `false` so pages
+/// can add post-focus logic (e.g. loading detail views).
+pub fn process_common_event(
+    shared: &mut PaneShared,
+    ctx: &mut AppContext,
+    event: &PaneEvent,
+) -> bool {
     match event {
+        PaneEvent::SetFocus(id) => {
+            shared.set_focus(*id);
+            false // pages may need post-focus processing
+        }
+        PaneEvent::StartSearch(origin) => {
+            shared.search.start(*origin);
+            true
+        }
+        PaneEvent::ClearSearch => {
+            shared.search.clear();
+            true
+        }
         PaneEvent::StatusMessage(msg) => {
             ctx.status_message = Some(msg.clone());
             true

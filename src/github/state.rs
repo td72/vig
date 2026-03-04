@@ -297,15 +297,12 @@ impl GitHubState {
         events: Vec<PaneEvent>,
     ) -> Result<PageAction> {
         for event in events {
-            if pane::process_common_event(ctx, &event) {
+            if pane::process_common_event(&mut self.pane, ctx, &event) {
                 continue;
             }
             match event {
-                PaneEvent::SetFocus(pane) => {
-                    self.pane.set_focus(pane);
-                    if pane == GH_PANE_DETAIL {
-                        self.load_detail();
-                    }
+                PaneEvent::SetFocus(GH_PANE_DETAIL) => {
+                    self.load_detail();
                 }
                 PaneEvent::SelectionChanged => {
                     self.load_detail();
@@ -334,7 +331,7 @@ impl GitHubState {
                         ctx.status_message = Some(e);
                     }
                 },
-                _ => {} // Git-specific events — not applicable here
+                _ => {}
             }
         }
         Ok(PageAction::None)
