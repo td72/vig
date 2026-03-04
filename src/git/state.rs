@@ -598,31 +598,14 @@ impl GitState {
         }
         Ok(PageAction::None)
     }
+}
 
-    // === Unified handle_key ===
-
-    pub fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
-        // Branch action menu intercepts all keys when open
-        if Pane::<PaneEvent>::is_modal(&self.panes.branch_list) {
-            let events = self.panes.branch_list.handle_key(&self.pane, key);
-            return self.process_events(ctx, events);
-        }
-
-        // Search input mode intercepts all keys
-        if self.pane.search.active {
-            if self.pane.search.handle_input_key(key) {
-                search::execute_git_search(self);
-                search::jump_to_git_match(ctx, self, true);
-            }
-            return Ok(PageAction::None);
-        }
-
-        self.handle_view_key(ctx, key)
+impl crate::core::app::PageState for GitState {
+    fn label(&self) -> &'static str {
+        "Git"
     }
 
-    // === Help bindings ===
-
-    pub fn help_bindings_list() -> Vec<(&'static str, &'static str)> {
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
         vec![
             ("1 / 2", "Switch view"),
             ("j / ↓", "Next item / Scroll down"),
@@ -666,9 +649,26 @@ impl GitState {
         ]
     }
 
-    // === Render ===
+    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        // Branch action menu intercepts all keys when open
+        if Pane::<PaneEvent>::is_modal(&self.panes.branch_list) {
+            let events = self.panes.branch_list.handle_key(&self.pane, key);
+            return self.process_events(ctx, events);
+        }
 
-    pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
+        // Search input mode intercepts all keys
+        if self.pane.search.active {
+            if self.pane.search.handle_input_key(key) {
+                search::execute_git_search(self);
+                search::jump_to_git_match(ctx, self, true);
+            }
+            return Ok(PageAction::None);
+        }
+
+        self.handle_view_key(ctx, key)
+    }
+
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let ly = layout::compute_layout(area);
         status_bar::render_header(f, ctx, self, ly.header);
 
@@ -687,16 +687,18 @@ impl GitState {
         }
     }
 
-    // === Lifecycle ===
+    fn intercepts_all_keys(&self) -> bool {
+        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.panes.branch_list)
+    }
 
-    pub fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
+    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
         self.load_branches();
         self.load_reflog();
         self.apply_refresh(ctx);
         Ok(())
     }
 
-    pub fn on_suspend_return(
+    fn on_suspend_return(
         &mut self,
         ctx: &mut AppContext,
         status: std::io::Result<std::process::ExitStatus>,
@@ -716,34 +718,7 @@ impl GitState {
             }
         }
     }
-}
 
-impl crate::core::app::PageState for GitState {
-    fn label(&self) -> &'static str {
-        "Git"
-    }
-    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
-        Self::help_bindings_list()
-    }
-    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
-        GitState::handle_key(self, ctx, key)
-    }
-    fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect) {
-        GitState::render(self, f, ctx, area);
-    }
-    fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.panes.branch_list)
-    }
-    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
-        GitState::on_fs_change(self, ctx)
-    }
-    fn on_suspend_return(
-        &mut self,
-        ctx: &mut AppContext,
-        status: std::io::Result<std::process::ExitStatus>,
-    ) -> Result<()> {
-        GitState::on_suspend_return(self, ctx, status)
-    }
     fn drain_background(&mut self) {
         self.panes.diff_view.drain_background();
     }

@@ -362,16 +362,14 @@ impl GitHubState {
         }
         Ok(PageAction::None)
     }
+}
 
-    // === Unified handle_key ===
-
-    pub fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
-        self.handle_view_key(ctx, key)
+impl crate::core::app::PageState for GitHubState {
+    fn label(&self) -> &'static str {
+        "GitHub"
     }
 
-    // === Help bindings ===
-
-    pub fn help_bindings_list() -> Vec<(&'static str, &'static str)> {
+    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
         vec![
             ("1 / 2", "Switch view"),
             ("h / l", "Issues ↔ PRs (list)"),
@@ -391,9 +389,11 @@ impl GitHubState {
         ]
     }
 
-    // === Render ===
+    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        self.handle_view_key(ctx, key)
+    }
 
-    pub fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
+    fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let gl = crate::github::layout::compute_gh_layout(area);
         status_bar::render_gh_header(f, ctx, gl.header);
 
@@ -403,41 +403,20 @@ impl GitHubState {
         status_bar::render_gh_status_bar(f, ctx, self, gl.status_bar);
     }
 
-    // === Lifecycle ===
+    fn intercepts_all_keys(&self) -> bool {
+        self.pane.search.active
+    }
 
-    pub fn on_tick(&mut self) {
+    fn on_tick(&mut self, _ctx: &mut AppContext) {
         if let Some(tx) = &self.bg_tx {
             self.panes.detail_view.handle_watch_tick(tx);
         }
     }
 
-    pub fn on_activate(&mut self) {
+    fn on_activate(&mut self, _ctx: &mut AppContext) {
         self.initialize();
     }
-}
 
-impl crate::core::app::PageState for GitHubState {
-    fn label(&self) -> &'static str {
-        "GitHub"
-    }
-    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
-        Self::help_bindings_list()
-    }
-    fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
-        GitHubState::handle_key(self, ctx, key)
-    }
-    fn render(&mut self, f: &mut ratatui::Frame, ctx: &AppContext, area: ratatui::layout::Rect) {
-        GitHubState::render(self, f, ctx, area);
-    }
-    fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active
-    }
-    fn on_tick(&mut self, _ctx: &mut AppContext) {
-        GitHubState::on_tick(self);
-    }
-    fn on_activate(&mut self, _ctx: &mut AppContext) {
-        GitHubState::on_activate(self);
-    }
     fn drain_background(&mut self) {
         self.drain_bg_messages();
     }
