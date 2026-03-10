@@ -310,14 +310,6 @@ impl GitHubState {
                         ctx.status_message = Some(format!("Failed to open browser: {e}"));
                     }
                 },
-                PaneEvent::OpenUrl(url) => match client::open_url(&url) {
-                    Ok(()) => {
-                        ctx.status_message = Some("Opening in browser...".to_string());
-                    }
-                    Err(e) => {
-                        ctx.status_message = Some(e);
-                    }
-                },
                 _ => {}
             }
         }

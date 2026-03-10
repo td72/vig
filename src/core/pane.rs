@@ -195,6 +195,10 @@ pub fn process_common_event(
             ctx.copy_to_clipboard(text);
             true
         }
+        PaneEvent::OpenUrl(url) => {
+            ctx.open_url(url);
+            true
+        }
         _ => false,
     }
 }

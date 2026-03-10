@@ -43,7 +43,7 @@ impl BranchListPane {
         self.branches.get(self.selected_idx)
     }
 
-    pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         if self.action_menu.is_some() {
             return self.handle_action_menu_key(key);
         }
@@ -59,6 +59,9 @@ impl BranchListPane {
             }
             KeyCode::Char('i') => {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
+            }
+            KeyCode::Esc if shared.search.query.is_some() => {
+                return vec![PaneEvent::ClearSearch];
             }
             _ => {}
         }

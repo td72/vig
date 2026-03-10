@@ -35,7 +35,7 @@ impl ReflogPane {
         }
     }
 
-    pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         match key.code {
             KeyCode::Char('/') => {
                 return vec![PaneEvent::StartSearch(PANE_REFLOG)];
@@ -50,6 +50,9 @@ impl ReflogPane {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
             KeyCode::Esc => {
+                if shared.search.query.is_some() {
+                    return vec![PaneEvent::ClearSearch];
+                }
                 return vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)];
             }
             KeyCode::Char('j') | KeyCode::Down => {

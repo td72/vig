@@ -419,14 +419,13 @@ impl GitState {
             _ => {}
         }
 
-        // Esc on tab pane: clear search first, then diff_base
-        if key.code == KeyCode::Esc && self.pane.tab_index(&Self::TAB_PANES).is_some() {
-            if self.pane.search.query.is_some() {
-                return vec![PaneEvent::ClearSearch];
-            }
-            if self.pane.focused_pane == PANE_BRANCH_LIST && self.diff_base_ref.is_some() {
-                return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
-            }
+        // Esc on branch_list: clear diff_base (search already handled by pane)
+        if key.code == KeyCode::Esc
+            && self.pane.focused_pane == PANE_BRANCH_LIST
+            && self.pane.search.query.is_none()
+            && self.diff_base_ref.is_some()
+        {
+            return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
         }
 
         // Per-pane delegation
@@ -489,11 +488,6 @@ impl GitState {
                             PANE_BRANCH_LIST => self.update_branch_log(),
                             _ => {}
                         }
-                    }
-                }
-                PaneEvent::OpenUrl(url) => {
-                    if let Err(e) = crate::github::domain::client::open_url(&url) {
-                        ctx.status_message = Some(e);
                     }
                 }
                 _ => {}

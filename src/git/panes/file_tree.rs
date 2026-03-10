@@ -55,7 +55,7 @@ impl FileTreePane {
         }
     }
 
-    pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         match key.code {
             KeyCode::Char('/') => {
                 return vec![PaneEvent::StartSearch(PANE_FILE_TREE)];
@@ -68,6 +68,9 @@ impl FileTreePane {
             }
             KeyCode::Char('i') => {
                 return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
+            }
+            KeyCode::Esc if shared.search.query.is_some() => {
+                return vec![PaneEvent::ClearSearch];
             }
             _ => {}
         }

@@ -20,6 +20,13 @@ pub struct AppContext {
 }
 
 impl AppContext {
+    pub fn open_url(&mut self, url: &str) {
+        match crate::core::browser::open_url(url) {
+            Ok(()) => self.status_message = Some("Opening in browser...".to_string()),
+            Err(e) => self.status_message = Some(e),
+        }
+    }
+
     pub fn copy_to_clipboard(&mut self, text: &str) {
         if text.is_empty() {
             return;
