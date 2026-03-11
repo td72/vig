@@ -454,15 +454,6 @@ impl GitState {
             _ => {}
         }
 
-        // Esc on branch_list: clear diff_base (search already handled by pane)
-        if key.code == KeyCode::Esc
-            && self.pane.focused_pane == PANE_BRANCH_LIST
-            && self.pane.search.query.is_none()
-            && self.diff_base_ref.is_some()
-        {
-            return vec![PaneEvent::SetDiffBase(None), PaneEvent::RefreshDiff];
-        }
-
         // Per-pane delegation
         self.pane.dispatch_to_pane(&mut self.panes, key)
     }
@@ -482,11 +473,9 @@ impl GitState {
                 PaneEvent::SelectionChanged => {
                     self.sync_detail(self.pane.focused_pane);
                 }
-                PaneEvent::RefreshDiff => {
-                    self.apply_refresh(ctx);
-                }
                 PaneEvent::SetDiffBase(base) => {
                     self.diff_base_ref = base;
+                    self.apply_refresh(ctx);
                 }
                 PaneEvent::SwitchBranch(name) => match self.repo.switch_branch(&name) {
                     Ok(()) => {

@@ -11,7 +11,6 @@ pub enum PaneEvent {
     CopyToClipboard(String),
     OpenUrl(String),
     // Git-specific
-    RefreshDiff,
     SetDiffBase(Option<String>),
     SwitchBranch(String),
     DeleteBranch(String),

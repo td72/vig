@@ -63,6 +63,9 @@ impl BranchListPane {
             KeyCode::Esc if shared.search.query.is_some() => {
                 return vec![PaneEvent::ClearSearch];
             }
+            KeyCode::Esc => {
+                return vec![PaneEvent::SetDiffBase(None)];
+            }
             _ => {}
         }
         match key.code {
@@ -158,7 +161,7 @@ impl BranchListPane {
                 } else {
                     Some(menu.branch_name)
                 };
-                vec![PaneEvent::SetDiffBase(base), PaneEvent::RefreshDiff]
+                vec![PaneEvent::SetDiffBase(base)]
             }
         }
     }

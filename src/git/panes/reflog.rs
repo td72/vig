@@ -84,10 +84,7 @@ impl ReflogPane {
             }
             KeyCode::Enter => {
                 if let Some(entry) = self.entries.get(self.selected_idx) {
-                    return vec![
-                        PaneEvent::SetDiffBase(Some(entry.full_hash.clone())),
-                        PaneEvent::RefreshDiff,
-                    ];
+                    return vec![PaneEvent::SetDiffBase(Some(entry.full_hash.clone()))];
                 }
             }
             _ => {}
