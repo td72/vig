@@ -33,6 +33,24 @@ impl FileTreePane {
         self.files = files;
     }
 
+    /// Restore selection to the file at `old_path` after a file list change,
+    /// or clamp to valid bounds.
+    pub fn restore_selection(&mut self, old_path: Option<String>) {
+        let entries = self.tree_entries();
+        if let Some(path) = old_path {
+            self.selected_idx = entries
+                .iter()
+                .position(|e| {
+                    matches!(e, TreeEntry::File { file_idx, .. }
+                        if self.files.get(*file_idx).map(|f| &f.path) == Some(&path))
+                })
+                .unwrap_or(0);
+        }
+        if self.selected_idx >= entries.len() && !entries.is_empty() {
+            self.selected_idx = entries.len() - 1;
+        }
+    }
+
     pub fn tree_entries(&self) -> Vec<TreeEntry> {
         crate::git::domain::tree::build_tree_entries(&self.files, &self.collapsed_dirs)
     }

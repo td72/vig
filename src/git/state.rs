@@ -264,6 +264,19 @@ impl FileTab {
         self.diff_view.set_file(self.file_tree.selected_file_idx());
         self.diff_view.reset_scroll();
     }
+
+    /// Called after the file list has been replaced (refresh_diff).
+    /// Restores selection, resets DiffView, and spawns background highlighting.
+    pub fn on_files_changed(&mut self, old_path: Option<String>) {
+        self.file_tree.restore_selection(old_path);
+        self.diff_view.current_file_idx = self.file_tree.selected_file_idx();
+        self.diff_view.scroll.y = 0;
+        self.diff_view.scroll.x = 0;
+        self.diff_view.highlight.reset();
+        self.diff_view
+            .highlight
+            .spawn_bg_highlight(&self.file_tree.files);
+    }
 }
 
 /// BranchList (list) + GitLog (detail)
@@ -343,16 +356,9 @@ impl GitState {
             },
             diff_base_ref: None,
         };
-        state.panes.file_tab.diff_view.current_file_idx =
-            state.panes.file_tab.file_tree.selected_file_idx();
+        state.panes.file_tab.on_files_changed(None);
         state.load_branches();
         state.load_reflog();
-        state
-            .panes
-            .file_tab
-            .diff_view
-            .highlight
-            .spawn_bg_highlight(&files);
         Ok(state)
     }
 
@@ -386,38 +392,13 @@ impl GitState {
                 Some(format!("Invalid ref, fell back to HEAD: {e}"))
             }
         };
-        // Preserve selection by path
-        if let Some(path) = old_path {
-            let entries = self.tree_entries();
-            self.panes.file_tab.file_tree.selected_idx = entries
-                .iter()
-                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.panes.file_tab.file_tree.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
-                .unwrap_or(0);
-        }
-        let entries = self.tree_entries();
-        if self.panes.file_tab.file_tree.selected_idx >= entries.len() && !entries.is_empty() {
-            self.panes.file_tab.file_tree.selected_idx = entries.len() - 1;
-        }
-        self.panes.file_tab.diff_view.current_file_idx =
-            self.panes.file_tab.file_tree.selected_file_idx();
-        self.panes.file_tab.diff_view.scroll.y = 0;
-        self.panes.file_tab.diff_view.scroll.x = 0;
-        self.panes.file_tab.diff_view.highlight.reset();
+        self.panes.file_tab.on_files_changed(old_path);
         self.pane.search.reset_matches();
-        self.panes
-            .file_tab
-            .diff_view
-            .highlight
-            .spawn_bg_highlight(&self.panes.file_tab.file_tree.files);
         Ok(fallback_msg)
     }
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
         self.panes.file_tab.file_tree.selected_file()
-    }
-
-    pub fn tree_entries(&self) -> Vec<TreeEntry> {
-        self.panes.file_tab.file_tree.tree_entries()
     }
 
     pub fn load_branches(&mut self) {
