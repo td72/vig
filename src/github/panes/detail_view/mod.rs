@@ -74,6 +74,11 @@ impl GhDetailViewPane {
 
     /// Load issue detail — serves from cache if available, otherwise fetches in background.
     pub fn load_issue(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
+        // Already loading this exact issue — skip duplicate request
+        if matches!(&self.content, GhDetailContent::Loading { kind: GhDetailKind::Issue, number: n } if *n == number)
+        {
+            return;
+        }
         if let Some(cached) = self.issue_cache.get(&number) {
             self.content = GhDetailContent::Issue(Box::new(cached.clone()));
             self.reset_sub_panes();
@@ -99,6 +104,11 @@ impl GhDetailViewPane {
 
     /// Load PR detail — serves from cache if available, otherwise fetches in background.
     pub fn load_pr(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
+        // Already loading this exact PR — skip duplicate request
+        if matches!(&self.content, GhDetailContent::Loading { kind: GhDetailKind::Pr, number: n } if *n == number)
+        {
+            return;
+        }
         if let Some(cached) = self.pr_cache.get(&number) {
             self.content = GhDetailContent::Pr(Box::new(cached.clone()));
             self.reset_sub_panes();

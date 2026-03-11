@@ -228,8 +228,8 @@ impl GitHubState {
         }
 
         // Auto-load detail when a fresh list arrives for the active tab
-        if (self.is_on_pr_tab() && pr_list_arrived) || (!self.is_on_pr_tab() && issue_list_arrived)
-        {
+        let on_pr = self.is_on_pr_tab();
+        if (on_pr && pr_list_arrived) || (!on_pr && issue_list_arrived) {
             self.sync_active_detail();
         }
     }
