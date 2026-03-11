@@ -1,5 +1,6 @@
+use super::{CursorPos, DiffSide, DiffViewMode};
 use crate::core::pane::PaneShared;
-use crate::git::state::{CursorPos, DiffSide, DiffViewMode, PaneEvent, PANE_DIFF_VIEW};
+use crate::git::state::{PaneEvent, PANE_DIFF_VIEW};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub(crate) fn handle_diff_scroll_key(
@@ -545,7 +546,7 @@ pub(crate) fn content_lines(pane: &mut super::DiffViewPane, _shared: &PaneShared
     let side = pane.vim.cursor.side;
 
     // Return cached result if still valid
-    if let Some((ref path, cached_side, ref lines)) = pane.highlight.content_lines_cache {
+    if let Some((ref path, cached_side, ref lines)) = pane.content_lines_cache {
         if *path == file.path && cached_side == side {
             return lines.clone();
         }
@@ -565,7 +566,7 @@ pub(crate) fn content_lines(pane: &mut super::DiffViewPane, _shared: &PaneShared
             }
         }
     }
-    pane.highlight.content_lines_cache = Some((file.path.clone(), side, lines.clone()));
+    pane.content_lines_cache = Some((file.path.clone(), side, lines.clone()));
     lines
 }
 

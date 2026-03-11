@@ -1,8 +1,8 @@
-mod branch_list;
-mod diff_view;
-mod file_tree;
-mod git_log;
-mod reflog;
+pub(crate) mod branch_list;
+pub(crate) mod diff_view;
+pub(crate) mod file_tree;
+pub(crate) mod git_log;
+pub(crate) mod reflog;
 
 pub use branch_list::BranchListPane;
 pub use diff_view::DiffViewPane;

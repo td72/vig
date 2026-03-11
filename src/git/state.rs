@@ -3,7 +3,7 @@ use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
 use crate::core::pane::{self, Pane, PaneSet, PaneShared};
 use crate::core::search::SearchState;
-use crate::core::syntax::{HighlightCache, HighlightPair, SyntaxHighlighter};
+use crate::core::tab::Tab;
 use crate::core::ui::status_bar;
 use crate::git::domain::diff::{DiffMeta, FileDiff};
 use crate::git::domain::repository::Repo;
@@ -13,10 +13,8 @@ use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogPane, 
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
-use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
-use std::sync::mpsc;
 
 pub const PANE_FILE_TREE: usize = 0;
 pub const PANE_BRANCH_LIST: usize = 1;
@@ -24,275 +22,47 @@ pub const PANE_GIT_LOG: usize = 2;
 pub const PANE_REFLOG: usize = 3;
 pub const PANE_DIFF_VIEW: usize = 4;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum BranchAction {
-    Switch,
-    Delete,
-    DiffBase,
-}
+use crate::git::panes::diff_view::DiffViewMode;
 
-impl BranchAction {
-    pub const ALL: [BranchAction; 3] = [
-        BranchAction::Switch,
-        BranchAction::Delete,
-        BranchAction::DiffBase,
-    ];
+// === Tab type aliases ===
 
-    pub fn label(self) -> &'static str {
-        match self {
-            BranchAction::Switch => "Switch",
-            BranchAction::Delete => "Delete",
-            BranchAction::DiffBase => "Set as diff base",
-        }
-    }
-
-    pub fn key(self) -> char {
-        match self {
-            BranchAction::Switch => 's',
-            BranchAction::Delete => 'd',
-            BranchAction::DiffBase => 'b',
-        }
-    }
-}
-
-pub struct BranchActionMenuState {
-    pub branch_name: String,
-    pub is_head: bool,
-    pub selected_idx: usize,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DiffViewMode {
-    Scroll,
-    Normal,
-    Visual,
-    VisualLine,
-}
-
-pub use crate::core::search::DiffSide;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct CursorPos {
-    pub row: usize,
-    pub col: usize,
-    pub side: DiffSide,
-}
-
-#[derive(Default)]
-pub struct DiffScroll {
-    pub y: u16,
-    pub x: u16,
-    pub total_lines: u16,
-    pub view_height: u16,
-}
-
-pub struct VimState {
-    pub mode: DiffViewMode,
-    pub cursor: CursorPos,
-    pub visual_anchor: Option<CursorPos>,
-    pub pending_key: Option<char>,
-    pub count: Option<usize>,
-}
-
-impl Default for VimState {
-    fn default() -> Self {
-        Self {
-            mode: DiffViewMode::Scroll,
-            cursor: CursorPos {
-                row: 0,
-                col: 0,
-                side: DiffSide::Left,
-            },
-            visual_anchor: None,
-            pending_key: None,
-            count: None,
-        }
-    }
-}
-
-pub struct HighlightState {
-    pub highlighter: SyntaxHighlighter,
-    pub cache: Option<HighlightCache>,
-    pub(crate) content_lines_cache: Option<(String, DiffSide, Vec<String>)>,
-    pub(crate) bg_highlights: HashMap<String, HighlightPair>,
-    pub(crate) bg_highlight_rx: Option<mpsc::Receiver<(String, HighlightPair)>>,
-}
-
-impl HighlightState {
-    pub fn new() -> Self {
-        Self {
-            highlighter: SyntaxHighlighter::new(),
-            cache: None,
-            content_lines_cache: None,
-            bg_highlights: HashMap::new(),
-            bg_highlight_rx: None,
-        }
-    }
-
-    pub fn reset(&mut self) {
-        self.cache = None;
-        self.content_lines_cache = None;
-        self.bg_highlights.clear();
-        self.bg_highlight_rx = None;
-    }
-
-    /// Ensure syntax highlighting is available up to `up_to` rows for the given file.
-    /// Uses pre-computed background results if available, otherwise falls back to on-demand.
-    pub fn ensure_file_highlight(&mut self, file: &FileDiff, up_to: usize) {
-        let needs_init = self
-            .cache
-            .as_ref()
-            .map(|c| c.file_path != file.path)
-            .unwrap_or(true);
-
-        if needs_init {
-            // Check for pre-computed background highlight results first
-            if let Some((lc, rc)) = self.bg_highlights.remove(&file.path) {
-                self.cache = Some(HighlightCache::from_precomputed(file.path.clone(), lc, rc));
-                return;
-            }
-
-            // Fall back to on-demand highlighting
-            let mut left_lines = Vec::new();
-            let mut right_lines = Vec::new();
-            let mut hunk_starts = Vec::new();
-            for hunk in &file.hunks {
-                hunk_starts.push(left_lines.len());
-                left_lines.push(String::new());
-                right_lines.push(String::new());
-                for row in &hunk.rows {
-                    left_lines.push(
-                        row.left
-                            .as_ref()
-                            .map(|s| s.content.clone())
-                            .unwrap_or_default(),
-                    );
-                    right_lines.push(
-                        row.right
-                            .as_ref()
-                            .map(|s| s.content.clone())
-                            .unwrap_or_default(),
-                    );
-                }
-            }
-            self.cache =
-                self.highlighter
-                    .create_cache(&file.path, left_lines, right_lines, hunk_starts);
-        }
-
-        if let Some(ref mut cache) = self.cache {
-            self.highlighter.extend_cache(cache, up_to);
-        }
-    }
-
-    /// Spawn a background thread to pre-highlight all files.
-    pub(crate) fn spawn_bg_highlight(&mut self, files: &[FileDiff]) {
-        let mut file_data: Vec<_> = Vec::new();
-        for file in files {
-            if file.is_binary {
-                continue;
-            }
-            let mut left_lines = Vec::new();
-            let mut right_lines = Vec::new();
-            let mut hunk_starts = Vec::new();
-            for hunk in &file.hunks {
-                hunk_starts.push(left_lines.len());
-                left_lines.push(String::new());
-                right_lines.push(String::new());
-                for row in &hunk.rows {
-                    left_lines.push(
-                        row.left
-                            .as_ref()
-                            .map(|s| s.content.clone())
-                            .unwrap_or_default(),
-                    );
-                    right_lines.push(
-                        row.right
-                            .as_ref()
-                            .map(|s| s.content.clone())
-                            .unwrap_or_default(),
-                    );
-                }
-            }
-            file_data.push((file.path.clone(), left_lines, right_lines, hunk_starts));
-        }
-
-        if file_data.is_empty() {
-            return;
-        }
-
-        let (tx, rx) = mpsc::channel();
-        self.bg_highlight_rx = Some(rx);
-
-        std::thread::spawn(move || {
-            let highlighter = SyntaxHighlighter::new();
-            for (path, left_lines, right_lines, hunk_starts) in file_data {
-                if let Some(pair) =
-                    highlighter.highlight_all_lines(&path, &left_lines, &right_lines, &hunk_starts)
-                {
-                    if tx.send((path, pair)).is_err() {
-                        break; // Receiver dropped
-                    }
-                }
-            }
-        });
-    }
-
-    /// Drain completed background highlight results into the local cache.
-    pub fn drain_bg_highlights(&mut self) {
-        if let Some(ref rx) = self.bg_highlight_rx {
-            while let Ok((path, pair)) = rx.try_recv() {
-                self.bg_highlights.insert(path, pair);
-            }
-        }
-    }
-}
-
-pub use crate::git::domain::tree::TreeEntry;
-
-// === Tab structs (list + detail pairing) ===
-
-/// FileTree (list) + DiffView (detail)
-pub struct FileTab {
-    pub file_tree: FileTreePane,
-    pub diff_view: DiffViewPane,
-}
+pub type FileTab = Tab<FileTreePane, DiffViewPane>;
+pub type BranchTab = Tab<BranchListPane, GitLogPane>;
 
 impl FileTab {
     /// Sync DiffView to match FileTree selection.
     pub fn sync_detail(&mut self) {
-        self.diff_view.set_file(self.file_tree.selected_file_idx());
-        self.diff_view.reset_scroll();
+        self.detail.set_file(self.list.selected_file_idx());
+        self.detail.reset_scroll();
     }
 
     /// Called after the file list has been replaced (refresh_diff).
     /// Restores selection, resets DiffView, and spawns background highlighting.
     pub fn on_files_changed(&mut self, old_path: Option<String>) {
-        self.file_tree.restore_selection(old_path);
-        self.diff_view.current_file_idx = self.file_tree.selected_file_idx();
-        self.diff_view.scroll.y = 0;
-        self.diff_view.scroll.x = 0;
-        self.diff_view.highlight.reset();
-        self.diff_view
-            .highlight
-            .spawn_bg_highlight(&self.file_tree.files);
+        self.list.restore_selection(old_path);
+        self.detail.current_file_idx = self.list.selected_file_idx();
+        self.detail.scroll.y = 0;
+        self.detail.scroll.x = 0;
+        self.detail.highlight.reset();
+        let file_data: Vec<_> = self
+            .list
+            .files
+            .iter()
+            .filter(|f| !f.is_binary)
+            .map(|f| f.highlight_data())
+            .collect();
+        self.detail.highlight.spawn_bg_highlight(file_data);
     }
-}
-
-/// BranchList (list) + GitLog (detail)
-pub struct BranchTab {
-    pub branch_list: BranchListPane,
-    pub git_log: GitLogPane,
 }
 
 impl BranchTab {
     /// Sync GitLog to show commits for the selected branch.
     pub fn sync_detail(&mut self, repo: &Repo) {
-        if let Some(branch) = self.branch_list.selected_branch() {
+        if let Some(branch) = self.list.selected_branch() {
             let name = branch.name.clone();
-            self.git_log.load_for_ref(repo, &name);
+            self.detail.load_for_ref(repo, &name);
         } else {
-            self.git_log.clear_log();
+            self.detail.clear_log();
         }
     }
 }
@@ -308,11 +78,15 @@ pub struct GitPanes {
 impl PaneSet for GitPanes {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
         match idx {
-            PANE_FILE_TREE => Some(&mut self.file_tab.file_tree),
-            PANE_BRANCH_LIST => Some(&mut self.branch_tab.branch_list),
-            PANE_GIT_LOG => Some(&mut self.branch_tab.git_log),
+            PANE_FILE_TREE | PANE_DIFF_VIEW => {
+                self.file_tab
+                    .get_pane_mut(PANE_FILE_TREE, PANE_DIFF_VIEW, idx)
+            }
+            PANE_BRANCH_LIST | PANE_GIT_LOG => {
+                self.branch_tab
+                    .get_pane_mut(PANE_BRANCH_LIST, PANE_GIT_LOG, idx)
+            }
             PANE_REFLOG => Some(&mut self.reflog),
-            PANE_DIFF_VIEW => Some(&mut self.file_tab.diff_view),
             _ => None,
         }
     }
@@ -338,13 +112,13 @@ impl GitState {
                 search: SearchState::new(),
             },
             panes: GitPanes {
-                file_tab: FileTab {
-                    file_tree: FileTreePane::new(Rc::clone(&files)),
-                    diff_view: DiffViewPane::new(Rc::clone(&files)),
+                file_tab: Tab {
+                    list: FileTreePane::new(Rc::clone(&files)),
+                    detail: DiffViewPane::new(Rc::clone(&files)),
                 },
-                branch_tab: BranchTab {
-                    branch_list: BranchListPane::new(),
-                    git_log: GitLogPane::new(),
+                branch_tab: Tab {
+                    list: BranchListPane::new(),
+                    detail: GitLogPane::new(),
                 },
                 reflog: ReflogPane::new(),
             },
@@ -374,8 +148,8 @@ impl GitState {
                     stats: result.stats,
                     file_count: files.len(),
                 };
-                self.panes.file_tab.file_tree.set_files(Rc::clone(&files));
-                self.panes.file_tab.diff_view.set_files(Rc::clone(&files));
+                self.panes.file_tab.list.set_files(Rc::clone(&files));
+                self.panes.file_tab.detail.set_files(Rc::clone(&files));
                 None
             }
             Err(e) => {
@@ -387,8 +161,8 @@ impl GitState {
                     stats: result.stats,
                     file_count: files.len(),
                 };
-                self.panes.file_tab.file_tree.set_files(Rc::clone(&files));
-                self.panes.file_tab.diff_view.set_files(Rc::clone(&files));
+                self.panes.file_tab.list.set_files(Rc::clone(&files));
+                self.panes.file_tab.detail.set_files(Rc::clone(&files));
                 Some(format!("Invalid ref, fell back to HEAD: {e}"))
             }
         };
@@ -398,11 +172,11 @@ impl GitState {
     }
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
-        self.panes.file_tab.file_tree.selected_file()
+        self.panes.file_tab.list.selected_file()
     }
 
     pub fn load_branches(&mut self) {
-        self.panes.branch_tab.branch_list.load(&self.repo);
+        self.panes.branch_tab.list.load(&self.repo);
         self.panes.branch_tab.sync_detail(&self.repo);
     }
 
@@ -489,7 +263,7 @@ impl GitState {
                             .jump_to_search_match(&mut self.panes, ctx, forward)
                     {
                         match origin {
-                            PANE_GIT_LOG => self.panes.branch_tab.git_log.load_detail(&self.repo),
+                            PANE_GIT_LOG => self.panes.branch_tab.detail.load_detail(&self.repo),
                             PANE_BRANCH_LIST => self.panes.branch_tab.sync_detail(&self.repo),
                             _ => {}
                         }
@@ -512,7 +286,7 @@ impl GitState {
                 self.panes.branch_tab.sync_detail(&self.repo);
             }
             PANE_GIT_LOG => {
-                self.panes.branch_tab.git_log.load_detail(&self.repo);
+                self.panes.branch_tab.detail.load_detail(&self.repo);
             }
             _ => {}
         }
@@ -536,7 +310,7 @@ impl GitState {
     pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // In Normal/Visual modes, keys are handled by the mode handler exclusively
         if self.pane.focused_pane == PANE_DIFF_VIEW
-            && self.panes.file_tab.diff_view.vim.mode != DiffViewMode::Scroll
+            && self.panes.file_tab.detail.vim.mode != DiffViewMode::Scroll
         {
             let events = self.dispatch_key(key);
             return self.process_events(ctx, events);
@@ -624,12 +398,8 @@ impl crate::core::app::PageState for GitState {
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // Branch action menu intercepts all keys when open
-        if Pane::<PaneEvent>::is_modal(&self.panes.branch_tab.branch_list) {
-            let events = self
-                .panes
-                .branch_tab
-                .branch_list
-                .handle_key(&self.pane, key);
+        if Pane::<PaneEvent>::is_modal(&self.panes.branch_tab.list) {
+            let events = self.panes.branch_tab.list.handle_key(&self.pane, key);
             return self.process_events(ctx, events);
         }
 
@@ -659,16 +429,13 @@ impl crate::core::app::PageState for GitState {
 
         status_bar::render_status_bar(f, ctx, self, ly.status_bar);
 
-        if self.panes.branch_tab.branch_list.action_menu.is_some() {
-            self.panes
-                .branch_tab
-                .branch_list
-                .render_action_menu(f, area);
+        if self.panes.branch_tab.list.action_menu.is_some() {
+            self.panes.branch_tab.list.render_action_menu(f, area);
         }
     }
 
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.panes.branch_tab.branch_list)
+        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.panes.branch_tab.list)
     }
 
     fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
@@ -700,6 +467,6 @@ impl crate::core::app::PageState for GitState {
     }
 
     fn drain_background(&mut self) {
-        self.panes.file_tab.diff_view.drain_background();
+        self.panes.file_tab.detail.drain_background();
     }
 }

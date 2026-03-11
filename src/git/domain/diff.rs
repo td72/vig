@@ -282,6 +282,35 @@ fn align_hunk_lines(lines: &[RawHunkLine]) -> Vec<SideBySideRow> {
     rows
 }
 
+impl FileDiff {
+    /// Extract data needed for syntax highlighting.
+    pub fn highlight_data(&self) -> (String, Vec<String>, Vec<String>, Vec<usize>) {
+        let mut left_lines = Vec::new();
+        let mut right_lines = Vec::new();
+        let mut hunk_starts = Vec::new();
+        for hunk in &self.hunks {
+            hunk_starts.push(left_lines.len());
+            left_lines.push(String::new());
+            right_lines.push(String::new());
+            for row in &hunk.rows {
+                left_lines.push(
+                    row.left
+                        .as_ref()
+                        .map(|s| s.content.clone())
+                        .unwrap_or_default(),
+                );
+                right_lines.push(
+                    row.right
+                        .as_ref()
+                        .map(|s| s.content.clone())
+                        .unwrap_or_default(),
+                );
+            }
+        }
+        (self.path.clone(), left_lines, right_lines, hunk_starts)
+    }
+}
+
 pub fn compute_stats(files: &[FileDiff]) -> DiffStats {
     let mut additions = 0;
     let mut deletions = 0;

@@ -1,8 +1,9 @@
 use super::DiffViewPane;
+use super::{CursorPos, DiffSide, DiffViewMode};
 use crate::core::app::SearchMatch;
 use crate::core::pane::PaneShared;
 use crate::git::domain::diff::{FileDiff, LineType, SideBySideRow};
-use crate::git::state::{CursorPos, DiffSide, DiffViewMode, PANE_DIFF_VIEW};
+use crate::git::state::PANE_DIFF_VIEW;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -142,7 +143,9 @@ pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &PaneShared, area:
 
     // Ensure syntax highlighting covers the visible range (incremental)
     let visible_end = (pane.scroll.y as usize) + (content_area.height as usize) + 1;
-    pane.highlight.ensure_file_highlight(file, visible_end);
+    let (path, left, right, starts) = file.highlight_data();
+    pane.highlight
+        .ensure_file_highlight(&path, left, right, starts, visible_end);
 
     // Split content area: left half | separator | right half
     let left_width = (content_area.width.saturating_sub(1)) / 2;

@@ -2,7 +2,44 @@ use crate::core::app::AppContext;
 use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{BranchInfo, Repo};
-use crate::git::state::{BranchAction, BranchActionMenuState, PaneEvent};
+use crate::git::state::PaneEvent;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BranchAction {
+    Switch,
+    Delete,
+    DiffBase,
+}
+
+impl BranchAction {
+    pub const ALL: [BranchAction; 3] = [
+        BranchAction::Switch,
+        BranchAction::Delete,
+        BranchAction::DiffBase,
+    ];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            BranchAction::Switch => "Switch",
+            BranchAction::Delete => "Delete",
+            BranchAction::DiffBase => "Set as diff base",
+        }
+    }
+
+    pub fn key(self) -> char {
+        match self {
+            BranchAction::Switch => 's',
+            BranchAction::Delete => 'd',
+            BranchAction::DiffBase => 'b',
+        }
+    }
+}
+
+pub struct BranchActionMenuState {
+    pub branch_name: String,
+    pub is_head: bool,
+    pub selected_idx: usize,
+}
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,

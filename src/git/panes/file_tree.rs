@@ -2,7 +2,9 @@ use crate::core::app::AppContext;
 use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::diff::{FileDiff, FileStatus};
-use crate::git::state::{PaneEvent, TreeEntry, PANE_DIFF_VIEW, PANE_FILE_TREE};
+use crate::git::state::{PaneEvent, PANE_DIFF_VIEW, PANE_FILE_TREE};
+
+pub use crate::git::domain::tree::TreeEntry;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,

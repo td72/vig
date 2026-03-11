@@ -1,9 +1,11 @@
 pub mod app;
 pub mod browser;
 pub mod event;
+pub mod highlight;
 pub mod page;
 pub mod pane;
 pub mod search;
 pub mod syntax;
+pub mod tab;
 pub mod tui;
 pub mod ui;

@@ -2,10 +2,60 @@ pub(crate) mod keys;
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
+use crate::core::highlight::HighlightState;
 use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::diff::FileDiff;
-use crate::git::state::{DiffScroll, DiffSide, DiffViewMode, HighlightState, PaneEvent, VimState};
+use crate::git::state::PaneEvent;
+
+pub use crate::core::search::DiffSide;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DiffViewMode {
+    Scroll,
+    Normal,
+    Visual,
+    VisualLine,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CursorPos {
+    pub row: usize,
+    pub col: usize,
+    pub side: DiffSide,
+}
+
+#[derive(Default)]
+pub struct DiffScroll {
+    pub y: u16,
+    pub x: u16,
+    pub total_lines: u16,
+    pub view_height: u16,
+}
+
+pub struct VimState {
+    pub mode: DiffViewMode,
+    pub cursor: CursorPos,
+    pub visual_anchor: Option<CursorPos>,
+    pub pending_key: Option<char>,
+    pub count: Option<usize>,
+}
+
+impl Default for VimState {
+    fn default() -> Self {
+        Self {
+            mode: DiffViewMode::Scroll,
+            cursor: CursorPos {
+                row: 0,
+                col: 0,
+                side: DiffSide::Left,
+            },
+            visual_anchor: None,
+            pending_key: None,
+            count: None,
+        }
+    }
+}
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 use std::rc::Rc;
@@ -14,6 +64,7 @@ pub struct DiffViewPane {
     pub scroll: DiffScroll,
     pub vim: VimState,
     pub highlight: HighlightState,
+    pub(crate) content_lines_cache: Option<(String, DiffSide, Vec<String>)>,
     pub current_file_idx: Option<usize>,
     pub files: Rc<Vec<FileDiff>>,
 }
@@ -24,6 +75,7 @@ impl DiffViewPane {
             scroll: DiffScroll::default(),
             vim: VimState::default(),
             highlight: HighlightState::new(),
+            content_lines_cache: None,
             current_file_idx: None,
             files,
         }
@@ -119,7 +171,7 @@ impl DiffViewPane {
             self.vim.cursor.row = row;
             self.vim.cursor.col = col_start;
             self.vim.cursor.side = side;
-            self.highlight.content_lines_cache = None;
+            self.content_lines_cache = None;
             self.scroll_to_cursor();
         }
     }
