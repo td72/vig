@@ -12,6 +12,7 @@ use std::sync::mpsc;
 use std::time::{Instant, SystemTime};
 
 pub struct GhDetailViewPane {
+    pub pane_id: usize,
     pub content: GhDetailContent,
     pub active_pane: GhDetailPane,
     pub body: SubPaneScroll,
@@ -30,8 +31,9 @@ pub struct GhDetailViewPane {
 }
 
 impl GhDetailViewPane {
-    pub fn new() -> Self {
+    pub fn new(pane_id: usize) -> Self {
         Self {
+            pane_id,
             content: GhDetailContent::None,
             active_pane: GhDetailPane::Body,
             body: SubPaneScroll::default(),
