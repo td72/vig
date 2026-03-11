@@ -250,24 +250,56 @@ impl HighlightState {
 
 pub use crate::git::domain::tree::TreeEntry;
 
+// === Tab structs (list + detail pairing) ===
+
+/// FileTree (list) + DiffView (detail)
+pub struct FileTab {
+    pub file_tree: FileTreePane,
+    pub diff_view: DiffViewPane,
+}
+
+impl FileTab {
+    /// Sync DiffView to match FileTree selection.
+    pub fn sync_detail(&mut self) {
+        self.diff_view.set_file(self.file_tree.selected_file_idx());
+        self.diff_view.reset_scroll();
+    }
+}
+
+/// BranchList (list) + GitLog (detail)
+pub struct BranchTab {
+    pub branch_list: BranchListPane,
+    pub git_log: GitLogPane,
+}
+
+impl BranchTab {
+    /// Sync GitLog to show commits for the selected branch.
+    pub fn sync_detail(&mut self, repo: &Repo) {
+        if let Some(branch) = self.branch_list.selected_branch() {
+            let name = branch.name.clone();
+            self.git_log.load_for_ref(repo, &name);
+        } else {
+            self.git_log.clear_log();
+        }
+    }
+}
+
 // === GitPanes (grouping struct for disjoint borrows) ===
 
 pub struct GitPanes {
-    pub file_tree: FileTreePane,
-    pub diff_view: DiffViewPane,
-    pub branch_list: BranchListPane,
-    pub git_log: GitLogPane,
+    pub file_tab: FileTab,
+    pub branch_tab: BranchTab,
     pub reflog: ReflogPane,
 }
 
 impl PaneSet for GitPanes {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
         match idx {
-            PANE_FILE_TREE => Some(&mut self.file_tree),
-            PANE_BRANCH_LIST => Some(&mut self.branch_list),
-            PANE_GIT_LOG => Some(&mut self.git_log),
+            PANE_FILE_TREE => Some(&mut self.file_tab.file_tree),
+            PANE_BRANCH_LIST => Some(&mut self.branch_tab.branch_list),
+            PANE_GIT_LOG => Some(&mut self.branch_tab.git_log),
             PANE_REFLOG => Some(&mut self.reflog),
-            PANE_DIFF_VIEW => Some(&mut self.diff_view),
+            PANE_DIFF_VIEW => Some(&mut self.file_tab.diff_view),
             _ => None,
         }
     }
@@ -293,10 +325,14 @@ impl GitState {
                 search: SearchState::new(),
             },
             panes: GitPanes {
-                file_tree: FileTreePane::new(Rc::clone(&files)),
-                diff_view: DiffViewPane::new(Rc::clone(&files)),
-                branch_list: BranchListPane::new(),
-                git_log: GitLogPane::new(),
+                file_tab: FileTab {
+                    file_tree: FileTreePane::new(Rc::clone(&files)),
+                    diff_view: DiffViewPane::new(Rc::clone(&files)),
+                },
+                branch_tab: BranchTab {
+                    branch_list: BranchListPane::new(),
+                    git_log: GitLogPane::new(),
+                },
                 reflog: ReflogPane::new(),
             },
             repo,
@@ -307,10 +343,16 @@ impl GitState {
             },
             diff_base_ref: None,
         };
-        state.panes.diff_view.current_file_idx = state.panes.file_tree.selected_file_idx();
+        state.panes.file_tab.diff_view.current_file_idx =
+            state.panes.file_tab.file_tree.selected_file_idx();
         state.load_branches();
         state.load_reflog();
-        state.panes.diff_view.highlight.spawn_bg_highlight(&files);
+        state
+            .panes
+            .file_tab
+            .diff_view
+            .highlight
+            .spawn_bg_highlight(&files);
         Ok(state)
     }
 
@@ -326,8 +368,8 @@ impl GitState {
                     stats: result.stats,
                     file_count: files.len(),
                 };
-                self.panes.file_tree.set_files(Rc::clone(&files));
-                self.panes.diff_view.set_files(Rc::clone(&files));
+                self.panes.file_tab.file_tree.set_files(Rc::clone(&files));
+                self.panes.file_tab.diff_view.set_files(Rc::clone(&files));
                 None
             }
             Err(e) => {
@@ -339,55 +381,48 @@ impl GitState {
                     stats: result.stats,
                     file_count: files.len(),
                 };
-                self.panes.file_tree.set_files(Rc::clone(&files));
-                self.panes.diff_view.set_files(Rc::clone(&files));
+                self.panes.file_tab.file_tree.set_files(Rc::clone(&files));
+                self.panes.file_tab.diff_view.set_files(Rc::clone(&files));
                 Some(format!("Invalid ref, fell back to HEAD: {e}"))
             }
         };
         // Preserve selection by path
         if let Some(path) = old_path {
             let entries = self.tree_entries();
-            self.panes.file_tree.selected_idx = entries
+            self.panes.file_tab.file_tree.selected_idx = entries
                 .iter()
-                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.panes.file_tree.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
+                .position(|e| matches!(e, TreeEntry::File { file_idx, .. } if self.panes.file_tab.file_tree.files.get(*file_idx).map(|f| &f.path) == Some(&path)))
                 .unwrap_or(0);
         }
         let entries = self.tree_entries();
-        if self.panes.file_tree.selected_idx >= entries.len() && !entries.is_empty() {
-            self.panes.file_tree.selected_idx = entries.len() - 1;
+        if self.panes.file_tab.file_tree.selected_idx >= entries.len() && !entries.is_empty() {
+            self.panes.file_tab.file_tree.selected_idx = entries.len() - 1;
         }
-        self.panes.diff_view.current_file_idx = self.panes.file_tree.selected_file_idx();
-        self.panes.diff_view.scroll.y = 0;
-        self.panes.diff_view.scroll.x = 0;
-        self.panes.diff_view.highlight.reset();
+        self.panes.file_tab.diff_view.current_file_idx =
+            self.panes.file_tab.file_tree.selected_file_idx();
+        self.panes.file_tab.diff_view.scroll.y = 0;
+        self.panes.file_tab.diff_view.scroll.x = 0;
+        self.panes.file_tab.diff_view.highlight.reset();
         self.pane.search.reset_matches();
         self.panes
+            .file_tab
             .diff_view
             .highlight
-            .spawn_bg_highlight(&self.panes.file_tree.files);
+            .spawn_bg_highlight(&self.panes.file_tab.file_tree.files);
         Ok(fallback_msg)
     }
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
-        self.panes.file_tree.selected_file()
+        self.panes.file_tab.file_tree.selected_file()
     }
 
     pub fn tree_entries(&self) -> Vec<TreeEntry> {
-        self.panes.file_tree.tree_entries()
+        self.panes.file_tab.file_tree.tree_entries()
     }
 
     pub fn load_branches(&mut self) {
-        self.panes.branch_list.load(&self.repo);
-        self.update_branch_log();
-    }
-
-    pub fn update_branch_log(&mut self) {
-        if let Some(branch) = self.panes.branch_list.selected_branch() {
-            let name = branch.name.clone();
-            self.panes.git_log.load_for_ref(&self.repo, &name);
-        } else {
-            self.panes.git_log.clear_log();
-        }
+        self.panes.branch_tab.branch_list.load(&self.repo);
+        self.panes.branch_tab.sync_detail(&self.repo);
     }
 
     pub fn load_reflog(&mut self) {
@@ -484,8 +519,8 @@ impl GitState {
                             .jump_to_search_match(&mut self.panes, ctx, forward)
                     {
                         match origin {
-                            PANE_GIT_LOG => self.panes.git_log.load_detail(&self.repo),
-                            PANE_BRANCH_LIST => self.update_branch_log(),
+                            PANE_GIT_LOG => self.panes.branch_tab.git_log.load_detail(&self.repo),
+                            PANE_BRANCH_LIST => self.panes.branch_tab.sync_detail(&self.repo),
                             _ => {}
                         }
                     }
@@ -500,17 +535,14 @@ impl GitState {
     fn sync_detail(&mut self, selected: usize) {
         match selected {
             PANE_FILE_TREE => {
-                self.panes
-                    .diff_view
-                    .set_file(self.panes.file_tree.selected_file_idx());
-                self.panes.diff_view.reset_scroll();
+                self.panes.file_tab.sync_detail();
                 search::re_search_on_file_change(self);
             }
             PANE_BRANCH_LIST => {
-                self.update_branch_log();
+                self.panes.branch_tab.sync_detail(&self.repo);
             }
             PANE_GIT_LOG => {
-                self.panes.git_log.load_detail(&self.repo);
+                self.panes.branch_tab.git_log.load_detail(&self.repo);
             }
             _ => {}
         }
@@ -534,7 +566,7 @@ impl GitState {
     pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // In Normal/Visual modes, keys are handled by the mode handler exclusively
         if self.pane.focused_pane == PANE_DIFF_VIEW
-            && self.panes.diff_view.vim.mode != DiffViewMode::Scroll
+            && self.panes.file_tab.diff_view.vim.mode != DiffViewMode::Scroll
         {
             let events = self.dispatch_key(key);
             return self.process_events(ctx, events);
@@ -622,8 +654,12 @@ impl crate::core::app::PageState for GitState {
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // Branch action menu intercepts all keys when open
-        if Pane::<PaneEvent>::is_modal(&self.panes.branch_list) {
-            let events = self.panes.branch_list.handle_key(&self.pane, key);
+        if Pane::<PaneEvent>::is_modal(&self.panes.branch_tab.branch_list) {
+            let events = self
+                .panes
+                .branch_tab
+                .branch_list
+                .handle_key(&self.pane, key);
             return self.process_events(ctx, events);
         }
 
@@ -653,13 +689,16 @@ impl crate::core::app::PageState for GitState {
 
         status_bar::render_status_bar(f, ctx, self, ly.status_bar);
 
-        if self.panes.branch_list.action_menu.is_some() {
-            self.panes.branch_list.render_action_menu(f, area);
+        if self.panes.branch_tab.branch_list.action_menu.is_some() {
+            self.panes
+                .branch_tab
+                .branch_list
+                .render_action_menu(f, area);
         }
     }
 
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.panes.branch_list)
+        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.panes.branch_tab.branch_list)
     }
 
     fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
@@ -691,6 +730,6 @@ impl crate::core::app::PageState for GitState {
     }
 
     fn drain_background(&mut self) {
-        self.panes.diff_view.drain_background();
+        self.panes.file_tab.diff_view.drain_background();
     }
 }
