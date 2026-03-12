@@ -1,131 +1,116 @@
 use crate::github::domain::types::*;
 use std::process::Command;
 
-pub fn check_gh_available() -> Result<(), String> {
+/// Run a `gh` command and return its stdout on success.
+fn run_gh(args: &[&str], context: &str) -> Result<Vec<u8>, String> {
     let output = Command::new("gh")
-        .args(["auth", "status"])
+        .args(args)
         .output()
-        .map_err(|e| format!("gh not found: {e}"))?;
-    if output.status.success() {
-        Ok(())
-    } else {
+        .map_err(|e| format!("{context}: {e}"))?;
+    if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        Err(stderr.trim().to_string())
+        return Err(stderr.trim().to_string());
     }
+    Ok(output.stdout)
+}
+
+/// Run a `gh` command and parse the JSON output.
+fn run_gh_json<T: serde::de::DeserializeOwned>(args: &[&str], context: &str) -> Result<T, String> {
+    let stdout = run_gh(args, context)?;
+    serde_json::from_slice(&stdout).map_err(|e| format!("JSON parse error: {e}"))
+}
+
+/// Open a GitHub issue or PR in the browser.
+fn open_in_browser(entity: &str, number: u64) -> Result<(), String> {
+    Command::new("gh")
+        .args([entity, "view", &number.to_string(), "--web"])
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .map_err(|e| format!("Failed to open {entity} in browser: {e}"))?;
+    Ok(())
+}
+
+pub fn check_gh_available() -> Result<(), String> {
+    run_gh(&["auth", "status"], "gh not found").map(|_| ())
 }
 
 pub fn list_issues(limit: usize) -> Result<Vec<GhIssueListItem>, String> {
-    let output = Command::new("gh")
-        .args([
+    run_gh_json(
+        &[
             "issue",
             "list",
             "--json",
             "number,title,state,author,labels,createdAt",
             "--limit",
             &limit.to_string(),
-        ])
-        .output()
-        .map_err(|e| format!("gh issue list failed: {e}"))?;
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(stderr.trim().to_string());
-    }
-    serde_json::from_slice(&output.stdout).map_err(|e| format!("JSON parse error: {e}"))
+        ],
+        "gh issue list failed",
+    )
 }
 
 pub fn list_prs(limit: usize) -> Result<Vec<GhPrListItem>, String> {
-    let output = Command::new("gh")
-        .args([
+    run_gh_json(
+        &[
             "pr",
             "list",
             "--json",
             "number,title,state,author,labels,headRefName,createdAt,reviewDecision,isDraft",
             "--limit",
             &limit.to_string(),
-        ])
-        .output()
-        .map_err(|e| format!("gh pr list failed: {e}"))?;
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(stderr.trim().to_string());
-    }
-    serde_json::from_slice(&output.stdout).map_err(|e| format!("JSON parse error: {e}"))
+        ],
+        "gh pr list failed",
+    )
 }
 
 pub fn get_issue(number: u64) -> Result<GhIssueDetail, String> {
-    let output = Command::new("gh")
-        .args([
+    run_gh_json(
+        &[
             "issue",
             "view",
             &number.to_string(),
             "--json",
             "number,title,state,author,body,comments,labels,createdAt",
-        ])
-        .output()
-        .map_err(|e| format!("gh issue view failed: {e}"))?;
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(stderr.trim().to_string());
-    }
-    serde_json::from_slice(&output.stdout).map_err(|e| format!("JSON parse error: {e}"))
+        ],
+        "gh issue view failed",
+    )
+}
+
+pub fn get_pr(number: u64) -> Result<GhPrDetail, String> {
+    run_gh_json(
+        &[
+            "pr",
+            "view",
+            &number.to_string(),
+            "--json",
+            "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName",
+        ],
+        "gh pr view failed",
+    )
 }
 
 pub fn open_issue_in_browser(number: u64) -> Result<(), String> {
-    Command::new("gh")
-        .args(["issue", "view", &number.to_string(), "--web"])
-        .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .spawn()
-        .map_err(|e| format!("Failed to open issue in browser: {e}"))?;
-    Ok(())
+    open_in_browser("issue", number)
 }
 
 pub fn open_pr_in_browser(number: u64) -> Result<(), String> {
-    Command::new("gh")
-        .args(["pr", "view", &number.to_string(), "--web"])
-        .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .spawn()
-        .map_err(|e| format!("Failed to open PR in browser: {e}"))?;
-    Ok(())
+    open_in_browser("pr", number)
 }
 
 /// Get the "owner/repo" string for the current repository using `gh`.
 pub fn repo_nwo() -> Option<String> {
-    let output = Command::new("gh")
-        .args([
+    let stdout = run_gh(
+        &[
             "repo",
             "view",
             "--json",
             "nameWithOwner",
             "-q",
             ".nameWithOwner",
-        ])
-        .output()
-        .ok()?;
-    if output.status.success() {
-        Some(String::from_utf8_lossy(&output.stdout).trim().to_string())
-    } else {
-        None
-    }
-}
-
-pub fn get_pr(number: u64) -> Result<GhPrDetail, String> {
-    let output = Command::new("gh")
-        .args([
-            "pr",
-            "view",
-            &number.to_string(),
-            "--json",
-            "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName",
-        ])
-        .output()
-        .map_err(|e| format!("gh pr view failed: {e}"))?;
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(stderr.trim().to_string());
-    }
-    serde_json::from_slice(&output.stdout).map_err(|e| format!("JSON parse error: {e}"))
+        ],
+        "gh repo view",
+    )
+    .ok()?;
+    Some(String::from_utf8_lossy(&stdout).trim().to_string())
 }
