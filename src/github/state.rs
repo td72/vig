@@ -7,8 +7,8 @@ use crate::core::ui::status_bar;
 use crate::github::domain::client;
 use crate::github::domain::types::*;
 use crate::github::panes::detail_view::GhDetailViewPane;
-use crate::github::panes::issue_list::GhIssueListPane;
-use crate::github::panes::pr_list::GhPrListPane;
+use crate::github::panes::issue_list::{self, GhIssueListPane};
+use crate::github::panes::pr_list::{self, GhPrListPane};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
@@ -114,11 +114,11 @@ impl GitHubState {
             },
             panes: GhPanes {
                 issue_tab: Tab {
-                    list: GhIssueListPane::new(),
+                    list: issue_list::new_pane(),
                     detail: GhDetailViewPane::new(GH_PANE_ISSUE_DETAIL),
                 },
                 pr_tab: Tab {
-                    list: GhPrListPane::new(),
+                    list: pr_list::new_pane(),
                     detail: GhDetailViewPane::new(GH_PANE_PR_DETAIL),
                 },
             },
@@ -339,6 +339,16 @@ impl GitHubState {
                         ctx.status_message = Some(format!("Failed to open browser: {e}"));
                     }
                 },
+                PaneEvent::JumpToMatch(forward) => {
+                    if let Some(origin) =
+                        self.pane
+                            .jump_to_search_match(&mut self.panes, ctx, forward)
+                    {
+                        if matches!(origin, GH_PANE_ISSUE_LIST | GH_PANE_PR_LIST) {
+                            self.sync_active_detail();
+                        }
+                    }
+                }
                 _ => {}
             }
         }
@@ -379,8 +389,6 @@ impl crate::core::app::PageState for GitHubState {
 
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
-        use crate::github::panes::issue_list;
-        use crate::github::panes::pr_list;
 
         let s = |k: &str, v: &str| (k.to_string(), v.to_string());
         let mut entries = vec![
@@ -397,9 +405,10 @@ impl crate::core::app::PageState for GitHubState {
             s("q", "Quit"),
         ];
         entries.extend(help_section("Issues"));
-        entries.extend(issue_list::default_keymap().help_entries());
+        entries.extend(crate::github::panes::gh_list::default_keymap(KeyCode::Tab).help_entries());
         entries.extend(help_section("Pull Requests"));
-        entries.extend(pr_list::default_keymap().help_entries());
+        entries
+            .extend(crate::github::panes::gh_list::default_keymap(KeyCode::BackTab).help_entries());
         entries
     }
 

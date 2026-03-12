@@ -147,8 +147,8 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         return;
     }
 
-    let issue_count = gh.panes.issue_tab.list.issues.len();
-    let pr_count = gh.panes.pr_tab.list.prs.len();
+    let issue_count = gh.panes.issue_tab.list.items.len();
+    let pr_count = gh.panes.pr_tab.list.items.len();
 
     let loading = gh.panes.issue_tab.list.loading || gh.panes.pr_tab.list.loading;
     let has_data = issue_count > 0 || pr_count > 0;
