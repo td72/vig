@@ -90,6 +90,14 @@ impl PaneSet for GitPanes {
             _ => None,
         }
     }
+
+    fn find_modal(&mut self) -> Option<usize> {
+        if Pane::<PaneEvent>::is_modal(&self.branch_tab.list) {
+            Some(PANE_BRANCH_LIST)
+        } else {
+            None
+        }
+    }
 }
 
 pub struct GitState {
@@ -386,9 +394,9 @@ impl crate::core::app::PageState for GitState {
     }
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
-        // Branch action menu intercepts all keys when open
-        if Pane::<PaneEvent>::is_modal(&self.panes.branch_tab.list) {
-            let events = self.panes.branch_tab.list.handle_key(&self.pane, key);
+        // Modal pane (e.g. action menu) intercepts all keys when open
+        if self.panes.find_modal().is_some() {
+            let events = self.dispatch_key(key);
             return self.process_events(ctx, events);
         }
 
@@ -424,7 +432,7 @@ impl crate::core::app::PageState for GitState {
     }
 
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active || Pane::<PaneEvent>::is_modal(&self.panes.branch_tab.list)
+        self.pane.search.active || self.panes.branch_tab.list.action_menu.is_some()
     }
 
     fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {

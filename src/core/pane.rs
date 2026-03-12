@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::core::keymap::SearchAction;
 use crate::core::search::{SearchMatch, SearchState};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
@@ -67,10 +68,11 @@ impl PaneShared {
         }
     }
 
-    /// Delegate a key event to the currently focused pane via dynamic dispatch.
+    /// Delegate a key event to the currently focused pane (or a modal pane if one is open).
     pub fn dispatch_to_pane(&self, panes: &mut impl PaneSet, key: KeyEvent) -> Vec<PaneEvent> {
+        let target = panes.find_modal().unwrap_or(self.focused_pane);
         panes
-            .get_mut(self.focused_pane)
+            .get_mut(target)
             .map(|p| p.handle_key(self, key))
             .unwrap_or_default()
     }
@@ -216,8 +218,30 @@ pub fn handle_common_view_key(ctx: &mut AppContext, key: KeyEvent) -> Option<Pag
     }
 }
 
+/// Execute a SearchAction, returning the appropriate PaneEvents.
+pub fn execute_search(action: SearchAction, pane_id: usize) -> Vec<PaneEvent> {
+    match action {
+        SearchAction::Start => vec![PaneEvent::StartSearch(pane_id)],
+        SearchAction::Next => vec![PaneEvent::JumpToMatch(true)],
+        SearchAction::Prev => vec![PaneEvent::JumpToMatch(false)],
+    }
+}
+
+/// Execute Esc: clear search if active, otherwise return the fallback events.
+pub fn execute_esc(shared: &PaneShared, fallback: Vec<PaneEvent>) -> Vec<PaneEvent> {
+    if shared.search.query.is_some() {
+        vec![PaneEvent::ClearSearch]
+    } else {
+        fallback
+    }
+}
+
 pub trait PaneSet {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>>;
+    /// Return the index of a modal pane if one is currently open.
+    fn find_modal(&mut self) -> Option<usize> {
+        None
+    }
 }
 
 // Note: #[allow(dead_code)] needed because rustc doesn't track usage through dyn dispatch.

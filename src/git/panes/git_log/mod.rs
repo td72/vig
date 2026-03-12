@@ -1,9 +1,9 @@
 pub(crate) mod view;
 
 use crate::core::keymap::{
-    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction,
+    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
-use crate::core::pane::{Pane, PaneShared, SubPaneScroll};
+use crate::core::pane::{self, Pane, PaneShared, SubPaneScroll};
 use crate::git::domain::graph::{self, GraphRow};
 use crate::git::domain::repository::{CommitFileChange, CommitInfo, Repo};
 use crate::git::state::{PaneEvent, PANE_REFLOG};
@@ -19,9 +19,7 @@ pub enum GitLogAction {
     YankHash,
     OpenGitHub,
     FocusReflog,
-    Search,
-    NextMatch,
-    PrevMatch,
+    Search(SearchAction),
     Esc,
 }
 
@@ -32,9 +30,7 @@ impl ActionHelp for GitLogAction {
             GitLogAction::YankHash => Some("Copy commit hash"),
             GitLogAction::OpenGitHub => Some("Open in GitHub"),
             GitLogAction::FocusReflog => Some("Focus reflog"),
-            GitLogAction::Search => Some("Search commits"),
-            GitLogAction::NextMatch => Some("Next match"),
-            GitLogAction::PrevMatch => Some("Prev match"),
+            GitLogAction::Search(sa) => sa.label(),
             GitLogAction::Esc => Some("Clear search / Back"),
         }
     }
@@ -43,11 +39,7 @@ impl ActionHelp for GitLogAction {
 pub fn default_keymap() -> Keymap<GitLogAction> {
     Keymap::new()
         .bindings(nav_bindings(GitLogAction::Nav))
-        .bindings(search_bindings(
-            GitLogAction::Search,
-            GitLogAction::NextMatch,
-            GitLogAction::PrevMatch,
-        ))
+        .bindings(search_bindings(GitLogAction::Search))
         .key(KeyCode::Char('y'), GitLogAction::YankHash)
         .key(KeyCode::Char('o'), GitLogAction::OpenGitHub)
         .key(KeyCode::Char('h'), GitLogAction::FocusReflog)
@@ -121,11 +113,7 @@ impl GitLogPane {
                 return vec![PaneEvent::SetFocus(PANE_REFLOG)];
             }
             GitLogAction::Esc => {
-                if shared.search.query.is_some() {
-                    return vec![PaneEvent::ClearSearch];
-                } else {
-                    return vec![PaneEvent::SetFocus(shared.previous_pane)];
-                }
+                return pane::execute_esc(shared, vec![PaneEvent::SetFocus(shared.previous_pane)]);
             }
             GitLogAction::Nav(nav) => {
                 if execute_nav(
@@ -155,14 +143,8 @@ impl GitLogPane {
                     }
                 }
             }
-            GitLogAction::Search => {
-                return vec![PaneEvent::StartSearch(crate::git::state::PANE_GIT_LOG)];
-            }
-            GitLogAction::NextMatch => {
-                return vec![PaneEvent::JumpToMatch(true)];
-            }
-            GitLogAction::PrevMatch => {
-                return vec![PaneEvent::JumpToMatch(false)];
+            GitLogAction::Search(sa) => {
+                return pane::execute_search(sa, crate::git::state::PANE_GIT_LOG);
             }
         }
         vec![]

@@ -208,12 +208,44 @@ pub fn nav_bindings<A: Clone>(wrap: impl Fn(NavAction) -> A) -> Vec<(KeyCode, Ke
     ]
 }
 
-/// Generate search key bindings (/, n, N).
-pub fn search_bindings<A: Clone>(start: A, next: A, prev: A) -> Vec<(KeyCode, KeyModifiers, A)> {
+/// Common search actions shared across panes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SearchAction {
+    Start,
+    Next,
+    Prev,
+}
+
+impl ActionHelp for SearchAction {
+    fn label(&self) -> Option<&'static str> {
+        Some(match self {
+            SearchAction::Start => "Search",
+            SearchAction::Next => "Next match",
+            SearchAction::Prev => "Prev match",
+        })
+    }
+}
+
+/// Generate search key bindings (/, n, N), wrapping each SearchAction with the given function.
+pub fn search_bindings<A: Clone>(
+    wrap: impl Fn(SearchAction) -> A,
+) -> Vec<(KeyCode, KeyModifiers, A)> {
     vec![
-        (KeyCode::Char('/'), KeyModifiers::NONE, start),
-        (KeyCode::Char('n'), KeyModifiers::NONE, next),
-        (KeyCode::Char('N'), KeyModifiers::NONE, prev),
+        (
+            KeyCode::Char('/'),
+            KeyModifiers::NONE,
+            wrap(SearchAction::Start),
+        ),
+        (
+            KeyCode::Char('n'),
+            KeyModifiers::NONE,
+            wrap(SearchAction::Next),
+        ),
+        (
+            KeyCode::Char('N'),
+            KeyModifiers::NONE,
+            wrap(SearchAction::Prev),
+        ),
     ]
 }
 

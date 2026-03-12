@@ -1,6 +1,6 @@
 use super::{CursorPos, DiffSide, DiffViewMode};
-use crate::core::keymap::{search_bindings, ActionHelp, Keymap, NavAction};
-use crate::core::pane::PaneShared;
+use crate::core::keymap::{search_bindings, ActionHelp, Keymap, NavAction, SearchAction};
+use crate::core::pane::{self, PaneShared};
 use crate::git::state::{PaneEvent, PANE_DIFF_VIEW};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
@@ -10,9 +10,7 @@ pub(crate) enum DiffScrollAction {
     ScrollLeft,
     ScrollRight,
     EnterNormalMode,
-    Search,
-    NextMatch,
-    PrevMatch,
+    Search(SearchAction),
     Esc,
 }
 
@@ -23,9 +21,7 @@ impl ActionHelp for DiffScrollAction {
             DiffScrollAction::ScrollLeft => Some("Scroll left"),
             DiffScrollAction::ScrollRight => Some("Scroll right"),
             DiffScrollAction::EnterNormalMode => Some("Normal mode (cursor)"),
-            DiffScrollAction::Search => Some("Search"),
-            DiffScrollAction::NextMatch => Some("Next match"),
-            DiffScrollAction::PrevMatch => Some("Prev match"),
+            DiffScrollAction::Search(sa) => sa.label(),
             DiffScrollAction::Esc => Some("Clear search / Back"),
         }
     }
@@ -56,11 +52,7 @@ pub(crate) fn default_scroll_keymap() -> Keymap<DiffScrollAction> {
         .key(KeyCode::Right, DiffScrollAction::ScrollRight)
         .key(KeyCode::Char('i'), DiffScrollAction::EnterNormalMode)
         .key(KeyCode::Esc, DiffScrollAction::Esc)
-        .bindings(search_bindings(
-            DiffScrollAction::Search,
-            DiffScrollAction::NextMatch,
-            DiffScrollAction::PrevMatch,
-        ))
+        .bindings(search_bindings(DiffScrollAction::Search))
 }
 
 pub(crate) fn handle_diff_scroll_key(
@@ -114,21 +106,13 @@ fn execute_diff_scroll(
             pane.scroll.x = pane.scroll.x.saturating_add(4);
         }
         DiffScrollAction::Esc => {
-            if shared.search.query.is_some() {
-                return vec![PaneEvent::ClearSearch];
-            } else {
-                return vec![PaneEvent::SetFocus(shared.previous_pane)];
+            return pane::execute_esc(shared, vec![PaneEvent::SetFocus(shared.previous_pane)]);
+        }
+        DiffScrollAction::Search(sa) => {
+            if sa == SearchAction::Start {
+                pane.vim.pending_key = None;
             }
-        }
-        DiffScrollAction::Search => {
-            pane.vim.pending_key = None;
-            return vec![PaneEvent::StartSearch(PANE_DIFF_VIEW)];
-        }
-        DiffScrollAction::NextMatch => {
-            return vec![PaneEvent::JumpToMatch(true)];
-        }
-        DiffScrollAction::PrevMatch => {
-            return vec![PaneEvent::JumpToMatch(false)];
+            return pane::execute_search(sa, PANE_DIFF_VIEW);
         }
         DiffScrollAction::EnterNormalMode => {
             let lines = content_lines(pane, shared);

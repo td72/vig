@@ -1,8 +1,8 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{
-    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction,
+    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
-use crate::core::pane::{Pane, PaneShared};
+use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::diff::{FileDiff, FileStatus};
 use crate::git::state::{PaneEvent, PANE_DIFF_VIEW, PANE_FILE_TREE};
@@ -25,9 +25,7 @@ pub enum FileTreeAction {
     ToggleDir,
     ExpandOrOpen,
     FocusDiff,
-    Search,
-    NextMatch,
-    PrevMatch,
+    Search(SearchAction),
     Esc,
 }
 
@@ -38,9 +36,7 @@ impl ActionHelp for FileTreeAction {
             FileTreeAction::ToggleDir => Some("Toggle directory"),
             FileTreeAction::ExpandOrOpen => Some("Expand / Open file"),
             FileTreeAction::FocusDiff => Some("Focus diff view"),
-            FileTreeAction::Search => Some("Search"),
-            FileTreeAction::NextMatch => Some("Next match"),
-            FileTreeAction::PrevMatch => Some("Prev match"),
+            FileTreeAction::Search(sa) => sa.label(),
             FileTreeAction::Esc => Some("Clear search / Back"),
         }
     }
@@ -49,11 +45,7 @@ impl ActionHelp for FileTreeAction {
 pub fn default_keymap() -> Keymap<FileTreeAction> {
     Keymap::new()
         .bindings(nav_bindings(FileTreeAction::Nav))
-        .bindings(search_bindings(
-            FileTreeAction::Search,
-            FileTreeAction::NextMatch,
-            FileTreeAction::PrevMatch,
-        ))
+        .bindings(search_bindings(FileTreeAction::Search))
         .key(KeyCode::Char(' '), FileTreeAction::ToggleDir)
         .key(KeyCode::Right, FileTreeAction::ExpandOrOpen)
         .key(KeyCode::Enter, FileTreeAction::ExpandOrOpen)
@@ -133,23 +125,14 @@ impl FileTreePane {
     fn execute(&mut self, shared: &PaneShared, action: FileTreeAction) -> Vec<PaneEvent> {
         // Handle actions that don't need entries first
         match action {
-            FileTreeAction::Search => {
-                return vec![PaneEvent::StartSearch(PANE_FILE_TREE)];
-            }
-            FileTreeAction::NextMatch => {
-                return vec![PaneEvent::JumpToMatch(true)];
-            }
-            FileTreeAction::PrevMatch => {
-                return vec![PaneEvent::JumpToMatch(false)];
+            FileTreeAction::Search(sa) => {
+                return pane::execute_search(sa, PANE_FILE_TREE);
             }
             FileTreeAction::FocusDiff => {
                 return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
             }
             FileTreeAction::Esc => {
-                if shared.search.query.is_some() {
-                    return vec![PaneEvent::ClearSearch];
-                }
-                return vec![];
+                return pane::execute_esc(shared, vec![]);
             }
             _ => {}
         }

@@ -1,8 +1,8 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{
-    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction,
+    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
-use crate::core::pane::{Pane, PaneShared};
+use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{ReflogEntry, Repo};
 use crate::git::state::{PaneEvent, PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
@@ -21,9 +21,7 @@ pub enum ReflogAction {
     Nav(NavAction),
     SetDiffBase,
     FocusLog,
-    Search,
-    NextMatch,
-    PrevMatch,
+    Search(SearchAction),
     Esc,
 }
 
@@ -33,9 +31,7 @@ impl ActionHelp for ReflogAction {
             ReflogAction::Nav(nav) => nav.label(),
             ReflogAction::SetDiffBase => Some("Set as diff base"),
             ReflogAction::FocusLog => Some("Focus log"),
-            ReflogAction::Search => Some("Search reflog"),
-            ReflogAction::NextMatch => Some("Next match"),
-            ReflogAction::PrevMatch => Some("Prev match"),
+            ReflogAction::Search(sa) => sa.label(),
             ReflogAction::Esc => Some("Clear search / Back"),
         }
     }
@@ -44,11 +40,7 @@ impl ActionHelp for ReflogAction {
 pub fn default_keymap() -> Keymap<ReflogAction> {
     Keymap::new()
         .bindings(nav_bindings(ReflogAction::Nav))
-        .bindings(search_bindings(
-            ReflogAction::Search,
-            ReflogAction::NextMatch,
-            ReflogAction::PrevMatch,
-        ))
+        .bindings(search_bindings(ReflogAction::Search))
         .key(KeyCode::Enter, ReflogAction::SetDiffBase)
         .key(KeyCode::Char('i'), ReflogAction::FocusLog)
         .key(KeyCode::Esc, ReflogAction::Esc)
@@ -88,23 +80,14 @@ impl ReflogPane {
 
     fn execute(&mut self, shared: &PaneShared, action: ReflogAction) -> Vec<PaneEvent> {
         match action {
-            ReflogAction::Search => {
-                return vec![PaneEvent::StartSearch(PANE_REFLOG)];
-            }
-            ReflogAction::NextMatch => {
-                return vec![PaneEvent::JumpToMatch(true)];
-            }
-            ReflogAction::PrevMatch => {
-                return vec![PaneEvent::JumpToMatch(false)];
+            ReflogAction::Search(sa) => {
+                return pane::execute_search(sa, PANE_REFLOG);
             }
             ReflogAction::FocusLog => {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
             ReflogAction::Esc => {
-                if shared.search.query.is_some() {
-                    return vec![PaneEvent::ClearSearch];
-                }
-                return vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)];
+                return pane::execute_esc(shared, vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)]);
             }
             ReflogAction::Nav(nav) => {
                 execute_nav(

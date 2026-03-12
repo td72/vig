@@ -1,8 +1,8 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{
-    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction,
+    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
-use crate::core::pane::{Pane, PaneShared};
+use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{BranchInfo, Repo};
 use crate::git::state::PaneEvent;
@@ -60,9 +60,7 @@ pub enum BranchListAction {
     Nav(NavAction),
     OpenActionMenu,
     FocusLog,
-    Search,
-    NextMatch,
-    PrevMatch,
+    Search(SearchAction),
     Esc,
 }
 
@@ -72,9 +70,7 @@ impl ActionHelp for BranchListAction {
             BranchListAction::Nav(nav) => nav.label(),
             BranchListAction::OpenActionMenu => Some("Action menu"),
             BranchListAction::FocusLog => Some("Focus log"),
-            BranchListAction::Search => Some("Search branches"),
-            BranchListAction::NextMatch => Some("Next match"),
-            BranchListAction::PrevMatch => Some("Prev match"),
+            BranchListAction::Search(sa) => sa.label(),
             BranchListAction::Esc => Some("Clear search / Reset"),
         }
     }
@@ -83,11 +79,7 @@ impl ActionHelp for BranchListAction {
 pub fn default_keymap() -> Keymap<BranchListAction> {
     Keymap::new()
         .bindings(nav_bindings(BranchListAction::Nav))
-        .bindings(search_bindings(
-            BranchListAction::Search,
-            BranchListAction::NextMatch,
-            BranchListAction::PrevMatch,
-        ))
+        .bindings(search_bindings(BranchListAction::Search))
         .key(KeyCode::Enter, BranchListAction::OpenActionMenu)
         .key(KeyCode::Char('i'), BranchListAction::FocusLog)
         .key(KeyCode::Esc, BranchListAction::Esc)
@@ -136,23 +128,14 @@ impl BranchListPane {
 
     fn execute(&mut self, shared: &PaneShared, action: BranchListAction) -> Vec<PaneEvent> {
         match action {
-            BranchListAction::Search => {
-                return vec![PaneEvent::StartSearch(PANE_BRANCH_LIST)];
-            }
-            BranchListAction::NextMatch => {
-                return vec![PaneEvent::JumpToMatch(true)];
-            }
-            BranchListAction::PrevMatch => {
-                return vec![PaneEvent::JumpToMatch(false)];
+            BranchListAction::Search(sa) => {
+                return pane::execute_search(sa, PANE_BRANCH_LIST);
             }
             BranchListAction::FocusLog => {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
             BranchListAction::Esc => {
-                if shared.search.query.is_some() {
-                    return vec![PaneEvent::ClearSearch];
-                }
-                return vec![PaneEvent::SetDiffBase(None)];
+                return pane::execute_esc(shared, vec![PaneEvent::SetDiffBase(None)]);
             }
             BranchListAction::Nav(nav) => {
                 if execute_nav(nav, &mut self.selected_idx, self.branches.len(), None) {
