@@ -4,6 +4,7 @@ use crate::core::keymap::{
 };
 use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
+use crate::core::theme;
 use crate::git::domain::diff::{FileDiff, FileStatus};
 use crate::git::state::{PaneEvent, PANE_DIFF_VIEW, PANE_FILE_TREE};
 
@@ -13,7 +14,7 @@ use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState},
+    widgets::{List, ListItem, ListState},
     Frame,
 };
 use std::collections::HashSet;
@@ -197,50 +198,16 @@ impl FileTreePane {
     }
 
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        let border_color = if shared.focused_pane == PANE_FILE_TREE {
-            Color::Cyan
-        } else {
-            Color::DarkGray
-        };
-
-        let block = Block::default()
-            .title(" Files ")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(border_color));
+        let block = theme::pane_block("Files", shared.focused_pane == PANE_FILE_TREE);
 
         let entries = self.tree_entries();
 
         if entries.is_empty() {
-            let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
-                "  Working tree clean",
-                Style::default().fg(Color::DarkGray),
-            )))];
-            let list = List::new(items).block(block);
-            f.render_widget(list, area);
+            theme::render_empty_list(f, area, block, "Working tree clean");
             return;
         }
 
-        // Build set of matched tree entry indices and current match index
-        let (match_set, current_match_idx) = if shared.search.origin == PANE_FILE_TREE {
-            let set: HashSet<usize> = shared
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::ListEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = shared.search.current_match_idx.and_then(|ci| {
-                match shared.search.matches.get(ci) {
-                    Some(SearchMatch::ListEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+        let (match_set, current_match_idx) = theme::list_search_highlights(shared, PANE_FILE_TREE);
 
         let items: Vec<ListItem> = entries
             .iter()
@@ -259,12 +226,12 @@ impl FileTreePane {
                         let dir_name = path.rsplit('/').next().unwrap_or(path);
                         let name_style = if is_current {
                             Style::default()
-                                .fg(Color::Black)
-                                .bg(Color::Rgb(200, 120, 0))
+                                .fg(theme::SEARCH_CURRENT_FG)
+                                .bg(theme::SEARCH_CURRENT_BG)
                         } else if is_match {
                             Style::default()
                                 .fg(Color::DarkGray)
-                                .bg(Color::Rgb(60, 60, 0))
+                                .bg(theme::SEARCH_MATCH_BG)
                         } else {
                             Style::default().fg(Color::DarkGray)
                         };
@@ -292,10 +259,10 @@ impl FileTreePane {
                         };
                         let name_style = if is_current {
                             Style::default()
-                                .fg(Color::Black)
-                                .bg(Color::Rgb(200, 120, 0))
+                                .fg(theme::SEARCH_CURRENT_FG)
+                                .bg(theme::SEARCH_CURRENT_BG)
                         } else if is_match {
-                            Style::default().bg(Color::Rgb(60, 60, 0))
+                            Style::default().bg(theme::SEARCH_MATCH_BG)
                         } else {
                             Style::default()
                         };
@@ -314,15 +281,7 @@ impl FileTreePane {
             .collect();
 
         let selected = self.selected_idx;
-        let selected_is_match = match_set.contains(&selected);
-
-        let highlight_style = if selected_is_match {
-            Style::default().add_modifier(Modifier::BOLD)
-        } else {
-            Style::default()
-                .bg(Color::DarkGray)
-                .add_modifier(Modifier::BOLD)
-        };
+        let highlight_style = theme::list_highlight_style(match_set.contains(&selected));
 
         let list = List::new(items)
             .block(block)

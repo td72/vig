@@ -1,15 +1,16 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{execute_nav, nav_bindings, ActionHelp, Keymap, NavAction};
 use crate::core::pane::{Pane, PaneEvent, PaneShared};
+use crate::core::theme;
 use crate::github::domain::types::GhPrListItem;
 use crate::github::domain::{client, disk_cache};
 use crate::github::state::{GhBgMessage, GH_PANE_ISSUE_LIST, GH_PANE_PR_DETAIL, GH_PANE_PR_LIST};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
-    style::{Color, Modifier, Style},
+    style::{Color, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState},
+    widgets::{List, ListItem, ListState},
     Frame,
 };
 use std::sync::mpsc;
@@ -123,34 +124,15 @@ impl GhPrListPane {
 
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         let is_focused = shared.focused_pane == GH_PANE_PR_LIST;
-        let border_color = if is_focused {
-            Color::Cyan
-        } else {
-            Color::DarkGray
-        };
-
-        let block = Block::default()
-            .title(" Pull Requests ")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(border_color));
+        let block = theme::pane_block("Pull Requests", shared.focused_pane == GH_PANE_PR_LIST);
 
         if self.loading && self.prs.is_empty() {
-            let items = vec![ListItem::new(Line::from(Span::styled(
-                "  Loading...",
-                Style::default().fg(Color::DarkGray),
-            )))];
-            let list = List::new(items).block(block);
-            f.render_widget(list, area);
+            theme::render_empty_list(f, area, block, "Loading...");
             return;
         }
 
         if self.prs.is_empty() {
-            let items = vec![ListItem::new(Line::from(Span::styled(
-                "  No pull requests",
-                Style::default().fg(Color::DarkGray),
-            )))];
-            let list = List::new(items).block(block);
-            f.render_widget(list, area);
+            theme::render_empty_list(f, area, block, "No pull requests");
             return;
         }
 
@@ -204,9 +186,7 @@ impl GhPrListPane {
             })
             .collect();
 
-        let highlight_style = Style::default()
-            .bg(Color::DarkGray)
-            .add_modifier(Modifier::BOLD);
+        let highlight_style = theme::list_highlight_style(false);
 
         let list = List::new(items)
             .block(block)

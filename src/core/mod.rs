@@ -8,5 +8,6 @@ pub mod pane;
 pub mod search;
 pub mod syntax;
 pub mod tab;
+pub mod theme;
 pub mod tui;
 pub mod ui;

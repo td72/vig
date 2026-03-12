@@ -2,25 +2,20 @@ use super::DiffViewPane;
 use super::{CursorPos, DiffSide, DiffViewMode};
 use crate::core::app::SearchMatch;
 use crate::core::pane::PaneShared;
+use crate::core::theme;
 use crate::git::domain::diff::{FileDiff, LineType, SideBySideRow};
 use crate::git::state::PANE_DIFF_VIEW;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph},
+    widgets::Paragraph,
     Frame,
 };
 use std::collections::HashMap;
 use std::rc::Rc;
 
 const GUTTER_WIDTH: usize = 5; // "1234 "
-const SELECTION_BG: Color = Color::Rgb(60, 60, 100);
-const CURSOR_FG: Color = Color::Black;
-const CURSOR_BG: Color = Color::White;
-const SEARCH_MATCH_BG: Color = Color::Rgb(60, 60, 0);
-const SEARCH_CURRENT_BG: Color = Color::Rgb(200, 120, 0);
-const SEARCH_CURRENT_FG: Color = Color::Black;
 
 /// Pre-computed search highlight info for the current file
 struct SearchHighlightInfo {
@@ -85,16 +80,7 @@ struct SelectionInfo {
 }
 
 pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &PaneShared, area: Rect) {
-    let border_color = if shared.focused_pane == PANE_DIFF_VIEW {
-        Color::Cyan
-    } else {
-        Color::DarkGray
-    };
-
-    let block = Block::default()
-        .title(" Diff ")
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(border_color));
+    let block = theme::pane_block("Diff", shared.focused_pane == PANE_DIFF_VIEW);
 
     let inner = block.inner(area);
     f.render_widget(block, area);
@@ -683,9 +669,11 @@ fn build_syntax_spans<'a>(
 
         let style = if let Some(is_current) = search_highlight {
             if is_current {
-                base_style.fg(SEARCH_CURRENT_FG).bg(SEARCH_CURRENT_BG)
+                base_style
+                    .fg(theme::SEARCH_CURRENT_FG)
+                    .bg(theme::SEARCH_CURRENT_BG)
             } else {
-                base_style.fg(fg).bg(SEARCH_MATCH_BG)
+                base_style.fg(fg).bg(theme::SEARCH_MATCH_BG)
             }
         } else {
             base_style.fg(fg)
@@ -758,15 +746,17 @@ fn build_highlighted_spans<'a>(
         let text: String = display[i..j].iter().collect();
         let syn_fg_or_default = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
         let style = if is_cursor {
-            base_style.fg(CURSOR_FG).bg(CURSOR_BG)
+            base_style.fg(theme::CURSOR_FG).bg(theme::CURSOR_BG)
         } else if let Some(is_current) = search_highlight {
             if is_current {
-                base_style.fg(SEARCH_CURRENT_FG).bg(SEARCH_CURRENT_BG)
+                base_style
+                    .fg(theme::SEARCH_CURRENT_FG)
+                    .bg(theme::SEARCH_CURRENT_BG)
             } else {
-                base_style.fg(syn_fg_or_default).bg(SEARCH_MATCH_BG)
+                base_style.fg(syn_fg_or_default).bg(theme::SEARCH_MATCH_BG)
             }
         } else if is_selected {
-            base_style.fg(syn_fg_or_default).bg(SELECTION_BG)
+            base_style.fg(syn_fg_or_default).bg(theme::SELECTION_BG)
         } else {
             base_style.fg(syn_fg_or_default)
         };

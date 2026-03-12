@@ -4,6 +4,7 @@ use crate::core::keymap::{
 };
 use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
+use crate::core::theme;
 use crate::git::domain::repository::{ReflogEntry, Repo};
 use crate::git::state::{PaneEvent, PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
 use crossterm::event::{KeyCode, KeyEvent};
@@ -11,10 +12,9 @@ use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState},
+    widgets::{List, ListItem, ListState},
     Frame,
 };
-use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 pub enum ReflogAction {
@@ -127,48 +127,14 @@ impl ReflogPane {
 
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
-        let border_color = if shared.focused_pane == PANE_REFLOG {
-            Color::Cyan
-        } else {
-            Color::DarkGray
-        };
-
-        let block = Block::default()
-            .title(" Reflog ")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(border_color));
+        let block = theme::pane_block("Reflog", shared.focused_pane == PANE_REFLOG);
 
         if self.entries.is_empty() {
-            let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
-                "  No reflog entries",
-                Style::default().fg(Color::DarkGray),
-            )))];
-            let list = List::new(items).block(block);
-            f.render_widget(list, area);
+            theme::render_empty_list(f, area, block, "No reflog entries");
             return;
         }
 
-        // Build set of matched reflog entry indices
-        let (match_set, current_match_idx) = if shared.search.origin == PANE_REFLOG {
-            let set: HashSet<usize> = shared
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::ListEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = shared.search.current_match_idx.and_then(|ci| {
-                match shared.search.matches.get(ci) {
-                    Some(SearchMatch::ListEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+        let (match_set, current_match_idx) = theme::list_search_highlights(shared, PANE_REFLOG);
 
         let items: Vec<ListItem> = self
             .entries
@@ -178,13 +144,17 @@ impl ReflogPane {
                 let is_current = current_match_idx == Some(idx);
                 let is_match = match_set.contains(&idx);
                 let bg = if is_current {
-                    Some(Color::Rgb(200, 120, 0))
+                    Some(theme::SEARCH_CURRENT_BG)
                 } else if is_match {
-                    Some(Color::Rgb(60, 60, 0))
+                    Some(theme::SEARCH_MATCH_BG)
                 } else {
                     None
                 };
-                let fg_override = if is_current { Some(Color::Black) } else { None };
+                let fg_override = if is_current {
+                    Some(theme::SEARCH_CURRENT_FG)
+                } else {
+                    None
+                };
 
                 let hash_style = {
                     let mut s = Style::default().fg(fg_override.unwrap_or(Color::Yellow));
@@ -230,15 +200,7 @@ impl ReflogPane {
             .collect();
 
         let selected = self.selected_idx;
-        let selected_is_match = match_set.contains(&selected);
-
-        let highlight_style = if selected_is_match {
-            Style::default().add_modifier(Modifier::BOLD)
-        } else {
-            Style::default()
-                .bg(Color::DarkGray)
-                .add_modifier(Modifier::BOLD)
-        };
+        let highlight_style = theme::list_highlight_style(match_set.contains(&selected));
 
         let list = List::new(items)
             .block(block)

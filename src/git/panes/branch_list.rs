@@ -4,6 +4,7 @@ use crate::core::keymap::{
 };
 use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
+use crate::core::theme;
 use crate::git::domain::repository::{BranchInfo, Repo};
 use crate::git::state::PaneEvent;
 
@@ -51,7 +52,6 @@ use ratatui::{
     widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph},
     Frame,
 };
-use std::collections::HashSet;
 
 use crate::git::state::{PANE_BRANCH_LIST, PANE_GIT_LOG};
 
@@ -84,8 +84,6 @@ pub fn default_keymap() -> Keymap<BranchListAction> {
         .key(KeyCode::Char('i'), BranchListAction::FocusLog)
         .key(KeyCode::Esc, BranchListAction::Esc)
 }
-
-const ACTION_MENU_BG: Color = Color::Rgb(30, 30, 30);
 
 pub struct BranchListPane {
     pub branches: Vec<BranchInfo>,
@@ -242,48 +240,15 @@ impl BranchListPane {
     }
 
     pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        let border_color = if shared.focused_pane == PANE_BRANCH_LIST {
-            Color::Cyan
-        } else {
-            Color::DarkGray
-        };
-
-        let block = Block::default()
-            .title(" Branches ")
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(border_color));
+        let block = theme::pane_block("Branches", shared.focused_pane == PANE_BRANCH_LIST);
 
         if self.branches.is_empty() {
-            let items: Vec<ListItem> = vec![ListItem::new(Line::from(Span::styled(
-                "  No branches",
-                Style::default().fg(Color::DarkGray),
-            )))];
-            let list = List::new(items).block(block);
-            f.render_widget(list, area);
+            theme::render_empty_list(f, area, block, "No branches");
             return;
         }
 
-        // Build set of matched branch entry indices
-        let (match_set, current_match_idx) = if shared.search.origin == PANE_BRANCH_LIST {
-            let set: HashSet<usize> = shared
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::ListEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = shared.search.current_match_idx.and_then(|ci| {
-                match shared.search.matches.get(ci) {
-                    Some(SearchMatch::ListEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+        let (match_set, current_match_idx) =
+            theme::list_search_highlights(shared, PANE_BRANCH_LIST);
 
         let items: Vec<ListItem> = self
             .branches
@@ -297,10 +262,10 @@ impl BranchListPane {
 
                 let name_style = if is_current {
                     Style::default()
-                        .fg(Color::Black)
-                        .bg(Color::Rgb(200, 120, 0))
+                        .fg(theme::SEARCH_CURRENT_FG)
+                        .bg(theme::SEARCH_CURRENT_BG)
                 } else if is_match {
-                    Style::default().bg(Color::Rgb(60, 60, 0))
+                    Style::default().bg(theme::SEARCH_MATCH_BG)
                 } else if branch.is_head {
                     Style::default()
                         .fg(Color::Green)
@@ -312,13 +277,13 @@ impl BranchListPane {
                 if branch.is_head {
                     let star_style = if is_current {
                         Style::default()
-                            .fg(Color::Black)
-                            .bg(Color::Rgb(200, 120, 0))
+                            .fg(theme::SEARCH_CURRENT_FG)
+                            .bg(theme::SEARCH_CURRENT_BG)
                             .add_modifier(Modifier::BOLD)
                     } else if is_match {
                         Style::default()
                             .fg(Color::Green)
-                            .bg(Color::Rgb(60, 60, 0))
+                            .bg(theme::SEARCH_MATCH_BG)
                             .add_modifier(Modifier::BOLD)
                     } else {
                         Style::default()
@@ -336,23 +301,14 @@ impl BranchListPane {
             })
             .collect();
 
-        let selected = self.selected_idx;
-        let selected_is_match = match_set.contains(&selected);
-
-        let highlight_style = if selected_is_match {
-            Style::default().add_modifier(Modifier::BOLD)
-        } else {
-            Style::default()
-                .bg(Color::DarkGray)
-                .add_modifier(Modifier::BOLD)
-        };
+        let highlight_style = theme::list_highlight_style(match_set.contains(&self.selected_idx));
 
         let list = List::new(items)
             .block(block)
             .highlight_style(highlight_style);
 
         let mut list_state = ListState::default();
-        list_state.select(Some(selected));
+        list_state.select(Some(self.selected_idx));
         f.render_stateful_widget(list, area, &mut list_state);
     }
 
@@ -377,11 +333,11 @@ impl BranchListPane {
         let name_style = if menu.is_head {
             Style::default()
                 .fg(Color::Green)
-                .bg(ACTION_MENU_BG)
+                .bg(theme::MODAL_BG)
                 .add_modifier(Modifier::BOLD)
         } else {
             Style::default()
-                .bg(ACTION_MENU_BG)
+                .bg(theme::MODAL_BG)
                 .add_modifier(Modifier::BOLD)
         };
         lines.push(pad_line(
@@ -391,7 +347,7 @@ impl BranchListPane {
         lines.push(pad_line(
             Line::from(Span::styled(
                 " ─────────────────────",
-                Style::default().fg(Color::DarkGray).bg(ACTION_MENU_BG),
+                Style::default().fg(Color::DarkGray).bg(theme::MODAL_BG),
             )),
             inner_w,
         ));
@@ -404,7 +360,7 @@ impl BranchListPane {
             let item_bg = if is_selected {
                 Color::DarkGray
             } else {
-                ACTION_MENU_BG
+                theme::MODAL_BG
             };
             let style = Style::default().bg(item_bg).add_modifier(if is_selected {
                 Modifier::BOLD
@@ -426,8 +382,8 @@ impl BranchListPane {
 
         let block = Block::default()
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan).bg(ACTION_MENU_BG))
-            .style(Style::default().bg(ACTION_MENU_BG));
+            .border_style(Style::default().fg(Color::Cyan).bg(theme::MODAL_BG))
+            .style(Style::default().bg(theme::MODAL_BG));
 
         let para = Paragraph::new(lines).block(block);
         f.render_widget(para, menu_area);
@@ -468,7 +424,7 @@ fn pad_line(line: Line<'static>, width: usize) -> Line<'static> {
         let mut spans = line.spans;
         spans.push(Span::styled(
             " ".repeat(width - content_len),
-            Style::default().bg(ACTION_MENU_BG),
+            Style::default().bg(theme::MODAL_BG),
         ));
         Line::from(spans)
     } else {

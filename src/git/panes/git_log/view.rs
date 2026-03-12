@@ -1,5 +1,5 @@
 use crate::core::pane::PaneShared;
-use crate::core::search::SearchMatch;
+use crate::core::theme;
 use crate::git::domain::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
 use crate::git::panes::GitLogPane;
 use crate::git::state::{PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
@@ -10,7 +10,6 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
     Frame,
 };
-use std::collections::HashSet;
 
 const GRAPH_COLORS: [Color; NUM_GRAPH_COLORS] = [
     Color::Red,
@@ -64,16 +63,8 @@ pub fn render(f: &mut Frame, pane: &mut GitLogPane, shared: &PaneShared, area: R
     let is_focused = shared.focused_pane == PANE_GIT_LOG
         || shared.focused_pane == PANE_BRANCH_LIST
         || shared.focused_pane == PANE_REFLOG;
-    let border_color = if is_focused {
-        Color::Cyan
-    } else {
-        Color::DarkGray
-    };
 
-    let block = Block::default()
-        .title(" Git Log ")
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(border_color));
+    let block = theme::pane_block("Git Log", is_focused);
 
     let inner = block.inner(area);
     f.render_widget(block, area);
@@ -104,27 +95,7 @@ fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &PaneShared, area: 
     let max_graph_width = pane.graph.iter().map(|r| r.cells.len()).max().unwrap_or(0);
 
     // Build set of matched commit entry indices
-    let (match_set, current_match_idx) =
-        if shared.search.origin == PANE_GIT_LOG {
-            let set: HashSet<usize> = shared
-                .search
-                .matches
-                .iter()
-                .filter_map(|m| match m {
-                    SearchMatch::ListEntry(idx) => Some(*idx),
-                    _ => None,
-                })
-                .collect();
-            let current = shared.search.current_match_idx.and_then(|ci| {
-                match shared.search.matches.get(ci) {
-                    Some(SearchMatch::ListEntry(idx)) => Some(*idx),
-                    _ => None,
-                }
-            });
-            (set, current)
-        } else {
-            (HashSet::new(), None)
-        };
+    let (match_set, current_match_idx) = theme::list_search_highlights(shared, PANE_GIT_LOG);
 
     // Highlight pipes originating from the selected commit (lazygit-style)
     let highlight_from = if shared.focused_pane == PANE_GIT_LOG
@@ -144,13 +115,17 @@ fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &PaneShared, area: 
             let is_current = current_match_idx == Some(idx);
             let is_match = match_set.contains(&idx);
             let bg = if is_current {
-                Some(Color::Rgb(200, 120, 0))
+                Some(theme::SEARCH_CURRENT_BG)
             } else if is_match {
-                Some(Color::Rgb(60, 60, 0))
+                Some(theme::SEARCH_MATCH_BG)
             } else {
                 None
             };
-            let fg_override = if is_current { Some(Color::Black) } else { None };
+            let fg_override = if is_current {
+                Some(theme::SEARCH_CURRENT_FG)
+            } else {
+                None
+            };
 
             let hash_style = {
                 let mut s = Style::default().fg(fg_override.unwrap_or(Color::Yellow));
@@ -211,13 +186,7 @@ fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &PaneShared, area: 
     let selected = pane.selected_idx;
     let selected_is_match = match_set.contains(&selected);
 
-    let highlight_style = if selected_is_match {
-        Style::default().add_modifier(Modifier::BOLD)
-    } else {
-        Style::default()
-            .bg(Color::DarkGray)
-            .add_modifier(Modifier::BOLD)
-    };
+    let highlight_style = theme::list_highlight_style(selected_is_match);
 
     let list = List::new(items).highlight_style(highlight_style);
 
