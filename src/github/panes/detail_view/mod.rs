@@ -74,62 +74,72 @@ impl GhDetailViewPane {
 
     /// Load issue detail — serves from cache if available, otherwise fetches in background.
     pub fn load_issue(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
-        // Already loading this exact issue — skip duplicate request
-        if matches!(&self.content, GhDetailContent::Loading { kind: GhDetailKind::Issue, number: n } if *n == number)
-        {
-            return;
-        }
-        if let Some(cached) = self.issue_cache.get(&number) {
-            self.content = GhDetailContent::Issue(Box::new(cached.clone()));
-            self.reset_sub_panes();
-            return;
-        }
-        if let Some(cached) = disk_cache::load_issue_detail(number) {
-            self.issue_cache.insert(number, cached.clone());
-            self.content = GhDetailContent::Issue(Box::new(cached));
-            self.reset_sub_panes();
-            return;
-        }
-        self.content = GhDetailContent::Loading {
-            kind: GhDetailKind::Issue,
-            number,
-        };
-        self.reset_sub_panes();
-        let tx = tx.clone();
-        std::thread::spawn(move || {
-            let result = client::get_issue(number);
-            let _ = tx.send(GhBgMessage::IssueDetail(result));
-        });
+        self.load_detail(GhDetailKind::Issue, number, tx);
     }
 
     /// Load PR detail — serves from cache if available, otherwise fetches in background.
     pub fn load_pr(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
-        // Already loading this exact PR — skip duplicate request
-        if matches!(&self.content, GhDetailContent::Loading { kind: GhDetailKind::Pr, number: n } if *n == number)
+        self.load_detail(GhDetailKind::Pr, number, tx);
+    }
+
+    /// Shared logic for loading issue/PR detail with cache hierarchy.
+    fn load_detail(&mut self, kind: GhDetailKind, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
+        // Already loading this exact item — skip duplicate request
+        if matches!(&self.content, GhDetailContent::Loading { kind: k, number: n } if *k == kind && *n == number)
         {
             return;
         }
-        if let Some(cached) = self.pr_cache.get(&number) {
-            self.content = GhDetailContent::Pr(Box::new(cached.clone()));
-            self.reset_sub_panes();
-            return;
-        }
-        if let Some(cached) = disk_cache::load_pr_detail(number) {
-            self.pr_cache.insert(number, cached.clone());
-            self.content = GhDetailContent::Pr(Box::new(cached));
-            self.reset_sub_panes();
-            return;
-        }
-        self.content = GhDetailContent::Loading {
-            kind: GhDetailKind::Pr,
-            number,
+
+        // Check in-memory cache
+        let cached = match kind {
+            GhDetailKind::Issue => self
+                .issue_cache
+                .get(&number)
+                .map(|c| GhDetailContent::Issue(Box::new(c.clone()))),
+            GhDetailKind::Pr => self
+                .pr_cache
+                .get(&number)
+                .map(|c| GhDetailContent::Pr(Box::new(c.clone()))),
         };
+        if let Some(content) = cached {
+            self.content = content;
+            self.reset_sub_panes();
+            return;
+        }
+
+        // Check disk cache
+        let from_disk = match kind {
+            GhDetailKind::Issue => disk_cache::load_issue_detail(number).map(|c| {
+                self.issue_cache.insert(number, c.clone());
+                GhDetailContent::Issue(Box::new(c))
+            }),
+            GhDetailKind::Pr => disk_cache::load_pr_detail(number).map(|c| {
+                self.pr_cache.insert(number, c.clone());
+                GhDetailContent::Pr(Box::new(c))
+            }),
+        };
+        if let Some(content) = from_disk {
+            self.content = content;
+            self.reset_sub_panes();
+            return;
+        }
+
+        // Fetch in background
+        self.content = GhDetailContent::Loading { kind, number };
         self.reset_sub_panes();
         let tx = tx.clone();
-        std::thread::spawn(move || {
-            let result = client::get_pr(number);
-            let _ = tx.send(GhBgMessage::PrDetail(result));
-        });
+        match kind {
+            GhDetailKind::Issue => {
+                std::thread::spawn(move || {
+                    let _ = tx.send(GhBgMessage::IssueDetail(client::get_issue(number)));
+                });
+            }
+            GhDetailKind::Pr => {
+                std::thread::spawn(move || {
+                    let _ = tx.send(GhBgMessage::PrDetail(client::get_pr(number)));
+                });
+            }
+        }
     }
 
     pub fn clear_caches(&mut self) {
