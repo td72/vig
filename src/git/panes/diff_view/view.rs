@@ -152,6 +152,12 @@ pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &PaneShared, area:
     let search_hl = SearchHighlightInfo::from_search_state(&shared.search);
 
     // Access cached highlight colors by reference (no clone)
+    let ctx = RenderCtx {
+        scroll_x: pane.scroll.x as usize,
+        selection: &selection,
+        search_hl: &search_hl,
+    };
+
     let (left_lines, right_lines) = {
         let empty: Vec<Vec<Color>> = Vec::new();
         let (lc, rc) = match &pane.highlight.cache {
@@ -162,11 +168,9 @@ pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &PaneShared, area:
             file,
             left_width as usize,
             right_width as usize,
-            pane.scroll.x,
-            &selection,
+            &ctx,
             lc,
             rc,
-            &search_hl,
         )
     };
 
@@ -366,107 +370,42 @@ fn build_selection_info(pane: &DiffViewPane) -> Option<SelectionInfo> {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Shared rendering context to reduce parameter passing.
+struct RenderCtx<'b> {
+    scroll_x: usize,
+    selection: &'b Option<SelectionInfo>,
+    search_hl: &'b Option<SearchHighlightInfo>,
+}
+
 fn build_side_by_side_lines<'a>(
     file: &FileDiff,
     left_width: usize,
     right_width: usize,
-    scroll_x: u16,
-    selection: &Option<SelectionInfo>,
+    ctx: &RenderCtx<'_>,
     left_colors: &[Vec<Color>],
     right_colors: &[Vec<Color>],
-    search_hl: &Option<SearchHighlightInfo>,
 ) -> (Vec<Line<'a>>, Vec<Line<'a>>) {
     let mut left_lines = Vec::new();
     let mut right_lines = Vec::new();
     let mut row_idx: usize = 0;
 
     for hunk in &file.hunks {
-        // Hunk header — no syntax highlighting for headers
-        let header_style = Style::default()
-            .fg(Color::Cyan)
-            .add_modifier(Modifier::BOLD);
-        left_lines.push(Line::from(Span::styled(
-            pad_to_width(&hunk.header, left_width),
-            header_style,
-        )));
-        right_lines.push(Line::from(Span::styled(
-            pad_to_width(&hunk.header, right_width),
-            header_style,
-        )));
-
-        // Apply selection/search to hunk header if needed
-        if let Some(sel) = selection {
-            if sel.cursor.side == DiffSide::Left {
-                let idx = left_lines.len() - 1;
-                left_lines[idx] = apply_selection_to_line(
-                    &hunk.header,
-                    row_idx,
-                    left_width,
-                    scroll_x as usize,
-                    sel,
-                    header_style,
-                    None,
-                    search_hl,
-                    true,
-                );
-            }
-            if sel.cursor.side == DiffSide::Right {
-                let idx = right_lines.len() - 1;
-                right_lines[idx] = apply_selection_to_line(
-                    &hunk.header,
-                    row_idx,
-                    right_width,
-                    scroll_x as usize,
-                    sel,
-                    header_style,
-                    None,
-                    search_hl,
-                    false,
-                );
-            }
-        } else if search_hl.is_some() {
-            // No selection but search highlights may apply
-            let idx = left_lines.len() - 1;
-            left_lines[idx] = apply_search_to_line(
-                &hunk.header,
-                row_idx,
-                left_width,
-                scroll_x as usize,
-                header_style,
-                None,
-                search_hl,
-                true,
-            );
-            let idx = right_lines.len() - 1;
-            right_lines[idx] = apply_search_to_line(
-                &hunk.header,
-                row_idx,
-                right_width,
-                scroll_x as usize,
-                header_style,
-                None,
-                search_hl,
-                false,
-            );
-        }
-
+        let (left, right) = render_hunk_header(&hunk.header, left_width, right_width, row_idx, ctx);
+        left_lines.push(left);
+        right_lines.push(right);
         row_idx += 1;
 
         for row in &hunk.rows {
-            // Colors are pre-expanded in cache; just get a slice reference
             let left_syntax = left_colors.get(row_idx).map(|v| v.as_slice());
             let right_syntax = right_colors.get(row_idx).map(|v| v.as_slice());
             let (left, right) = render_row(
                 row,
                 left_width,
                 right_width,
-                scroll_x as usize,
                 row_idx,
-                selection,
+                ctx,
                 left_syntax,
                 right_syntax,
-                search_hl,
             );
             left_lines.push(left);
             right_lines.push(right);
@@ -485,54 +424,115 @@ fn build_side_by_side_lines<'a>(
     (left_lines, right_lines)
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Render a hunk header line for both sides, applying selection/search highlights.
+fn render_hunk_header<'a>(
+    header: &str,
+    left_width: usize,
+    right_width: usize,
+    row_idx: usize,
+    ctx: &RenderCtx<'_>,
+) -> (Line<'a>, Line<'a>) {
+    let header_style = Style::default()
+        .fg(Color::Cyan)
+        .add_modifier(Modifier::BOLD);
+
+    let mut left = Line::from(Span::styled(pad_to_width(header, left_width), header_style));
+    let mut right = Line::from(Span::styled(
+        pad_to_width(header, right_width),
+        header_style,
+    ));
+
+    if let Some(sel) = ctx.selection {
+        if sel.cursor.side == DiffSide::Left {
+            left = apply_selection_to_line(
+                header,
+                row_idx,
+                left_width,
+                ctx.scroll_x,
+                sel,
+                header_style,
+                None,
+                ctx.search_hl,
+                true,
+            );
+        }
+        if sel.cursor.side == DiffSide::Right {
+            right = apply_selection_to_line(
+                header,
+                row_idx,
+                right_width,
+                ctx.scroll_x,
+                sel,
+                header_style,
+                None,
+                ctx.search_hl,
+                false,
+            );
+        }
+    } else if ctx.search_hl.is_some() {
+        left = apply_search_to_line(
+            header,
+            row_idx,
+            left_width,
+            ctx.scroll_x,
+            header_style,
+            None,
+            ctx.search_hl,
+            true,
+        );
+        right = apply_search_to_line(
+            header,
+            row_idx,
+            right_width,
+            ctx.scroll_x,
+            header_style,
+            None,
+            ctx.search_hl,
+            false,
+        );
+    }
+
+    (left, right)
+}
+
 fn render_row<'a>(
     row: &SideBySideRow,
     left_width: usize,
     right_width: usize,
-    scroll_x: usize,
     row_idx: usize,
-    selection: &Option<SelectionInfo>,
+    ctx: &RenderCtx<'_>,
     left_syntax: Option<&[Color]>,
     right_syntax: Option<&[Color]>,
-    search_hl: &Option<SearchHighlightInfo>,
 ) -> (Line<'a>, Line<'a>) {
     let left = render_side_with_selection(
         row.left.as_ref(),
         row.line_type,
         true,
         left_width,
-        scroll_x,
         row_idx,
-        selection,
+        ctx,
         left_syntax,
-        search_hl,
     );
     let right = render_side_with_selection(
         row.right.as_ref(),
         row.line_type,
         false,
         right_width,
-        scroll_x,
         row_idx,
-        selection,
+        ctx,
         right_syntax,
-        search_hl,
     );
     (left, right)
 }
 
-#[allow(clippy::too_many_arguments)]
 fn render_side_with_selection<'a>(
     side: Option<&crate::git::domain::diff::SideLine>,
     line_type: LineType,
     is_left: bool,
     width: usize,
-    scroll_x: usize,
     row_idx: usize,
-    selection: &Option<SelectionInfo>,
+    ctx: &RenderCtx<'_>,
     syntax_colors: Option<&[Color]>,
-    search_hl: &Option<SearchHighlightInfo>,
 ) -> Line<'a> {
     match side {
         Some(line) => {
@@ -541,35 +541,33 @@ fn render_side_with_selection<'a>(
             let (fg, bg) = line_colors(line_type, is_left);
             let base_style = style_for(fg, bg);
 
-            let sel_side = selection.as_ref().map(|s| s.cursor.side);
+            let sel_side = ctx.selection.as_ref().map(|s| s.cursor.side);
             let on_active_side = matches!(
                 (is_left, sel_side),
                 (true, Some(DiffSide::Left)) | (false, Some(DiffSide::Right))
             );
 
             if on_active_side {
-                if let Some(sel) = selection {
-                    // In Normal mode, only the cursor row needs per-char spans;
-                    // other rows can use the cheaper syntax-only path (unless search highlights exist).
+                if let Some(sel) = ctx.selection {
                     let needs_highlight = match sel.mode {
                         DiffViewMode::Normal => sel.cursor.row == row_idx,
                         DiffViewMode::Visual | DiffViewMode::VisualLine => true,
                         DiffViewMode::Scroll => false,
                     };
-                    let has_search = search_hl
+                    let has_search = ctx
+                        .search_hl
                         .as_ref()
                         .is_some_and(|sh| sh.row_matches.contains_key(&row_idx));
                     if needs_highlight || has_search {
-                        let content = &line.content;
                         let spans = build_highlighted_spans(
-                            content,
+                            &line.content,
                             row_idx,
                             content_width,
-                            scroll_x,
+                            ctx.scroll_x,
                             sel,
                             base_style,
                             syntax_colors,
-                            search_hl,
+                            ctx.search_hl,
                             is_left,
                         );
                         let mut all_spans =
@@ -581,7 +579,8 @@ fn render_side_with_selection<'a>(
             }
 
             // Non-active side or scroll mode — still apply syntax highlighting + search
-            let has_search = search_hl
+            let has_search = ctx
+                .search_hl
                 .as_ref()
                 .is_some_and(|sh| sh.row_matches.contains_key(&row_idx));
             if syntax_colors.is_some() || has_search {
@@ -589,10 +588,10 @@ fn render_side_with_selection<'a>(
                 let spans = build_syntax_spans(
                     &line.content,
                     content_width,
-                    scroll_x,
+                    ctx.scroll_x,
                     base_style,
                     syn_colors,
-                    search_hl,
+                    ctx.search_hl,
                     row_idx,
                     is_left,
                 );
@@ -602,7 +601,7 @@ fn render_side_with_selection<'a>(
                 return Line::from(all_spans);
             }
 
-            let content = scroll_content(&line.content, scroll_x, content_width);
+            let content = scroll_content(&line.content, ctx.scroll_x, content_width);
             Line::from(vec![
                 Span::styled(gutter, Style::default().fg(Color::DarkGray)),
                 Span::styled(pad_to_width(&content, content_width), base_style),
