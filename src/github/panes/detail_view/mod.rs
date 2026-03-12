@@ -260,7 +260,7 @@ impl GhDetailViewPane {
         });
     }
 
-    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+    fn handle_key_impl(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
         // Determine item count for selection-based panes
         let pane = self.active_pane;
         let item_count = match pane {
@@ -457,18 +457,14 @@ impl GhDetailViewPane {
             vec![]
         }
     }
-
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        view::render(f, self, shared, area);
-    }
 }
 
 impl Pane<PaneEvent> for GhDetailViewPane {
     fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        self.handle_key(shared, key)
+        self.handle_key_impl(shared, key)
     }
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        self.render(f, ctx, shared, area)
+    fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+        view::render(f, self, shared, area);
     }
 }
 

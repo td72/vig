@@ -115,14 +115,6 @@ impl FileTreePane {
         }
     }
 
-    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
-
     fn execute(&mut self, shared: &PaneShared, action: FileTreeAction) -> Vec<PaneEvent> {
         // Handle actions that don't need entries first
         match action {
@@ -177,27 +169,7 @@ impl FileTreePane {
         }
     }
 
-    pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let query_lower = query.to_lowercase();
-        let entries = self.tree_entries();
-        entries
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, entry)| {
-                let name = match entry {
-                    TreeEntry::Dir { path, .. } => path.clone(),
-                    TreeEntry::File { file_idx, .. } => self.files.get(*file_idx)?.path.clone(),
-                };
-                if name.to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::ListEntry(idx))
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+    fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         let block = theme::pane_block("Files", shared.focused_pane == PANE_FILE_TREE);
 
         let entries = self.tree_entries();
@@ -295,19 +267,39 @@ impl FileTreePane {
 
 impl Pane<PaneEvent> for FileTreePane {
     fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        self.handle_key(shared, key)
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
     }
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        self.render(f, ctx, shared, area)
+        self.render_impl(f, ctx, shared, area)
     }
 
     fn set_selected_idx(&mut self, idx: usize) {
         self.selected_idx = idx;
     }
 
-    fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        self.collect_search_matches(shared, query)
+    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+        let query_lower = query.to_lowercase();
+        let entries = self.tree_entries();
+        entries
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, entry)| {
+                let name = match entry {
+                    TreeEntry::Dir { path, .. } => path.clone(),
+                    TreeEntry::File { file_idx, .. } => self.files.get(*file_idx)?.path.clone(),
+                };
+                if name.to_lowercase().contains(&query_lower) {
+                    Some(SearchMatch::ListEntry(idx))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {

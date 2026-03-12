@@ -113,17 +113,6 @@ impl BranchListPane {
         self.branches.get(self.selected_idx)
     }
 
-    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        if self.action_menu.is_some() {
-            return self.handle_action_menu_key(key);
-        }
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
-
     fn execute(&mut self, shared: &PaneShared, action: BranchListAction) -> Vec<PaneEvent> {
         match action {
             BranchListAction::Search(sa) => {
@@ -224,22 +213,7 @@ impl BranchListPane {
         }
     }
 
-    pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let query_lower = query.to_lowercase();
-        self.branches
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, branch)| {
-                if branch.name.to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::ListEntry(idx))
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+    fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         let block = theme::pane_block("Branches", shared.focused_pane == PANE_BRANCH_LIST);
 
         if self.branches.is_empty() {
@@ -392,11 +366,18 @@ impl BranchListPane {
 
 impl Pane<PaneEvent> for BranchListPane {
     fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        self.handle_key(shared, key)
+        if self.action_menu.is_some() {
+            return self.handle_action_menu_key(key);
+        }
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
     }
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        self.render(f, ctx, shared, area)
+        self.render_impl(f, ctx, shared, area)
     }
 
     fn is_modal(&self) -> bool {
@@ -407,8 +388,19 @@ impl Pane<PaneEvent> for BranchListPane {
         self.selected_idx = idx;
     }
 
-    fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        self.collect_search_matches(shared, query)
+    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+        let query_lower = query.to_lowercase();
+        self.branches
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, branch)| {
+                if branch.name.to_lowercase().contains(&query_lower) {
+                    Some(SearchMatch::ListEntry(idx))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {

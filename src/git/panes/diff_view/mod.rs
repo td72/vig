@@ -101,21 +101,7 @@ impl DiffViewPane {
         self.current_file_idx.and_then(|i| self.files.get(i))
     }
 
-    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        match self.vim.mode {
-            DiffViewMode::Scroll => keys::handle_diff_scroll_key(self, shared, key),
-            DiffViewMode::Normal => keys::handle_diff_normal_key(self, shared, key),
-            DiffViewMode::Visual | DiffViewMode::VisualLine => {
-                keys::handle_diff_visual_key(self, shared, key)
-            }
-        }
-    }
-
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        view::render(f, self, shared, area);
-    }
-
-    pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+    fn collect_search_matches_impl(&self, query: &str) -> Vec<SearchMatch> {
         let file = match self.current_file() {
             Some(f) => f,
             None => return vec![],
@@ -195,15 +181,21 @@ impl DiffViewPane {
 
 impl Pane<PaneEvent> for DiffViewPane {
     fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        self.handle_key(shared, key)
+        match self.vim.mode {
+            DiffViewMode::Scroll => keys::handle_diff_scroll_key(self, shared, key),
+            DiffViewMode::Normal => keys::handle_diff_normal_key(self, shared, key),
+            DiffViewMode::Visual | DiffViewMode::VisualLine => {
+                keys::handle_diff_visual_key(self, shared, key)
+            }
+        }
     }
 
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        self.render(f, ctx, shared, area)
+    fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+        view::render(f, self, shared, area);
     }
 
-    fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        self.collect_search_matches(shared, query)
+    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+        self.collect_search_matches_impl(query)
     }
 
     fn drain_background(&mut self) {

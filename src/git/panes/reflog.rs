@@ -70,14 +70,6 @@ impl ReflogPane {
         }
     }
 
-    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
-
     fn execute(&mut self, shared: &PaneShared, action: ReflogAction) -> Vec<PaneEvent> {
         match action {
             ReflogAction::Search(sa) => {
@@ -106,26 +98,7 @@ impl ReflogPane {
         vec![]
     }
 
-    pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let query_lower = query.to_lowercase();
-        self.entries
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, entry)| {
-                if entry.short_hash.to_lowercase().contains(&query_lower)
-                    || entry.selector.to_lowercase().contains(&query_lower)
-                    || entry.action.to_lowercase().contains(&query_lower)
-                    || entry.message.to_lowercase().contains(&query_lower)
-                {
-                    Some(SearchMatch::ListEntry(idx))
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+    fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
         let block = theme::pane_block("Reflog", shared.focused_pane == PANE_REFLOG);
 
@@ -214,19 +187,38 @@ impl ReflogPane {
 
 impl Pane<PaneEvent> for ReflogPane {
     fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        self.handle_key(shared, key)
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
     }
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        self.render(f, ctx, shared, area)
+        self.render_impl(f, ctx, shared, area)
     }
 
     fn set_selected_idx(&mut self, idx: usize) {
         self.selected_idx = idx;
     }
 
-    fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        self.collect_search_matches(shared, query)
+    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+        let query_lower = query.to_lowercase();
+        self.entries
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, entry)| {
+                if entry.short_hash.to_lowercase().contains(&query_lower)
+                    || entry.selector.to_lowercase().contains(&query_lower)
+                    || entry.action.to_lowercase().contains(&query_lower)
+                    || entry.message.to_lowercase().contains(&query_lower)
+                {
+                    Some(SearchMatch::ListEntry(idx))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {

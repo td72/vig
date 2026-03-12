@@ -99,14 +99,6 @@ impl GitLogPane {
         self.detail_changed_files.clear();
     }
 
-    pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
-
     fn execute(&mut self, shared: &PaneShared, action: GitLogAction) -> Vec<PaneEvent> {
         match action {
             GitLogAction::FocusReflog => {
@@ -149,8 +141,26 @@ impl GitLogPane {
         }
         vec![]
     }
+}
 
-    pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+impl Pane<PaneEvent> for GitLogPane {
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
+    }
+
+    fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+        view::render(f, self, shared, area);
+    }
+
+    fn set_selected_idx(&mut self, idx: usize) {
+        self.selected_idx = idx;
+    }
+
+    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
         let query_lower = query.to_lowercase();
         self.commits
             .iter()
@@ -167,28 +177,6 @@ impl GitLogPane {
                 }
             })
             .collect()
-    }
-
-    pub fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        view::render(f, self, shared, area);
-    }
-}
-
-impl Pane<PaneEvent> for GitLogPane {
-    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        self.handle_key(shared, key)
-    }
-
-    fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        self.render(f, ctx, shared, area)
-    }
-
-    fn set_selected_idx(&mut self, idx: usize) {
-        self.selected_idx = idx;
-    }
-
-    fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        self.collect_search_matches(shared, query)
     }
 
     fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
