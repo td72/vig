@@ -212,7 +212,7 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
     f.render_widget(Paragraph::new(line), area);
 }
 
-pub fn render_help_overlay(f: &mut Frame, area: Rect, keybindings: &[(&str, &str)]) {
+pub fn render_help_overlay(f: &mut Frame, area: Rect, keybindings: &[(String, String)]) {
     use ratatui::widgets::{Block, Borders, Clear};
 
     let help_width = 50u16.min(area.width.saturating_sub(4));
@@ -233,7 +233,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect, keybindings: &[(&str, &str
                         .fg(Color::Cyan)
                         .add_modifier(Modifier::BOLD),
                 ),
-                Span::raw(*desc),
+                Span::raw(desc.as_str()),
             ])
         })
         .collect();

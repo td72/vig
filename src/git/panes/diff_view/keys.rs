@@ -1,63 +1,136 @@
 use super::{CursorPos, DiffSide, DiffViewMode};
+use crate::core::keymap::{search_bindings, ActionHelp, Keymap, NavAction};
 use crate::core::pane::PaneShared;
 use crate::git::state::{PaneEvent, PANE_DIFF_VIEW};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+
+#[derive(Debug, Clone)]
+pub(crate) enum DiffScrollAction {
+    Nav(NavAction),
+    ScrollLeft,
+    ScrollRight,
+    EnterNormalMode,
+    Search,
+    NextMatch,
+    PrevMatch,
+    Esc,
+}
+
+impl ActionHelp for DiffScrollAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            DiffScrollAction::Nav(nav) => nav.label(),
+            DiffScrollAction::ScrollLeft => Some("Scroll left"),
+            DiffScrollAction::ScrollRight => Some("Scroll right"),
+            DiffScrollAction::EnterNormalMode => Some("Normal mode (cursor)"),
+            DiffScrollAction::Search => Some("Search"),
+            DiffScrollAction::NextMatch => Some("Next match"),
+            DiffScrollAction::PrevMatch => Some("Prev match"),
+            DiffScrollAction::Esc => Some("Clear search / Back"),
+        }
+    }
+}
+
+pub(crate) fn default_scroll_keymap() -> Keymap<DiffScrollAction> {
+    Keymap::new()
+        .key(
+            KeyCode::Char('j'),
+            DiffScrollAction::Nav(NavAction::MoveDown),
+        )
+        .key(KeyCode::Down, DiffScrollAction::Nav(NavAction::MoveDown))
+        .key(KeyCode::Char('k'), DiffScrollAction::Nav(NavAction::MoveUp))
+        .key(KeyCode::Up, DiffScrollAction::Nav(NavAction::MoveUp))
+        .ctrl('d', DiffScrollAction::Nav(NavAction::HalfPageDown))
+        .ctrl('u', DiffScrollAction::Nav(NavAction::HalfPageUp))
+        .key(
+            KeyCode::Char('g'),
+            DiffScrollAction::Nav(NavAction::JumpTop),
+        )
+        .key(
+            KeyCode::Char('G'),
+            DiffScrollAction::Nav(NavAction::JumpBottom),
+        )
+        .key(KeyCode::Char('h'), DiffScrollAction::ScrollLeft)
+        .key(KeyCode::Left, DiffScrollAction::ScrollLeft)
+        .key(KeyCode::Char('l'), DiffScrollAction::ScrollRight)
+        .key(KeyCode::Right, DiffScrollAction::ScrollRight)
+        .key(KeyCode::Char('i'), DiffScrollAction::EnterNormalMode)
+        .key(KeyCode::Esc, DiffScrollAction::Esc)
+        .bindings(search_bindings(
+            DiffScrollAction::Search,
+            DiffScrollAction::NextMatch,
+            DiffScrollAction::PrevMatch,
+        ))
+}
 
 pub(crate) fn handle_diff_scroll_key(
     pane: &mut super::DiffViewPane,
     shared: &PaneShared,
     key: KeyEvent,
 ) -> Vec<PaneEvent> {
+    let action = match pane.scroll_keymap.lookup(key) {
+        Some(a) => a.clone(),
+        None => return vec![],
+    };
+    execute_diff_scroll(pane, shared, action)
+}
+
+fn execute_diff_scroll(
+    pane: &mut super::DiffViewPane,
+    shared: &PaneShared,
+    action: DiffScrollAction,
+) -> Vec<PaneEvent> {
     let max_scroll = pane
         .scroll
         .total_lines
         .saturating_sub(pane.scroll.view_height);
-    match key.code {
-        KeyCode::Char('j') | KeyCode::Down => {
-            pane.scroll.y = (pane.scroll.y + 1).min(max_scroll);
-        }
-        KeyCode::Char('k') | KeyCode::Up => {
-            pane.scroll.y = pane.scroll.y.saturating_sub(1);
-        }
-        KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-            let half = pane.scroll.view_height / 2;
-            pane.scroll.y = (pane.scroll.y + half).min(max_scroll);
-        }
-        KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-            let half = pane.scroll.view_height / 2;
-            pane.scroll.y = pane.scroll.y.saturating_sub(half);
-        }
-        KeyCode::Char('g') => {
-            pane.scroll.y = 0;
-        }
-        KeyCode::Char('G') => {
-            pane.scroll.y = max_scroll;
-        }
-        KeyCode::Char('h') | KeyCode::Left => {
+    match action {
+        DiffScrollAction::Nav(nav) => match nav {
+            NavAction::MoveDown => {
+                pane.scroll.y = (pane.scroll.y + 1).min(max_scroll);
+            }
+            NavAction::MoveUp => {
+                pane.scroll.y = pane.scroll.y.saturating_sub(1);
+            }
+            NavAction::HalfPageDown => {
+                let half = pane.scroll.view_height / 2;
+                pane.scroll.y = (pane.scroll.y + half).min(max_scroll);
+            }
+            NavAction::HalfPageUp => {
+                let half = pane.scroll.view_height / 2;
+                pane.scroll.y = pane.scroll.y.saturating_sub(half);
+            }
+            NavAction::JumpTop => {
+                pane.scroll.y = 0;
+            }
+            NavAction::JumpBottom => {
+                pane.scroll.y = max_scroll;
+            }
+        },
+        DiffScrollAction::ScrollLeft => {
             pane.scroll.x = pane.scroll.x.saturating_sub(4);
         }
-        KeyCode::Esc => {
+        DiffScrollAction::ScrollRight => {
+            pane.scroll.x = pane.scroll.x.saturating_add(4);
+        }
+        DiffScrollAction::Esc => {
             if shared.search.query.is_some() {
                 return vec![PaneEvent::ClearSearch];
             } else {
                 return vec![PaneEvent::SetFocus(shared.previous_pane)];
             }
         }
-        KeyCode::Char('l') | KeyCode::Right => {
-            pane.scroll.x = pane.scroll.x.saturating_add(4);
-        }
-        KeyCode::Char('/') => {
+        DiffScrollAction::Search => {
             pane.vim.pending_key = None;
             return vec![PaneEvent::StartSearch(PANE_DIFF_VIEW)];
         }
-        KeyCode::Char('n') => {
+        DiffScrollAction::NextMatch => {
             return vec![PaneEvent::JumpToMatch(true)];
         }
-        KeyCode::Char('N') => {
+        DiffScrollAction::PrevMatch => {
             return vec![PaneEvent::JumpToMatch(false)];
         }
-        KeyCode::Char('i') => {
-            // Enter Normal mode with cursor at top-left of visible area
+        DiffScrollAction::EnterNormalMode => {
             let lines = content_lines(pane, shared);
             if !lines.is_empty() {
                 pane.vim.mode = DiffViewMode::Normal;
@@ -68,7 +141,6 @@ pub(crate) fn handle_diff_scroll_key(
                 };
             }
         }
-        _ => {}
     }
     vec![]
 }

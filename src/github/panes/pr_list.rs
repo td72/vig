@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::core::keymap::{execute_nav, nav_bindings, ActionHelp, Keymap, NavAction};
 use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::github::domain::types::GhPrListItem;
 use crate::github::domain::{client, disk_cache};
@@ -13,10 +14,39 @@ use ratatui::{
 };
 use std::sync::mpsc;
 
+#[derive(Debug, Clone)]
+pub enum PrListAction {
+    Nav(NavAction),
+    OpenDetail,
+    SwitchToIssueList,
+    OpenBrowser,
+}
+
+impl ActionHelp for PrListAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            PrListAction::Nav(nav) => nav.label(),
+            PrListAction::OpenDetail => Some("Open detail"),
+            PrListAction::SwitchToIssueList => Some("Switch to Issues"),
+            PrListAction::OpenBrowser => Some("Open in browser"),
+        }
+    }
+}
+
+pub fn default_keymap() -> Keymap<PrListAction> {
+    Keymap::new()
+        .bindings(nav_bindings(PrListAction::Nav))
+        .key(KeyCode::Char('i'), PrListAction::OpenDetail)
+        .key(KeyCode::Enter, PrListAction::OpenDetail)
+        .key(KeyCode::BackTab, PrListAction::SwitchToIssueList)
+        .key(KeyCode::Char('o'), PrListAction::OpenBrowser)
+}
+
 pub struct GhPrListPane {
     pub prs: Vec<GhPrListItem>,
     pub selected_idx: usize,
     pub loading: bool,
+    keymap: Keymap<PrListAction>,
 }
 
 impl GhPrListPane {
@@ -25,6 +55,7 @@ impl GhPrListPane {
             prs: Vec::new(),
             selected_idx: 0,
             loading: false,
+            keymap: default_keymap(),
         }
     }
 
@@ -59,43 +90,33 @@ impl GhPrListPane {
     }
 
     pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.prs.is_empty() && self.selected_idx + 1 < self.prs.len() {
-                    self.selected_idx += 1;
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(action)
+    }
+
+    fn execute(&mut self, action: PrListAction) -> Vec<PaneEvent> {
+        match action {
+            PrListAction::Nav(nav) => {
+                if execute_nav(nav, &mut self.selected_idx, self.prs.len(), None) {
                     return vec![PaneEvent::SelectionChanged];
                 }
             }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.selected_idx > 0 {
-                    self.selected_idx -= 1;
-                    return vec![PaneEvent::SelectionChanged];
-                }
-            }
-            KeyCode::Char('g') => {
-                self.selected_idx = 0;
-                return vec![PaneEvent::SelectionChanged];
-            }
-            KeyCode::Char('G') => {
-                if !self.prs.is_empty() {
-                    self.selected_idx = self.prs.len() - 1;
-                    return vec![PaneEvent::SelectionChanged];
-                }
-            }
-            KeyCode::Char('i') | KeyCode::Enter => {
+            PrListAction::OpenDetail => {
                 if !self.prs.is_empty() {
                     return vec![PaneEvent::SetFocus(GH_PANE_PR_DETAIL)];
                 }
             }
-            KeyCode::BackTab => {
+            PrListAction::SwitchToIssueList => {
                 return vec![PaneEvent::SetFocus(GH_PANE_ISSUE_LIST)];
             }
-            KeyCode::Char('o') => {
+            PrListAction::OpenBrowser => {
                 if let Some(pr) = self.prs.get(self.selected_idx) {
                     return vec![PaneEvent::OpenPrBrowser(pr.number)];
                 }
             }
-            _ => {}
         }
         vec![]
     }

@@ -2,6 +2,7 @@ pub mod app;
 pub mod browser;
 pub mod event;
 pub mod highlight;
+pub mod keymap;
 pub mod page;
 pub mod pane;
 pub mod search;

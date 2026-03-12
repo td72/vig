@@ -3,6 +3,7 @@ pub(crate) mod view;
 
 use crate::core::app::AppContext;
 use crate::core::highlight::HighlightState;
+use crate::core::keymap::Keymap;
 use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::diff::FileDiff;
@@ -67,6 +68,7 @@ pub struct DiffViewPane {
     pub(crate) content_lines_cache: Option<(String, DiffSide, Vec<String>)>,
     pub current_file_idx: Option<usize>,
     pub files: Rc<Vec<FileDiff>>,
+    pub(crate) scroll_keymap: Keymap<keys::DiffScrollAction>,
 }
 
 impl DiffViewPane {
@@ -78,6 +80,7 @@ impl DiffViewPane {
             content_lines_cache: None,
             current_file_idx: None,
             files,
+            scroll_keymap: keys::default_scroll_keymap(),
         }
     }
 

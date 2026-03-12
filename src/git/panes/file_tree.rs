@@ -1,4 +1,7 @@
 use crate::core::app::AppContext;
+use crate::core::keymap::{
+    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction,
+};
 use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::diff::{FileDiff, FileStatus};
@@ -16,10 +19,53 @@ use ratatui::{
 use std::collections::HashSet;
 use std::rc::Rc;
 
+#[derive(Debug, Clone)]
+pub enum FileTreeAction {
+    Nav(NavAction),
+    ToggleDir,
+    ExpandOrOpen,
+    FocusDiff,
+    Search,
+    NextMatch,
+    PrevMatch,
+    Esc,
+}
+
+impl ActionHelp for FileTreeAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            FileTreeAction::Nav(nav) => nav.label(),
+            FileTreeAction::ToggleDir => Some("Toggle directory"),
+            FileTreeAction::ExpandOrOpen => Some("Expand / Open file"),
+            FileTreeAction::FocusDiff => Some("Focus diff view"),
+            FileTreeAction::Search => Some("Search"),
+            FileTreeAction::NextMatch => Some("Next match"),
+            FileTreeAction::PrevMatch => Some("Prev match"),
+            FileTreeAction::Esc => Some("Clear search / Back"),
+        }
+    }
+}
+
+pub fn default_keymap() -> Keymap<FileTreeAction> {
+    Keymap::new()
+        .bindings(nav_bindings(FileTreeAction::Nav))
+        .bindings(search_bindings(
+            FileTreeAction::Search,
+            FileTreeAction::NextMatch,
+            FileTreeAction::PrevMatch,
+        ))
+        .key(KeyCode::Char(' '), FileTreeAction::ToggleDir)
+        .key(KeyCode::Right, FileTreeAction::ExpandOrOpen)
+        .key(KeyCode::Enter, FileTreeAction::ExpandOrOpen)
+        .key(KeyCode::Char('i'), FileTreeAction::FocusDiff)
+        .key(KeyCode::Esc, FileTreeAction::Esc)
+}
+
 pub struct FileTreePane {
     pub selected_idx: usize,
     pub collapsed_dirs: HashSet<String>,
     pub files: Rc<Vec<FileDiff>>,
+    keymap: Keymap<FileTreeAction>,
 }
 
 impl FileTreePane {
@@ -28,6 +74,7 @@ impl FileTreePane {
             selected_idx: 0,
             collapsed_dirs: HashSet::new(),
             files,
+            keymap: default_keymap(),
         }
     }
 
@@ -76,59 +123,54 @@ impl FileTreePane {
     }
 
     pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        match key.code {
-            KeyCode::Char('/') => {
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
+    }
+
+    fn execute(&mut self, shared: &PaneShared, action: FileTreeAction) -> Vec<PaneEvent> {
+        // Handle actions that don't need entries first
+        match action {
+            FileTreeAction::Search => {
                 return vec![PaneEvent::StartSearch(PANE_FILE_TREE)];
             }
-            KeyCode::Char('n') => {
+            FileTreeAction::NextMatch => {
                 return vec![PaneEvent::JumpToMatch(true)];
             }
-            KeyCode::Char('N') => {
+            FileTreeAction::PrevMatch => {
                 return vec![PaneEvent::JumpToMatch(false)];
             }
-            KeyCode::Char('i') => {
+            FileTreeAction::FocusDiff => {
                 return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
             }
-            KeyCode::Esc if shared.search.query.is_some() => {
-                return vec![PaneEvent::ClearSearch];
+            FileTreeAction::Esc => {
+                if shared.search.query.is_some() {
+                    return vec![PaneEvent::ClearSearch];
+                }
+                return vec![];
             }
             _ => {}
         }
+
         let entries = self.tree_entries();
         if entries.is_empty() {
             return vec![];
         }
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if self.selected_idx + 1 < entries.len() {
-                    self.selected_idx += 1;
+
+        match action {
+            FileTreeAction::Nav(nav) => {
+                if execute_nav(nav, &mut self.selected_idx, entries.len(), None) {
                     return vec![PaneEvent::SelectionChanged];
                 }
             }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.selected_idx > 0 {
-                    self.selected_idx -= 1;
-                    return vec![PaneEvent::SelectionChanged];
-                }
+            FileTreeAction::ToggleDir => {
+                self.toggle_dir(&entries);
             }
-            KeyCode::Char(' ') => {
-                if let Some(TreeEntry::Dir { path, .. }) = entries.get(self.selected_idx) {
-                    let path = path.clone();
-                    if self.collapsed_dirs.contains(&path) {
-                        self.collapsed_dirs.remove(&path);
-                    } else {
-                        self.collapsed_dirs.insert(path);
-                    }
-                }
-            }
-            KeyCode::Right | KeyCode::Enter => match entries.get(self.selected_idx) {
-                Some(TreeEntry::Dir { path, .. }) => {
-                    let path = path.clone();
-                    if self.collapsed_dirs.contains(&path) {
-                        self.collapsed_dirs.remove(&path);
-                    } else {
-                        self.collapsed_dirs.insert(path);
-                    }
+            FileTreeAction::ExpandOrOpen => match entries.get(self.selected_idx) {
+                Some(TreeEntry::Dir { .. }) => {
+                    self.toggle_dir(&entries);
                 }
                 Some(TreeEntry::File { .. }) => {
                     return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
@@ -138,6 +180,17 @@ impl FileTreePane {
             _ => {}
         }
         vec![]
+    }
+
+    fn toggle_dir(&mut self, entries: &[TreeEntry]) {
+        if let Some(TreeEntry::Dir { path, .. }) = entries.get(self.selected_idx) {
+            let path = path.clone();
+            if self.collapsed_dirs.contains(&path) {
+                self.collapsed_dirs.remove(&path);
+            } else {
+                self.collapsed_dirs.insert(path);
+            }
+        }
     }
 
     pub fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {

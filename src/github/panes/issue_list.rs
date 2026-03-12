@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::core::keymap::{execute_nav, nav_bindings, ActionHelp, Keymap, NavAction};
 use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::github::domain::types::GhIssueListItem;
 use crate::github::domain::{client, disk_cache};
@@ -15,10 +16,39 @@ use ratatui::{
 };
 use std::sync::mpsc;
 
+#[derive(Debug, Clone)]
+pub enum IssueListAction {
+    Nav(NavAction),
+    OpenDetail,
+    SwitchToPrList,
+    OpenBrowser,
+}
+
+impl ActionHelp for IssueListAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            IssueListAction::Nav(nav) => nav.label(),
+            IssueListAction::OpenDetail => Some("Open detail"),
+            IssueListAction::SwitchToPrList => Some("Switch to PRs"),
+            IssueListAction::OpenBrowser => Some("Open in browser"),
+        }
+    }
+}
+
+pub fn default_keymap() -> Keymap<IssueListAction> {
+    Keymap::new()
+        .bindings(nav_bindings(IssueListAction::Nav))
+        .key(KeyCode::Char('i'), IssueListAction::OpenDetail)
+        .key(KeyCode::Enter, IssueListAction::OpenDetail)
+        .key(KeyCode::Tab, IssueListAction::SwitchToPrList)
+        .key(KeyCode::Char('o'), IssueListAction::OpenBrowser)
+}
+
 pub struct GhIssueListPane {
     pub issues: Vec<GhIssueListItem>,
     pub selected_idx: usize,
     pub loading: bool,
+    keymap: Keymap<IssueListAction>,
 }
 
 impl GhIssueListPane {
@@ -27,6 +57,7 @@ impl GhIssueListPane {
             issues: Vec::new(),
             selected_idx: 0,
             loading: false,
+            keymap: default_keymap(),
         }
     }
 
@@ -61,43 +92,33 @@ impl GhIssueListPane {
     }
 
     pub fn handle_key(&mut self, _shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.issues.is_empty() && self.selected_idx + 1 < self.issues.len() {
-                    self.selected_idx += 1;
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(action)
+    }
+
+    fn execute(&mut self, action: IssueListAction) -> Vec<PaneEvent> {
+        match action {
+            IssueListAction::Nav(nav) => {
+                if execute_nav(nav, &mut self.selected_idx, self.issues.len(), None) {
                     return vec![PaneEvent::SelectionChanged];
                 }
             }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.selected_idx > 0 {
-                    self.selected_idx -= 1;
-                    return vec![PaneEvent::SelectionChanged];
-                }
-            }
-            KeyCode::Char('g') => {
-                self.selected_idx = 0;
-                return vec![PaneEvent::SelectionChanged];
-            }
-            KeyCode::Char('G') => {
-                if !self.issues.is_empty() {
-                    self.selected_idx = self.issues.len() - 1;
-                    return vec![PaneEvent::SelectionChanged];
-                }
-            }
-            KeyCode::Char('i') | KeyCode::Enter => {
+            IssueListAction::OpenDetail => {
                 if !self.issues.is_empty() {
                     return vec![PaneEvent::SetFocus(GH_PANE_ISSUE_DETAIL)];
                 }
             }
-            KeyCode::Tab => {
+            IssueListAction::SwitchToPrList => {
                 return vec![PaneEvent::SetFocus(GH_PANE_PR_LIST)];
             }
-            KeyCode::Char('o') => {
+            IssueListAction::OpenBrowser => {
                 if let Some(issue) = self.issues.get(self.selected_idx) {
                     return vec![PaneEvent::OpenIssueBrowser(issue.number)];
                 }
             }
-            _ => {}
         }
         vec![]
     }

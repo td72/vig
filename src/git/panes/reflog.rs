@@ -1,9 +1,12 @@
 use crate::core::app::AppContext;
+use crate::core::keymap::{
+    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction,
+};
 use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{ReflogEntry, Repo};
 use crate::git::state::{PaneEvent, PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -13,10 +16,49 @@ use ratatui::{
 };
 use std::collections::HashSet;
 
+#[derive(Debug, Clone)]
+pub enum ReflogAction {
+    Nav(NavAction),
+    SetDiffBase,
+    FocusLog,
+    Search,
+    NextMatch,
+    PrevMatch,
+    Esc,
+}
+
+impl ActionHelp for ReflogAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            ReflogAction::Nav(nav) => nav.label(),
+            ReflogAction::SetDiffBase => Some("Set as diff base"),
+            ReflogAction::FocusLog => Some("Focus log"),
+            ReflogAction::Search => Some("Search reflog"),
+            ReflogAction::NextMatch => Some("Next match"),
+            ReflogAction::PrevMatch => Some("Prev match"),
+            ReflogAction::Esc => Some("Clear search / Back"),
+        }
+    }
+}
+
+pub fn default_keymap() -> Keymap<ReflogAction> {
+    Keymap::new()
+        .bindings(nav_bindings(ReflogAction::Nav))
+        .bindings(search_bindings(
+            ReflogAction::Search,
+            ReflogAction::NextMatch,
+            ReflogAction::PrevMatch,
+        ))
+        .key(KeyCode::Enter, ReflogAction::SetDiffBase)
+        .key(KeyCode::Char('i'), ReflogAction::FocusLog)
+        .key(KeyCode::Esc, ReflogAction::Esc)
+}
+
 pub struct ReflogPane {
     pub entries: Vec<ReflogEntry>,
     pub selected_idx: usize,
     pub view_height: u16,
+    keymap: Keymap<ReflogAction>,
 }
 
 impl ReflogPane {
@@ -25,6 +67,7 @@ impl ReflogPane {
             entries: Vec::new(),
             selected_idx: 0,
             view_height: 0,
+            keymap: default_keymap(),
         }
     }
 
@@ -36,58 +79,46 @@ impl ReflogPane {
     }
 
     pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        match key.code {
-            KeyCode::Char('/') => {
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
+    }
+
+    fn execute(&mut self, shared: &PaneShared, action: ReflogAction) -> Vec<PaneEvent> {
+        match action {
+            ReflogAction::Search => {
                 return vec![PaneEvent::StartSearch(PANE_REFLOG)];
             }
-            KeyCode::Char('n') => {
+            ReflogAction::NextMatch => {
                 return vec![PaneEvent::JumpToMatch(true)];
             }
-            KeyCode::Char('N') => {
+            ReflogAction::PrevMatch => {
                 return vec![PaneEvent::JumpToMatch(false)];
             }
-            KeyCode::Char('i') => {
+            ReflogAction::FocusLog => {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
-            KeyCode::Esc => {
+            ReflogAction::Esc => {
                 if shared.search.query.is_some() {
                     return vec![PaneEvent::ClearSearch];
                 }
                 return vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)];
             }
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.entries.is_empty() && self.selected_idx + 1 < self.entries.len() {
-                    self.selected_idx += 1;
-                }
+            ReflogAction::Nav(nav) => {
+                execute_nav(
+                    nav,
+                    &mut self.selected_idx,
+                    self.entries.len(),
+                    Some(self.view_height),
+                );
             }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.selected_idx > 0 {
-                    self.selected_idx -= 1;
-                }
-            }
-            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.view_height / 2).max(1) as usize;
-                let new_idx = self.selected_idx.saturating_add(half);
-                self.selected_idx = new_idx.min(self.entries.len().saturating_sub(1));
-            }
-            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.view_height / 2).max(1) as usize;
-                self.selected_idx = self.selected_idx.saturating_sub(half);
-            }
-            KeyCode::Char('g') => {
-                self.selected_idx = 0;
-            }
-            KeyCode::Char('G') => {
-                if !self.entries.is_empty() {
-                    self.selected_idx = self.entries.len() - 1;
-                }
-            }
-            KeyCode::Enter => {
+            ReflogAction::SetDiffBase => {
                 if let Some(entry) = self.entries.get(self.selected_idx) {
                     return vec![PaneEvent::SetDiffBase(Some(entry.full_hash.clone()))];
                 }
             }
-            _ => {}
         }
         vec![]
     }

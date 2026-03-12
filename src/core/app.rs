@@ -52,7 +52,7 @@ impl AppContext {
 
 pub trait PageState {
     fn label(&self) -> &'static str;
-    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+    fn help_bindings(&self) -> Vec<(String, String)> {
         vec![]
     }
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction>;
@@ -88,7 +88,7 @@ impl Page {
         self.0.label()
     }
 
-    pub fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+    pub fn help_bindings(&self) -> Vec<(String, String)> {
         self.0.help_bindings()
     }
 
@@ -170,7 +170,7 @@ impl App {
         self.pages[idx].on_suspend_return(&mut self.ctx, status)
     }
 
-    pub fn active_help_bindings(&self) -> Vec<(&'static str, &'static str)> {
+    pub fn active_help_bindings(&self) -> Vec<(String, String)> {
         self.pages[self.ctx.active_page].help_bindings()
     }
 

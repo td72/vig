@@ -352,48 +352,37 @@ impl crate::core::app::PageState for GitState {
         "Git"
     }
 
-    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
-        vec![
-            ("1 / 2", "Switch view"),
-            ("j / ↓", "Next item / Scroll down"),
-            ("k / ↑", "Prev item / Scroll up"),
-            ("Enter", "Select file/branch"),
-            ("Tab", "Next pane"),
-            ("Shift+Tab", "Prev pane"),
-            ("Ctrl+d", "Half page down"),
-            ("Ctrl+u", "Half page up"),
-            ("g / G", "Top / Bottom"),
-            ("h / l", "Scroll left / right"),
-            ("i", "Normal mode (cursor)"),
-            ("v / V", "Visual / Visual Line"),
-            ("y", "Yank (copy) selection"),
-            ("/", "Search"),
-            ("n / N", "Next / Prev match"),
-            ("Esc", "Clear search / Back"),
-            ("e", "Open in $EDITOR"),
-            ("r", "Refresh diff + branches"),
-            ("?", "Toggle help"),
-            ("q", "Quit"),
-            ("", ""),
-            ("", "── Branch List ──"),
-            ("/", "Search branches"),
-            ("Enter", "Action menu"),
-            ("", ""),
-            ("", "── Git Log ──"),
-            ("j / k", "Navigate commits"),
-            ("Ctrl+d/u", "Half page scroll"),
-            ("g / G", "Top / Bottom"),
-            ("y", "Copy commit hash"),
-            ("o", "Open in GitHub"),
-            ("/", "Search commits"),
-            ("", ""),
-            ("", "── Reflog ──"),
-            ("j / k", "Navigate entries"),
-            ("Ctrl+d/u", "Half page scroll"),
-            ("g / G", "Top / Bottom"),
-            ("Enter", "Set as diff base"),
-            ("/", "Search reflog"),
-        ]
+    fn help_bindings(&self) -> Vec<(String, String)> {
+        use crate::core::keymap::help_section;
+        use crate::git::panes::branch_list;
+        use crate::git::panes::diff_view::keys;
+        use crate::git::panes::file_tree;
+        use crate::git::panes::git_log;
+        use crate::git::panes::reflog;
+
+        let s = |k: &str, v: &str| (k.to_string(), v.to_string());
+        let mut entries = vec![
+            s("1 / 2", "Switch view"),
+            s("Tab", "Next pane"),
+            s("S-Tab", "Prev pane"),
+            s("v / V", "Visual / Visual Line"),
+            s("y", "Yank (copy) selection"),
+            s("e", "Open in $EDITOR"),
+            s("r", "Refresh diff + branches"),
+            s("?", "Toggle help"),
+            s("q", "Quit"),
+        ];
+        entries.extend(help_section("File Tree"));
+        entries.extend(file_tree::default_keymap().help_entries());
+        entries.extend(help_section("Branch List"));
+        entries.extend(branch_list::default_keymap().help_entries());
+        entries.extend(help_section("Git Log"));
+        entries.extend(git_log::default_keymap().help_entries());
+        entries.extend(help_section("Reflog"));
+        entries.extend(reflog::default_keymap().help_entries());
+        entries.extend(help_section("Diff View (Scroll)"));
+        entries.extend(keys::default_scroll_keymap().help_entries());
+        entries
     }
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {

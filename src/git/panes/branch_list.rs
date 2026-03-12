@@ -1,4 +1,7 @@
 use crate::core::app::AppContext;
+use crate::core::keymap::{
+    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction,
+};
 use crate::core::pane::{Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::git::domain::repository::{BranchInfo, Repo};
@@ -52,12 +55,51 @@ use std::collections::HashSet;
 
 use crate::git::state::{PANE_BRANCH_LIST, PANE_GIT_LOG};
 
+#[derive(Debug, Clone)]
+pub enum BranchListAction {
+    Nav(NavAction),
+    OpenActionMenu,
+    FocusLog,
+    Search,
+    NextMatch,
+    PrevMatch,
+    Esc,
+}
+
+impl ActionHelp for BranchListAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            BranchListAction::Nav(nav) => nav.label(),
+            BranchListAction::OpenActionMenu => Some("Action menu"),
+            BranchListAction::FocusLog => Some("Focus log"),
+            BranchListAction::Search => Some("Search branches"),
+            BranchListAction::NextMatch => Some("Next match"),
+            BranchListAction::PrevMatch => Some("Prev match"),
+            BranchListAction::Esc => Some("Clear search / Reset"),
+        }
+    }
+}
+
+pub fn default_keymap() -> Keymap<BranchListAction> {
+    Keymap::new()
+        .bindings(nav_bindings(BranchListAction::Nav))
+        .bindings(search_bindings(
+            BranchListAction::Search,
+            BranchListAction::NextMatch,
+            BranchListAction::PrevMatch,
+        ))
+        .key(KeyCode::Enter, BranchListAction::OpenActionMenu)
+        .key(KeyCode::Char('i'), BranchListAction::FocusLog)
+        .key(KeyCode::Esc, BranchListAction::Esc)
+}
+
 const ACTION_MENU_BG: Color = Color::Rgb(30, 30, 30);
 
 pub struct BranchListPane {
     pub branches: Vec<BranchInfo>,
     pub selected_idx: usize,
     pub action_menu: Option<BranchActionMenuState>,
+    keymap: Keymap<BranchListAction>,
 }
 
 impl BranchListPane {
@@ -66,6 +108,7 @@ impl BranchListPane {
             branches: Vec::new(),
             selected_idx: 0,
             action_menu: None,
+            keymap: default_keymap(),
         }
     }
 
@@ -84,41 +127,39 @@ impl BranchListPane {
         if self.action_menu.is_some() {
             return self.handle_action_menu_key(key);
         }
-        match key.code {
-            KeyCode::Char('/') => {
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
+    }
+
+    fn execute(&mut self, shared: &PaneShared, action: BranchListAction) -> Vec<PaneEvent> {
+        match action {
+            BranchListAction::Search => {
                 return vec![PaneEvent::StartSearch(PANE_BRANCH_LIST)];
             }
-            KeyCode::Char('n') => {
+            BranchListAction::NextMatch => {
                 return vec![PaneEvent::JumpToMatch(true)];
             }
-            KeyCode::Char('N') => {
+            BranchListAction::PrevMatch => {
                 return vec![PaneEvent::JumpToMatch(false)];
             }
-            KeyCode::Char('i') => {
+            BranchListAction::FocusLog => {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
-            KeyCode::Esc if shared.search.query.is_some() => {
-                return vec![PaneEvent::ClearSearch];
-            }
-            KeyCode::Esc => {
+            BranchListAction::Esc => {
+                if shared.search.query.is_some() {
+                    return vec![PaneEvent::ClearSearch];
+                }
                 return vec![PaneEvent::SetDiffBase(None)];
             }
-            _ => {}
-        }
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.branches.is_empty() && self.selected_idx + 1 < self.branches.len() {
-                    self.selected_idx += 1;
+            BranchListAction::Nav(nav) => {
+                if execute_nav(nav, &mut self.selected_idx, self.branches.len(), None) {
                     return vec![PaneEvent::SelectionChanged];
                 }
             }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.selected_idx > 0 {
-                    self.selected_idx -= 1;
-                    return vec![PaneEvent::SelectionChanged];
-                }
-            }
-            KeyCode::Enter => {
+            BranchListAction::OpenActionMenu => {
                 if let Some(branch) = self.branches.get(self.selected_idx) {
                     self.action_menu = Some(BranchActionMenuState {
                         branch_name: branch.name.clone(),
@@ -127,7 +168,6 @@ impl BranchListPane {
                     });
                 }
             }
-            _ => {}
         }
         vec![]
     }

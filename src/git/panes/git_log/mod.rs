@@ -1,14 +1,58 @@
 pub(crate) mod view;
 
+use crate::core::keymap::{
+    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction,
+};
 use crate::core::pane::{Pane, PaneShared, SubPaneScroll};
 use crate::git::domain::graph::{self, GraphRow};
 use crate::git::domain::repository::{CommitFileChange, CommitInfo, Repo};
 use crate::git::state::{PaneEvent, PANE_REFLOG};
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
 
 use crate::core::app::AppContext;
 use crate::core::search::SearchMatch;
+
+#[derive(Debug, Clone)]
+pub enum GitLogAction {
+    Nav(NavAction),
+    YankHash,
+    OpenGitHub,
+    FocusReflog,
+    Search,
+    NextMatch,
+    PrevMatch,
+    Esc,
+}
+
+impl ActionHelp for GitLogAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            GitLogAction::Nav(nav) => nav.label(),
+            GitLogAction::YankHash => Some("Copy commit hash"),
+            GitLogAction::OpenGitHub => Some("Open in GitHub"),
+            GitLogAction::FocusReflog => Some("Focus reflog"),
+            GitLogAction::Search => Some("Search commits"),
+            GitLogAction::NextMatch => Some("Next match"),
+            GitLogAction::PrevMatch => Some("Prev match"),
+            GitLogAction::Esc => Some("Clear search / Back"),
+        }
+    }
+}
+
+pub fn default_keymap() -> Keymap<GitLogAction> {
+    Keymap::new()
+        .bindings(nav_bindings(GitLogAction::Nav))
+        .bindings(search_bindings(
+            GitLogAction::Search,
+            GitLogAction::NextMatch,
+            GitLogAction::PrevMatch,
+        ))
+        .key(KeyCode::Char('y'), GitLogAction::YankHash)
+        .key(KeyCode::Char('o'), GitLogAction::OpenGitHub)
+        .key(KeyCode::Char('h'), GitLogAction::FocusReflog)
+        .key(KeyCode::Esc, GitLogAction::Esc)
+}
 
 pub struct GitLogPane {
     pub commits: Vec<CommitInfo>,
@@ -19,6 +63,7 @@ pub struct GitLogPane {
     pub detail: SubPaneScroll,
     pub detail_view_height: u16,
     pub detail_changed_files: Vec<CommitFileChange>,
+    keymap: Keymap<GitLogAction>,
 }
 
 impl GitLogPane {
@@ -32,6 +77,7 @@ impl GitLogPane {
             detail: SubPaneScroll::default(),
             detail_view_height: 0,
             detail_changed_files: Vec::new(),
+            keymap: default_keymap(),
         }
     }
 
@@ -62,56 +108,41 @@ impl GitLogPane {
     }
 
     pub fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        match key.code {
-            KeyCode::Char('h') => {
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
+    }
+
+    fn execute(&mut self, shared: &PaneShared, action: GitLogAction) -> Vec<PaneEvent> {
+        match action {
+            GitLogAction::FocusReflog => {
                 return vec![PaneEvent::SetFocus(PANE_REFLOG)];
             }
-            KeyCode::Esc => {
+            GitLogAction::Esc => {
                 if shared.search.query.is_some() {
                     return vec![PaneEvent::ClearSearch];
                 } else {
                     return vec![PaneEvent::SetFocus(shared.previous_pane)];
                 }
             }
-            KeyCode::Char('j') | KeyCode::Down => {
-                if !self.commits.is_empty() && self.selected_idx + 1 < self.commits.len() {
-                    self.selected_idx += 1;
+            GitLogAction::Nav(nav) => {
+                if execute_nav(
+                    nav,
+                    &mut self.selected_idx,
+                    self.commits.len(),
+                    Some(self.view_height),
+                ) {
                     return vec![PaneEvent::SelectionChanged];
                 }
             }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if self.selected_idx > 0 {
-                    self.selected_idx -= 1;
-                    return vec![PaneEvent::SelectionChanged];
-                }
-            }
-            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.view_height / 2).max(1) as usize;
-                let new_idx = self.selected_idx.saturating_add(half);
-                self.selected_idx = new_idx.min(self.commits.len().saturating_sub(1));
-                return vec![PaneEvent::SelectionChanged];
-            }
-            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.view_height / 2).max(1) as usize;
-                self.selected_idx = self.selected_idx.saturating_sub(half);
-                return vec![PaneEvent::SelectionChanged];
-            }
-            KeyCode::Char('g') => {
-                self.selected_idx = 0;
-                return vec![PaneEvent::SelectionChanged];
-            }
-            KeyCode::Char('G') => {
-                if !self.commits.is_empty() {
-                    self.selected_idx = self.commits.len() - 1;
-                    return vec![PaneEvent::SelectionChanged];
-                }
-            }
-            KeyCode::Char('y') => {
+            GitLogAction::YankHash => {
                 if let Some(commit) = self.commits.get(self.selected_idx) {
                     return vec![PaneEvent::CopyToClipboard(commit.full_hash.clone())];
                 }
             }
-            KeyCode::Char('o') => {
+            GitLogAction::OpenGitHub => {
                 if let Some(commit) = self.commits.get(self.selected_idx) {
                     let hash = commit.full_hash.clone();
                     if let Some(nwo) = crate::github::domain::client::repo_nwo() {
@@ -124,16 +155,15 @@ impl GitLogPane {
                     }
                 }
             }
-            KeyCode::Char('/') => {
+            GitLogAction::Search => {
                 return vec![PaneEvent::StartSearch(crate::git::state::PANE_GIT_LOG)];
             }
-            KeyCode::Char('n') => {
+            GitLogAction::NextMatch => {
                 return vec![PaneEvent::JumpToMatch(true)];
             }
-            KeyCode::Char('N') => {
+            GitLogAction::PrevMatch => {
                 return vec![PaneEvent::JumpToMatch(false)];
             }
-            _ => {}
         }
         vec![]
     }

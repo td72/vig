@@ -377,24 +377,30 @@ impl crate::core::app::PageState for GitHubState {
         "GitHub"
     }
 
-    fn help_bindings(&self) -> Vec<(&'static str, &'static str)> {
-        vec![
-            ("1 / 2", "Switch view"),
-            ("h / l", "Issues ↔ PRs (list)"),
-            ("j / k", "Navigate list"),
-            ("i / Enter", "Open detail"),
-            ("o", "Open in browser"),
-            ("Esc", "Back to list"),
-            ("h / l", "Body ↔ Right pane (detail)"),
-            ("Tab / S-Tab", "Cycle right panes (detail)"),
-            ("Ctrl+d", "Half page down (detail)"),
-            ("Ctrl+u", "Half page up (detail)"),
-            ("g / G", "Top / Bottom"),
-            ("r", "Refresh data"),
-            ("w", "Toggle watch mode (PR)"),
-            ("?", "Toggle help"),
-            ("q", "Quit"),
-        ]
+    fn help_bindings(&self) -> Vec<(String, String)> {
+        use crate::core::keymap::help_section;
+        use crate::github::panes::issue_list;
+        use crate::github::panes::pr_list;
+
+        let s = |k: &str, v: &str| (k.to_string(), v.to_string());
+        let mut entries = vec![
+            s("1 / 2", "Switch view"),
+            s("Esc", "Back to list"),
+            s("h / l", "Body ↔ Right pane (detail)"),
+            s("Tab / S-Tab", "Cycle right panes (detail)"),
+            s("Ctrl+d", "Half page down (detail)"),
+            s("Ctrl+u", "Half page up (detail)"),
+            s("g / G", "Top / Bottom"),
+            s("r", "Refresh data"),
+            s("w", "Toggle watch mode (PR)"),
+            s("?", "Toggle help"),
+            s("q", "Quit"),
+        ];
+        entries.extend(help_section("Issues"));
+        entries.extend(issue_list::default_keymap().help_entries());
+        entries.extend(help_section("Pull Requests"));
+        entries.extend(pr_list::default_keymap().help_entries());
+        entries
     }
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
