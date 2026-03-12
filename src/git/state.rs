@@ -144,33 +144,31 @@ impl GitState {
         Ok(state)
     }
 
+    /// Apply a diff result: update metadata and propagate files to panes.
+    fn apply_diff_result(&mut self, result: crate::git::domain::diff::DiffResult) {
+        let files = Rc::new(result.files);
+        self.diff_meta = DiffMeta {
+            branch_name: result.branch_name,
+            stats: result.stats,
+            file_count: files.len(),
+        };
+        self.panes.file_tab.list.set_files(Rc::clone(&files));
+        self.panes.file_tab.detail.set_files(files);
+    }
+
     /// Refresh the diff state from the working directory.
     /// Returns `Ok(Some(message))` if a fallback occurred, `Ok(None)` on clean refresh.
     pub fn refresh_diff(&mut self) -> Result<Option<String>> {
         let old_path = self.selected_file().map(|f| f.path.clone());
         let fallback_msg = match self.repo.diff_workdir(self.diff_base_ref.as_deref()) {
             Ok(result) => {
-                let files = Rc::new(result.files);
-                self.diff_meta = DiffMeta {
-                    branch_name: result.branch_name,
-                    stats: result.stats,
-                    file_count: files.len(),
-                };
-                self.panes.file_tab.list.set_files(Rc::clone(&files));
-                self.panes.file_tab.detail.set_files(Rc::clone(&files));
+                self.apply_diff_result(result);
                 None
             }
             Err(e) => {
                 self.diff_base_ref = None;
                 let result = self.repo.diff_workdir(None)?;
-                let files = Rc::new(result.files);
-                self.diff_meta = DiffMeta {
-                    branch_name: result.branch_name,
-                    stats: result.stats,
-                    file_count: files.len(),
-                };
-                self.panes.file_tab.list.set_files(Rc::clone(&files));
-                self.panes.file_tab.detail.set_files(Rc::clone(&files));
+                self.apply_diff_result(result);
                 Some(format!("Invalid ref, fell back to HEAD: {e}"))
             }
         };
