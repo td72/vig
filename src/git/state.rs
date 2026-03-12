@@ -1,4 +1,4 @@
-use crate::core::app::{AppContext, ErrorDialogState};
+use crate::core::app::AppContext;
 use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
 use crate::core::pane::{self, Pane, PaneSet, PaneShared};
@@ -244,24 +244,14 @@ impl GitState {
                         self.load_branches();
                         self.apply_refresh(ctx);
                     }
-                    Err(e) => {
-                        ctx.error_dialog = Some(ErrorDialogState {
-                            title: "Switch failed".to_string(),
-                            message: format!("{e}"),
-                        });
-                    }
+                    Err(e) => ctx.show_error("Switch failed", format!("{e}")),
                 },
                 PaneEvent::DeleteBranch(name) => match self.repo.delete_branch(&name) {
                     Ok(()) => {
                         ctx.status_message = Some(format!("Deleted {name}"));
                         self.load_branches();
                     }
-                    Err(e) => {
-                        ctx.error_dialog = Some(ErrorDialogState {
-                            title: "Delete failed".to_string(),
-                            message: format!("{e}"),
-                        });
-                    }
+                    Err(e) => ctx.show_error("Delete failed", format!("{e}")),
                 },
                 PaneEvent::JumpToMatch(forward) => {
                     if let Some(origin) =

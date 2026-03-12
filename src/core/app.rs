@@ -20,6 +20,13 @@ pub struct AppContext {
 }
 
 impl AppContext {
+    pub fn show_error(&mut self, title: &str, message: String) {
+        self.error_dialog = Some(ErrorDialogState {
+            title: title.to_string(),
+            message,
+        });
+    }
+
     pub fn open_url(&mut self, url: &str) {
         match crate::core::browser::open_url(url) {
             Ok(()) => self.status_message = Some("Opening in browser...".to_string()),
