@@ -5,12 +5,14 @@ use crate::core::keymap::{
 use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
+use crate::github::state::GhBgMessage;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::Rect,
     widgets::{List, ListItem, ListState},
     Frame,
 };
+use std::sync::mpsc;
 
 // === Action enum ===
 
@@ -50,13 +52,17 @@ pub fn default_keymap(switch_key: KeyCode) -> Keymap<GhListAction> {
 
 // === Trait for item-specific behavior ===
 
-pub trait GhListItem {
+pub trait GhListItem: Sized + Send + 'static {
     fn pane_title() -> &'static str;
     fn empty_message() -> &'static str;
     fn render_item(&self) -> ListItem<'static>;
     fn number(&self) -> u64;
     fn search_text(&self) -> String;
     fn browser_event(&self) -> PaneEvent;
+    fn load_disk_cache() -> Option<Vec<Self>>;
+    fn save_disk_cache(items: &[Self]);
+    fn fetch_list() -> Result<Vec<Self>, String>;
+    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage;
 }
 
 // === Generic list pane ===
@@ -91,6 +97,30 @@ impl<T: GhListItem> GhListPane<T> {
 
     pub fn selected_number(&self) -> Option<u64> {
         self.items.get(self.selected_idx).map(|i| i.number())
+    }
+
+    /// Load disk cache + spawn background fetch.
+    pub fn initialize(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        if let Some(items) = T::load_disk_cache() {
+            self.items = items;
+        }
+        self.loading = true;
+        self.spawn_fetch(tx);
+    }
+
+    /// Spawn background fetch thread.
+    pub fn spawn_fetch(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        self.loading = true;
+        let tx = tx.clone();
+        std::thread::spawn(move || {
+            let _ = tx.send(T::wrap_bg_message(T::fetch_list()));
+        });
+    }
+
+    /// Apply a freshly fetched list — save to disk cache and update state.
+    pub fn apply_list(&mut self, items: Vec<T>) {
+        T::save_disk_cache(&items);
+        self.items = items;
     }
 
     fn handle_key_impl(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {

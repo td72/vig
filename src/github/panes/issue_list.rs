@@ -11,7 +11,6 @@ use ratatui::{
     text::{Line, Span},
     widgets::ListItem,
 };
-use std::sync::mpsc;
 
 impl GhListItem for GhIssueListItem {
     fn pane_title() -> &'static str {
@@ -54,6 +53,22 @@ impl GhListItem for GhIssueListItem {
     fn browser_event(&self) -> PaneEvent {
         PaneEvent::OpenIssueBrowser(self.number)
     }
+
+    fn load_disk_cache() -> Option<Vec<Self>> {
+        disk_cache::load_issue_list()
+    }
+
+    fn save_disk_cache(items: &[Self]) {
+        disk_cache::save_issue_list(items);
+    }
+
+    fn fetch_list() -> Result<Vec<Self>, String> {
+        client::list_issues(50)
+    }
+
+    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage {
+        GhBgMessage::IssueList(result)
+    }
 }
 
 pub type GhIssueListPane = GhListPane<GhIssueListItem>;
@@ -65,31 +80,4 @@ pub fn new_pane() -> GhIssueListPane {
         KeyCode::Tab,
         GH_PANE_PR_LIST,
     )
-}
-
-impl GhIssueListPane {
-    /// Load disk cache + spawn background fetch.
-    pub fn initialize(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
-        if let Some(issues) = disk_cache::load_issue_list() {
-            self.items = issues;
-        }
-        self.loading = true;
-        self.spawn_fetch(tx);
-    }
-
-    /// Spawn background fetch thread.
-    pub fn spawn_fetch(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
-        self.loading = true;
-        let tx = tx.clone();
-        std::thread::spawn(move || {
-            let issues = client::list_issues(50);
-            let _ = tx.send(GhBgMessage::IssueList(issues));
-        });
-    }
-
-    /// Apply a freshly fetched list — save to disk cache and update state.
-    pub fn apply_list(&mut self, issues: Vec<GhIssueListItem>) {
-        disk_cache::save_issue_list(&issues);
-        self.items = issues;
-    }
 }
