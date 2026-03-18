@@ -1,7 +1,7 @@
 use crate::core::app::AppContext;
-use crate::core::keymap::SearchAction;
+use crate::core::keymap::{SearchAction, ViewAction};
 use crate::core::search::{SearchMatch, SearchState};
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 
 pub enum PaneEvent {
@@ -53,16 +53,35 @@ impl PaneShared {
         }
     }
 
-    /// Handle h/l tab navigation common to all pages.
-    /// Returns `Some(events)` if the key was consumed, `None` otherwise.
-    pub fn dispatch_tab_key(&self, tab_panes: &[usize], key: KeyEvent) -> Option<Vec<PaneEvent>> {
-        let tab_idx = self.tab_index(tab_panes)?;
-        match key.code {
-            KeyCode::Char('h') if tab_idx > 0 => {
-                Some(vec![PaneEvent::SetFocus(tab_panes[tab_idx - 1])])
+    /// Handle tab navigation via ViewAction.
+    /// Returns `Some(events)` if the action was consumed, `None` otherwise.
+    pub fn dispatch_view_nav(
+        &self,
+        action: ViewAction,
+        tab_panes: &[usize],
+    ) -> Option<Vec<PaneEvent>> {
+        match action {
+            ViewAction::PrevTab => {
+                let tab_idx = self.tab_index(tab_panes)?;
+                if tab_idx > 0 {
+                    Some(vec![PaneEvent::SetFocus(tab_panes[tab_idx - 1])])
+                } else {
+                    Some(vec![])
+                }
             }
-            KeyCode::Char('l') if tab_idx + 1 < tab_panes.len() => {
-                Some(vec![PaneEvent::SetFocus(tab_panes[tab_idx + 1])])
+            ViewAction::NextTab => {
+                let tab_idx = self.tab_index(tab_panes)?;
+                if tab_idx + 1 < tab_panes.len() {
+                    Some(vec![PaneEvent::SetFocus(tab_panes[tab_idx + 1])])
+                } else {
+                    Some(vec![])
+                }
+            }
+            ViewAction::CyclePaneForward => {
+                Some(vec![PaneEvent::SetFocus(self.next_tab_id(tab_panes))])
+            }
+            ViewAction::CyclePaneBackward => {
+                Some(vec![PaneEvent::SetFocus(self.prev_tab_id(tab_panes))])
             }
             _ => None,
         }
@@ -204,13 +223,15 @@ pub fn process_common_event(
     }
 }
 
-pub fn handle_common_view_key(ctx: &mut AppContext, key: KeyEvent) -> Option<PageAction> {
-    match key.code {
-        KeyCode::Char('q') => {
+/// Execute a ViewAction that is common across all pages.
+/// Returns `Some(PageAction)` if the action was fully handled, `None` for page-specific actions.
+pub fn execute_common_view_action(ctx: &mut AppContext, action: ViewAction) -> Option<PageAction> {
+    match action {
+        ViewAction::Quit => {
             ctx.should_quit = true;
             Some(PageAction::None)
         }
-        KeyCode::Char('?') => {
+        ViewAction::Help => {
             ctx.show_help = true;
             Some(PageAction::None)
         }

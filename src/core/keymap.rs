@@ -1,6 +1,7 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use std::collections::HashMap;
 use std::fmt;
+use std::str::FromStr;
 
 /// Normalized key input for use as HashMap key.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -42,6 +43,61 @@ impl fmt::Display for KeyInput {
             write!(f, "Ctrl+{key}")
         } else {
             write!(f, "{key}")
+        }
+    }
+}
+
+/// Parse a key name string into a KeyCode.
+fn parse_key_code(name: &str) -> Result<KeyCode, String> {
+    match name {
+        "Enter" | "Return" | "CR" => Ok(KeyCode::Enter),
+        "Esc" | "Escape" => Ok(KeyCode::Esc),
+        "Tab" => Ok(KeyCode::Tab),
+        "BackTab" | "S-Tab" => Ok(KeyCode::BackTab),
+        "Backspace" | "BS" => Ok(KeyCode::Backspace),
+        "Delete" | "Del" => Ok(KeyCode::Delete),
+        "Up" => Ok(KeyCode::Up),
+        "Down" => Ok(KeyCode::Down),
+        "Left" => Ok(KeyCode::Left),
+        "Right" => Ok(KeyCode::Right),
+        "Home" => Ok(KeyCode::Home),
+        "End" => Ok(KeyCode::End),
+        "PageUp" => Ok(KeyCode::PageUp),
+        "PageDown" => Ok(KeyCode::PageDown),
+        "Space" => Ok(KeyCode::Char(' ')),
+        s if s.len() == 1 => Ok(KeyCode::Char(s.chars().next().unwrap())),
+        _ => Err(format!("Unknown key: {name}")),
+    }
+}
+
+impl FromStr for KeyInput {
+    type Err = String;
+
+    /// Parse a human-readable key string into a KeyInput.
+    ///
+    /// Supported formats:
+    /// - `"j"`, `"G"`, `"/"` — plain character keys
+    /// - `"Enter"`, `"Esc"`, `"Tab"`, `"BackTab"`, `"Up"`, `"Down"` etc.
+    /// - `"Ctrl+d"`, `"Ctrl+u"` — with Ctrl modifier
+    /// - `"Space"` — space character
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+        if s.is_empty() {
+            return Err("Empty key string".to_string());
+        }
+
+        if let Some(rest) = s.strip_prefix("Ctrl+") {
+            let code = parse_key_code(rest)?;
+            Ok(Self {
+                code,
+                modifiers: KeyModifiers::CONTROL,
+            })
+        } else {
+            let code = parse_key_code(s)?;
+            Ok(Self {
+                code,
+                modifiers: KeyModifiers::NONE,
+            })
         }
     }
 }
@@ -249,6 +305,76 @@ pub fn search_bindings<A: Clone>(
     ]
 }
 
+/// Page-level view actions (quit, help, refresh, tab navigation, etc.).
+/// Each page maps these to its own concrete behavior.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ViewAction {
+    Quit,
+    Help,
+    Refresh,
+    OpenEditor,
+    PrevTab,
+    NextTab,
+    CyclePaneForward,
+    CyclePaneBackward,
+}
+
+impl ActionHelp for ViewAction {
+    fn label(&self) -> Option<&'static str> {
+        Some(match self {
+            ViewAction::Quit => "Quit",
+            ViewAction::Help => "Toggle help",
+            ViewAction::Refresh => "Refresh",
+            ViewAction::OpenEditor => "Open in $EDITOR",
+            ViewAction::PrevTab => "Prev tab",
+            ViewAction::NextTab => "Next tab",
+            ViewAction::CyclePaneForward => "Next pane",
+            ViewAction::CyclePaneBackward => "Prev pane",
+        })
+    }
+}
+
+/// Generate default view-level key bindings.
+pub fn view_bindings<A: Clone>(wrap: impl Fn(ViewAction) -> A) -> Vec<(KeyCode, KeyModifiers, A)> {
+    vec![
+        (
+            KeyCode::Char('q'),
+            KeyModifiers::NONE,
+            wrap(ViewAction::Quit),
+        ),
+        (
+            KeyCode::Char('?'),
+            KeyModifiers::NONE,
+            wrap(ViewAction::Help),
+        ),
+        (
+            KeyCode::Char('r'),
+            KeyModifiers::NONE,
+            wrap(ViewAction::Refresh),
+        ),
+        (
+            KeyCode::Char('h'),
+            KeyModifiers::NONE,
+            wrap(ViewAction::PrevTab),
+        ),
+        (
+            KeyCode::Char('l'),
+            KeyModifiers::NONE,
+            wrap(ViewAction::NextTab),
+        ),
+        (
+            KeyCode::Tab,
+            KeyModifiers::NONE,
+            wrap(ViewAction::CyclePaneForward),
+        ),
+        (
+            KeyCode::BackTab,
+            KeyModifiers::SHIFT,
+            wrap(ViewAction::CyclePaneBackward),
+        ),
+    ]
+}
+
 /// Build a section header for help display.
 pub fn help_section(title: &str) -> Vec<HelpEntry> {
     vec![
@@ -296,4 +422,63 @@ pub fn execute_nav(
         }
     }
     *selected_idx != old
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_plain_char() {
+        let ki: KeyInput = "j".parse().unwrap();
+        assert_eq!(ki.code, KeyCode::Char('j'));
+        assert_eq!(ki.modifiers, KeyModifiers::NONE);
+    }
+
+    #[test]
+    fn parse_uppercase_char() {
+        let ki: KeyInput = "G".parse().unwrap();
+        assert_eq!(ki.code, KeyCode::Char('G'));
+        assert_eq!(ki.modifiers, KeyModifiers::NONE);
+    }
+
+    #[test]
+    fn parse_ctrl_modifier() {
+        let ki: KeyInput = "Ctrl+d".parse().unwrap();
+        assert_eq!(ki.code, KeyCode::Char('d'));
+        assert_eq!(ki.modifiers, KeyModifiers::CONTROL);
+    }
+
+    #[test]
+    fn parse_special_keys() {
+        assert_eq!("Enter".parse::<KeyInput>().unwrap().code, KeyCode::Enter);
+        assert_eq!("Esc".parse::<KeyInput>().unwrap().code, KeyCode::Esc);
+        assert_eq!("Tab".parse::<KeyInput>().unwrap().code, KeyCode::Tab);
+        assert_eq!(
+            "BackTab".parse::<KeyInput>().unwrap().code,
+            KeyCode::BackTab
+        );
+        assert_eq!("Up".parse::<KeyInput>().unwrap().code, KeyCode::Up);
+        assert_eq!("Down".parse::<KeyInput>().unwrap().code, KeyCode::Down);
+        assert_eq!(
+            "Space".parse::<KeyInput>().unwrap().code,
+            KeyCode::Char(' ')
+        );
+    }
+
+    #[test]
+    fn parse_roundtrip() {
+        for s in &["j", "G", "Enter", "Esc", "Tab"] {
+            let ki: KeyInput = s.parse().unwrap();
+            assert_eq!(ki.to_string(), *s);
+        }
+        let ctrl_d: KeyInput = "Ctrl+d".parse().unwrap();
+        assert_eq!(ctrl_d.to_string(), "Ctrl+d");
+    }
+
+    #[test]
+    fn parse_invalid() {
+        assert!("".parse::<KeyInput>().is_err());
+        assert!("FooBar".parse::<KeyInput>().is_err());
+    }
 }

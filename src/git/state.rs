@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::core::keymap::{view_bindings, Keymap, ViewAction};
 use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
 use crate::core::pane::{self, Pane, PaneSet, PaneShared};
@@ -100,12 +101,19 @@ impl PaneSet for GitPanes {
     }
 }
 
+fn default_view_keymap() -> Keymap<ViewAction> {
+    Keymap::new()
+        .bindings(view_bindings(|v| v))
+        .key(KeyCode::Char('e'), ViewAction::OpenEditor)
+}
+
 pub struct GitState {
     pub pane: PaneShared,
     pub panes: GitPanes,
     pub repo: Repo,
     pub diff_meta: DiffMeta,
     pub diff_base_ref: Option<String>,
+    view_keymap: Keymap<ViewAction>,
 }
 
 impl GitState {
@@ -137,6 +145,7 @@ impl GitState {
                 file_count: files.len(),
             },
             diff_base_ref: None,
+            view_keymap: default_view_keymap(),
         };
         state.panes.file_tab.on_files_changed(None);
         state.load_branches();
@@ -199,20 +208,11 @@ impl GitState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        // h/l tab navigation
-        if let Some(events) = self.pane.dispatch_tab_key(&Self::TAB_PANES, key) {
-            return events;
-        }
-
-        // Tab/BackTab: cycle tab panes (works from any pane)
-        match key.code {
-            KeyCode::Tab => {
-                return vec![PaneEvent::SetFocus(self.pane.next_tab_id(&Self::TAB_PANES))];
+        // View-level navigation (h/l tab switch, Tab/BackTab cycle)
+        if let Some(action) = self.view_keymap.lookup(key) {
+            if let Some(events) = self.pane.dispatch_view_nav(*action, &Self::TAB_PANES) {
+                return events;
             }
-            KeyCode::BackTab => {
-                return vec![PaneEvent::SetFocus(self.pane.prev_tab_id(&Self::TAB_PANES))];
-            }
-            _ => {}
         }
 
         // Per-pane delegation
@@ -312,34 +312,37 @@ impl GitState {
             return self.process_events(ctx, events);
         }
 
-        if let Some(action) = pane::handle_common_view_key(ctx, key) {
-            return Ok(action);
+        // View-level actions (quit, help, refresh, editor, navigation)
+        if let Some(action) = self.view_keymap.lookup(key) {
+            if let Some(page_action) = pane::execute_common_view_action(ctx, *action) {
+                return Ok(page_action);
+            }
+            match action {
+                ViewAction::Refresh => {
+                    self.apply_refresh(ctx);
+                    self.load_branches();
+                    self.load_reflog();
+                    return Ok(PageAction::None);
+                }
+                ViewAction::OpenEditor => {
+                    if let Some(file) = self.selected_file() {
+                        let file_path = ctx.workdir.join(&file.path);
+                        let editor = std::env::var("EDITOR")
+                            .or_else(|_| std::env::var("VISUAL"))
+                            .unwrap_or_else(|_| "vi".to_string());
+                        return Ok(PageAction::Suspend(ExternalCommand {
+                            program: editor,
+                            args: vec![file_path.into()],
+                        }));
+                    }
+                    return Ok(PageAction::None);
+                }
+                _ => {} // Navigation actions handled in dispatch_key
+            }
         }
 
-        match key.code {
-            KeyCode::Char('r') => {
-                self.apply_refresh(ctx);
-                self.load_branches();
-                self.load_reflog();
-            }
-            KeyCode::Char('e') => {
-                if let Some(file) = self.selected_file() {
-                    let file_path = ctx.workdir.join(&file.path);
-                    let editor = std::env::var("EDITOR")
-                        .or_else(|_| std::env::var("VISUAL"))
-                        .unwrap_or_else(|_| "vi".to_string());
-                    return Ok(PageAction::Suspend(ExternalCommand {
-                        program: editor,
-                        args: vec![file_path.into()],
-                    }));
-                }
-            }
-            _ => {
-                let events = self.dispatch_key(key);
-                return self.process_events(ctx, events);
-            }
-        }
-        Ok(PageAction::None)
+        let events = self.dispatch_key(key);
+        self.process_events(ctx, events)
     }
 }
 

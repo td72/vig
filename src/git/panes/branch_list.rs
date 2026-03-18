@@ -39,6 +39,45 @@ impl BranchAction {
     }
 }
 
+/// Actions available in the branch action menu.
+#[derive(Debug, Clone)]
+pub enum MenuAction {
+    Close,
+    MoveDown,
+    MoveUp,
+    Confirm,
+    Direct(BranchAction),
+}
+
+impl ActionHelp for MenuAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            MenuAction::Close => Some("Close menu"),
+            MenuAction::MoveDown => Some("Next item"),
+            MenuAction::MoveUp => Some("Prev item"),
+            MenuAction::Confirm => Some("Confirm"),
+            MenuAction::Direct(a) => Some(a.label()),
+        }
+    }
+}
+
+pub fn default_menu_keymap() -> Keymap<MenuAction> {
+    Keymap::new()
+        .key(KeyCode::Esc, MenuAction::Close)
+        .key(KeyCode::Char('q'), MenuAction::Close)
+        .key(KeyCode::Char('j'), MenuAction::MoveDown)
+        .key(KeyCode::Down, MenuAction::MoveDown)
+        .key(KeyCode::Char('k'), MenuAction::MoveUp)
+        .key(KeyCode::Up, MenuAction::MoveUp)
+        .key(KeyCode::Enter, MenuAction::Confirm)
+        .key(KeyCode::Char('s'), MenuAction::Direct(BranchAction::Switch))
+        .key(KeyCode::Char('d'), MenuAction::Direct(BranchAction::Delete))
+        .key(
+            KeyCode::Char('b'),
+            MenuAction::Direct(BranchAction::DiffBase),
+        )
+}
+
 pub struct BranchActionMenuState {
     pub branch_name: String,
     pub is_head: bool,
@@ -90,6 +129,7 @@ pub struct BranchListPane {
     pub selected_idx: usize,
     pub action_menu: Option<BranchActionMenuState>,
     keymap: Keymap<BranchListAction>,
+    menu_keymap: Keymap<MenuAction>,
 }
 
 impl BranchListPane {
@@ -99,6 +139,7 @@ impl BranchListPane {
             selected_idx: 0,
             action_menu: None,
             keymap: default_keymap(),
+            menu_keymap: default_menu_keymap(),
         }
     }
 
@@ -143,39 +184,35 @@ impl BranchListPane {
     }
 
     fn handle_action_menu_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
+        let action = match self.menu_keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
         let menu = match self.action_menu.as_mut() {
             Some(m) => m,
             None => return vec![],
         };
-
-        match key.code {
-            KeyCode::Esc | KeyCode::Char('q') => {
+        match action {
+            MenuAction::Close => {
                 self.action_menu = None;
             }
-            KeyCode::Char('j') | KeyCode::Down => {
+            MenuAction::MoveDown => {
                 if menu.selected_idx + 1 < BranchAction::ALL.len() {
                     menu.selected_idx += 1;
                 }
             }
-            KeyCode::Char('k') | KeyCode::Up => {
+            MenuAction::MoveUp => {
                 if menu.selected_idx > 0 {
                     menu.selected_idx -= 1;
                 }
             }
-            KeyCode::Enter => {
+            MenuAction::Confirm => {
                 let action = BranchAction::ALL[menu.selected_idx];
                 return self.execute_menu_action(action);
             }
-            KeyCode::Char('s') => {
-                return self.execute_menu_action(BranchAction::Switch);
+            MenuAction::Direct(branch_action) => {
+                return self.execute_menu_action(branch_action);
             }
-            KeyCode::Char('d') => {
-                return self.execute_menu_action(BranchAction::Delete);
-            }
-            KeyCode::Char('b') => {
-                return self.execute_menu_action(BranchAction::DiffBase);
-            }
-            _ => {}
         }
         vec![]
     }

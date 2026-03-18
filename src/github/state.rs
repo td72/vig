@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::core::keymap::{view_bindings, Keymap, ViewAction};
 use crate::core::page::PageAction;
 use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
@@ -102,6 +103,7 @@ pub struct GitHubState {
     bg_rx: Option<mpsc::Receiver<GhBgMessage>>,
     pub(crate) bg_tx: Option<mpsc::Sender<GhBgMessage>>,
     pub initialized: bool,
+    view_keymap: Keymap<ViewAction>,
 }
 
 impl GitHubState {
@@ -127,6 +129,7 @@ impl GitHubState {
             bg_rx: None,
             bg_tx: None,
             initialized: false,
+            view_keymap: Keymap::new().bindings(view_bindings(|v| v)),
         }
     }
 
@@ -296,9 +299,11 @@ impl GitHubState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        // Phase 1: shared h/l tab navigation
-        if let Some(events) = self.pane.dispatch_tab_key(&Self::TAB_PANES, key) {
-            return events;
+        // View-level navigation (h/l tab switch)
+        if let Some(action) = self.view_keymap.lookup(key) {
+            if let Some(events) = self.pane.dispatch_view_nav(*action, &Self::TAB_PANES) {
+                return events;
+            }
         }
 
         // Per-pane delegation (dynamic dispatch)
@@ -358,12 +363,12 @@ impl GitHubState {
     // === View-level key handling ===
 
     pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
-        if let Some(action) = pane::handle_common_view_key(ctx, key) {
-            return Ok(action);
-        }
-
-        match key.code {
-            KeyCode::Char('r') => {
+        // View-level actions (quit, help, refresh, navigation)
+        if let Some(action) = self.view_keymap.lookup(key) {
+            if let Some(page_action) = pane::execute_common_view_action(ctx, *action) {
+                return Ok(page_action);
+            }
+            if *action == ViewAction::Refresh {
                 if matches!(
                     self.pane.focused_pane,
                     GH_PANE_ISSUE_DETAIL | GH_PANE_PR_DETAIL
@@ -372,13 +377,12 @@ impl GitHubState {
                 } else {
                     self.refresh();
                 }
-            }
-            _ => {
-                let events = self.dispatch_key(key);
-                return self.process_events(ctx, events);
+                return Ok(PageAction::None);
             }
         }
-        Ok(PageAction::None)
+
+        let events = self.dispatch_key(key);
+        self.process_events(ctx, events)
     }
 }
 
