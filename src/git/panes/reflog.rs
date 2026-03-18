@@ -25,6 +25,11 @@ pub enum ReflogAction {
     Esc,
 }
 
+crate::impl_pane_action_from_str!(
+    ReflogAction, nav: Nav, search: Search,
+    SetDiffBase, FocusLog, Esc
+);
+
 impl ActionHelp for ReflogAction {
     fn label(&self) -> Option<&'static str> {
         match self {

@@ -30,6 +30,11 @@ pub enum FileTreeAction {
     Esc,
 }
 
+crate::impl_pane_action_from_str!(
+    FileTreeAction, nav: Nav, search: Search,
+    ToggleDir, ExpandOrOpen, FocusDiff, Esc
+);
+
 impl ActionHelp for FileTreeAction {
     fn label(&self) -> Option<&'static str> {
         match self {

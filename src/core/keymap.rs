@@ -202,6 +202,61 @@ impl<A: Clone + ActionHelp> Keymap<A> {
     }
 }
 
+/// Implement `FromStr` for simple action enums (no nested variants).
+macro_rules! impl_action_from_str {
+    ($ty:ty, $( $variant:ident ),+ $(,)?) => {
+        impl std::str::FromStr for $ty {
+            type Err = String;
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                match s {
+                    $( stringify!($variant) => Ok(Self::$variant), )+
+                    _ => Err(format!("Unknown action: {s}")),
+                }
+            }
+        }
+    };
+}
+
+/// Implement `FromStr` for pane action enums that wrap `Nav(NavAction)`, `Search(SearchAction)`,
+/// and have their own plain variants. Nested actions use dot notation: `"Nav.MoveDown"`, `"Search.Start"`.
+#[macro_export]
+macro_rules! impl_pane_action_from_str {
+    ($ty:ty, nav: $nav_wrap:ident, search: $search_wrap:ident, $( $variant:ident ),+ $(,)?) => {
+        impl std::str::FromStr for $ty {
+            type Err = String;
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                if let Some(rest) = s.strip_prefix("Nav.") {
+                    return rest.parse::<$crate::core::keymap::NavAction>()
+                        .map(Self::$nav_wrap);
+                }
+                if let Some(rest) = s.strip_prefix("Search.") {
+                    return rest.parse::<$crate::core::keymap::SearchAction>()
+                        .map(Self::$search_wrap);
+                }
+                match s {
+                    $( stringify!($variant) => Ok(Self::$variant), )+
+                    _ => Err(format!("Unknown action: {s}")),
+                }
+            }
+        }
+    };
+    ($ty:ty, nav: $nav_wrap:ident, $( $variant:ident ),+ $(,)?) => {
+        impl std::str::FromStr for $ty {
+            type Err = String;
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                if let Some(rest) = s.strip_prefix("Nav.") {
+                    return rest.parse::<$crate::core::keymap::NavAction>()
+                        .map(Self::$nav_wrap);
+                }
+                match s {
+                    $( stringify!($variant) => Ok(Self::$variant), )+
+                    _ => Err(format!("Unknown action: {s}")),
+                }
+            }
+        }
+    };
+}
+
 /// Common navigation actions shared across list panes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NavAction {
@@ -212,6 +267,16 @@ pub enum NavAction {
     JumpTop,
     JumpBottom,
 }
+
+impl_action_from_str!(
+    NavAction,
+    MoveDown,
+    MoveUp,
+    HalfPageDown,
+    HalfPageUp,
+    JumpTop,
+    JumpBottom
+);
 
 impl ActionHelp for NavAction {
     fn label(&self) -> Option<&'static str> {
@@ -272,6 +337,8 @@ pub enum SearchAction {
     Prev,
 }
 
+impl_action_from_str!(SearchAction, Start, Next, Prev);
+
 impl ActionHelp for SearchAction {
     fn label(&self) -> Option<&'static str> {
         Some(match self {
@@ -318,6 +385,18 @@ pub enum ViewAction {
     CyclePaneForward,
     CyclePaneBackward,
 }
+
+impl_action_from_str!(
+    ViewAction,
+    Quit,
+    Help,
+    Refresh,
+    OpenEditor,
+    PrevTab,
+    NextTab,
+    CyclePaneForward,
+    CyclePaneBackward
+);
 
 impl ActionHelp for ViewAction {
     fn label(&self) -> Option<&'static str> {
@@ -480,5 +559,35 @@ mod tests {
     fn parse_invalid() {
         assert!("".parse::<KeyInput>().is_err());
         assert!("FooBar".parse::<KeyInput>().is_err());
+    }
+
+    #[test]
+    fn parse_nav_action() {
+        assert_eq!(
+            "MoveDown".parse::<NavAction>().unwrap(),
+            NavAction::MoveDown
+        );
+        assert_eq!("JumpTop".parse::<NavAction>().unwrap(), NavAction::JumpTop);
+        assert!("Unknown".parse::<NavAction>().is_err());
+    }
+
+    #[test]
+    fn parse_search_action() {
+        assert_eq!(
+            "Start".parse::<SearchAction>().unwrap(),
+            SearchAction::Start
+        );
+        assert_eq!("Prev".parse::<SearchAction>().unwrap(), SearchAction::Prev);
+        assert!("Unknown".parse::<SearchAction>().is_err());
+    }
+
+    #[test]
+    fn parse_view_action() {
+        assert_eq!("Quit".parse::<ViewAction>().unwrap(), ViewAction::Quit);
+        assert_eq!(
+            "CyclePaneForward".parse::<ViewAction>().unwrap(),
+            ViewAction::CyclePaneForward
+        );
+        assert!("Unknown".parse::<ViewAction>().is_err());
     }
 }

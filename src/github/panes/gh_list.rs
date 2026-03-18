@@ -26,6 +26,11 @@ pub enum GhListAction {
     Esc,
 }
 
+crate::impl_pane_action_from_str!(
+    GhListAction, nav: Nav, search: Search,
+    OpenDetail, SwitchTab, OpenBrowser, Esc
+);
+
 impl ActionHelp for GhListAction {
     fn label(&self) -> Option<&'static str> {
         match self {

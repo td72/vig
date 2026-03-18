@@ -15,6 +15,18 @@ pub enum BranchAction {
     DiffBase,
 }
 
+impl std::str::FromStr for BranchAction {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Switch" => Ok(Self::Switch),
+            "Delete" => Ok(Self::Delete),
+            "DiffBase" => Ok(Self::DiffBase),
+            _ => Err(format!("Unknown action: {s}")),
+        }
+    }
+}
+
 impl BranchAction {
     pub const ALL: [BranchAction; 3] = [
         BranchAction::Switch,
@@ -47,6 +59,22 @@ pub enum MenuAction {
     MoveUp,
     Confirm,
     Direct(BranchAction),
+}
+
+impl std::str::FromStr for MenuAction {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some(rest) = s.strip_prefix("Direct.") {
+            return rest.parse::<BranchAction>().map(Self::Direct);
+        }
+        match s {
+            "Close" => Ok(Self::Close),
+            "MoveDown" => Ok(Self::MoveDown),
+            "MoveUp" => Ok(Self::MoveUp),
+            "Confirm" => Ok(Self::Confirm),
+            _ => Err(format!("Unknown action: {s}")),
+        }
+    }
 }
 
 impl ActionHelp for MenuAction {
@@ -102,6 +130,11 @@ pub enum BranchListAction {
     Search(SearchAction),
     Esc,
 }
+
+crate::impl_pane_action_from_str!(
+    BranchListAction, nav: Nav, search: Search,
+    OpenActionMenu, FocusLog, Esc
+);
 
 impl ActionHelp for BranchListAction {
     fn label(&self) -> Option<&'static str> {

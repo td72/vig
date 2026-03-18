@@ -14,6 +14,11 @@ pub(crate) enum DiffScrollAction {
     Esc,
 }
 
+crate::impl_pane_action_from_str!(
+    DiffScrollAction, nav: Nav, search: Search,
+    ScrollLeft, ScrollRight, EnterNormalMode, Esc
+);
+
 impl ActionHelp for DiffScrollAction {
     fn label(&self) -> Option<&'static str> {
         match self {

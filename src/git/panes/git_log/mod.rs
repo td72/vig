@@ -23,6 +23,11 @@ pub enum GitLogAction {
     Esc,
 }
 
+crate::impl_pane_action_from_str!(
+    GitLogAction, nav: Nav, search: Search,
+    YankHash, OpenGitHub, FocusReflog, Esc
+);
+
 impl ActionHelp for GitLogAction {
     fn label(&self) -> Option<&'static str> {
         match self {

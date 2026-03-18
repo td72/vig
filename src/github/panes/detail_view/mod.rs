@@ -24,6 +24,11 @@ pub enum DetailAction {
     Esc,
 }
 
+crate::impl_pane_action_from_str!(
+    DetailAction, nav: Nav,
+    FocusBody, FocusRight, CycleForward, CycleBackward, ToggleWatch, OpenItem, Esc
+);
+
 impl ActionHelp for DetailAction {
     fn label(&self) -> Option<&'static str> {
         match self {
