@@ -1,6 +1,8 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{view_bindings, Keymap, ViewAction};
-use crate::core::layout::{resolve_layout, split_page_frame, LayoutNode, SplitDirection};
+use crate::core::layout::{
+    resolve_layout, split_page_frame, LayoutNode, PageLayoutConfig, SlotRule, SplitDirection,
+};
 use crate::core::page::PageAction;
 use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
@@ -24,28 +26,37 @@ pub const GH_PANE_PR_DETAIL: usize = 3;
 
 const GH_SLOT_DETAIL: usize = 0;
 
-fn default_gh_layout() -> LayoutNode {
-    LayoutNode::Split {
-        direction: SplitDirection::Vertical,
-        children: vec![
-            (
-                Constraint::Percentage(40),
-                LayoutNode::Split {
-                    direction: SplitDirection::Horizontal,
-                    children: vec![
-                        (
-                            Constraint::Percentage(50),
-                            LayoutNode::Pane(GH_PANE_ISSUE_LIST),
-                        ),
-                        (
-                            Constraint::Percentage(50),
-                            LayoutNode::Pane(GH_PANE_PR_LIST),
-                        ),
-                    ],
-                },
-            ),
-            (Constraint::Min(3), LayoutNode::Slot(GH_SLOT_DETAIL)),
-        ],
+fn default_gh_layout_config() -> PageLayoutConfig {
+    PageLayoutConfig {
+        tree: LayoutNode::Split {
+            direction: SplitDirection::Vertical,
+            children: vec![
+                (
+                    Constraint::Percentage(40),
+                    LayoutNode::Split {
+                        direction: SplitDirection::Horizontal,
+                        children: vec![
+                            (
+                                Constraint::Percentage(50),
+                                LayoutNode::Pane(GH_PANE_ISSUE_LIST),
+                            ),
+                            (
+                                Constraint::Percentage(50),
+                                LayoutNode::Pane(GH_PANE_PR_LIST),
+                            ),
+                        ],
+                    },
+                ),
+                (Constraint::Min(3), LayoutNode::Slot(GH_SLOT_DETAIL)),
+            ],
+        },
+        tab_panes: vec![GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST],
+        slot_rules: vec![SlotRule {
+            slot_id: GH_SLOT_DETAIL,
+            trigger_panes: vec![GH_PANE_PR_LIST, GH_PANE_PR_DETAIL],
+            then_pane: GH_PANE_PR_DETAIL,
+            default_pane: GH_PANE_ISSUE_DETAIL,
+        }],
     }
 }
 
@@ -132,8 +143,7 @@ pub struct GitHubState {
     bg_rx: Option<mpsc::Receiver<GhBgMessage>>,
     pub(crate) bg_tx: Option<mpsc::Sender<GhBgMessage>>,
     pub initialized: bool,
-    layout: LayoutNode,
-    tab_panes: Vec<usize>,
+    layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
 }
 
@@ -160,8 +170,7 @@ impl GitHubState {
             bg_rx: None,
             bg_tx: None,
             initialized: false,
-            layout: default_gh_layout(),
-            tab_panes: vec![GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST],
+            layout_config: default_gh_layout_config(),
             view_keymap: Keymap::new().bindings(view_bindings(|v| v)),
         }
     }
@@ -332,7 +341,10 @@ impl GitHubState {
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
         // View-level navigation (h/l tab switch)
         if let Some(action) = self.view_keymap.lookup(key) {
-            if let Some(events) = self.pane.dispatch_view_nav(*action, &self.tab_panes) {
+            if let Some(events) = self
+                .pane
+                .dispatch_view_nav(*action, &self.layout_config.tab_panes)
+            {
                 return events;
             }
         }
@@ -451,12 +463,8 @@ impl crate::core::app::PageState for GitHubState {
         let frame = split_page_frame(area);
         status_bar::render_gh_header(f, ctx, frame.header);
 
-        let detail_id = if self.is_on_pr_tab() {
-            GH_PANE_PR_DETAIL
-        } else {
-            GH_PANE_ISSUE_DETAIL
-        };
-        let areas = resolve_layout(frame.content, &self.layout, &[(GH_SLOT_DETAIL, detail_id)]);
+        let slots = self.layout_config.resolve_slots(self.pane.focused_pane);
+        let areas = resolve_layout(frame.content, &self.layout_config.tree, &slots);
         self.pane.render_panes(&mut self.panes, f, ctx, &areas);
 
         status_bar::render_gh_status_bar(f, ctx, self, frame.status_bar);

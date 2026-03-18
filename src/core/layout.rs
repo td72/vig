@@ -31,6 +31,44 @@ pub enum LayoutNode {
     },
 }
 
+/// Rule for resolving a `Slot` to a concrete pane at render time.
+///
+/// If the currently focused pane is in `trigger_panes`, the slot resolves to
+/// `then_pane`; otherwise it resolves to `default_pane`.
+pub struct SlotRule {
+    pub slot_id: usize,
+    pub trigger_panes: Vec<usize>,
+    pub then_pane: usize,
+    pub default_pane: usize,
+}
+
+/// Bundles a layout tree with its navigation and slot-resolution config.
+///
+/// This is the single source of truth for how a page's panes are arranged,
+/// cycled, and dynamically resolved — everything a future config file needs.
+pub struct PageLayoutConfig {
+    pub tree: LayoutNode,
+    pub tab_panes: Vec<usize>,
+    pub slot_rules: Vec<SlotRule>,
+}
+
+impl PageLayoutConfig {
+    /// Resolve all slots based on the currently focused pane.
+    pub fn resolve_slots(&self, focused_pane: usize) -> Vec<(usize, usize)> {
+        self.slot_rules
+            .iter()
+            .map(|r| {
+                let pane = if r.trigger_panes.contains(&focused_pane) {
+                    r.then_pane
+                } else {
+                    r.default_pane
+                };
+                (r.slot_id, pane)
+            })
+            .collect()
+    }
+}
+
 /// The common page frame: header (1 line) + content + status bar (1 line).
 pub struct PageFrame {
     pub header: Rect,
@@ -172,6 +210,50 @@ mod tests {
         let tree = LayoutNode::Slot(0);
         let result = resolve_layout(area, &tree, &[(0, 99)]);
         assert_eq!(result, vec![(99, area)]);
+    }
+
+    #[test]
+    fn slot_rule_trigger() {
+        let config = PageLayoutConfig {
+            tree: LayoutNode::Slot(0),
+            tab_panes: vec![0, 1],
+            slot_rules: vec![SlotRule {
+                slot_id: 0,
+                trigger_panes: vec![1, 3],
+                then_pane: 2,
+                default_pane: 4,
+            }],
+        };
+        // Focused on trigger pane → then_pane
+        assert_eq!(config.resolve_slots(1), vec![(0, 2)]);
+        assert_eq!(config.resolve_slots(3), vec![(0, 2)]);
+        // Focused on non-trigger pane → default_pane
+        assert_eq!(config.resolve_slots(0), vec![(0, 4)]);
+        assert_eq!(config.resolve_slots(99), vec![(0, 4)]);
+    }
+
+    #[test]
+    fn multiple_slot_rules() {
+        let config = PageLayoutConfig {
+            tree: LayoutNode::Pane(0),
+            tab_panes: vec![],
+            slot_rules: vec![
+                SlotRule {
+                    slot_id: 0,
+                    trigger_panes: vec![1],
+                    then_pane: 10,
+                    default_pane: 20,
+                },
+                SlotRule {
+                    slot_id: 1,
+                    trigger_panes: vec![2],
+                    then_pane: 30,
+                    default_pane: 40,
+                },
+            ],
+        };
+        assert_eq!(config.resolve_slots(1), vec![(0, 10), (1, 40)]);
+        assert_eq!(config.resolve_slots(2), vec![(0, 20), (1, 30)]);
     }
 
     #[test]
