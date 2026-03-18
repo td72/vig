@@ -1,15 +1,55 @@
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
+use crate::core::keymap::{nav_bindings, ActionHelp, Keymap, NavAction};
 use crate::core::pane::{Pane, PaneEvent, PaneShared, SubPaneScroll};
 use crate::github::domain::types::*;
 use crate::github::domain::{client, disk_cache};
 use crate::github::state::{GhBgMessage, GhDetailContent, GhDetailKind, GhDetailPane};
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{layout::Rect, Frame};
 use std::collections::HashMap;
 use std::sync::mpsc;
 use std::time::{Instant, SystemTime};
+
+#[derive(Debug, Clone)]
+pub enum DetailAction {
+    Nav(NavAction),
+    FocusBody,
+    FocusRight,
+    CycleForward,
+    CycleBackward,
+    ToggleWatch,
+    OpenItem,
+    Esc,
+}
+
+impl ActionHelp for DetailAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            DetailAction::Nav(nav) => nav.label(),
+            DetailAction::FocusBody => Some("Body pane"),
+            DetailAction::FocusRight => Some("Right pane"),
+            DetailAction::CycleForward => Some("Next right pane"),
+            DetailAction::CycleBackward => Some("Prev right pane"),
+            DetailAction::ToggleWatch => Some("Toggle watch mode"),
+            DetailAction::OpenItem => Some("Open in browser"),
+            DetailAction::Esc => Some("Back to list"),
+        }
+    }
+}
+
+pub fn default_keymap() -> Keymap<DetailAction> {
+    Keymap::new()
+        .bindings(nav_bindings(DetailAction::Nav))
+        .key(KeyCode::Char('h'), DetailAction::FocusBody)
+        .key(KeyCode::Char('l'), DetailAction::FocusRight)
+        .key(KeyCode::Tab, DetailAction::CycleForward)
+        .key(KeyCode::BackTab, DetailAction::CycleBackward)
+        .key(KeyCode::Char('w'), DetailAction::ToggleWatch)
+        .key(KeyCode::Char('o'), DetailAction::OpenItem)
+        .key(KeyCode::Esc, DetailAction::Esc)
+}
 
 pub struct GhDetailViewPane {
     pub pane_id: usize,
@@ -28,6 +68,7 @@ pub struct GhDetailViewPane {
     watch_last_update: Option<SystemTime>,
     watch_in_flight_since: Option<Instant>,
     pub watch_error: Option<String>,
+    keymap: Keymap<DetailAction>,
 }
 
 impl GhDetailViewPane {
@@ -48,6 +89,7 @@ impl GhDetailViewPane {
             watch_last_update: None,
             watch_in_flight_since: None,
             watch_error: None,
+            keymap: default_keymap(),
         }
     }
 
@@ -295,9 +337,103 @@ impl GhDetailViewPane {
     }
 
     fn handle_key_impl(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+        let action = match self.keymap.lookup(key) {
+            Some(a) => a.clone(),
+            None => return vec![],
+        };
+        self.execute(shared, action)
+    }
+
+    fn execute(&mut self, shared: &PaneShared, action: DetailAction) -> Vec<PaneEvent> {
         // Determine item count for selection-based panes
         let pane = self.active_pane;
-        let item_count = match pane {
+        let item_count = self.active_item_count();
+        let selectable = pane != GhDetailPane::Body;
+
+        match action {
+            DetailAction::Nav(NavAction::MoveDown) => {
+                if selectable && item_count > 0 {
+                    let s = self.active_scroll_mut();
+                    if s.selected_idx + 1 < item_count {
+                        s.selected_idx += 1;
+                        s.scroll_y = 0;
+                    } else {
+                        s.scroll_y = s.scroll_y.saturating_add(1);
+                    }
+                } else if !selectable {
+                    let s = self.active_scroll_mut();
+                    s.scroll_y = s.scroll_y.saturating_add(1);
+                }
+            }
+            DetailAction::Nav(NavAction::MoveUp) => {
+                if selectable {
+                    let s = self.active_scroll_mut();
+                    if s.scroll_y > 0 {
+                        s.scroll_y -= 1;
+                    } else {
+                        s.selected_idx = s.selected_idx.saturating_sub(1);
+                    }
+                } else {
+                    let s = self.active_scroll_mut();
+                    s.scroll_y = s.scroll_y.saturating_sub(1);
+                }
+            }
+            DetailAction::Nav(NavAction::HalfPageDown) => {
+                let half = (self.view_height / 2).max(1);
+                let s = self.active_scroll_mut();
+                s.scroll_y = s.scroll_y.saturating_add(half);
+            }
+            DetailAction::Nav(NavAction::HalfPageUp) => {
+                let half = (self.view_height / 2).max(1);
+                let s = self.active_scroll_mut();
+                s.scroll_y = s.scroll_y.saturating_sub(half);
+            }
+            DetailAction::Nav(NavAction::JumpTop) => {
+                let s = self.active_scroll_mut();
+                if selectable {
+                    s.selected_idx = 0;
+                }
+                s.scroll_y = 0;
+            }
+            DetailAction::Nav(NavAction::JumpBottom) => {
+                let s = self.active_scroll_mut();
+                if selectable && item_count > 0 {
+                    s.selected_idx = item_count - 1;
+                }
+                if !selectable || item_count > 0 {
+                    s.scroll_y = u16::MAX / 2;
+                }
+            }
+            DetailAction::FocusBody => {
+                self.active_pane = GhDetailPane::Body;
+            }
+            DetailAction::FocusRight => match self.active_pane {
+                GhDetailPane::Body => {
+                    if self.is_pr() {
+                        self.active_pane = GhDetailPane::Status;
+                    } else {
+                        self.active_pane = GhDetailPane::Comments;
+                    }
+                }
+                _ => self.cycle_right_pane_forward(),
+            },
+            DetailAction::CycleForward => self.cycle_right_pane_forward(),
+            DetailAction::CycleBackward => self.cycle_right_pane_backward(),
+            DetailAction::ToggleWatch => {
+                self.toggle_watch_mode();
+            }
+            DetailAction::OpenItem => {
+                return self.open_detail_item();
+            }
+            DetailAction::Esc => {
+                return vec![PaneEvent::SetFocus(shared.previous_pane)];
+            }
+        }
+        vec![]
+    }
+
+    fn active_item_count(&self) -> usize {
+        match self.active_pane {
             GhDetailPane::Status => {
                 if let GhDetailContent::Pr(ref detail) = self.content {
                     view::sorted_checks(detail).len()
@@ -317,92 +453,8 @@ impl GhDetailViewPane {
                 GhDetailContent::Pr(detail) => detail.comments.len(),
                 _ => 0,
             },
-            GhDetailPane::Body => 0, // scroll-based
-        };
-        let selectable = pane != GhDetailPane::Body;
-
-        match key.code {
-            KeyCode::Char('j') | KeyCode::Down => {
-                if selectable && item_count > 0 {
-                    let s = self.active_scroll_mut();
-                    if s.selected_idx + 1 < item_count {
-                        s.selected_idx += 1;
-                        s.scroll_y = 0;
-                    } else {
-                        s.scroll_y = s.scroll_y.saturating_add(1);
-                    }
-                } else if !selectable {
-                    let s = self.active_scroll_mut();
-                    s.scroll_y = s.scroll_y.saturating_add(1);
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if selectable {
-                    let s = self.active_scroll_mut();
-                    if s.scroll_y > 0 {
-                        s.scroll_y -= 1;
-                    } else {
-                        s.selected_idx = s.selected_idx.saturating_sub(1);
-                    }
-                } else {
-                    let s = self.active_scroll_mut();
-                    s.scroll_y = s.scroll_y.saturating_sub(1);
-                }
-            }
-            KeyCode::Char('d') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.view_height / 2).max(1);
-                let s = self.active_scroll_mut();
-                s.scroll_y = s.scroll_y.saturating_add(half);
-            }
-            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                let half = (self.view_height / 2).max(1);
-                let s = self.active_scroll_mut();
-                s.scroll_y = s.scroll_y.saturating_sub(half);
-            }
-            KeyCode::Char('g') => {
-                let s = self.active_scroll_mut();
-                if selectable {
-                    s.selected_idx = 0;
-                }
-                s.scroll_y = 0;
-            }
-            KeyCode::Char('G') => {
-                let s = self.active_scroll_mut();
-                if selectable && item_count > 0 {
-                    s.selected_idx = item_count - 1;
-                }
-                if !selectable || item_count > 0 {
-                    s.scroll_y = u16::MAX / 2;
-                }
-            }
-            KeyCode::Char('h') => {
-                self.active_pane = GhDetailPane::Body;
-            }
-            KeyCode::Char('l') => match self.active_pane {
-                GhDetailPane::Body => {
-                    if self.is_pr() {
-                        self.active_pane = GhDetailPane::Status;
-                    } else {
-                        self.active_pane = GhDetailPane::Comments;
-                    }
-                }
-                _ => self.cycle_right_pane_forward(),
-            },
-            KeyCode::Tab => self.cycle_right_pane_forward(),
-            KeyCode::BackTab => self.cycle_right_pane_backward(),
-            KeyCode::Char('w') => {
-                self.toggle_watch_mode();
-                return vec![];
-            }
-            KeyCode::Char('o') => {
-                return self.open_detail_item();
-            }
-            KeyCode::Esc => {
-                return vec![PaneEvent::SetFocus(shared.previous_pane)];
-            }
-            _ => {}
+            GhDetailPane::Body => 0,
         }
-        vec![]
     }
 
     fn open_detail_item(&self) -> Vec<PaneEvent> {

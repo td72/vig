@@ -393,18 +393,12 @@ impl crate::core::app::PageState for GitHubState {
 
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
+        use crate::github::panes::detail_view;
 
         let s = |k: &str, v: &str| (k.to_string(), v.to_string());
         let mut entries = vec![
             s("1 / 2", "Switch view"),
-            s("Esc", "Back to list"),
-            s("h / l", "Body ↔ Right pane (detail)"),
-            s("Tab / S-Tab", "Cycle right panes (detail)"),
-            s("Ctrl+d", "Half page down (detail)"),
-            s("Ctrl+u", "Half page up (detail)"),
-            s("g / G", "Top / Bottom"),
             s("r", "Refresh data"),
-            s("w", "Toggle watch mode (PR)"),
             s("?", "Toggle help"),
             s("q", "Quit"),
         ];
@@ -413,6 +407,8 @@ impl crate::core::app::PageState for GitHubState {
         entries.extend(help_section("Pull Requests"));
         entries
             .extend(crate::github::panes::gh_list::default_keymap(KeyCode::BackTab).help_entries());
+        entries.extend(help_section("Detail View"));
+        entries.extend(detail_view::default_keymap().help_entries());
         entries
     }
 
