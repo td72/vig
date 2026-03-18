@@ -31,7 +31,12 @@ fn page_tab_spans(ctx: &AppContext) -> Vec<Span<'static>> {
     spans
 }
 
-pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
+fn render_header_common(
+    f: &mut Frame,
+    ctx: &AppContext,
+    context_spans: Vec<Span<'static>>,
+    area: Rect,
+) {
     let mut spans = vec![
         Span::styled(
             " vig ",
@@ -41,56 +46,48 @@ pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect
                 .add_modifier(Modifier::BOLD),
         ),
         Span::raw(" "),
-        Span::styled(
-            format!(" {} ", git.diff_meta.branch_name),
-            Style::default().fg(Color::Black).bg(Color::Magenta),
-        ),
     ];
-
-    {
-        let base_label = match &git.diff_base_ref {
-            Some(base) => format!(" vs {base} "),
-            None => " vs HEAD ".to_string(),
-        };
-        spans.push(Span::raw(" "));
-        spans.push(Span::styled(
-            base_label,
-            Style::default().fg(Color::Black).bg(Color::Yellow),
-        ));
-    }
-
+    spans.extend(context_spans);
     spans.extend(page_tab_spans(ctx));
-
     spans.push(Span::raw("  "));
     spans.push(Span::styled("? help", Style::default().fg(Color::DarkGray)));
 
-    let title = Line::from(spans);
-    f.render_widget(Paragraph::new(title), area);
+    f.render_widget(Paragraph::new(Line::from(spans)), area);
+}
+
+pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
+    let base_label = match &git.diff_base_ref {
+        Some(base) => format!(" vs {base} "),
+        None => " vs HEAD ".to_string(),
+    };
+    render_header_common(
+        f,
+        ctx,
+        vec![
+            Span::styled(
+                format!(" {} ", git.diff_meta.branch_name),
+                Style::default().fg(Color::Black).bg(Color::Magenta),
+            ),
+            Span::raw(" "),
+            Span::styled(
+                base_label,
+                Style::default().fg(Color::Black).bg(Color::Yellow),
+            ),
+        ],
+        area,
+    );
 }
 
 pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
-    let mut spans = vec![
-        Span::styled(
-            " vig ",
-            Style::default()
-                .fg(Color::Black)
-                .bg(Color::Cyan)
-                .add_modifier(Modifier::BOLD),
-        ),
-        Span::raw(" "),
-        Span::styled(
+    render_header_common(
+        f,
+        ctx,
+        vec![Span::styled(
             " GitHub ",
             Style::default().fg(Color::Black).bg(Color::Rgb(36, 41, 47)),
-        ),
-    ];
-
-    spans.extend(page_tab_spans(ctx));
-
-    spans.push(Span::raw("  "));
-    spans.push(Span::styled("? help", Style::default().fg(Color::DarkGray)));
-
-    let title = Line::from(spans);
-    f.render_widget(Paragraph::new(title), area);
+        )],
+        area,
+    );
 }
 
 pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
