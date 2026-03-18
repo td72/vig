@@ -18,8 +18,6 @@ pub enum GraphCell {
 #[derive(Debug, Clone)]
 pub struct GraphRow {
     pub cells: Vec<GraphCell>,
-    #[allow(dead_code)]
-    pub commit_col: usize,
     pub colors: Vec<usize>,
     /// For each cell, the commit index that originated the pipe passing through it.
     pub from_indices: Vec<Option<usize>>,
@@ -229,7 +227,6 @@ pub fn build_graph(commits: &[CommitInfo]) -> Vec<GraphRow> {
 
         rows.push(GraphRow {
             cells,
-            commit_col,
             colors,
             from_indices,
         });

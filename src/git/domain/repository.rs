@@ -243,11 +243,6 @@ impl Repo {
         }
         changes
     }
-
-    #[allow(dead_code)]
-    pub fn inner(&self) -> &Repository {
-        &self.inner
-    }
 }
 
 fn epoch_to_date(epoch: i64) -> String {
