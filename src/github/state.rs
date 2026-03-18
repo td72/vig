@@ -1,5 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{view_bindings, Keymap, ViewAction};
+use crate::core::layout::{resolve_layout, split_page_frame, LayoutNode, SplitDirection};
 use crate::core::page::PageAction;
 use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
@@ -12,13 +13,41 @@ use crate::github::panes::issue_list::{self, GhIssueListPane};
 use crate::github::panes::pr_list::{self, GhPrListPane};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::{layout::Rect, Frame};
+use ratatui::layout::{Constraint, Rect};
+use ratatui::Frame;
 use std::sync::mpsc;
 
 pub const GH_PANE_ISSUE_LIST: usize = 0;
 pub const GH_PANE_PR_LIST: usize = 1;
 pub const GH_PANE_ISSUE_DETAIL: usize = 2;
 pub const GH_PANE_PR_DETAIL: usize = 3;
+
+const GH_SLOT_DETAIL: usize = 0;
+
+fn default_gh_layout() -> LayoutNode {
+    LayoutNode::Split {
+        direction: SplitDirection::Vertical,
+        children: vec![
+            (
+                Constraint::Percentage(40),
+                LayoutNode::Split {
+                    direction: SplitDirection::Horizontal,
+                    children: vec![
+                        (
+                            Constraint::Percentage(50),
+                            LayoutNode::Pane(GH_PANE_ISSUE_LIST),
+                        ),
+                        (
+                            Constraint::Percentage(50),
+                            LayoutNode::Pane(GH_PANE_PR_LIST),
+                        ),
+                    ],
+                },
+            ),
+            (Constraint::Min(3), LayoutNode::Slot(GH_SLOT_DETAIL)),
+        ],
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum GhDetailContent {
@@ -103,6 +132,8 @@ pub struct GitHubState {
     bg_rx: Option<mpsc::Receiver<GhBgMessage>>,
     pub(crate) bg_tx: Option<mpsc::Sender<GhBgMessage>>,
     pub initialized: bool,
+    layout: LayoutNode,
+    tab_panes: Vec<usize>,
     view_keymap: Keymap<ViewAction>,
 }
 
@@ -129,6 +160,8 @@ impl GitHubState {
             bg_rx: None,
             bg_tx: None,
             initialized: false,
+            layout: default_gh_layout(),
+            tab_panes: vec![GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST],
             view_keymap: Keymap::new().bindings(view_bindings(|v| v)),
         }
     }
@@ -294,14 +327,12 @@ impl GitHubState {
         }
     }
 
-    const TAB_PANES: [usize; 2] = [GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST];
-
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
         // View-level navigation (h/l tab switch)
         if let Some(action) = self.view_keymap.lookup(key) {
-            if let Some(events) = self.pane.dispatch_view_nav(*action, &Self::TAB_PANES) {
+            if let Some(events) = self.pane.dispatch_view_nav(*action, &self.tab_panes) {
                 return events;
             }
         }
@@ -417,18 +448,18 @@ impl crate::core::app::PageState for GitHubState {
     }
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
-        let gl = crate::github::layout::compute_gh_layout(area);
-        status_bar::render_gh_header(f, ctx, gl.header);
+        let frame = split_page_frame(area);
+        status_bar::render_gh_header(f, ctx, frame.header);
 
         let detail_id = if self.is_on_pr_tab() {
             GH_PANE_PR_DETAIL
         } else {
             GH_PANE_ISSUE_DETAIL
         };
-        self.pane
-            .render_panes(&mut self.panes, f, ctx, &gl.pane_areas(detail_id));
+        let areas = resolve_layout(frame.content, &self.layout, &[(GH_SLOT_DETAIL, detail_id)]);
+        self.pane.render_panes(&mut self.panes, f, ctx, &areas);
 
-        status_bar::render_gh_status_bar(f, ctx, self, gl.status_bar);
+        status_bar::render_gh_status_bar(f, ctx, self, frame.status_bar);
     }
 
     fn intercepts_all_keys(&self) -> bool {

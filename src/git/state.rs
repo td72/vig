@@ -1,5 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{view_bindings, Keymap, ViewAction};
+use crate::core::layout::{resolve_layout, split_page_frame, LayoutNode, SplitDirection};
 use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
 use crate::core::pane::{self, Pane, PaneSet, PaneShared};
@@ -9,11 +10,11 @@ use crate::core::ui::status_bar;
 use crate::git::domain::diff::{DiffMeta, FileDiff};
 use crate::git::domain::repository::Repo;
 use crate::git::domain::search;
-use crate::git::layout;
 use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogPane, ReflogPane};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::{layout::Rect, Frame};
+use ratatui::layout::{Constraint, Rect};
+use ratatui::Frame;
 use std::path::Path;
 use std::rc::Rc;
 
@@ -24,6 +25,31 @@ pub const PANE_REFLOG: usize = 3;
 pub const PANE_DIFF_VIEW: usize = 4;
 
 use crate::git::panes::diff_view::DiffViewMode;
+
+const SLOT_MAIN: usize = 0;
+
+fn default_layout() -> LayoutNode {
+    LayoutNode::Split {
+        direction: SplitDirection::Vertical,
+        children: vec![
+            (
+                Constraint::Percentage(40),
+                LayoutNode::Split {
+                    direction: SplitDirection::Horizontal,
+                    children: vec![
+                        (Constraint::Length(30), LayoutNode::Pane(PANE_FILE_TREE)),
+                        (
+                            Constraint::Percentage(35),
+                            LayoutNode::Pane(PANE_BRANCH_LIST),
+                        ),
+                        (Constraint::Min(20), LayoutNode::Pane(PANE_REFLOG)),
+                    ],
+                },
+            ),
+            (Constraint::Min(3), LayoutNode::Slot(SLOT_MAIN)),
+        ],
+    }
+}
 
 // === Tab type aliases ===
 
@@ -113,6 +139,8 @@ pub struct GitState {
     pub repo: Repo,
     pub diff_meta: DiffMeta,
     pub diff_base_ref: Option<String>,
+    layout: LayoutNode,
+    tab_panes: Vec<usize>,
     view_keymap: Keymap<ViewAction>,
 }
 
@@ -145,6 +173,8 @@ impl GitState {
                 file_count: files.len(),
             },
             diff_base_ref: None,
+            layout: default_layout(),
+            tab_panes: vec![PANE_FILE_TREE, PANE_BRANCH_LIST, PANE_REFLOG],
             view_keymap: default_view_keymap(),
         };
         state.panes.file_tab.on_files_changed(None);
@@ -199,8 +229,6 @@ impl GitState {
         self.panes.reflog.load(&self.repo);
     }
 
-    const TAB_PANES: [usize; 3] = [PANE_FILE_TREE, PANE_BRANCH_LIST, PANE_REFLOG];
-
     fn is_commit_log_detail(focused: usize) -> bool {
         matches!(focused, PANE_BRANCH_LIST | PANE_REFLOG | PANE_GIT_LOG)
     }
@@ -210,7 +238,7 @@ impl GitState {
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
         // View-level navigation (h/l tab switch, Tab/BackTab cycle)
         if let Some(action) = self.view_keymap.lookup(key) {
-            if let Some(events) = self.pane.dispatch_view_nav(*action, &Self::TAB_PANES) {
+            if let Some(events) = self.pane.dispatch_view_nav(*action, &self.tab_panes) {
                 return events;
             }
         }
@@ -404,18 +432,18 @@ impl crate::core::app::PageState for GitState {
     }
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
-        let ly = layout::compute_layout(area);
-        status_bar::render_header(f, ctx, self, ly.header);
+        let frame = split_page_frame(area);
+        status_bar::render_header(f, ctx, self, frame.header);
 
-        let main_idx = if Self::is_commit_log_detail(self.pane.focused_pane) {
+        let main_id = if Self::is_commit_log_detail(self.pane.focused_pane) {
             PANE_GIT_LOG
         } else {
             PANE_DIFF_VIEW
         };
-        self.pane
-            .render_panes(&mut self.panes, f, ctx, &ly.pane_areas(main_idx));
+        let areas = resolve_layout(frame.content, &self.layout, &[(SLOT_MAIN, main_id)]);
+        self.pane.render_panes(&mut self.panes, f, ctx, &areas);
 
-        status_bar::render_status_bar(f, ctx, self, ly.status_bar);
+        status_bar::render_status_bar(f, ctx, self, frame.status_bar);
 
         if self.panes.branch_tab.list.action_menu.is_some() {
             self.panes.branch_tab.list.render_action_menu(f, area);
