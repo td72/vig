@@ -64,6 +64,30 @@ impl GhDetailViewPane {
         }
     }
 
+    /// Cycle right-side panes forward (Status → Reviews → Comments → Status).
+    fn cycle_right_pane_forward(&mut self) {
+        if self.is_pr() {
+            self.active_pane = match self.active_pane {
+                GhDetailPane::Status => GhDetailPane::Reviews,
+                GhDetailPane::Reviews => GhDetailPane::Comments,
+                GhDetailPane::Comments => GhDetailPane::Status,
+                other => other,
+            };
+        }
+    }
+
+    /// Cycle right-side panes backward (Status → Comments → Reviews → Status).
+    fn cycle_right_pane_backward(&mut self) {
+        if self.is_pr() {
+            self.active_pane = match self.active_pane {
+                GhDetailPane::Status => GhDetailPane::Comments,
+                GhDetailPane::Reviews => GhDetailPane::Status,
+                GhDetailPane::Comments => GhDetailPane::Reviews,
+                other => other,
+            };
+        }
+    }
+
     pub fn reset_sub_panes(&mut self) {
         self.active_pane = GhDetailPane::Body;
         self.body.reset();
@@ -354,47 +378,18 @@ impl GhDetailViewPane {
             KeyCode::Char('h') => {
                 self.active_pane = GhDetailPane::Body;
             }
-            KeyCode::Char('l') => {
-                match self.active_pane {
-                    GhDetailPane::Body => {
-                        if self.is_pr() {
-                            self.active_pane = GhDetailPane::Status;
-                        } else {
-                            self.active_pane = GhDetailPane::Comments;
-                        }
+            KeyCode::Char('l') => match self.active_pane {
+                GhDetailPane::Body => {
+                    if self.is_pr() {
+                        self.active_pane = GhDetailPane::Status;
+                    } else {
+                        self.active_pane = GhDetailPane::Comments;
                     }
-                    _ if self.is_pr() => {
-                        // Cycle right panes like Tab
-                        self.active_pane = match self.active_pane {
-                            GhDetailPane::Status => GhDetailPane::Reviews,
-                            GhDetailPane::Reviews => GhDetailPane::Comments,
-                            GhDetailPane::Comments => GhDetailPane::Status,
-                            other => other,
-                        };
-                    }
-                    _ => {}
                 }
-            }
-            KeyCode::Tab => {
-                if self.is_pr() {
-                    self.active_pane = match self.active_pane {
-                        GhDetailPane::Status => GhDetailPane::Reviews,
-                        GhDetailPane::Reviews => GhDetailPane::Comments,
-                        GhDetailPane::Comments => GhDetailPane::Status,
-                        other => other,
-                    };
-                }
-            }
-            KeyCode::BackTab => {
-                if self.is_pr() {
-                    self.active_pane = match self.active_pane {
-                        GhDetailPane::Status => GhDetailPane::Comments,
-                        GhDetailPane::Reviews => GhDetailPane::Status,
-                        GhDetailPane::Comments => GhDetailPane::Reviews,
-                        other => other,
-                    };
-                }
-            }
+                _ => self.cycle_right_pane_forward(),
+            },
+            KeyCode::Tab => self.cycle_right_pane_forward(),
+            KeyCode::BackTab => self.cycle_right_pane_backward(),
             KeyCode::Char('w') => {
                 self.toggle_watch_mode();
                 return vec![];
