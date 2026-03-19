@@ -84,6 +84,12 @@ impl DiffViewPane {
         }
     }
 
+    /// Returns true when the pane is in a mode that intercepts all keys
+    /// (Normal/Visual), meaning view-level keybindings should not apply.
+    pub fn intercepts_keys(&self) -> bool {
+        self.vim.mode != DiffViewMode::Scroll
+    }
+
     pub fn set_file(&mut self, idx: Option<usize>) {
         self.current_file_idx = idx;
     }
@@ -95,6 +101,14 @@ impl DiffViewPane {
     pub fn reset_scroll(&mut self) {
         self.scroll.y = 0;
         self.scroll.x = 0;
+    }
+
+    /// Set the current file and reset scroll/highlight state for a fresh view.
+    pub fn reset_to_file(&mut self, idx: Option<usize>) {
+        self.current_file_idx = idx;
+        self.scroll.y = 0;
+        self.scroll.x = 0;
+        self.highlight.reset();
     }
 
     pub fn current_file(&self) -> Option<&FileDiff> {

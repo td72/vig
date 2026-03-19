@@ -26,8 +26,6 @@ pub const PANE_GIT_LOG: usize = 2;
 pub const PANE_REFLOG: usize = 3;
 pub const PANE_DIFF_VIEW: usize = 4;
 
-use crate::git::panes::diff_view::DiffViewMode;
-
 const SLOT_MAIN: usize = 0;
 
 fn default_layout_config() -> PageLayoutConfig {
@@ -78,10 +76,7 @@ impl FileTab {
     /// Restores selection, resets DiffView, and spawns background highlighting.
     pub fn on_files_changed(&mut self, old_path: Option<String>) {
         self.list.restore_selection(old_path);
-        self.detail.current_file_idx = self.list.selected_file_idx();
-        self.detail.scroll.y = 0;
-        self.detail.scroll.x = 0;
-        self.detail.highlight.reset();
+        self.detail.reset_to_file(self.list.selected_file_idx());
         let file_data: Vec<_> = self
             .list
             .files
@@ -341,8 +336,7 @@ impl GitState {
 
     pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // In Normal/Visual modes, keys are handled by the mode handler exclusively
-        if self.pane.focused_pane == PANE_DIFF_VIEW
-            && self.panes.file_tab.detail.vim.mode != DiffViewMode::Scroll
+        if self.pane.focused_pane == PANE_DIFF_VIEW && self.panes.file_tab.detail.intercepts_keys()
         {
             let events = self.dispatch_key(key);
             return self.process_events(ctx, events);
@@ -449,13 +443,13 @@ impl crate::core::app::PageState for GitState {
 
         status_bar::render_status_bar(f, ctx, self, frame.status_bar);
 
-        if self.panes.branch_tab.list.action_menu.is_some() {
+        if self.panes.branch_tab.list.is_modal() {
             self.panes.branch_tab.list.render_action_menu(f, area);
         }
     }
 
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active || self.panes.branch_tab.list.action_menu.is_some()
+        self.pane.search.active || self.panes.branch_tab.list.is_modal()
     }
 
     fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {

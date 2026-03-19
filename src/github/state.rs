@@ -221,8 +221,8 @@ impl GitHubState {
                     Err(e) => {
                         self.gh_available = Some(false);
                         self.gh_error = Some(e);
-                        self.panes.issue_tab.list.loading = false;
-                        self.panes.pr_tab.list.loading = false;
+                        self.panes.issue_tab.list.set_loading(false);
+                        self.panes.pr_tab.list.set_loading(false);
                     }
                 },
                 GhBgMessage::IssueList(result) => {
@@ -255,7 +255,7 @@ impl GitHubState {
                 }
                 GhBgMessage::IssueDetail(result) => match result {
                     Ok(detail) => self.panes.issue_tab.detail.apply_issue_detail(detail),
-                    Err(e) => self.panes.issue_tab.detail.content = GhDetailContent::Error(e),
+                    Err(e) => self.panes.issue_tab.detail.set_error(e),
                 },
                 GhBgMessage::PrDetail(result) => {
                     self.panes.pr_tab.detail.apply_pr_detail_result(result);
@@ -290,18 +290,12 @@ impl GitHubState {
 
     /// Refresh only the currently displayed detail item (cache-bust + re-fetch).
     pub fn refresh_detail(&mut self) {
-        let dv = if self.is_on_pr_tab() {
-            &self.panes.pr_tab.detail
+        let info = if self.is_on_pr_tab() {
+            self.panes.pr_tab.detail.current_detail_info()
         } else {
-            &self.panes.issue_tab.detail
+            self.panes.issue_tab.detail.current_detail_info()
         };
-        let action = match &dv.content {
-            GhDetailContent::Issue(detail) => Some((GhDetailKind::Issue, detail.number)),
-            GhDetailContent::Pr(detail) => Some((GhDetailKind::Pr, detail.number)),
-            GhDetailContent::Loading { kind, number } => Some((*kind, *number)),
-            GhDetailContent::Error(_) | GhDetailContent::None => None,
-        };
-        match action {
+        match info {
             None => self.sync_active_detail(),
             Some((kind, number)) => {
                 if let Some(tx) = &self.bg_tx {

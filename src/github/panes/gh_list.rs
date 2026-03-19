@@ -100,6 +100,11 @@ impl<T: GhListItem> GhListPane<T> {
         }
     }
 
+    /// Set the loading state (e.g. when auth fails and loading should stop).
+    pub fn set_loading(&mut self, loading: bool) {
+        self.loading = loading;
+    }
+
     pub fn selected_number(&self) -> Option<u64> {
         self.items.get(self.selected_idx).map(|i| i.number())
     }

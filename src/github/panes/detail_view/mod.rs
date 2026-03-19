@@ -98,6 +98,21 @@ impl GhDetailViewPane {
         }
     }
 
+    /// Set the content to an error state.
+    pub fn set_error(&mut self, msg: String) {
+        self.content = GhDetailContent::Error(msg);
+    }
+
+    /// Return the kind and number of the currently displayed or loading item, if any.
+    pub fn current_detail_info(&self) -> Option<(GhDetailKind, u64)> {
+        match &self.content {
+            GhDetailContent::Issue(detail) => Some((GhDetailKind::Issue, detail.number)),
+            GhDetailContent::Pr(detail) => Some((GhDetailKind::Pr, detail.number)),
+            GhDetailContent::Loading { kind, number } => Some((*kind, *number)),
+            GhDetailContent::Error(_) | GhDetailContent::None => None,
+        }
+    }
+
     pub fn is_pr(&self) -> bool {
         matches!(&self.content, GhDetailContent::Pr(_))
     }
