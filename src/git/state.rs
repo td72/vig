@@ -77,13 +77,7 @@ impl FileTab {
     pub fn on_files_changed(&mut self, old_path: Option<String>) {
         self.list.restore_selection(old_path);
         self.detail.reset_to_file(self.list.selected_file_idx());
-        let file_data: Vec<_> = self
-            .list
-            .files
-            .iter()
-            .filter(|f| !f.is_binary)
-            .map(|f| f.highlight_data())
-            .collect();
+        let file_data = self.list.highlight_file_data();
         self.detail.highlight.spawn_bg_highlight(file_data);
     }
 }

@@ -80,6 +80,16 @@ impl FileTreePane {
         self.files = files;
     }
 
+    /// Collect highlight data for all non-binary files.
+    #[allow(clippy::type_complexity)]
+    pub fn highlight_file_data(&self) -> Vec<(String, Vec<String>, Vec<String>, Vec<usize>)> {
+        self.files
+            .iter()
+            .filter(|f| !f.is_binary)
+            .map(|f| f.highlight_data())
+            .collect()
+    }
+
     /// Restore selection to the file at `old_path` after a file list change,
     /// or clamp to valid bounds.
     pub fn restore_selection(&mut self, old_path: Option<String>) {

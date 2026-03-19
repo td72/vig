@@ -226,7 +226,7 @@ impl GitHubState {
                     }
                 },
                 GhBgMessage::IssueList(result) => {
-                    self.panes.issue_tab.list.loading = false;
+                    self.panes.issue_tab.list.set_loading(false);
                     match result {
                         Ok(issues) => {
                             self.panes.issue_tab.list.apply_list(issues);
@@ -240,7 +240,7 @@ impl GitHubState {
                     }
                 }
                 GhBgMessage::PrList(result) => {
-                    self.panes.pr_tab.list.loading = false;
+                    self.panes.pr_tab.list.set_loading(false);
                     match result {
                         Ok(prs) => {
                             self.panes.pr_tab.list.apply_list(prs);
