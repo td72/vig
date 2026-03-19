@@ -333,18 +333,12 @@ impl GitHubState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        // View-level navigation (h/l tab switch)
-        if let Some(action) = self.view_keymap.lookup(key) {
-            if let Some(events) = self
-                .pane
-                .dispatch_view_nav(*action, &self.layout_config.tab_panes)
-            {
-                return events;
-            }
-        }
-
-        // Per-pane delegation (dynamic dispatch)
-        self.pane.dispatch_to_pane(&mut self.panes, key)
+        self.pane.dispatch_key(
+            &mut self.panes,
+            &self.view_keymap,
+            &self.layout_config.tab_panes,
+            key,
+        )
     }
 
     // === Event processing ===
@@ -450,6 +444,11 @@ impl crate::core::app::PageState for GitHubState {
     }
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        // Search input mode intercepts all keys
+        if self.pane.handle_search_input(&mut self.panes, ctx, key) {
+            return Ok(PageAction::None);
+        }
+
         self.handle_view_key(ctx, key)
     }
 

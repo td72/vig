@@ -135,6 +135,16 @@ pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: 
 }
 
 pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, area: Rect) {
+    if gh.pane.search.active {
+        let prompt = format!("/{}\u{2588}", gh.pane.search.input);
+        let line = Line::from(Span::styled(
+            format!(" {prompt}"),
+            Style::default().fg(Color::White),
+        ));
+        f.render_widget(Paragraph::new(line), area);
+        return;
+    }
+
     if let Some(ref err) = gh.gh_error {
         let line = Line::from(Span::styled(
             format!(" {err}"),
@@ -144,10 +154,10 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         return;
     }
 
-    let issue_count = gh.panes.issue_tab.list.items.len();
-    let pr_count = gh.panes.pr_tab.list.items.len();
+    let issue_count = gh.panes.issue_tab.list.item_count();
+    let pr_count = gh.panes.pr_tab.list.item_count();
 
-    let loading = gh.panes.issue_tab.list.loading || gh.panes.pr_tab.list.loading;
+    let loading = gh.panes.issue_tab.list.is_loading() || gh.panes.pr_tab.list.is_loading();
     let has_data = issue_count > 0 || pr_count > 0;
 
     let mut spans = Vec::new();
@@ -181,16 +191,16 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         }
     }
 
-    if let Some(time) = gh.panes.pr_tab.detail.watch_last_update_time() {
+    if let Some(ws) = gh.panes.pr_tab.detail.watch_status() {
         spans.push(Span::raw("  "));
-        if let Some(ref err) = gh.panes.pr_tab.detail.watch_error {
+        if let Some(ref err) = ws.error {
             spans.push(Span::styled(
                 format!("\u{23f1} Watch (err: {err})"),
                 Style::default().fg(Color::Red),
             ));
         } else {
             spans.push(Span::styled(
-                format!("\u{23f1} Watch (last: {time})"),
+                format!("\u{23f1} Watch (last: {})", ws.last_update_time),
                 Style::default().fg(Color::Yellow),
             ));
         }

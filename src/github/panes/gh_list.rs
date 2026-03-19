@@ -105,6 +105,16 @@ impl<T: GhListItem> GhListPane<T> {
         self.loading = loading;
     }
 
+    /// Number of items in the list.
+    pub fn item_count(&self) -> usize {
+        self.items.len()
+    }
+
+    /// Whether the pane is currently loading data.
+    pub fn is_loading(&self) -> bool {
+        self.loading
+    }
+
     pub fn selected_number(&self) -> Option<u64> {
         self.items.get(self.selected_idx).map(|i| i.number())
     }

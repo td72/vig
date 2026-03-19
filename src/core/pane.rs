@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::keymap::{SearchAction, ViewAction};
+use crate::core::keymap::{Keymap, SearchAction, ViewAction};
 use crate::core::search::{SearchMatch, SearchState};
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
@@ -85,6 +85,41 @@ impl PaneShared {
             }
             _ => None,
         }
+    }
+
+    /// Try view-level navigation first, then delegate to the focused/modal pane.
+    pub fn dispatch_key(
+        &self,
+        panes: &mut impl PaneSet,
+        view_keymap: &Keymap<ViewAction>,
+        tab_panes: &[usize],
+        key: KeyEvent,
+    ) -> Vec<PaneEvent> {
+        if let Some(action) = view_keymap.lookup(key) {
+            if let Some(events) = self.dispatch_view_nav(*action, tab_panes) {
+                return events;
+            }
+        }
+        self.dispatch_to_pane(panes, key)
+    }
+
+    /// Handle search input mode: if search is active, consume the key event
+    /// for search editing. Returns `true` if the key was consumed (caller
+    /// should return early with `PageAction::None`).
+    pub fn handle_search_input(
+        &mut self,
+        panes: &mut impl PaneSet,
+        ctx: &mut AppContext,
+        key: KeyEvent,
+    ) -> bool {
+        if !self.search.active {
+            return false;
+        }
+        if self.search.handle_input_key(key) {
+            self.execute_search(panes);
+            self.jump_to_search_match(panes, ctx, true);
+        }
+        true
     }
 
     /// Delegate a key event to the currently focused pane (or a modal pane if one is open).

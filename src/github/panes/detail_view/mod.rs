@@ -12,6 +12,12 @@ use std::collections::HashMap;
 use std::sync::mpsc;
 use std::time::{Instant, SystemTime};
 
+/// Watch mode status for display in the status bar.
+pub struct WatchStatus {
+    pub last_update_time: String,
+    pub error: Option<String>,
+}
+
 #[derive(Debug, Clone)]
 pub enum DetailAction {
     Nav(NavAction),
@@ -291,6 +297,15 @@ impl GhDetailViewPane {
             let m = (time_of_day % 3600) / 60;
             let s = time_of_day % 60;
             format!("{h:02}:{m:02}:{s:02}")
+        })
+    }
+
+    /// Returns watch status for display in the status bar, if watch mode is active.
+    pub fn watch_status(&self) -> Option<WatchStatus> {
+        let last_update_time = self.watch_last_update_time()?;
+        Some(WatchStatus {
+            last_update_time,
+            error: self.watch_error.clone(),
         })
     }
 
