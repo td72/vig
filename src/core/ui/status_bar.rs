@@ -90,14 +90,18 @@ pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
     );
 }
 
+fn render_search_prompt(f: &mut Frame, input: &str, area: Rect) {
+    let prompt = format!("/{}\u{2588}", input);
+    let line = Line::from(Span::styled(
+        format!(" {prompt}"),
+        Style::default().fg(Color::White),
+    ));
+    f.render_widget(Paragraph::new(line), area);
+}
+
 pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
     if git.pane.search.active {
-        let prompt = format!("/{}\u{2588}", git.pane.search.input);
-        let line = Line::from(Span::styled(
-            format!(" {prompt}"),
-            Style::default().fg(Color::White),
-        ));
-        f.render_widget(Paragraph::new(line), area);
+        render_search_prompt(f, &git.pane.search.input, area);
         return;
     }
 
@@ -136,12 +140,7 @@ pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: 
 
 pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, area: Rect) {
     if gh.pane.search.active {
-        let prompt = format!("/{}\u{2588}", gh.pane.search.input);
-        let line = Line::from(Span::styled(
-            format!(" {prompt}"),
-            Style::default().fg(Color::White),
-        ));
-        f.render_widget(Paragraph::new(line), area);
+        render_search_prompt(f, &gh.pane.search.input, area);
         return;
     }
 
