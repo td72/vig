@@ -111,6 +111,15 @@ impl DiffViewPane {
         self.highlight.reset();
     }
 
+    /// Spawn background syntax highlighting for the given file data.
+    #[allow(clippy::type_complexity)]
+    pub fn spawn_highlight(
+        &mut self,
+        file_data: Vec<(String, Vec<String>, Vec<String>, Vec<usize>)>,
+    ) {
+        self.highlight.spawn_bg_highlight(file_data);
+    }
+
     pub fn current_file(&self) -> Option<&FileDiff> {
         self.current_file_idx.and_then(|i| self.files.get(i))
     }

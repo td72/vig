@@ -78,7 +78,7 @@ impl FileTab {
         self.list.restore_selection(old_path);
         self.detail.reset_to_file(self.list.selected_file_idx());
         let file_data = self.list.highlight_file_data();
-        self.detail.highlight.spawn_bg_highlight(file_data);
+        self.detail.spawn_highlight(file_data);
     }
 }
 
