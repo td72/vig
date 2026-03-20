@@ -7,7 +7,7 @@ use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::git::domain::repository::{ReflogEntry, Repo};
 use crate::git::state::{PaneEvent, PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::KeyCode;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -26,8 +26,8 @@ pub enum ReflogAction {
 }
 
 crate::impl_pane_action_from_str!(
-    ReflogAction, nav: Nav, search: Search,
-    SetDiffBase, FocusLog, Esc
+    ReflogAction, nav: Nav, search: Search, esc: Esc,
+    SetDiffBase, FocusLog
 );
 
 impl ActionHelp for ReflogAction {
@@ -76,15 +76,17 @@ impl ReflogPane {
     }
 
     fn execute(&mut self, shared: &PaneShared, action: ReflogAction) -> Vec<PaneEvent> {
+        if let Some(events) = pane::try_dispatch_search_esc(
+            &action,
+            shared,
+            PANE_REFLOG,
+            vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)],
+        ) {
+            return events;
+        }
         match action {
-            ReflogAction::Search(sa) => {
-                return pane::execute_search(sa, PANE_REFLOG);
-            }
             ReflogAction::FocusLog => {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
-            }
-            ReflogAction::Esc => {
-                return pane::execute_esc(shared, vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)]);
             }
             ReflogAction::Nav(nav) => {
                 execute_nav(
@@ -99,6 +101,7 @@ impl ReflogPane {
                     return vec![PaneEvent::SetDiffBase(Some(entry.full_hash.clone()))];
                 }
             }
+            _ => {}
         }
         vec![]
     }
@@ -119,54 +122,12 @@ impl ReflogPane {
             .iter()
             .enumerate()
             .map(|(idx, entry)| {
-                let is_current = current_match_idx == Some(idx);
-                let is_match = match_set.contains(&idx);
-                let bg = if is_current {
-                    Some(theme::SEARCH_CURRENT_BG)
-                } else if is_match {
-                    Some(theme::SEARCH_MATCH_BG)
-                } else {
-                    None
-                };
-                let fg_override = if is_current {
-                    Some(theme::SEARCH_CURRENT_FG)
-                } else {
-                    None
-                };
+                let hl = theme::search_highlight_for(&match_set, current_match_idx, idx);
 
-                let hash_style = {
-                    let mut s = Style::default().fg(fg_override.unwrap_or(Color::Yellow));
-                    if let Some(bg) = bg {
-                        s = s.bg(bg);
-                    }
-                    s
-                };
-                let selector_style = {
-                    let mut s = Style::default().fg(fg_override.unwrap_or(Color::DarkGray));
-                    if let Some(bg) = bg {
-                        s = s.bg(bg);
-                    }
-                    s
-                };
-                let action_style = {
-                    let mut s = Style::default()
-                        .fg(fg_override.unwrap_or(Color::Cyan))
-                        .add_modifier(Modifier::BOLD);
-                    if let Some(bg) = bg {
-                        s = s.bg(bg);
-                    }
-                    s
-                };
-                let msg_style = {
-                    let mut s = Style::default();
-                    if let Some(fg) = fg_override {
-                        s = s.fg(fg);
-                    }
-                    if let Some(bg) = bg {
-                        s = s.bg(bg);
-                    }
-                    s
-                };
+                let hash_style = hl.style_with_fg(Color::Yellow);
+                let selector_style = hl.style_with_fg(Color::DarkGray);
+                let action_style = hl.style_with_fg(Color::Cyan).add_modifier(Modifier::BOLD);
+                let msg_style = hl.apply(Style::default());
 
                 ListItem::new(Line::from(vec![
                     Span::styled(format!(" {} ", entry.short_hash), hash_style),
@@ -191,44 +152,20 @@ impl ReflogPane {
 }
 
 impl Pane<PaneEvent> for ReflogPane {
-    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
+    crate::impl_handle_key!(keymap);
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render_impl(f, ctx, shared, area)
     }
 
-    fn set_selected_idx(&mut self, idx: usize) {
-        self.selected_idx = idx;
-    }
-
     fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let query_lower = query.to_lowercase();
-        self.entries
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, entry)| {
-                if entry.short_hash.to_lowercase().contains(&query_lower)
-                    || entry.selector.to_lowercase().contains(&query_lower)
-                    || entry.action.to_lowercase().contains(&query_lower)
-                    || entry.message.to_lowercase().contains(&query_lower)
-                {
-                    Some(SearchMatch::ListEntry(idx))
-                } else {
-                    None
-                }
-            })
-            .collect()
+        pane::collect_list_search_matches(&self.entries, query, |entry| {
+            format!(
+                "{} {} {} {}",
+                entry.short_hash, entry.selector, entry.action, entry.message
+            )
+        })
     }
 
-    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
-        if let SearchMatch::ListEntry(idx) = search_match {
-            self.selected_idx = *idx;
-        }
-    }
+    crate::impl_list_pane_selection!();
 }

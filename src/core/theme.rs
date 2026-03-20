@@ -28,6 +28,69 @@ pub const SELECTION_BG: Color = Color::Rgb(60, 60, 100);
 pub const CURSOR_FG: Color = Color::Black;
 pub const CURSOR_BG: Color = Color::White;
 
+// === Search highlight helper ===
+
+pub struct SearchHighlight {
+    pub bg: Option<Color>,
+    pub fg_override: Option<Color>,
+}
+
+impl SearchHighlight {
+    pub fn none() -> Self {
+        Self {
+            bg: None,
+            fg_override: None,
+        }
+    }
+
+    pub fn is_active(&self) -> bool {
+        self.bg.is_some()
+    }
+
+    /// Apply bg/fg override onto an existing style.
+    pub fn apply(&self, mut style: Style) -> Style {
+        if let Some(bg) = self.bg {
+            style = style.bg(bg);
+        }
+        if let Some(fg) = self.fg_override {
+            style = style.fg(fg);
+        }
+        style
+    }
+
+    /// Build a style with a default fg, overridden by search highlight if active.
+    pub fn style_with_fg(&self, default_fg: Color) -> Style {
+        let mut s = Style::default().fg(self.fg_override.unwrap_or(default_fg));
+        if let Some(bg) = self.bg {
+            s = s.bg(bg);
+        }
+        s
+    }
+}
+
+/// Compute the search highlight for a given list entry index.
+pub fn search_highlight_for(
+    match_set: &HashSet<usize>,
+    current_match_idx: Option<usize>,
+    idx: usize,
+) -> SearchHighlight {
+    let is_current = current_match_idx == Some(idx);
+    let is_match = match_set.contains(&idx);
+    if is_current {
+        SearchHighlight {
+            bg: Some(SEARCH_CURRENT_BG),
+            fg_override: Some(SEARCH_CURRENT_FG),
+        }
+    } else if is_match {
+        SearchHighlight {
+            bg: Some(SEARCH_MATCH_BG),
+            fg_override: None,
+        }
+    } else {
+        SearchHighlight::none()
+    }
+}
+
 // === UI helpers ===
 
 /// Create a bordered block with focus-dependent border color.

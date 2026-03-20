@@ -4,6 +4,94 @@ use crate::core::search::{SearchMatch, SearchState};
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
 
+// === collect_list_search_matches ===
+
+/// Generic search-match collector for list panes.
+/// `extractor` returns the searchable text for each item.
+pub fn collect_list_search_matches<T>(
+    items: &[T],
+    query: &str,
+    extractor: impl Fn(&T) -> String,
+) -> Vec<SearchMatch> {
+    let query_lower = query.to_lowercase();
+    items
+        .iter()
+        .enumerate()
+        .filter_map(|(idx, item)| {
+            if extractor(item).to_lowercase().contains(&query_lower) {
+                Some(SearchMatch::ListEntry(idx))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+// === HasSearchEsc trait ===
+
+/// Trait for pane action enums that have Search and Esc variants.
+pub trait HasSearchEsc {
+    fn as_search(&self) -> Option<&SearchAction>;
+    fn is_esc(&self) -> bool;
+}
+
+/// Try to dispatch Search/Esc from a pane action.
+/// Returns `Some(events)` if consumed, `None` otherwise.
+pub fn try_dispatch_search_esc<A: HasSearchEsc>(
+    action: &A,
+    shared: &PaneShared,
+    pane_id: usize,
+    esc_fallback: Vec<PaneEvent>,
+) -> Option<Vec<PaneEvent>> {
+    if let Some(sa) = action.as_search() {
+        return Some(execute_search(*sa, pane_id));
+    }
+    if action.is_esc() {
+        return Some(execute_esc(shared, esc_fallback));
+    }
+    None
+}
+
+// === Macros ===
+
+/// Generate `set_selected_idx` + `jump_to_match` for list panes that use `self.selected_idx`.
+#[macro_export]
+macro_rules! impl_list_pane_selection {
+    () => {
+        fn set_selected_idx(&mut self, idx: usize) {
+            self.selected_idx = idx;
+        }
+        fn jump_to_match(
+            &mut self,
+            _shared: &$crate::core::pane::PaneShared,
+            search_match: &$crate::core::search::SearchMatch,
+        ) {
+            if let $crate::core::search::SearchMatch::ListEntry(idx) = search_match {
+                self.selected_idx = *idx;
+            }
+        }
+    };
+}
+
+/// Generate `handle_key` that does keymap lookup + execute.
+/// Not suitable for panes with pre-dispatch logic (e.g. action_menu check).
+#[macro_export]
+macro_rules! impl_handle_key {
+    ($keymap:ident) => {
+        fn handle_key(
+            &mut self,
+            shared: &$crate::core::pane::PaneShared,
+            key: crossterm::event::KeyEvent,
+        ) -> Vec<PaneEvent> {
+            let action = match self.$keymap.lookup(key) {
+                Some(a) => a.clone(),
+                None => return vec![],
+            };
+            self.execute(shared, action)
+        }
+    };
+}
+
 pub enum PaneEvent {
     // Common
     SetFocus(usize),

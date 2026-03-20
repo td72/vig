@@ -132,8 +132,8 @@ pub enum BranchListAction {
 }
 
 crate::impl_pane_action_from_str!(
-    BranchListAction, nav: Nav, search: Search,
-    OpenActionMenu, FocusLog, Esc
+    BranchListAction, nav: Nav, search: Search, esc: Esc,
+    OpenActionMenu, FocusLog
 );
 
 impl ActionHelp for BranchListAction {
@@ -188,15 +188,17 @@ impl BranchListPane {
     }
 
     fn execute(&mut self, shared: &PaneShared, action: BranchListAction) -> Vec<PaneEvent> {
+        if let Some(events) = pane::try_dispatch_search_esc(
+            &action,
+            shared,
+            PANE_BRANCH_LIST,
+            vec![PaneEvent::SetDiffBase(None)],
+        ) {
+            return events;
+        }
         match action {
-            BranchListAction::Search(sa) => {
-                return pane::execute_search(sa, PANE_BRANCH_LIST);
-            }
             BranchListAction::FocusLog => {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
-            }
-            BranchListAction::Esc => {
-                return pane::execute_esc(shared, vec![PaneEvent::SetDiffBase(None)]);
             }
             BranchListAction::Nav(nav) => {
                 if execute_nav(nav, &mut self.selected_idx, self.branches.len(), None) {
@@ -212,6 +214,7 @@ impl BranchListPane {
                     });
                 }
             }
+            _ => {}
         }
         vec![]
     }
@@ -299,17 +302,12 @@ impl BranchListPane {
             .iter()
             .enumerate()
             .map(|(idx, branch)| {
-                let is_current = current_match_idx == Some(idx);
-                let is_match = match_set.contains(&idx);
+                let hl = theme::search_highlight_for(&match_set, current_match_idx, idx);
 
                 let mut spans = vec![Span::raw(" ")];
 
-                let name_style = if is_current {
-                    Style::default()
-                        .fg(theme::SEARCH_CURRENT_FG)
-                        .bg(theme::SEARCH_CURRENT_BG)
-                } else if is_match {
-                    Style::default().bg(theme::SEARCH_MATCH_BG)
+                let name_style = if hl.is_active() {
+                    hl.apply(Style::default())
                 } else if branch.is_head {
                     Style::default()
                         .fg(Color::Green)
@@ -319,16 +317,12 @@ impl BranchListPane {
                 };
 
                 if branch.is_head {
-                    let star_style = if is_current {
-                        Style::default()
-                            .fg(theme::SEARCH_CURRENT_FG)
-                            .bg(theme::SEARCH_CURRENT_BG)
-                            .add_modifier(Modifier::BOLD)
-                    } else if is_match {
-                        Style::default()
-                            .fg(Color::Green)
-                            .bg(theme::SEARCH_MATCH_BG)
-                            .add_modifier(Modifier::BOLD)
+                    let star_style = if hl.is_active() {
+                        hl.apply(
+                            Style::default()
+                                .fg(Color::Green)
+                                .add_modifier(Modifier::BOLD),
+                        )
                     } else {
                         Style::default()
                             .fg(Color::Green)
@@ -454,30 +448,11 @@ impl Pane<PaneEvent> for BranchListPane {
         self.action_menu.is_some()
     }
 
-    fn set_selected_idx(&mut self, idx: usize) {
-        self.selected_idx = idx;
-    }
-
     fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let query_lower = query.to_lowercase();
-        self.branches
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, branch)| {
-                if branch.name.to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::ListEntry(idx))
-                } else {
-                    None
-                }
-            })
-            .collect()
+        pane::collect_list_search_matches(&self.branches, query, |branch| branch.name.clone())
     }
 
-    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
-        if let SearchMatch::ListEntry(idx) = search_match {
-            self.selected_idx = *idx;
-        }
-    }
+    crate::impl_list_pane_selection!();
 }
 
 fn pad_line(line: Line<'static>, width: usize) -> Line<'static> {

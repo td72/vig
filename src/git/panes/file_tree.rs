@@ -9,7 +9,7 @@ use crate::git::domain::diff::{FileDiff, FileStatus};
 use crate::git::state::{PaneEvent, PANE_DIFF_VIEW, PANE_FILE_TREE};
 
 pub use crate::git::domain::tree::TreeEntry;
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::KeyCode;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -31,8 +31,8 @@ pub enum FileTreeAction {
 }
 
 crate::impl_pane_action_from_str!(
-    FileTreeAction, nav: Nav, search: Search,
-    ToggleDir, ExpandOrOpen, FocusDiff, Esc
+    FileTreeAction, nav: Nav, search: Search, esc: Esc,
+    ToggleDir, ExpandOrOpen, FocusDiff
 );
 
 impl ActionHelp for FileTreeAction {
@@ -131,18 +131,13 @@ impl FileTreePane {
     }
 
     fn execute(&mut self, shared: &PaneShared, action: FileTreeAction) -> Vec<PaneEvent> {
-        // Handle actions that don't need entries first
-        match action {
-            FileTreeAction::Search(sa) => {
-                return pane::execute_search(sa, PANE_FILE_TREE);
-            }
-            FileTreeAction::FocusDiff => {
-                return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
-            }
-            FileTreeAction::Esc => {
-                return pane::execute_esc(shared, vec![]);
-            }
-            _ => {}
+        // Handle Search/Esc first
+        if let Some(events) = pane::try_dispatch_search_esc(&action, shared, PANE_FILE_TREE, vec![])
+        {
+            return events;
+        }
+        if let FileTreeAction::FocusDiff = action {
+            return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
         }
 
         let entries = self.tree_entries();
@@ -200,8 +195,7 @@ impl FileTreePane {
             .iter()
             .enumerate()
             .map(|(entry_idx, entry)| {
-                let is_match = match_set.contains(&entry_idx);
-                let is_current = current_match_idx == Some(entry_idx);
+                let hl = theme::search_highlight_for(&match_set, current_match_idx, entry_idx);
                 match entry {
                     TreeEntry::Dir {
                         path,
@@ -211,17 +205,7 @@ impl FileTreePane {
                         let indent = " ".repeat(depth * 2);
                         let icon = if *collapsed { "▶" } else { "▼" };
                         let dir_name = path.rsplit('/').next().unwrap_or(path);
-                        let name_style = if is_current {
-                            Style::default()
-                                .fg(theme::SEARCH_CURRENT_FG)
-                                .bg(theme::SEARCH_CURRENT_BG)
-                        } else if is_match {
-                            Style::default()
-                                .fg(Color::DarkGray)
-                                .bg(theme::SEARCH_MATCH_BG)
-                        } else {
-                            Style::default().fg(Color::DarkGray)
-                        };
+                        let name_style = hl.style_with_fg(Color::DarkGray);
                         let line = Line::from(vec![
                             Span::raw(format!(" {indent}  ")),
                             Span::styled(format!("{icon} {dir_name}/"), name_style),
@@ -244,15 +228,7 @@ impl FileTreePane {
                         } else {
                             &file.path
                         };
-                        let name_style = if is_current {
-                            Style::default()
-                                .fg(theme::SEARCH_CURRENT_FG)
-                                .bg(theme::SEARCH_CURRENT_BG)
-                        } else if is_match {
-                            Style::default().bg(theme::SEARCH_MATCH_BG)
-                        } else {
-                            Style::default()
-                        };
+                        let name_style = hl.apply(Style::default());
                         let line = Line::from(vec![
                             Span::raw(format!(" {indent}")),
                             Span::styled(
@@ -281,45 +257,23 @@ impl FileTreePane {
 }
 
 impl Pane<PaneEvent> for FileTreePane {
-    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
+    crate::impl_handle_key!(keymap);
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render_impl(f, ctx, shared, area)
     }
 
-    fn set_selected_idx(&mut self, idx: usize) {
-        self.selected_idx = idx;
-    }
-
     fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let query_lower = query.to_lowercase();
         let entries = self.tree_entries();
-        entries
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, entry)| {
-                let name = match entry {
-                    TreeEntry::Dir { path, .. } => path.clone(),
-                    TreeEntry::File { file_idx, .. } => self.files.get(*file_idx)?.path.clone(),
-                };
-                if name.to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::ListEntry(idx))
-                } else {
-                    None
-                }
-            })
-            .collect()
+        pane::collect_list_search_matches(&entries, query, |entry| match entry {
+            TreeEntry::Dir { path, .. } => path.clone(),
+            TreeEntry::File { file_idx, .. } => self
+                .files
+                .get(*file_idx)
+                .map(|f| f.path.clone())
+                .unwrap_or_default(),
+        })
     }
 
-    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
-        if let SearchMatch::ListEntry(idx) = search_match {
-            self.selected_idx = *idx;
-        }
-    }
+    crate::impl_list_pane_selection!();
 }

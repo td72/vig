@@ -112,52 +112,12 @@ fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &PaneShared, area: 
         .iter()
         .enumerate()
         .map(|(idx, commit)| {
-            let is_current = current_match_idx == Some(idx);
-            let is_match = match_set.contains(&idx);
-            let bg = if is_current {
-                Some(theme::SEARCH_CURRENT_BG)
-            } else if is_match {
-                Some(theme::SEARCH_MATCH_BG)
-            } else {
-                None
-            };
-            let fg_override = if is_current {
-                Some(theme::SEARCH_CURRENT_FG)
-            } else {
-                None
-            };
+            let hl = theme::search_highlight_for(&match_set, current_match_idx, idx);
 
-            let hash_style = {
-                let mut s = Style::default().fg(fg_override.unwrap_or(Color::Yellow));
-                if let Some(bg) = bg {
-                    s = s.bg(bg);
-                }
-                s
-            };
-            let date_style = {
-                let mut s = Style::default().fg(fg_override.unwrap_or(Color::DarkGray));
-                if let Some(bg) = bg {
-                    s = s.bg(bg);
-                }
-                s
-            };
-            let author_style = {
-                let mut s = Style::default().fg(fg_override.unwrap_or(Color::Cyan));
-                if let Some(bg) = bg {
-                    s = s.bg(bg);
-                }
-                s
-            };
-            let msg_style = {
-                let mut s = Style::default();
-                if let Some(fg) = fg_override {
-                    s = s.fg(fg);
-                }
-                if let Some(bg) = bg {
-                    s = s.bg(bg);
-                }
-                s
-            };
+            let hash_style = hl.style_with_fg(Color::Yellow);
+            let date_style = hl.style_with_fg(Color::DarkGray);
+            let author_style = hl.style_with_fg(Color::Cyan);
+            let msg_style = hl.apply(Style::default());
 
             let mut spans = Vec::new();
 

@@ -7,7 +7,7 @@ use crate::core::pane::{self, Pane, PaneShared, SubPaneScroll};
 use crate::git::domain::graph::{self, GraphRow};
 use crate::git::domain::repository::{CommitFileChange, CommitInfo, Repo};
 use crate::git::state::{PaneEvent, PANE_REFLOG};
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::KeyCode;
 use ratatui::{layout::Rect, Frame};
 
 use crate::core::app::AppContext;
@@ -24,8 +24,8 @@ pub enum GitLogAction {
 }
 
 crate::impl_pane_action_from_str!(
-    GitLogAction, nav: Nav, search: Search,
-    YankHash, OpenGitHub, FocusReflog, Esc
+    GitLogAction, nav: Nav, search: Search, esc: Esc,
+    YankHash, OpenGitHub, FocusReflog
 );
 
 impl ActionHelp for GitLogAction {
@@ -105,12 +105,17 @@ impl GitLogPane {
     }
 
     fn execute(&mut self, shared: &PaneShared, action: GitLogAction) -> Vec<PaneEvent> {
+        if let Some(events) = pane::try_dispatch_search_esc(
+            &action,
+            shared,
+            crate::git::state::PANE_GIT_LOG,
+            vec![PaneEvent::SetFocus(shared.previous_pane)],
+        ) {
+            return events;
+        }
         match action {
             GitLogAction::FocusReflog => {
                 return vec![PaneEvent::SetFocus(PANE_REFLOG)];
-            }
-            GitLogAction::Esc => {
-                return pane::execute_esc(shared, vec![PaneEvent::SetFocus(shared.previous_pane)]);
             }
             GitLogAction::Nav(nav) => {
                 if execute_nav(
@@ -140,53 +145,27 @@ impl GitLogPane {
                     }
                 }
             }
-            GitLogAction::Search(sa) => {
-                return pane::execute_search(sa, crate::git::state::PANE_GIT_LOG);
-            }
+            _ => {}
         }
         vec![]
     }
 }
 
 impl Pane<PaneEvent> for GitLogPane {
-    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
+    crate::impl_handle_key!(keymap);
 
     fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         view::render(f, self, shared, area);
     }
 
-    fn set_selected_idx(&mut self, idx: usize) {
-        self.selected_idx = idx;
-    }
-
     fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let query_lower = query.to_lowercase();
-        self.commits
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, commit)| {
-                let text = format!(
-                    "{} {} {} {}",
-                    commit.short_hash, commit.author, commit.date, commit.message
-                );
-                if text.to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::ListEntry(idx))
-                } else {
-                    None
-                }
-            })
-            .collect()
+        pane::collect_list_search_matches(&self.commits, query, |commit| {
+            format!(
+                "{} {} {} {}",
+                commit.short_hash, commit.author, commit.date, commit.message
+            )
+        })
     }
 
-    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
-        if let SearchMatch::ListEntry(idx) = search_match {
-            self.selected_idx = *idx;
-        }
-    }
+    crate::impl_list_pane_selection!();
 }

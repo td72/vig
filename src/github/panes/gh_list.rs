@@ -6,7 +6,7 @@ use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::github::state::GhBgMessage;
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::KeyCode;
 use ratatui::{
     layout::Rect,
     widgets::{List, ListItem, ListState},
@@ -27,8 +27,8 @@ pub enum GhListAction {
 }
 
 crate::impl_pane_action_from_str!(
-    GhListAction, nav: Nav, search: Search,
-    OpenDetail, SwitchTab, OpenBrowser, Esc
+    GhListAction, nav: Nav, search: Search, esc: Esc,
+    OpenDetail, SwitchTab, OpenBrowser
 );
 
 impl ActionHelp for GhListAction {
@@ -143,22 +143,11 @@ impl<T: GhListItem> GhListPane<T> {
         self.items = items;
     }
 
-    fn handle_key_impl(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
-
     fn execute(&mut self, shared: &PaneShared, action: GhListAction) -> Vec<PaneEvent> {
+        if let Some(events) = pane::try_dispatch_search_esc(&action, shared, self.pane_id, vec![]) {
+            return events;
+        }
         match action {
-            GhListAction::Search(sa) => {
-                return pane::execute_search(sa, self.pane_id);
-            }
-            GhListAction::Esc => {
-                return pane::execute_esc(shared, vec![]);
-            }
             GhListAction::Nav(nav) => {
                 if execute_nav(nav, &mut self.selected_idx, self.items.len(), None) {
                     return vec![PaneEvent::SelectionChanged];
@@ -177,6 +166,7 @@ impl<T: GhListItem> GhListPane<T> {
                     return vec![item.browser_event()];
                 }
             }
+            _ => {}
         }
         vec![]
     }
@@ -203,18 +193,10 @@ impl<T: GhListItem> GhListPane<T> {
             .enumerate()
             .map(|(idx, item)| {
                 let mut li = item.render_item();
-                let is_current = current_match_idx == Some(idx);
-                let is_match = match_set.contains(&idx);
-                if is_current || is_match {
+                let hl = theme::search_highlight_for(&match_set, current_match_idx, idx);
+                if hl.is_active() {
                     use ratatui::style::Style;
-                    let style = if is_current {
-                        Style::default()
-                            .fg(theme::SEARCH_CURRENT_FG)
-                            .bg(theme::SEARCH_CURRENT_BG)
-                    } else {
-                        Style::default().bg(theme::SEARCH_MATCH_BG)
-                    };
-                    li = li.style(style);
+                    li = li.style(hl.apply(Style::default()));
                 }
                 li
             })
@@ -236,41 +218,20 @@ impl<T: GhListItem> GhListPane<T> {
     }
 
     fn collect_search_matches_impl(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let query_lower = query.to_lowercase();
-        self.items
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, item)| {
-                if item.search_text().to_lowercase().contains(&query_lower) {
-                    Some(SearchMatch::ListEntry(idx))
-                } else {
-                    None
-                }
-            })
-            .collect()
+        pane::collect_list_search_matches(&self.items, query, |item| item.search_text())
     }
 }
 
 impl<T: GhListItem> Pane<PaneEvent> for GhListPane<T> {
-    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        self.handle_key_impl(shared, key)
-    }
+    crate::impl_handle_key!(keymap);
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render_impl(f, ctx, shared, area)
-    }
-
-    fn set_selected_idx(&mut self, idx: usize) {
-        self.selected_idx = idx;
     }
 
     fn collect_search_matches(&self, shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
         self.collect_search_matches_impl(shared, query)
     }
 
-    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
-        if let SearchMatch::ListEntry(idx) = search_match {
-            self.selected_idx = *idx;
-        }
-    }
+    crate::impl_list_pane_selection!();
 }

@@ -219,8 +219,43 @@ macro_rules! impl_action_from_str {
 
 /// Implement `FromStr` for pane action enums that wrap `Nav(NavAction)`, `Search(SearchAction)`,
 /// and have their own plain variants. Nested actions use dot notation: `"Nav.MoveDown"`, `"Search.Start"`.
+///
+/// When the `search:` + `esc:` variant is provided, also generates `HasSearchEsc` impl.
 #[macro_export]
 macro_rules! impl_pane_action_from_str {
+    ($ty:ty, nav: $nav_wrap:ident, search: $search_wrap:ident, esc: $esc_variant:ident, $( $variant:ident ),+ $(,)?) => {
+        // FromStr
+        impl std::str::FromStr for $ty {
+            type Err = String;
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                if let Some(rest) = s.strip_prefix("Nav.") {
+                    return rest.parse::<$crate::core::keymap::NavAction>()
+                        .map(Self::$nav_wrap);
+                }
+                if let Some(rest) = s.strip_prefix("Search.") {
+                    return rest.parse::<$crate::core::keymap::SearchAction>()
+                        .map(Self::$search_wrap);
+                }
+                match s {
+                    stringify!($esc_variant) => Ok(Self::$esc_variant),
+                    $( stringify!($variant) => Ok(Self::$variant), )+
+                    _ => Err(format!("Unknown action: {s}")),
+                }
+            }
+        }
+        // HasSearchEsc
+        impl $crate::core::pane::HasSearchEsc for $ty {
+            fn as_search(&self) -> Option<&$crate::core::keymap::SearchAction> {
+                match self {
+                    Self::$search_wrap(sa) => Some(sa),
+                    _ => None,
+                }
+            }
+            fn is_esc(&self) -> bool {
+                matches!(self, Self::$esc_variant)
+            }
+        }
+    };
     ($ty:ty, nav: $nav_wrap:ident, search: $search_wrap:ident, $( $variant:ident ),+ $(,)?) => {
         impl std::str::FromStr for $ty {
             type Err = String;
