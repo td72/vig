@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{
-    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
+    nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
 use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
@@ -12,7 +12,7 @@ use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{List, ListItem, ListState},
+    widgets::ListItem,
     Frame,
 };
 
@@ -89,7 +89,7 @@ impl ReflogPane {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
             ReflogAction::Nav(nav) => {
-                execute_nav(
+                return pane::execute_list_nav(
                     nav,
                     &mut self.selected_idx,
                     self.entries.len(),
@@ -138,16 +138,7 @@ impl ReflogPane {
             })
             .collect();
 
-        let selected = self.selected_idx;
-        let highlight_style = theme::list_highlight_style(match_set.contains(&selected));
-
-        let list = List::new(items)
-            .block(block)
-            .highlight_style(highlight_style);
-
-        let mut list_state = ListState::default();
-        list_state.select(Some(selected));
-        f.render_stateful_widget(list, area, &mut list_state);
+        theme::render_search_list(f, area, items, block, Some(self.selected_idx), &match_set);
     }
 }
 

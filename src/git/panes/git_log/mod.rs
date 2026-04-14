@@ -1,7 +1,7 @@
 pub(crate) mod view;
 
 use crate::core::keymap::{
-    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
+    nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
 use crate::core::pane::{self, Pane, PaneShared, SubPaneScroll};
 use crate::git::domain::graph::{self, GraphRow};
@@ -118,14 +118,12 @@ impl GitLogPane {
                 return vec![PaneEvent::SetFocus(PANE_REFLOG)];
             }
             GitLogAction::Nav(nav) => {
-                if execute_nav(
+                return pane::execute_list_nav(
                     nav,
                     &mut self.selected_idx,
                     self.commits.len(),
                     Some(self.view_height),
-                ) {
-                    return vec![PaneEvent::SelectionChanged];
-                }
+                );
             }
             GitLogAction::YankHash => {
                 if let Some(commit) = self.commits.get(self.selected_idx) {

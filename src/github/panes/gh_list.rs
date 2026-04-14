@@ -1,17 +1,13 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{
-    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
+    nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
 use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
-use ratatui::{
-    layout::Rect,
-    widgets::{List, ListItem, ListState},
-    Frame,
-};
+use ratatui::{layout::Rect, widgets::ListItem, Frame};
 use std::sync::mpsc;
 
 // === Action enum ===
@@ -149,9 +145,7 @@ impl<T: GhListItem> GhListPane<T> {
         }
         match action {
             GhListAction::Nav(nav) => {
-                if execute_nav(nav, &mut self.selected_idx, self.items.len(), None) {
-                    return vec![PaneEvent::SelectionChanged];
-                }
+                return pane::execute_list_nav(nav, &mut self.selected_idx, self.items.len(), None);
             }
             GhListAction::OpenDetail => {
                 if !self.items.is_empty() {
@@ -202,19 +196,14 @@ impl<T: GhListItem> GhListPane<T> {
             })
             .collect();
 
-        let highlight_style = theme::list_highlight_style(match_set.contains(&self.selected_idx));
-
-        let list = List::new(items)
-            .block(block)
-            .highlight_style(highlight_style);
-
-        let mut list_state = ListState::default();
-        if is_focused
-            || (shared.focused_pane == self.detail_pane_id && shared.previous_pane == self.pane_id)
-        {
-            list_state.select(Some(self.selected_idx));
-        }
-        f.render_stateful_widget(list, area, &mut list_state);
+        let show_selection = is_focused
+            || (shared.focused_pane == self.detail_pane_id && shared.previous_pane == self.pane_id);
+        let selected = if show_selection {
+            Some(self.selected_idx)
+        } else {
+            None
+        };
+        theme::render_search_list(f, area, items, block, selected, &match_set);
     }
 
     fn collect_search_matches_impl(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {

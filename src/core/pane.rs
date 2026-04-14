@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::keymap::{Keymap, SearchAction, ViewAction};
+use crate::core::keymap::{execute_nav, Keymap, NavAction, SearchAction, ViewAction};
 use crate::core::search::{SearchMatch, SearchState};
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
@@ -25,6 +25,20 @@ pub fn collect_list_search_matches<T>(
             }
         })
         .collect()
+}
+
+/// Execute a nav action and return `SelectionChanged` if the selection moved.
+pub fn execute_list_nav(
+    nav: NavAction,
+    selected_idx: &mut usize,
+    len: usize,
+    view_height: Option<u16>,
+) -> Vec<PaneEvent> {
+    if execute_nav(nav, selected_idx, len, view_height) {
+        vec![PaneEvent::SelectionChanged]
+    } else {
+        vec![]
+    }
 }
 
 // === HasSearchEsc trait ===
@@ -74,7 +88,12 @@ macro_rules! impl_list_pane_selection {
 }
 
 /// Generate `handle_key` that does keymap lookup + execute.
-/// Not suitable for panes with pre-dispatch logic (e.g. action_menu check).
+///
+/// Basic form: `impl_handle_key!(keymap)`
+///
+/// Modal form: `impl_handle_key!(keymap, modal: field_name => handler_method)`
+/// — checks if `self.field_name.is_some()` and delegates to `self.handler_method(key)`
+/// before the normal keymap lookup path.
 #[macro_export]
 macro_rules! impl_handle_key {
     ($keymap:ident) => {
@@ -83,6 +102,22 @@ macro_rules! impl_handle_key {
             shared: &$crate::core::pane::PaneShared,
             key: crossterm::event::KeyEvent,
         ) -> Vec<PaneEvent> {
+            let action = match self.$keymap.lookup(key) {
+                Some(a) => a.clone(),
+                None => return vec![],
+            };
+            self.execute(shared, action)
+        }
+    };
+    ($keymap:ident, modal: $field:ident => $handler:ident) => {
+        fn handle_key(
+            &mut self,
+            shared: &$crate::core::pane::PaneShared,
+            key: crossterm::event::KeyEvent,
+        ) -> Vec<PaneEvent> {
+            if self.$field.is_some() {
+                return self.$handler(key);
+            }
             let action = match self.$keymap.lookup(key) {
                 Some(a) => a.clone(),
                 None => return vec![],

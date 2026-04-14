@@ -1,6 +1,6 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{
-    execute_nav, nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
+    nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
 use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
@@ -116,7 +116,7 @@ use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph},
+    widgets::{Block, Borders, Clear, ListItem, Paragraph},
     Frame,
 };
 
@@ -201,9 +201,12 @@ impl BranchListPane {
                 return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
             }
             BranchListAction::Nav(nav) => {
-                if execute_nav(nav, &mut self.selected_idx, self.branches.len(), None) {
-                    return vec![PaneEvent::SelectionChanged];
-                }
+                return pane::execute_list_nav(
+                    nav,
+                    &mut self.selected_idx,
+                    self.branches.len(),
+                    None,
+                );
             }
             BranchListAction::OpenActionMenu => {
                 if let Some(branch) = self.branches.get(self.selected_idx) {
@@ -339,15 +342,7 @@ impl BranchListPane {
             })
             .collect();
 
-        let highlight_style = theme::list_highlight_style(match_set.contains(&self.selected_idx));
-
-        let list = List::new(items)
-            .block(block)
-            .highlight_style(highlight_style);
-
-        let mut list_state = ListState::default();
-        list_state.select(Some(self.selected_idx));
-        f.render_stateful_widget(list, area, &mut list_state);
+        theme::render_search_list(f, area, items, block, Some(self.selected_idx), &match_set);
     }
 
     pub fn render_action_menu(&self, f: &mut Frame, area: Rect) {
@@ -429,16 +424,7 @@ impl BranchListPane {
 }
 
 impl Pane<PaneEvent> for BranchListPane {
-    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
-        if self.action_menu.is_some() {
-            return self.handle_action_menu_key(key);
-        }
-        let action = match self.keymap.lookup(key) {
-            Some(a) => a.clone(),
-            None => return vec![],
-        };
-        self.execute(shared, action)
-    }
+    crate::impl_handle_key!(keymap, modal: action_menu => handle_action_menu_key);
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.render_impl(f, ctx, shared, area)

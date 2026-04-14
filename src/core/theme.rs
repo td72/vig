@@ -2,7 +2,7 @@ use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem},
+    widgets::{Block, Borders, List, ListItem, ListState},
     Frame,
 };
 use std::collections::HashSet;
@@ -126,6 +126,27 @@ pub fn list_highlight_style(selected_is_match: bool) -> Style {
             .bg(LIST_SELECTION_BG)
             .add_modifier(Modifier::BOLD)
     }
+}
+
+/// Render a list with search highlighting and selection.
+/// Pass `selected_idx: Some(idx)` to highlight the selected row,
+/// or `None` to render without selection (e.g. when the pane is not focused).
+pub fn render_search_list(
+    f: &mut Frame,
+    area: Rect,
+    items: Vec<ListItem>,
+    block: Block,
+    selected_idx: Option<usize>,
+    match_set: &HashSet<usize>,
+) {
+    let highlight_style =
+        list_highlight_style(selected_idx.is_some_and(|idx| match_set.contains(&idx)));
+    let list = List::new(items)
+        .block(block)
+        .highlight_style(highlight_style);
+    let mut list_state = ListState::default();
+    list_state.select(selected_idx);
+    f.render_stateful_widget(list, area, &mut list_state);
 }
 
 /// Extract list-entry search highlights for a given pane.
