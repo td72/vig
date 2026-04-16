@@ -11,6 +11,7 @@ use crate::core::ui::status_bar;
 use crate::github::domain::client;
 use crate::github::domain::types::*;
 use crate::github::panes::detail_view::GhDetailViewPane;
+use crate::github::panes::gh_list::{GhListItem, GhListPane};
 use crate::github::panes::issue_list::{self, GhIssueListPane};
 use crate::github::panes::pr_list::{self, GhPrListPane};
 use anyhow::Result;
@@ -96,11 +97,32 @@ pub enum GhBgMessage {
 pub type IssueTab = Tab<GhIssueListPane, GhDetailViewPane>;
 pub type PrTab = Tab<GhPrListPane, GhDetailViewPane>;
 
+/// Apply a list-fetch result to a `GhListPane` and update the arrived/error flags.
+fn apply_list_result<T: GhListItem>(
+    list: &mut GhListPane<T>,
+    result: Result<Vec<T>, String>,
+    arrived: &mut bool,
+    gh_error: &mut Option<String>,
+) {
+    list.set_loading(false);
+    match result {
+        Ok(items) => {
+            list.apply_list(items);
+            *arrived = true;
+        }
+        Err(e) => {
+            if gh_error.is_none() {
+                *gh_error = Some(e);
+            }
+        }
+    }
+}
+
 impl IssueTab {
     /// Sync DetailView to show the selected issue.
     pub fn sync_detail(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         if let Some(n) = self.list.selected_number() {
-            self.detail.load_issue(n, tx);
+            self.detail.load(GhDetailKind::Issue, n, tx);
         }
     }
 }
@@ -109,7 +131,7 @@ impl PrTab {
     /// Sync DetailView to show the selected PR.
     pub fn sync_detail(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         if let Some(n) = self.list.selected_number() {
-            self.detail.load_pr(n, tx);
+            self.detail.load(GhDetailKind::Pr, n, tx);
         }
     }
 }
@@ -226,32 +248,20 @@ impl GitHubState {
                     }
                 },
                 GhBgMessage::IssueList(result) => {
-                    self.panes.issue_tab.list.set_loading(false);
-                    match result {
-                        Ok(issues) => {
-                            self.panes.issue_tab.list.apply_list(issues);
-                            issue_list_arrived = true;
-                        }
-                        Err(e) => {
-                            if self.gh_error.is_none() {
-                                self.gh_error = Some(e);
-                            }
-                        }
-                    }
+                    apply_list_result(
+                        &mut self.panes.issue_tab.list,
+                        result,
+                        &mut issue_list_arrived,
+                        &mut self.gh_error,
+                    );
                 }
                 GhBgMessage::PrList(result) => {
-                    self.panes.pr_tab.list.set_loading(false);
-                    match result {
-                        Ok(prs) => {
-                            self.panes.pr_tab.list.apply_list(prs);
-                            pr_list_arrived = true;
-                        }
-                        Err(e) => {
-                            if self.gh_error.is_none() {
-                                self.gh_error = Some(e);
-                            }
-                        }
-                    }
+                    apply_list_result(
+                        &mut self.panes.pr_tab.list,
+                        result,
+                        &mut pr_list_arrived,
+                        &mut self.gh_error,
+                    );
                 }
                 GhBgMessage::IssueDetail(result) => match result {
                     Ok(detail) => self.panes.issue_tab.detail.apply_issue_detail(detail),
@@ -304,16 +314,8 @@ impl GitHubState {
                     } else {
                         &mut self.panes.issue_tab.detail
                     };
-                    match kind {
-                        GhDetailKind::Issue => {
-                            dv.invalidate_issue(number);
-                            dv.load_issue(number, tx);
-                        }
-                        GhDetailKind::Pr => {
-                            dv.invalidate_pr(number);
-                            dv.load_pr(number, tx);
-                        }
-                    }
+                    dv.invalidate(kind, number);
+                    dv.load(kind, number, tx);
                 }
             }
         }

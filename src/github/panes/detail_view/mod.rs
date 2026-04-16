@@ -164,18 +164,8 @@ impl GhDetailViewPane {
         self.comments.reset();
     }
 
-    /// Load issue detail — serves from cache if available, otherwise fetches in background.
-    pub fn load_issue(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
-        self.load_detail(GhDetailKind::Issue, number, tx);
-    }
-
-    /// Load PR detail — serves from cache if available, otherwise fetches in background.
-    pub fn load_pr(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
-        self.load_detail(GhDetailKind::Pr, number, tx);
-    }
-
-    /// Shared logic for loading issue/PR detail with cache hierarchy.
-    fn load_detail(&mut self, kind: GhDetailKind, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
+    /// Load issue/PR detail — serves from cache if available, otherwise fetches in background.
+    pub fn load(&mut self, kind: GhDetailKind, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
         // Already loading this exact item — skip duplicate request
         if matches!(&self.content, GhDetailContent::Loading { kind: k, number: n } if *k == kind && *n == number)
         {
@@ -239,12 +229,15 @@ impl GhDetailViewPane {
         self.pr_cache.clear();
     }
 
-    pub fn invalidate_issue(&mut self, number: u64) {
-        self.issue_cache.remove(&number);
-    }
-
-    pub fn invalidate_pr(&mut self, number: u64) {
-        self.pr_cache.remove(&number);
+    pub fn invalidate(&mut self, kind: GhDetailKind, number: u64) {
+        match kind {
+            GhDetailKind::Issue => {
+                self.issue_cache.remove(&number);
+            }
+            GhDetailKind::Pr => {
+                self.pr_cache.remove(&number);
+            }
+        }
     }
 
     /// Apply a fetched issue detail — save to disk cache and display.
@@ -362,7 +355,7 @@ impl GhDetailViewPane {
             GhDetailContent::Pr(detail) => detail.number,
             _ => return,
         };
-        self.invalidate_pr(number);
+        self.invalidate(GhDetailKind::Pr, number);
         self.watch_in_flight_since = Some(Instant::now());
         let tx = tx.clone();
         std::thread::spawn(move || {
