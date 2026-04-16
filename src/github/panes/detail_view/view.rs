@@ -543,27 +543,45 @@ fn parse_check_name(name: &str) -> (&str, &str) {
     }
 }
 
+/// Look up a status key in a table and return the matching (icon, color), if any.
+fn status_icon_lookup(
+    key: &str,
+    entries: &[(&'static str, &'static str, Color)],
+) -> Option<(&'static str, Color)> {
+    entries
+        .iter()
+        .find(|(k, _, _)| *k == key)
+        .map(|(_, icon, color)| (*icon, *color))
+}
+
 fn check_icon(check: &GhStatusCheck) -> (&'static str, Color) {
-    match check.conclusion.as_deref() {
-        Some("SUCCESS") => ("✓", Color::Green),
-        Some("FAILURE") => ("✗", Color::Red),
-        Some("NEUTRAL") | Some("SKIPPED") => ("○", Color::DarkGray),
-        _ => match check.status.as_str() {
-            "IN_PROGRESS" => ("◐", Color::Yellow),
-            "QUEUED" | "WAITING" => ("◯", Color::DarkGray),
-            _ => ("?", Color::DarkGray),
-        },
-    }
+    const CONCLUSIONS: &[(&str, &str, Color)] = &[
+        ("SUCCESS", "✓", Color::Green),
+        ("FAILURE", "✗", Color::Red),
+        ("NEUTRAL", "○", Color::DarkGray),
+        ("SKIPPED", "○", Color::DarkGray),
+    ];
+    const STATUSES: &[(&str, &str, Color)] = &[
+        ("IN_PROGRESS", "◐", Color::Yellow),
+        ("QUEUED", "◯", Color::DarkGray),
+        ("WAITING", "◯", Color::DarkGray),
+    ];
+    check
+        .conclusion
+        .as_deref()
+        .and_then(|c| status_icon_lookup(c, CONCLUSIONS))
+        .or_else(|| status_icon_lookup(&check.status, STATUSES))
+        .unwrap_or(("?", Color::DarkGray))
 }
 
 fn review_icon(review: &GhReview) -> (&'static str, Color) {
-    match review.state.as_str() {
-        "APPROVED" => ("✓", Color::Green),
-        "CHANGES_REQUESTED" => ("✗", Color::Red),
-        "COMMENTED" => ("💬", Color::DarkGray),
-        "DISMISSED" => ("⊘", Color::DarkGray),
-        _ => ("?", Color::White),
-    }
+    const ENTRIES: &[(&str, &str, Color)] = &[
+        ("APPROVED", "✓", Color::Green),
+        ("CHANGES_REQUESTED", "✗", Color::Red),
+        ("COMMENTED", "💬", Color::DarkGray),
+        ("DISMISSED", "⊘", Color::DarkGray),
+    ];
+    status_icon_lookup(&review.state, ENTRIES).unwrap_or(("?", Color::White))
 }
 
 /// Build a list of items where each entry has a one-line header followed by
