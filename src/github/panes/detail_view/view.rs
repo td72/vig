@@ -209,15 +209,19 @@ fn render_pane(
     is_detail_focused: bool,
     scroll: u16,
 ) {
-    let block = Block::default()
-        .title(pane_title(title, is_active, is_detail_focused))
-        .borders(Borders::ALL)
-        .border_style(pane_border_style(is_active, is_detail_focused));
     let para = Paragraph::new(lines)
-        .block(block)
+        .block(sub_block(title, is_active, is_detail_focused))
         .wrap(Wrap { trim: false })
         .scroll((scroll, 0));
     f.render_widget(para, area);
+}
+
+/// Bordered block used for all sub-panes inside the detail view.
+fn sub_block(title: &str, is_active: bool, is_detail_focused: bool) -> Block<'static> {
+    Block::default()
+        .title(pane_title(title, is_active, is_detail_focused))
+        .borders(Borders::ALL)
+        .border_style(pane_border_style(is_active, is_detail_focused))
 }
 
 fn pane_title(label: &str, is_active: bool, is_detail_focused: bool) -> Line<'static> {
@@ -289,67 +293,56 @@ fn build_label_spans(labels: &[GhLabel]) -> Vec<Span<'static>> {
 
 // --- Header builders ---
 
-fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
-    // Line 1: title
+/// Build the title line + the leading "author / date / state" badge spans shared
+/// by issue and PR headers. Callers extend `spans` with type-specific badges.
+fn build_detail_header_base(
+    number: u64,
+    title: &str,
+    author: Option<&GhAuthor>,
+    created_at: &str,
+    state: &str,
+) -> (Line<'static>, Vec<Span<'static>>) {
     let title_line = Line::from(vec![
         Span::raw("  "),
         Span::styled(
-            format!("#{} {}", detail.number, detail.title),
+            format!("#{number} {title}"),
             Style::default()
                 .fg(Color::Yellow)
                 .add_modifier(Modifier::BOLD),
         ),
     ]);
+    let author_login = author.map(|a| a.login.as_str()).unwrap_or("unknown");
+    let spans = vec![
+        Span::raw(" "),
+        badge(author_login, Color::Rgb(31, 111, 139)),
+        Span::raw(" "),
+        badge(format_date(created_at), Color::Rgb(68, 71, 78)),
+        Span::raw(" "),
+        state_badge(state),
+    ];
+    (title_line, spans)
+}
 
-    // Line 2: badges
-    let author = detail
-        .author
-        .as_ref()
-        .map(|a| a.login.as_str())
-        .unwrap_or("unknown");
-    let mut spans = vec![Span::raw(" ")];
-    spans.push(badge(author, Color::Rgb(31, 111, 139)));
-    spans.push(Span::raw(" "));
-    spans.push(badge(
-        format_date(&detail.created_at),
-        Color::Rgb(68, 71, 78),
-    ));
-    spans.push(Span::raw(" "));
-    spans.push(state_badge(&detail.state));
-    for s in build_label_spans(&detail.labels) {
-        spans.push(s);
-    }
-
+fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
+    let (title_line, mut spans) = build_detail_header_base(
+        detail.number,
+        &detail.title,
+        detail.author.as_ref(),
+        &detail.created_at,
+        &detail.state,
+    );
+    spans.extend(build_label_spans(&detail.labels));
     vec![title_line, Line::from(spans)]
 }
 
 fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
-    // Line 1: title
-    let title_line = Line::from(vec![
-        Span::raw("  "),
-        Span::styled(
-            format!("#{} {}", detail.number, detail.title),
-            Style::default()
-                .fg(Color::Yellow)
-                .add_modifier(Modifier::BOLD),
-        ),
-    ]);
-
-    // Line 2: badges
-    let author = detail
-        .author
-        .as_ref()
-        .map(|a| a.login.as_str())
-        .unwrap_or("unknown");
-    let mut spans = vec![Span::raw(" ")];
-    spans.push(badge(author, Color::Rgb(31, 111, 139)));
-    spans.push(Span::raw(" "));
-    spans.push(badge(
-        format_date(&detail.created_at),
-        Color::Rgb(68, 71, 78),
-    ));
-    spans.push(Span::raw(" "));
-    spans.push(state_badge(&detail.state));
+    let (title_line, mut spans) = build_detail_header_base(
+        detail.number,
+        &detail.title,
+        detail.author.as_ref(),
+        &detail.created_at,
+        &detail.state,
+    );
     spans.push(Span::raw(" "));
     spans.push(badge(&detail.head_ref_name, Color::Rgb(130, 80, 160)));
     spans.push(Span::raw(" "));
@@ -380,10 +373,7 @@ fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
         }
     }
 
-    for s in build_label_spans(&detail.labels) {
-        spans.push(s);
-    }
-
+    spans.extend(build_label_spans(&detail.labels));
     vec![title_line, Line::from(spans)]
 }
 
@@ -436,10 +426,7 @@ fn render_status_table(
     is_detail_focused: bool,
     selected_idx: usize,
 ) {
-    let block = Block::default()
-        .title(pane_title(title, is_active, is_detail_focused))
-        .borders(Borders::ALL)
-        .border_style(pane_border_style(is_active, is_detail_focused));
+    let block = sub_block(title, is_active, is_detail_focused);
 
     let sorted = sorted_checks(detail);
 
@@ -579,13 +566,20 @@ fn review_icon(review: &GhReview) -> (&'static str, Color) {
     }
 }
 
+/// Build a list of items where each entry has a one-line header followed by
+/// a markdown-rendered body. Used by both reviews and comments.
 /// Returns (lines, selected_header_line_offset).
-fn build_reviews_lines(reviews: &[GhReview], selected_idx: usize) -> (Vec<Line<'static>>, u16) {
-    let meaningful = meaningful_reviews(reviews);
-    if meaningful.is_empty() {
+fn build_items_lines<T>(
+    items: &[&T],
+    selected_idx: usize,
+    empty_msg: &str,
+    header_spans: impl Fn(&T) -> Vec<Span<'static>>,
+    body: impl Fn(&T) -> &str,
+) -> (Vec<Line<'static>>, u16) {
+    if items.is_empty() {
         return (
             vec![Line::from(Span::styled(
-                "  (no reviews)",
+                empty_msg.to_string(),
                 Style::default().fg(Color::DarkGray),
             ))],
             0,
@@ -594,7 +588,7 @@ fn build_reviews_lines(reviews: &[GhReview], selected_idx: usize) -> (Vec<Line<'
     let sel_bg = Style::default().bg(Color::DarkGray);
     let mut lines = Vec::new();
     let mut sel_offset: u16 = 0;
-    for (i, review) in meaningful.iter().enumerate() {
+    for (i, item) in items.iter().enumerate() {
         if i > 0 {
             lines.push(Line::from(""));
         }
@@ -602,70 +596,67 @@ fn build_reviews_lines(reviews: &[GhReview], selected_idx: usize) -> (Vec<Line<'
         if is_sel {
             sel_offset = lines.len() as u16;
         }
-        let (icon, color) = review_icon(review);
-        let author = review
-            .author
-            .as_ref()
-            .map(|a| a.login.as_str())
-            .unwrap_or("unknown");
-        let mut header = Line::from(vec![
-            Span::raw("  "),
-            Span::styled(icon, Style::default().fg(color)),
-            Span::raw(" "),
-            Span::styled(author.to_string(), Style::default().fg(Color::Cyan)),
-            Span::raw("  "),
-            Span::styled(review.state.clone(), Style::default().fg(color)),
-        ]);
+        let mut header = Line::from(header_spans(item));
         if is_sel {
             header = header.style(sel_bg);
         }
         lines.push(header);
-        if !review.body.is_empty() {
-            lines.extend(markdown_to_lines(&review.body, "    "));
+        let body_text = body(item);
+        if !body_text.is_empty() {
+            lines.extend(markdown_to_lines(body_text, "    "));
         }
     }
     (lines, sel_offset)
 }
 
 /// Returns (lines, selected_header_line_offset).
+fn build_reviews_lines(reviews: &[GhReview], selected_idx: usize) -> (Vec<Line<'static>>, u16) {
+    let meaningful = meaningful_reviews(reviews);
+    build_items_lines(
+        &meaningful,
+        selected_idx,
+        "  (no reviews)",
+        |review| {
+            let (icon, color) = review_icon(review);
+            let author = review
+                .author
+                .as_ref()
+                .map(|a| a.login.as_str())
+                .unwrap_or("unknown");
+            vec![
+                Span::raw("  "),
+                Span::styled(icon, Style::default().fg(color)),
+                Span::raw(" "),
+                Span::styled(author.to_string(), Style::default().fg(Color::Cyan)),
+                Span::raw("  "),
+                Span::styled(review.state.clone(), Style::default().fg(color)),
+            ]
+        },
+        |review| &review.body,
+    )
+}
+
+/// Returns (lines, selected_header_line_offset).
 fn build_comments_lines(comments: &[GhComment], selected_idx: usize) -> (Vec<Line<'static>>, u16) {
-    if comments.is_empty() {
-        return (
-            vec![Line::from(Span::styled(
-                "  (no comments)",
-                Style::default().fg(Color::DarkGray),
-            ))],
-            0,
-        );
-    }
-    let sel_bg = Style::default().bg(Color::DarkGray);
-    let mut lines = Vec::new();
-    let mut sel_offset: u16 = 0;
-    for (i, comment) in comments.iter().enumerate() {
-        if i > 0 {
-            lines.push(Line::from(""));
-        }
-        let is_sel = i == selected_idx;
-        if is_sel {
-            sel_offset = lines.len() as u16;
-        }
-        let author = comment
-            .author
-            .as_ref()
-            .map(|a| a.login.as_str())
-            .unwrap_or("unknown");
-        let mut header = Line::from(vec![
-            Span::raw("  "),
-            Span::styled(author.to_string(), Style::default().fg(Color::Cyan)),
-            Span::raw(format!("  {}", format_date(&comment.created_at))),
-        ]);
-        if is_sel {
-            header = header.style(sel_bg);
-        }
-        lines.push(header);
-        lines.extend(markdown_to_lines(&comment.body, "    "));
-    }
-    (lines, sel_offset)
+    let items: Vec<&GhComment> = comments.iter().collect();
+    build_items_lines(
+        &items,
+        selected_idx,
+        "  (no comments)",
+        |comment| {
+            let author = comment
+                .author
+                .as_ref()
+                .map(|a| a.login.as_str())
+                .unwrap_or("unknown");
+            vec![
+                Span::raw("  "),
+                Span::styled(author.to_string(), Style::default().fg(Color::Cyan)),
+                Span::raw(format!("  {}", format_date(&comment.created_at))),
+            ]
+        },
+        |comment| &comment.body,
+    )
 }
 
 fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
