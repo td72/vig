@@ -423,6 +423,40 @@ pub trait PaneSet {
     }
 }
 
+/// A page that owns a `PaneShared`, a `PaneSet`, a view keymap, and a
+/// `PageLayoutConfig` can implement this trait to share the generic
+/// `dispatch_page_key` / `render_page_content` helpers below.
+pub trait PageLayout {
+    type Panes: PaneSet;
+    fn page_parts_mut(
+        &mut self,
+    ) -> (
+        &mut PaneShared,
+        &mut Self::Panes,
+        &Keymap<ViewAction>,
+        &crate::core::layout::PageLayoutConfig,
+    );
+}
+
+/// Dispatch a key event through the page's shared `PaneShared`.
+pub fn dispatch_page_key<S: PageLayout>(state: &mut S, key: KeyEvent) -> Vec<PaneEvent> {
+    let (shared, panes, keymap, layout) = state.page_parts_mut();
+    shared.dispatch_key(panes, keymap, &layout.tab_panes, key)
+}
+
+/// Render the layout tree's panes into the given content area.
+pub fn render_page_content<S: PageLayout>(
+    state: &mut S,
+    f: &mut Frame,
+    ctx: &AppContext,
+    area: Rect,
+) {
+    let (shared, panes, _, layout) = state.page_parts_mut();
+    let slots = layout.resolve_slots(shared.focused_pane);
+    let areas = crate::core::layout::resolve_layout(area, &layout.tree, &slots);
+    shared.render_panes(panes, f, ctx, &areas);
+}
+
 // Note: #[allow(dead_code)] needed because rustc doesn't track usage through dyn dispatch.
 #[allow(dead_code)]
 pub trait Pane<Event> {

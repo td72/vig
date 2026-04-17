@@ -1,7 +1,7 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{view_bindings, Keymap, ViewAction};
 use crate::core::layout::{
-    resolve_layout, split_page_frame, LayoutNode, PageLayoutConfig, SlotRule, SplitDirection,
+    split_page_frame, LayoutNode, PageLayoutConfig, SlotRule, SplitDirection,
 };
 use crate::core::page::PageAction;
 use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
@@ -141,6 +141,25 @@ impl PrTab {
 pub struct GhPanes {
     pub issue_tab: IssueTab,
     pub pr_tab: PrTab,
+}
+
+impl pane::PageLayout for GitHubState {
+    type Panes = GhPanes;
+    fn page_parts_mut(
+        &mut self,
+    ) -> (
+        &mut PaneShared,
+        &mut Self::Panes,
+        &crate::core::keymap::Keymap<ViewAction>,
+        &PageLayoutConfig,
+    ) {
+        (
+            &mut self.pane,
+            &mut self.panes,
+            &self.view_keymap,
+            &self.layout_config,
+        )
+    }
 }
 
 impl PaneSet for GhPanes {
@@ -335,12 +354,7 @@ impl GitHubState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        self.pane.dispatch_key(
-            &mut self.panes,
-            &self.view_keymap,
-            &self.layout_config.tab_panes,
-            key,
-        )
+        pane::dispatch_page_key(self, key)
     }
 
     // === Event processing ===
@@ -457,11 +471,7 @@ impl crate::core::app::PageState for GitHubState {
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let frame = split_page_frame(area);
         status_bar::render_gh_header(f, ctx, frame.header);
-
-        let slots = self.layout_config.resolve_slots(self.pane.focused_pane);
-        let areas = resolve_layout(frame.content, &self.layout_config.tree, &slots);
-        self.pane.render_panes(&mut self.panes, f, ctx, &areas);
-
+        pane::render_page_content(self, f, ctx, frame.content);
         status_bar::render_gh_status_bar(f, ctx, self, frame.status_bar);
     }
 

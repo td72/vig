@@ -1,7 +1,7 @@
 use crate::core::app::AppContext;
 use crate::core::keymap::{view_bindings, Keymap, ViewAction};
 use crate::core::layout::{
-    resolve_layout, split_page_frame, LayoutNode, PageLayoutConfig, SlotRule, SplitDirection,
+    split_page_frame, LayoutNode, PageLayoutConfig, SlotRule, SplitDirection,
 };
 use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
@@ -100,6 +100,25 @@ pub struct GitPanes {
     pub file_tab: FileTab,
     pub branch_tab: BranchTab,
     pub reflog: ReflogPane,
+}
+
+impl pane::PageLayout for GitState {
+    type Panes = GitPanes;
+    fn page_parts_mut(
+        &mut self,
+    ) -> (
+        &mut PaneShared,
+        &mut Self::Panes,
+        &crate::core::keymap::Keymap<ViewAction>,
+        &PageLayoutConfig,
+    ) {
+        (
+            &mut self.pane,
+            &mut self.panes,
+            &self.view_keymap,
+            &self.layout_config,
+        )
+    }
 }
 
 impl PaneSet for GitPanes {
@@ -230,12 +249,7 @@ impl GitState {
     // === Dispatch ===
 
     pub fn dispatch_key(&mut self, key: KeyEvent) -> Vec<PaneEvent> {
-        self.pane.dispatch_key(
-            &mut self.panes,
-            &self.view_keymap,
-            &self.layout_config.tab_panes,
-            key,
-        )
+        pane::dispatch_page_key(self, key)
     }
 
     // === Event processing ===
@@ -420,11 +434,7 @@ impl crate::core::app::PageState for GitState {
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let frame = split_page_frame(area);
         status_bar::render_header(f, ctx, self, frame.header);
-
-        let slots = self.layout_config.resolve_slots(self.pane.focused_pane);
-        let areas = resolve_layout(frame.content, &self.layout_config.tree, &slots);
-        self.pane.render_panes(&mut self.panes, f, ctx, &areas);
-
+        pane::render_page_content(self, f, ctx, frame.content);
         status_bar::render_status_bar(f, ctx, self, frame.status_bar);
 
         if self.panes.branch_tab.list.is_modal() {
