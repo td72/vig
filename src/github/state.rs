@@ -264,7 +264,7 @@ impl GitHubState {
                     );
                 }
                 GhBgMessage::IssueDetail(result) => match result {
-                    Ok(detail) => self.panes.issue_tab.detail.apply_issue_detail(detail),
+                    Ok(detail) => self.panes.issue_tab.detail.apply_detail(detail),
                     Err(e) => self.panes.issue_tab.detail.set_error(e),
                 },
                 GhBgMessage::PrDetail(result) => {

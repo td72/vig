@@ -12,6 +12,69 @@ use std::collections::HashMap;
 use std::sync::mpsc;
 use std::time::{Instant, SystemTime};
 
+/// Abstraction over the two detail payload types (issue, PR) so that load/apply
+/// logic can be written once over `D: DetailType`.
+pub trait DetailType: Sized + Clone + Send + 'static {
+    const KIND: GhDetailKind;
+    fn number(&self) -> u64;
+    fn save_to_disk(&self);
+    fn load_from_disk(number: u64) -> Option<Self>;
+    fn fetch(number: u64) -> Result<Self, String>;
+    fn into_content(self) -> GhDetailContent;
+    fn to_bg_message(result: Result<Self, String>) -> GhBgMessage;
+    fn cache_of(pane: &mut GhDetailViewPane) -> &mut HashMap<u64, Self>;
+}
+
+impl DetailType for GhIssueDetail {
+    const KIND: GhDetailKind = GhDetailKind::Issue;
+    fn number(&self) -> u64 {
+        self.number
+    }
+    fn save_to_disk(&self) {
+        disk_cache::save_issue_detail(self);
+    }
+    fn load_from_disk(number: u64) -> Option<Self> {
+        disk_cache::load_issue_detail(number)
+    }
+    fn fetch(number: u64) -> Result<Self, String> {
+        client::get_issue(number)
+    }
+    fn into_content(self) -> GhDetailContent {
+        GhDetailContent::Issue(Box::new(self))
+    }
+    fn to_bg_message(result: Result<Self, String>) -> GhBgMessage {
+        GhBgMessage::IssueDetail(result)
+    }
+    fn cache_of(pane: &mut GhDetailViewPane) -> &mut HashMap<u64, Self> {
+        &mut pane.issue_cache
+    }
+}
+
+impl DetailType for GhPrDetail {
+    const KIND: GhDetailKind = GhDetailKind::Pr;
+    fn number(&self) -> u64 {
+        self.number
+    }
+    fn save_to_disk(&self) {
+        disk_cache::save_pr_detail(self);
+    }
+    fn load_from_disk(number: u64) -> Option<Self> {
+        disk_cache::load_pr_detail(number)
+    }
+    fn fetch(number: u64) -> Result<Self, String> {
+        client::get_pr(number)
+    }
+    fn into_content(self) -> GhDetailContent {
+        GhDetailContent::Pr(Box::new(self))
+    }
+    fn to_bg_message(result: Result<Self, String>) -> GhBgMessage {
+        GhBgMessage::PrDetail(result)
+    }
+    fn cache_of(pane: &mut GhDetailViewPane) -> &mut HashMap<u64, Self> {
+        &mut pane.pr_cache
+    }
+}
+
 /// Watch mode status for display in the status bar.
 pub struct WatchStatus {
     pub last_update_time: String,
@@ -166,62 +229,46 @@ impl GhDetailViewPane {
 
     /// Load issue/PR detail — serves from cache if available, otherwise fetches in background.
     pub fn load(&mut self, kind: GhDetailKind, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
+        match kind {
+            GhDetailKind::Issue => self.load_typed::<GhIssueDetail>(number, tx),
+            GhDetailKind::Pr => self.load_typed::<GhPrDetail>(number, tx),
+        }
+    }
+
+    fn load_typed<D: DetailType>(&mut self, number: u64, tx: &mpsc::Sender<GhBgMessage>) {
         // Already loading this exact item — skip duplicate request
-        if matches!(&self.content, GhDetailContent::Loading { kind: k, number: n } if *k == kind && *n == number)
-        {
+        if matches!(
+            &self.content,
+            GhDetailContent::Loading { kind: k, number: n } if *k == D::KIND && *n == number,
+        ) {
             return;
         }
 
         // Check in-memory cache
-        let cached = match kind {
-            GhDetailKind::Issue => self
-                .issue_cache
-                .get(&number)
-                .map(|c| GhDetailContent::Issue(Box::new(c.clone()))),
-            GhDetailKind::Pr => self
-                .pr_cache
-                .get(&number)
-                .map(|c| GhDetailContent::Pr(Box::new(c.clone()))),
-        };
-        if let Some(content) = cached {
-            self.content = content;
+        if let Some(cached) = D::cache_of(self).get(&number).cloned() {
+            self.content = cached.into_content();
             self.reset_sub_panes();
             return;
         }
 
         // Check disk cache
-        let from_disk = match kind {
-            GhDetailKind::Issue => disk_cache::load_issue_detail(number).map(|c| {
-                self.issue_cache.insert(number, c.clone());
-                GhDetailContent::Issue(Box::new(c))
-            }),
-            GhDetailKind::Pr => disk_cache::load_pr_detail(number).map(|c| {
-                self.pr_cache.insert(number, c.clone());
-                GhDetailContent::Pr(Box::new(c))
-            }),
-        };
-        if let Some(content) = from_disk {
-            self.content = content;
+        if let Some(from_disk) = D::load_from_disk(number) {
+            D::cache_of(self).insert(number, from_disk.clone());
+            self.content = from_disk.into_content();
             self.reset_sub_panes();
             return;
         }
 
         // Fetch in background
-        self.content = GhDetailContent::Loading { kind, number };
+        self.content = GhDetailContent::Loading {
+            kind: D::KIND,
+            number,
+        };
         self.reset_sub_panes();
         let tx = tx.clone();
-        match kind {
-            GhDetailKind::Issue => {
-                std::thread::spawn(move || {
-                    let _ = tx.send(GhBgMessage::IssueDetail(client::get_issue(number)));
-                });
-            }
-            GhDetailKind::Pr => {
-                std::thread::spawn(move || {
-                    let _ = tx.send(GhBgMessage::PrDetail(client::get_pr(number)));
-                });
-            }
-        }
+        std::thread::spawn(move || {
+            let _ = tx.send(D::to_bg_message(D::fetch(number)));
+        });
     }
 
     pub fn clear_caches(&mut self) {
@@ -240,18 +287,11 @@ impl GhDetailViewPane {
         }
     }
 
-    /// Apply a fetched issue detail — save to disk cache and display.
-    pub fn apply_issue_detail(&mut self, detail: GhIssueDetail) {
-        disk_cache::save_issue_detail(&detail);
-        self.issue_cache.insert(detail.number, detail.clone());
-        self.content = GhDetailContent::Issue(Box::new(detail));
-    }
-
-    /// Apply a fetched PR detail — save to disk cache and display.
-    pub fn apply_pr_detail(&mut self, detail: GhPrDetail) {
-        disk_cache::save_pr_detail(&detail);
-        self.pr_cache.insert(detail.number, detail.clone());
-        self.content = GhDetailContent::Pr(Box::new(detail));
+    /// Apply a fetched issue/PR detail — save to disk cache, memoize, and display.
+    pub fn apply_detail<D: DetailType>(&mut self, detail: D) {
+        detail.save_to_disk();
+        D::cache_of(self).insert(detail.number(), detail.clone());
+        self.content = detail.into_content();
     }
 
     /// Apply a PR detail fetch result, handling watch-mode error semantics.
@@ -260,7 +300,7 @@ impl GhDetailViewPane {
         match result {
             Ok(detail) => {
                 self.watch_error = None;
-                self.apply_pr_detail(detail);
+                self.apply_detail(detail);
             }
             Err(e) => {
                 if self.watch_mode {
