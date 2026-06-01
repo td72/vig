@@ -304,6 +304,25 @@ impl GitHubState {
         matches!(self.pane.focused_pane, GH_PANE_PR_LIST | GH_PANE_PR_DETAIL)
     }
 
+    /// The detail pane of the currently active tab (issue or PR).
+    /// Both tabs share the same `GhDetailViewPane` type, so callers that
+    /// only touch the detail side can avoid branching on `is_on_pr_tab`.
+    fn active_detail(&self) -> &GhDetailViewPane {
+        if self.is_on_pr_tab() {
+            &self.panes.pr_tab.detail
+        } else {
+            &self.panes.issue_tab.detail
+        }
+    }
+
+    fn active_detail_mut(&mut self) -> &mut GhDetailViewPane {
+        if self.is_on_pr_tab() {
+            &mut self.panes.pr_tab.detail
+        } else {
+            &mut self.panes.issue_tab.detail
+        }
+    }
+
     /// Sync the active tab's detail view.
     pub fn sync_active_detail(&mut self) {
         let tx = match &self.bg_tx {
@@ -319,22 +338,13 @@ impl GitHubState {
 
     /// Refresh only the currently displayed detail item (cache-bust + re-fetch).
     pub fn refresh_detail(&mut self) {
-        let info = if self.is_on_pr_tab() {
-            self.panes.pr_tab.detail.current_detail_info()
-        } else {
-            self.panes.issue_tab.detail.current_detail_info()
-        };
-        match info {
+        match self.active_detail().current_detail_info() {
             None => self.sync_active_detail(),
             Some((kind, number)) => {
-                if let Some(tx) = &self.bg_tx {
-                    let dv = if self.is_on_pr_tab() {
-                        &mut self.panes.pr_tab.detail
-                    } else {
-                        &mut self.panes.issue_tab.detail
-                    };
+                if let Some(tx) = self.bg_tx.clone() {
+                    let dv = self.active_detail_mut();
                     dv.invalidate(kind, number);
-                    dv.load(kind, number, tx);
+                    dv.load(kind, number, &tx);
                 }
             }
         }
