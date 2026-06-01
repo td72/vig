@@ -1,7 +1,7 @@
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
-use crate::core::keymap::{nav_bindings, ActionHelp, Keymap, NavAction};
+use crate::core::keymap::{half_page_step, nav_bindings, ActionHelp, Keymap, NavAction};
 use crate::core::pane::{Pane, PaneEvent, PaneShared, SubPaneScroll};
 use crate::github::domain::types::*;
 use crate::github::domain::{client, disk_cache};
@@ -447,12 +447,12 @@ impl GhDetailViewPane {
                 }
             }
             DetailAction::Nav(NavAction::HalfPageDown) => {
-                let half = (self.view_height / 2).max(1);
+                let half = half_page_step(self.view_height);
                 let s = self.active_scroll_mut();
                 s.scroll_y = s.scroll_y.saturating_add(half);
             }
             DetailAction::Nav(NavAction::HalfPageUp) => {
-                let half = (self.view_height / 2).max(1);
+                let half = half_page_step(self.view_height);
                 let s = self.active_scroll_mut();
                 s.scroll_y = s.scroll_y.saturating_sub(half);
             }

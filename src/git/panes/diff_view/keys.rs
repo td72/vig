@@ -1,5 +1,7 @@
 use super::{CursorPos, DiffSide, DiffViewMode};
-use crate::core::keymap::{search_bindings, ActionHelp, Keymap, NavAction, SearchAction};
+use crate::core::keymap::{
+    half_page_step, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
+};
 use crate::core::pane::{self, PaneShared};
 use crate::git::state::{PaneEvent, PANE_DIFF_VIEW};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
@@ -90,11 +92,11 @@ fn execute_diff_scroll(
                 pane.scroll.y = pane.scroll.y.saturating_sub(1);
             }
             NavAction::HalfPageDown => {
-                let half = pane.scroll.view_height / 2;
+                let half = half_page_step(pane.scroll.view_height);
                 pane.scroll.y = (pane.scroll.y + half).min(max_scroll);
             }
             NavAction::HalfPageUp => {
-                let half = pane.scroll.view_height / 2;
+                let half = half_page_step(pane.scroll.view_height);
                 pane.scroll.y = pane.scroll.y.saturating_sub(half);
             }
             NavAction::JumpTop => {

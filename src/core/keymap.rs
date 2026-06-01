@@ -497,6 +497,13 @@ pub fn help_section(title: &str) -> Vec<HelpEntry> {
     ]
 }
 
+/// Number of rows a half-page navigation should move, given the viewport
+/// height. Always at least 1 so a half-page step is never a no-op on very
+/// short viewports.
+pub fn half_page_step(view_height: u16) -> u16 {
+    (view_height / 2).max(1)
+}
+
 /// Execute a navigation action on a list, updating `selected_idx`.
 /// Returns `true` if the selection actually changed.
 pub fn execute_nav(
@@ -521,11 +528,11 @@ pub fn execute_nav(
             }
         }
         NavAction::HalfPageDown => {
-            let half = (view_height.unwrap_or(20) / 2).max(1) as usize;
+            let half = half_page_step(view_height.unwrap_or(20)) as usize;
             *selected_idx = (*selected_idx + half).min(item_count - 1);
         }
         NavAction::HalfPageUp => {
-            let half = (view_height.unwrap_or(20) / 2).max(1) as usize;
+            let half = half_page_step(view_height.unwrap_or(20)) as usize;
             *selected_idx = selected_idx.saturating_sub(half);
         }
         NavAction::JumpTop => {
