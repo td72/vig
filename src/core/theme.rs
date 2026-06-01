@@ -149,6 +149,34 @@ pub fn render_search_list(
     f.render_stateful_widget(list, area, &mut list_state);
 }
 
+/// Render a standard search-enabled list pane: focused border, empty-state
+/// fallback, search highlighting and selection. The caller supplies the
+/// per-item rendering via `build_items`, which receives the match set and the
+/// current match index so it can style matched/selected rows.
+///
+/// Pass `empty: Some(message)` to short-circuit into the empty-state view
+/// (used both for "no items" and transient states like "Loading...").
+#[allow(clippy::too_many_arguments)]
+pub fn render_list_pane(
+    f: &mut Frame,
+    area: Rect,
+    shared: &PaneShared,
+    pane_id: usize,
+    title: &str,
+    selected: Option<usize>,
+    empty: Option<&str>,
+    build_items: impl FnOnce(&HashSet<usize>, Option<usize>) -> Vec<ListItem<'static>>,
+) {
+    let block = pane_block(title, shared.focused_pane == pane_id);
+    if let Some(message) = empty {
+        render_empty_list(f, area, block, message);
+        return;
+    }
+    let (match_set, current_match_idx) = list_search_highlights(shared, pane_id);
+    let items = build_items(&match_set, current_match_idx);
+    render_search_list(f, area, items, block, selected, &match_set);
+}
+
 /// Extract list-entry search highlights for a given pane.
 /// Returns (set of matched indices, current match index).
 pub fn list_search_highlights(

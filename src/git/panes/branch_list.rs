@@ -290,59 +290,58 @@ impl BranchListPane {
     }
 
     fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        let block = theme::pane_block("Branches", shared.focused_pane == PANE_BRANCH_LIST);
+        let empty = self.branches.is_empty().then_some("No branches");
+        theme::render_list_pane(
+            f,
+            area,
+            shared,
+            PANE_BRANCH_LIST,
+            "Branches",
+            Some(self.selected_idx),
+            empty,
+            |match_set, current_match_idx| {
+                self.branches
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, branch)| {
+                        let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
 
-        if self.branches.is_empty() {
-            theme::render_empty_list(f, area, block, "No branches");
-            return;
-        }
+                        let mut spans = vec![Span::raw(" ")];
 
-        let (match_set, current_match_idx) =
-            theme::list_search_highlights(shared, PANE_BRANCH_LIST);
-
-        let items: Vec<ListItem> = self
-            .branches
-            .iter()
-            .enumerate()
-            .map(|(idx, branch)| {
-                let hl = theme::search_highlight_for(&match_set, current_match_idx, idx);
-
-                let mut spans = vec![Span::raw(" ")];
-
-                let name_style = if hl.is_active() {
-                    hl.apply(Style::default())
-                } else if branch.is_head {
-                    Style::default()
-                        .fg(Color::Green)
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default()
-                };
-
-                if branch.is_head {
-                    let star_style = if hl.is_active() {
-                        hl.apply(
+                        let name_style = if hl.is_active() {
+                            hl.apply(Style::default())
+                        } else if branch.is_head {
                             Style::default()
                                 .fg(Color::Green)
-                                .add_modifier(Modifier::BOLD),
-                        )
-                    } else {
-                        Style::default()
-                            .fg(Color::Green)
-                            .add_modifier(Modifier::BOLD)
-                    };
-                    spans.push(Span::styled("* ", star_style));
-                    spans.push(Span::styled(branch.name.clone(), name_style));
-                } else {
-                    spans.push(Span::raw("  "));
-                    spans.push(Span::styled(branch.name.clone(), name_style));
-                }
+                                .add_modifier(Modifier::BOLD)
+                        } else {
+                            Style::default()
+                        };
 
-                ListItem::new(Line::from(spans))
-            })
-            .collect();
+                        if branch.is_head {
+                            let star_style = if hl.is_active() {
+                                hl.apply(
+                                    Style::default()
+                                        .fg(Color::Green)
+                                        .add_modifier(Modifier::BOLD),
+                                )
+                            } else {
+                                Style::default()
+                                    .fg(Color::Green)
+                                    .add_modifier(Modifier::BOLD)
+                            };
+                            spans.push(Span::styled("* ", star_style));
+                            spans.push(Span::styled(branch.name.clone(), name_style));
+                        } else {
+                            spans.push(Span::raw("  "));
+                            spans.push(Span::styled(branch.name.clone(), name_style));
+                        }
 
-        theme::render_search_list(f, area, items, block, Some(self.selected_idx), &match_set);
+                        ListItem::new(Line::from(spans))
+                    })
+                    .collect()
+            },
+        );
     }
 
     pub fn render_action_menu(&self, f: &mut Frame, area: Rect) {

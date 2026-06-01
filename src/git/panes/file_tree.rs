@@ -178,70 +178,73 @@ impl FileTreePane {
     }
 
     fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        let block = theme::pane_block("Files", shared.focused_pane == PANE_FILE_TREE);
-
         let entries = self.tree_entries();
-
-        if entries.is_empty() {
-            theme::render_empty_list(f, area, block, "Working tree clean");
-            return;
-        }
-
-        let (match_set, current_match_idx) = theme::list_search_highlights(shared, PANE_FILE_TREE);
-
-        let items: Vec<ListItem> = entries
-            .iter()
-            .enumerate()
-            .map(|(entry_idx, entry)| {
-                let hl = theme::search_highlight_for(&match_set, current_match_idx, entry_idx);
-                match entry {
-                    TreeEntry::Dir {
-                        path,
-                        depth,
-                        collapsed,
-                    } => {
-                        let indent = " ".repeat(depth * 2);
-                        let icon = if *collapsed { "▶" } else { "▼" };
-                        let dir_name = path.rsplit('/').next().unwrap_or(path);
-                        let name_style = hl.style_with_fg(Color::DarkGray);
-                        let line = Line::from(vec![
-                            Span::raw(format!(" {indent}  ")),
-                            Span::styled(format!("{icon} {dir_name}/"), name_style),
-                        ]);
-                        ListItem::new(line)
-                    }
-                    TreeEntry::File { file_idx, depth } => {
-                        let file = &self.files[*file_idx];
-                        let indent = " ".repeat(depth * 2);
-                        let icon_color = match file.status {
-                            FileStatus::Modified => Color::Yellow,
-                            FileStatus::Added => Color::Green,
-                            FileStatus::Deleted => Color::Red,
-                            FileStatus::Renamed => Color::Blue,
-                            FileStatus::Untracked => Color::DarkGray,
-                        };
-                        // For depth > 0, show only filename; for depth 0, show full path
-                        let display_name = if *depth > 0 {
-                            file.path.rsplit('/').next().unwrap_or(&file.path)
-                        } else {
-                            &file.path
-                        };
-                        let name_style = hl.apply(Style::default());
-                        let line = Line::from(vec![
-                            Span::raw(format!(" {indent}")),
-                            Span::styled(
-                                format!("{} ", file.status.icon()),
-                                Style::default().fg(icon_color).add_modifier(Modifier::BOLD),
-                            ),
-                            Span::styled(display_name.to_string(), name_style),
-                        ]);
-                        ListItem::new(line)
-                    }
-                }
-            })
-            .collect();
-
-        theme::render_search_list(f, area, items, block, Some(self.selected_idx), &match_set);
+        let empty = entries.is_empty().then_some("Working tree clean");
+        theme::render_list_pane(
+            f,
+            area,
+            shared,
+            PANE_FILE_TREE,
+            "Files",
+            Some(self.selected_idx),
+            empty,
+            |match_set, current_match_idx| {
+                entries
+                    .iter()
+                    .enumerate()
+                    .map(|(entry_idx, entry)| {
+                        let hl =
+                            theme::search_highlight_for(match_set, current_match_idx, entry_idx);
+                        match entry {
+                            TreeEntry::Dir {
+                                path,
+                                depth,
+                                collapsed,
+                            } => {
+                                let indent = " ".repeat(depth * 2);
+                                let icon = if *collapsed { "▶" } else { "▼" };
+                                let dir_name = path.rsplit('/').next().unwrap_or(path);
+                                let name_style = hl.style_with_fg(Color::DarkGray);
+                                let line = Line::from(vec![
+                                    Span::raw(format!(" {indent}  ")),
+                                    Span::styled(format!("{icon} {dir_name}/"), name_style),
+                                ]);
+                                ListItem::new(line)
+                            }
+                            TreeEntry::File { file_idx, depth } => {
+                                let file = &self.files[*file_idx];
+                                let indent = " ".repeat(depth * 2);
+                                let icon_color = match file.status {
+                                    FileStatus::Modified => Color::Yellow,
+                                    FileStatus::Added => Color::Green,
+                                    FileStatus::Deleted => Color::Red,
+                                    FileStatus::Renamed => Color::Blue,
+                                    FileStatus::Untracked => Color::DarkGray,
+                                };
+                                // For depth > 0, show only filename; for depth 0, show full path
+                                let display_name = if *depth > 0 {
+                                    file.path.rsplit('/').next().unwrap_or(&file.path)
+                                } else {
+                                    &file.path
+                                };
+                                let name_style = hl.apply(Style::default());
+                                let line = Line::from(vec![
+                                    Span::raw(format!(" {indent}")),
+                                    Span::styled(
+                                        format!("{} ", file.status.icon()),
+                                        Style::default()
+                                            .fg(icon_color)
+                                            .add_modifier(Modifier::BOLD),
+                                    ),
+                                    Span::styled(display_name.to_string(), name_style),
+                                ]);
+                                ListItem::new(line)
+                            }
+                        }
+                    })
+                    .collect()
+            },
+        );
     }
 }
 

@@ -165,43 +165,42 @@ impl<T: GhListItem> GhListPane<T> {
 
     fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         let is_focused = shared.focused_pane == self.pane_id;
-        let block = theme::pane_block(T::pane_title(), is_focused);
-
-        if self.loading && self.items.is_empty() {
-            theme::render_empty_list(f, area, block, "Loading...");
-            return;
-        }
-
-        if self.items.is_empty() {
-            theme::render_empty_list(f, area, block, T::empty_message());
-            return;
-        }
-
-        let (match_set, current_match_idx) = theme::list_search_highlights(shared, self.pane_id);
-
-        let items: Vec<ListItem> = self
-            .items
-            .iter()
-            .enumerate()
-            .map(|(idx, item)| {
-                let mut li = item.render_item();
-                let hl = theme::search_highlight_for(&match_set, current_match_idx, idx);
-                if hl.is_active() {
-                    use ratatui::style::Style;
-                    li = li.style(hl.apply(Style::default()));
-                }
-                li
-            })
-            .collect();
-
-        let show_selection = is_focused
-            || (shared.focused_pane == self.detail_pane_id && shared.previous_pane == self.pane_id);
-        let selected = if show_selection {
-            Some(self.selected_idx)
+        let empty = if self.loading && self.items.is_empty() {
+            Some("Loading...")
+        } else if self.items.is_empty() {
+            Some(T::empty_message())
         } else {
             None
         };
-        theme::render_search_list(f, area, items, block, selected, &match_set);
+
+        let show_selection = is_focused
+            || (shared.focused_pane == self.detail_pane_id && shared.previous_pane == self.pane_id);
+        let selected = show_selection.then_some(self.selected_idx);
+
+        theme::render_list_pane(
+            f,
+            area,
+            shared,
+            self.pane_id,
+            T::pane_title(),
+            selected,
+            empty,
+            |match_set, current_match_idx| {
+                self.items
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, item)| {
+                        let mut li = item.render_item();
+                        let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
+                        if hl.is_active() {
+                            use ratatui::style::Style;
+                            li = li.style(hl.apply(Style::default()));
+                        }
+                        li
+                    })
+                    .collect()
+            },
+        );
     }
 
     fn collect_search_matches_impl(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {

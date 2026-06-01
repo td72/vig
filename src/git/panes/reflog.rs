@@ -108,37 +108,38 @@ impl ReflogPane {
 
     fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
-        let block = theme::pane_block("Reflog", shared.focused_pane == PANE_REFLOG);
+        let empty = self.entries.is_empty().then_some("No reflog entries");
+        theme::render_list_pane(
+            f,
+            area,
+            shared,
+            PANE_REFLOG,
+            "Reflog",
+            Some(self.selected_idx),
+            empty,
+            |match_set, current_match_idx| {
+                self.entries
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, entry)| {
+                        let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
 
-        if self.entries.is_empty() {
-            theme::render_empty_list(f, area, block, "No reflog entries");
-            return;
-        }
+                        let hash_style = hl.style_with_fg(Color::Yellow);
+                        let selector_style = hl.style_with_fg(Color::DarkGray);
+                        let action_style =
+                            hl.style_with_fg(Color::Cyan).add_modifier(Modifier::BOLD);
+                        let msg_style = hl.apply(Style::default());
 
-        let (match_set, current_match_idx) = theme::list_search_highlights(shared, PANE_REFLOG);
-
-        let items: Vec<ListItem> = self
-            .entries
-            .iter()
-            .enumerate()
-            .map(|(idx, entry)| {
-                let hl = theme::search_highlight_for(&match_set, current_match_idx, idx);
-
-                let hash_style = hl.style_with_fg(Color::Yellow);
-                let selector_style = hl.style_with_fg(Color::DarkGray);
-                let action_style = hl.style_with_fg(Color::Cyan).add_modifier(Modifier::BOLD);
-                let msg_style = hl.apply(Style::default());
-
-                ListItem::new(Line::from(vec![
-                    Span::styled(format!(" {} ", entry.short_hash), hash_style),
-                    Span::styled(format!("{} ", entry.selector), selector_style),
-                    Span::styled(format!("{}: ", entry.action), action_style),
-                    Span::styled(entry.message.clone(), msg_style),
-                ]))
-            })
-            .collect();
-
-        theme::render_search_list(f, area, items, block, Some(self.selected_idx), &match_set);
+                        ListItem::new(Line::from(vec![
+                            Span::styled(format!(" {} ", entry.short_hash), hash_style),
+                            Span::styled(format!("{} ", entry.selector), selector_style),
+                            Span::styled(format!("{}: ", entry.action), action_style),
+                            Span::styled(entry.message.clone(), msg_style),
+                        ]))
+                    })
+                    .collect()
+            },
+        );
     }
 }
 
