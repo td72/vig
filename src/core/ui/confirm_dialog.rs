@@ -7,21 +7,9 @@ use ratatui::{
     Frame,
 };
 
-const BG: Color = Color::Rgb(30, 30, 30);
+use super::pad_line;
 
-fn pad_line(line: Line<'static>, width: usize) -> Line<'static> {
-    let content_len: usize = line.spans.iter().map(|s| s.content.chars().count()).sum();
-    if content_len < width {
-        let mut spans = line.spans;
-        spans.push(Span::styled(
-            " ".repeat(width - content_len),
-            Style::default().bg(BG),
-        ));
-        Line::from(spans)
-    } else {
-        line
-    }
-}
+const BG: Color = Color::Rgb(30, 30, 30);
 
 /// Word-wrap text into lines of at most `width` characters.
 fn wrap_text(text: &str, width: usize) -> Vec<String> {
@@ -84,12 +72,14 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
                 .add_modifier(Modifier::BOLD),
         )),
         inner_w,
+        BG,
     ));
 
     // Blank
     lines.push(pad_line(
         Line::from(Span::styled(String::new(), Style::default().bg(BG))),
         inner_w,
+        BG,
     ));
 
     // Message lines
@@ -100,6 +90,7 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
                 Style::default().fg(Color::White).bg(BG),
             )),
             inner_w,
+            BG,
         ));
     }
 
@@ -107,6 +98,7 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
     lines.push(pad_line(
         Line::from(Span::styled(String::new(), Style::default().bg(BG))),
         inner_w,
+        BG,
     ));
 
     // Dismiss hint
@@ -116,6 +108,7 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
             Style::default().fg(Color::DarkGray).bg(BG),
         )),
         inner_w,
+        BG,
     ));
 
     // Fill remaining rows with background so nothing shows through
@@ -124,6 +117,7 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
         lines.push(pad_line(
             Line::from(Span::styled(String::new(), Style::default().bg(BG))),
             inner_w,
+            BG,
         ));
     }
 

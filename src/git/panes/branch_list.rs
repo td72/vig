@@ -5,6 +5,7 @@ use crate::core::keymap::{
 use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
+use crate::core::ui::pad_line;
 use crate::git::domain::repository::{BranchInfo, Repo};
 use crate::git::state::PaneEvent;
 
@@ -375,6 +376,7 @@ impl BranchListPane {
         lines.push(pad_line(
             Line::from(Span::styled(format!(" {}", menu.branch_name), name_style)),
             inner_w,
+            theme::MODAL_BG,
         ));
         lines.push(pad_line(
             Line::from(Span::styled(
@@ -382,6 +384,7 @@ impl BranchListPane {
                 Style::default().fg(Color::DarkGray).bg(theme::MODAL_BG),
             )),
             inner_w,
+            theme::MODAL_BG,
         ));
 
         // Menu items
@@ -409,6 +412,7 @@ impl BranchListPane {
                     Span::styled(label.to_string(), style),
                 ]),
                 inner_w,
+                theme::MODAL_BG,
             ));
         }
 
@@ -438,18 +442,4 @@ impl Pane<PaneEvent> for BranchListPane {
     }
 
     crate::impl_list_pane_selection!();
-}
-
-fn pad_line(line: Line<'static>, width: usize) -> Line<'static> {
-    let content_len: usize = line.spans.iter().map(|s| s.content.chars().count()).sum();
-    if content_len < width {
-        let mut spans = line.spans;
-        spans.push(Span::styled(
-            " ".repeat(width - content_len),
-            Style::default().bg(theme::MODAL_BG),
-        ));
-        Line::from(spans)
-    } else {
-        line
-    }
 }
