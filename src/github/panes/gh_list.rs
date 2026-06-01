@@ -147,10 +147,8 @@ impl<T: GhListItem> GhListPane<T> {
             GhListAction::Nav(nav) => {
                 return pane::execute_list_nav(nav, &mut self.selected_idx, self.items.len(), None);
             }
-            GhListAction::OpenDetail => {
-                if !self.items.is_empty() {
-                    return vec![PaneEvent::SetFocus(self.detail_pane_id)];
-                }
+            GhListAction::OpenDetail if !self.items.is_empty() => {
+                return vec![PaneEvent::SetFocus(self.detail_pane_id)];
             }
             GhListAction::SwitchTab => {
                 return vec![PaneEvent::SetFocus(self.switch_target)];

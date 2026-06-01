@@ -743,10 +743,10 @@ fn markdown_to_lines(text: &str, padding: &str) -> Vec<Line<'static>> {
                 in_heading = false;
                 heading_style = Style::default();
             }
-            Event::Start(Tag::Paragraph) => {
-                if !lines.is_empty() && !in_code_block && !in_list_item {
-                    flush_line(&mut lines, &mut current_spans, padding, Style::default());
-                }
+            Event::Start(Tag::Paragraph)
+                if !lines.is_empty() && !in_code_block && !in_list_item =>
+            {
+                flush_line(&mut lines, &mut current_spans, padding, Style::default());
             }
             Event::End(TagEnd::Paragraph) => {
                 let style = if in_heading {

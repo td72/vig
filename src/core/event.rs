@@ -46,15 +46,15 @@ impl EventHandler {
             }
             if event::poll(tick_rate).unwrap_or(false) {
                 match event::read() {
-                    Ok(crossterm::event::Event::Key(key)) => {
-                        if event_tx.send(Event::Key(key)).is_err() {
-                            return;
-                        }
+                    Ok(crossterm::event::Event::Key(key))
+                        if event_tx.send(Event::Key(key)).is_err() =>
+                    {
+                        return;
                     }
-                    Ok(crossterm::event::Event::Resize(w, h)) => {
-                        if event_tx.send(Event::Resize(w, h)).is_err() {
-                            return;
-                        }
+                    Ok(crossterm::event::Event::Resize(w, h))
+                        if event_tx.send(Event::Resize(w, h)).is_err() =>
+                    {
+                        return;
                     }
                     _ => {}
                 }
