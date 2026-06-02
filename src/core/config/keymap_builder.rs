@@ -113,7 +113,10 @@ mod tests {
             },
         ];
         let km: Keymap<FileTreeAction> = build_keymap(&entries).unwrap();
-        assert!(matches!(km.lookup(key_event("j")), Some(FileTreeAction::ToggleDir)));
+        assert!(matches!(
+            km.lookup(key_event("j")),
+            Some(FileTreeAction::ToggleDir)
+        ));
     }
 
     #[test]

@@ -11,12 +11,12 @@ use crate::core::ui::status_bar;
 use crate::git::domain::diff::{DiffMeta, FileDiff};
 use crate::git::domain::repository::Repo;
 use crate::git::domain::search;
-use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogPane, ReflogPane};
-use crate::git::panes::file_tree::FileTreeAction;
 use crate::git::panes::branch_list::BranchListAction;
+use crate::git::panes::diff_view::keys::DiffScrollAction;
+use crate::git::panes::file_tree::FileTreeAction;
 use crate::git::panes::git_log::GitLogAction;
 use crate::git::panes::reflog::ReflogAction;
-use crate::git::panes::diff_view::keys::DiffScrollAction;
+use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogPane, ReflogPane};
 use anyhow::Result;
 use crossterm::event::KeyEvent;
 use ratatui::layout::Rect;
@@ -32,7 +32,7 @@ pub const PANE_REFLOG: usize = 3;
 pub const PANE_DIFF_VIEW: usize = 4;
 
 #[cfg(test)]
-use crate::core::keymap::{view_bindings};
+use crate::core::keymap::view_bindings;
 #[cfg(test)]
 use crate::core::layout::{LayoutNode, SlotRule, SplitDirection};
 #[cfg(test)]
@@ -194,8 +194,8 @@ impl GitState {
     pub fn new(cwd: &Path) -> Result<Self> {
         // Load layout + pane keymaps from the embedded default KDL config.
         let name_map = pane_name_map();
-        let page_cfg = load_git_page_config(&name_map)
-            .expect("default.kdl git page config is always valid");
+        let page_cfg =
+            load_git_page_config(&name_map).expect("default.kdl git page config is always valid");
 
         let repo = Repo::discover(cwd)?;
         let result = repo.diff_workdir(None)?;
@@ -203,32 +203,56 @@ impl GitState {
 
         // Build pane keymaps from KDL entries.
         let file_tree_km = build_keymap::<FileTreeAction>(
-            page_cfg.pane_keys.get("file_tree").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("file_tree")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl file_tree keymap is always valid");
 
         let branch_list_km = build_keymap::<BranchListAction>(
-            page_cfg.pane_keys.get("branch_list").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("branch_list")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl branch_list keymap is always valid");
 
         let git_log_km = build_keymap::<GitLogAction>(
-            page_cfg.pane_keys.get("git_log").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("git_log")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl git_log keymap is always valid");
 
         let reflog_km = build_keymap::<ReflogAction>(
-            page_cfg.pane_keys.get("reflog").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("reflog")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl reflog keymap is always valid");
 
         let diff_view_km = build_keymap::<DiffScrollAction>(
-            page_cfg.pane_keys.get("diff_view").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("diff_view")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl diff_view keymap is always valid");
 
         let view_km = build_keymap::<ViewAction>(
-            page_cfg.pane_keys.get("view").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("view")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl git view keymap is always valid");
 
@@ -562,6 +586,7 @@ impl crate::core::app::PageState for GitState {
 #[cfg(test)]
 mod kdl_regression {
     use super::*;
+    use crate::core::config::{build_keymap, load_git_page_config};
     use crate::core::keymap::{KeyInput, ViewAction};
     use crate::core::layout::resolve_layout;
     use crate::git::panes::branch_list::{default_keymap as branch_default, BranchListAction};
@@ -569,7 +594,6 @@ mod kdl_regression {
     use crate::git::panes::file_tree::{default_keymap as file_tree_default, FileTreeAction};
     use crate::git::panes::git_log::{default_keymap as git_log_default, GitLogAction};
     use crate::git::panes::reflog::{default_keymap as reflog_default, ReflogAction};
-    use crate::core::config::{build_keymap, load_git_page_config};
     use crossterm::event::KeyEvent;
     use ratatui::layout::Rect;
 
@@ -598,14 +622,20 @@ mod kdl_regression {
         let layout_hc = resolve_layout(area, &hardcoded.tree, &slots_hc);
         let layout_kd = resolve_layout(area, &from_kdl.tree, &slots_kd);
 
-        assert_eq!(layout_hc, layout_kd, "layout resolution differs for file_tree focus");
+        assert_eq!(
+            layout_hc, layout_kd,
+            "layout resolution differs for file_tree focus"
+        );
 
         // Compare for focus on branch_list (slot → git_log)
         let slots_hc2 = hardcoded.resolve_slots(PANE_BRANCH_LIST);
         let slots_kd2 = from_kdl.resolve_slots(PANE_BRANCH_LIST);
         let layout_hc2 = resolve_layout(area, &hardcoded.tree, &slots_hc2);
         let layout_kd2 = resolve_layout(area, &from_kdl.tree, &slots_kd2);
-        assert_eq!(layout_hc2, layout_kd2, "layout resolution differs for branch_list focus");
+        assert_eq!(
+            layout_hc2, layout_kd2,
+            "layout resolution differs for branch_list focus"
+        );
     }
 
     #[test]
@@ -625,8 +655,10 @@ mod kdl_regression {
         assert_eq!(r_hc.slot_id, r_kd.slot_id);
         assert_eq!(r_hc.then_pane, r_kd.then_pane);
         assert_eq!(r_hc.default_pane, r_kd.default_pane);
-        let mut tp_hc = r_hc.trigger_panes.clone(); tp_hc.sort();
-        let mut tp_kd = r_kd.trigger_panes.clone(); tp_kd.sort();
+        let mut tp_hc = r_hc.trigger_panes.clone();
+        tp_hc.sort();
+        let mut tp_kd = r_kd.trigger_panes.clone();
+        tp_kd.sort();
         assert_eq!(tp_hc, tp_kd);
     }
 
@@ -664,8 +696,10 @@ mod kdl_regression {
         let entries = kdl_cfg().pane_keys;
         let kd: crate::core::keymap::Keymap<FileTreeAction> =
             build_keymap(entries["file_tree"].as_slice()).unwrap();
-        let test_keys = ["j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N",
-                          "Space", "Right", "Enter", "i", "Esc", "Down", "Up"];
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "Space", "Right", "Enter", "i",
+            "Esc", "Down", "Up",
+        ];
         check_keys(&hc, &kd, &test_keys);
     }
 
@@ -677,8 +711,9 @@ mod kdl_regression {
         let entries = kdl_cfg().pane_keys;
         let kd: crate::core::keymap::Keymap<BranchListAction> =
             build_keymap(entries["branch_list"].as_slice()).unwrap();
-        let test_keys = ["j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N",
-                          "Enter", "i", "Esc"];
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "Enter", "i", "Esc",
+        ];
         check_keys(&hc, &kd, &test_keys);
     }
 
@@ -690,8 +725,9 @@ mod kdl_regression {
         let entries = kdl_cfg().pane_keys;
         let kd: crate::core::keymap::Keymap<GitLogAction> =
             build_keymap(entries["git_log"].as_slice()).unwrap();
-        let test_keys = ["j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N",
-                          "y", "o", "h", "Esc"];
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "y", "o", "h", "Esc",
+        ];
         check_keys(&hc, &kd, &test_keys);
     }
 
@@ -703,8 +739,9 @@ mod kdl_regression {
         let entries = kdl_cfg().pane_keys;
         let kd: crate::core::keymap::Keymap<ReflogAction> =
             build_keymap(entries["reflog"].as_slice()).unwrap();
-        let test_keys = ["j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N",
-                          "Enter", "i", "Esc"];
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "Enter", "i", "Esc",
+        ];
         check_keys(&hc, &kd, &test_keys);
     }
 
@@ -716,8 +753,10 @@ mod kdl_regression {
         let entries = kdl_cfg().pane_keys;
         let kd: crate::core::keymap::Keymap<DiffScrollAction> =
             build_keymap(entries["diff_view"].as_slice()).unwrap();
-        let test_keys = ["j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N",
-                          "h", "Left", "l", "Right", "i", "Esc", "Down", "Up"];
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "h", "Left", "l", "Right", "i",
+            "Esc", "Down", "Up",
+        ];
         check_keys(&hc, &kd, &test_keys);
     }
 

@@ -543,10 +543,7 @@ impl FromStr for AppAction {
 /// Build an app-level keymap from `(key_str, action_str)` pairs.
 ///
 /// Page-name strings like `"page:git"` are resolved to indices using `page_names`.
-pub fn build_app_keymap(
-    entries: &[(String, String)],
-    page_names: &[&str],
-) -> Keymap<AppAction> {
+pub fn build_app_keymap(entries: &[(String, String)], page_names: &[&str]) -> Keymap<AppAction> {
     let mut km = Keymap::new();
     for (key_str, action_str) in entries {
         let ki = match key_str.parse::<KeyInput>() {

@@ -1,6 +1,6 @@
 pub mod app;
-pub mod config;
 pub mod browser;
+pub mod config;
 pub mod event;
 pub mod highlight;
 pub mod keymap;

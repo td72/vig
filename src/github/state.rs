@@ -214,27 +214,47 @@ impl GitHubState {
 
         // Build pane keymaps from KDL entries.
         let issue_list_km = build_keymap::<GhListAction>(
-            page_cfg.pane_keys.get("issue_list").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("issue_list")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl issue_list keymap is always valid");
 
         let pr_list_km = build_keymap::<GhListAction>(
-            page_cfg.pane_keys.get("pr_list").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("pr_list")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl pr_list keymap is always valid");
 
         let issue_detail_km = build_keymap::<DetailAction>(
-            page_cfg.pane_keys.get("issue_detail").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("issue_detail")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl issue_detail keymap is always valid");
 
         let pr_detail_km = build_keymap::<DetailAction>(
-            page_cfg.pane_keys.get("pr_detail").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("pr_detail")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl pr_detail keymap is always valid");
 
         let view_km = build_keymap::<ViewAction>(
-            page_cfg.pane_keys.get("view").map(Vec::as_slice).unwrap_or(&[]),
+            page_cfg
+                .pane_keys
+                .get("view")
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
         )
         .expect("default.kdl github view keymap is always valid");
 
@@ -567,9 +587,9 @@ impl crate::core::app::PageState for GitHubState {
 #[cfg(test)]
 mod kdl_regression {
     use super::*;
+    use crate::core::config::{build_keymap, load_github_page_config};
     use crate::core::keymap::KeyInput;
     use crate::core::layout::resolve_layout;
-    use crate::core::config::{build_keymap, load_github_page_config};
     use crate::github::panes::detail_view::DetailAction;
     use crate::github::panes::gh_list::GhListAction;
     use crossterm::event::KeyEvent;
@@ -617,7 +637,10 @@ mod kdl_regression {
         let slots_kd = from_kdl.resolve_slots(GH_PANE_ISSUE_LIST);
         let layout_hc = resolve_layout(area, &hardcoded.tree, &slots_hc);
         let layout_kd = resolve_layout(area, &from_kdl.tree, &slots_kd);
-        assert_eq!(layout_hc, layout_kd, "layout resolution differs for issue_list focus");
+        assert_eq!(
+            layout_hc, layout_kd,
+            "layout resolution differs for issue_list focus"
+        );
     }
 
     #[test]
@@ -637,8 +660,10 @@ mod kdl_regression {
         assert_eq!(r_hc.slot_id, r_kd.slot_id);
         assert_eq!(r_hc.then_pane, r_kd.then_pane);
         assert_eq!(r_hc.default_pane, r_kd.default_pane);
-        let mut tp_hc = r_hc.trigger_panes.clone(); tp_hc.sort();
-        let mut tp_kd = r_kd.trigger_panes.clone(); tp_kd.sort();
+        let mut tp_hc = r_hc.trigger_panes.clone();
+        tp_hc.sort();
+        let mut tp_kd = r_kd.trigger_panes.clone();
+        tp_kd.sort();
         assert_eq!(tp_hc, tp_kd);
     }
 
@@ -649,8 +674,9 @@ mod kdl_regression {
         let entries = kdl_cfg().pane_keys;
         let kd: crate::core::keymap::Keymap<GhListAction> =
             build_keymap(entries["issue_list"].as_slice()).unwrap();
-        let test_keys = ["j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N",
-                         "i", "Enter", "Tab", "o", "Esc"];
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "i", "Enter", "Tab", "o", "Esc",
+        ];
         check_keys(&hc, &kd, &test_keys);
     }
 
@@ -661,8 +687,10 @@ mod kdl_regression {
         let entries = kdl_cfg().pane_keys;
         let kd: crate::core::keymap::Keymap<GhListAction> =
             build_keymap(entries["pr_list"].as_slice()).unwrap();
-        let test_keys = ["j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N",
-                         "i", "Enter", "BackTab", "o", "Esc"];
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "i", "Enter", "BackTab", "o",
+            "Esc",
+        ];
         check_keys(&hc, &kd, &test_keys);
     }
 
@@ -673,8 +701,9 @@ mod kdl_regression {
         let entries = kdl_cfg().pane_keys;
         let kd: crate::core::keymap::Keymap<DetailAction> =
             build_keymap(entries["issue_detail"].as_slice()).unwrap();
-        let test_keys = ["j", "k", "G", "g", "Ctrl+d", "Ctrl+u",
-                         "h", "l", "Tab", "BackTab", "w", "o", "Esc"];
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "h", "l", "Tab", "BackTab", "w", "o", "Esc",
+        ];
         check_keys(&hc, &kd, &test_keys);
     }
 }

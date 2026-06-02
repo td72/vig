@@ -33,7 +33,10 @@ mod tests {
     fn percentage() {
         assert_eq!(parse_constraint("40%").unwrap(), Constraint::Percentage(40));
         assert_eq!(parse_constraint("0%").unwrap(), Constraint::Percentage(0));
-        assert_eq!(parse_constraint("100%").unwrap(), Constraint::Percentage(100));
+        assert_eq!(
+            parse_constraint("100%").unwrap(),
+            Constraint::Percentage(100)
+        );
     }
 
     #[test]

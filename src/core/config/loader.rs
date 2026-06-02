@@ -38,17 +38,13 @@ fn parse_app_block(doc: &KdlDocument) -> Result<Vec<(String, String)>> {
 // ── Public loaders ────────────────────────────────────────────────────────────
 
 /// Parse the git page from the embedded default config using the given pane name map.
-pub fn load_git_page_config(
-    name_map: &HashMap<&str, usize>,
-) -> Result<LoadedPageConfig> {
+pub fn load_git_page_config(name_map: &HashMap<&str, usize>) -> Result<LoadedPageConfig> {
     let doc: KdlDocument = DEFAULT_KDL.parse().context("KDL parse error")?;
     load_page_from_doc(&doc, "git", name_map)
 }
 
 /// Parse the github page from the embedded default config using the given pane name map.
-pub fn load_github_page_config(
-    name_map: &HashMap<&str, usize>,
-) -> Result<LoadedPageConfig> {
+pub fn load_github_page_config(name_map: &HashMap<&str, usize>) -> Result<LoadedPageConfig> {
     let doc: KdlDocument = DEFAULT_KDL.parse().context("KDL parse error")?;
     load_page_from_doc(&doc, "github", name_map)
 }
@@ -217,8 +213,8 @@ fn parse_split(
             .get("size")
             .and_then(|v| v.as_string())
             .unwrap_or("min:0");
-        let constraint = parse_constraint(size_str)
-            .map_err(|e| anyhow!("split child size error: {e}"))?;
+        let constraint =
+            parse_constraint(size_str).map_err(|e| anyhow!("split child size error: {e}"))?;
         let child_layout = parse_layout_element(
             child_node,
             name_map,
@@ -282,35 +278,34 @@ fn parse_slot(
         .ok_or_else(|| anyhow!("unknown pane in slot default=: {default_name:?}"))?;
 
     // Parse triggers from child block
-    let trigger_panes = node
-        .children()
-        .map(|child_doc| {
-            child_doc
-                .nodes()
-                .iter()
-                .find(|n| n.name().value() == "triggers")
-                .map(|triggers_node| {
-                    triggers_node
-                        .entries()
-                        .iter()
-                        .filter(|e| e.name().is_none())
-                        .map(|e| {
-                            let pane_name = e
-                                .value()
-                                .as_string()
-                                .ok_or_else(|| anyhow!("trigger entry is not a string"))?;
-                            name_map
-                                .get(pane_name)
-                                .copied()
-                                .ok_or_else(|| anyhow!("unknown pane in triggers: {pane_name:?}"))
-                        })
-                        .collect::<Result<Vec<_>>>()
-                })
-                .transpose()
-        })
-        .transpose()?
-        .flatten()
-        .unwrap_or_default();
+    let trigger_panes =
+        node.children()
+            .map(|child_doc| {
+                child_doc
+                    .nodes()
+                    .iter()
+                    .find(|n| n.name().value() == "triggers")
+                    .map(|triggers_node| {
+                        triggers_node
+                            .entries()
+                            .iter()
+                            .filter(|e| e.name().is_none())
+                            .map(|e| {
+                                let pane_name = e
+                                    .value()
+                                    .as_string()
+                                    .ok_or_else(|| anyhow!("trigger entry is not a string"))?;
+                                name_map.get(pane_name).copied().ok_or_else(|| {
+                                    anyhow!("unknown pane in triggers: {pane_name:?}")
+                                })
+                            })
+                            .collect::<Result<Vec<_>>>()
+                    })
+                    .transpose()
+            })
+            .transpose()?
+            .flatten()
+            .unwrap_or_default();
 
     slot_rules.push(SlotRule {
         slot_id,
@@ -365,9 +360,7 @@ fn parse_pane_keys(pane_node: &KdlNode, pane_name: &str) -> Result<Vec<KeymapEnt
                 let preset_name = node
                     .get(0usize)
                     .and_then(|v| v.as_string())
-                    .ok_or_else(|| {
-                        anyhow!("preset in pane {pane_name:?} missing name argument")
-                    })?
+                    .ok_or_else(|| anyhow!("preset in pane {pane_name:?} missing name argument"))?
                     .to_string();
                 entries.push(KeymapEntry::Preset(preset_name));
             }
@@ -443,7 +436,14 @@ mod tests {
     #[test]
     fn git_pane_keys_present() {
         let cfg = load_git_page_config(&git_name_map()).unwrap();
-        for name in &["view", "file_tree", "branch_list", "git_log", "reflog", "diff_view"] {
+        for name in &[
+            "view",
+            "file_tree",
+            "branch_list",
+            "git_log",
+            "reflog",
+            "diff_view",
+        ] {
             assert!(
                 cfg.pane_keys.contains_key(*name),
                 "missing pane keys for {name}"
