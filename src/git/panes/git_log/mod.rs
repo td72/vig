@@ -78,6 +78,10 @@ impl GitLogPane {
         }
     }
 
+    pub fn set_keymap(&mut self, km: Keymap<GitLogAction>) {
+        self.keymap = km;
+    }
+
     pub fn load_for_ref(&mut self, repo: &Repo, ref_name: &str) {
         self.ref_name = ref_name.to_string();
         self.commits = repo.log_for_ref(ref_name, 100);

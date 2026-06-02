@@ -1,4 +1,4 @@
-pub(crate) mod keys;
+pub mod keys;
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
@@ -96,6 +96,10 @@ impl DiffViewPane {
 
     pub fn set_files(&mut self, files: Rc<Vec<FileDiff>>) {
         self.files = files;
+    }
+
+    pub fn set_scroll_keymap(&mut self, km: Keymap<keys::DiffScrollAction>) {
+        self.scroll_keymap = km;
     }
 
     pub fn reset_scroll(&mut self) {

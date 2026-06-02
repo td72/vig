@@ -101,6 +101,10 @@ impl<T: GhListItem> GhListPane<T> {
         self.loading = loading;
     }
 
+    pub fn set_keymap(&mut self, km: Keymap<GhListAction>) {
+        self.keymap = km;
+    }
+
     /// Number of items in the list.
     pub fn item_count(&self) -> usize {
         self.items.len()

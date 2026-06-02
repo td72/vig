@@ -7,7 +7,7 @@ use crate::git::state::{PaneEvent, PANE_DIFF_VIEW};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 #[derive(Debug, Clone)]
-pub(crate) enum DiffScrollAction {
+pub enum DiffScrollAction {
     Nav(NavAction),
     ScrollLeft,
     ScrollRight,
@@ -34,7 +34,7 @@ impl ActionHelp for DiffScrollAction {
     }
 }
 
-pub(crate) fn default_scroll_keymap() -> Keymap<DiffScrollAction> {
+pub fn default_scroll_keymap() -> Keymap<DiffScrollAction> {
     Keymap::new()
         .key(
             KeyCode::Char('j'),
