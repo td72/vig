@@ -477,6 +477,10 @@ impl GitState {
 }
 
 impl crate::core::app::PageState for GitState {
+    fn id(&self) -> &'static str {
+        "git"
+    }
+
     fn label(&self) -> &'static str {
         "Git"
     }

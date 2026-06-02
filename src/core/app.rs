@@ -59,6 +59,10 @@ impl AppContext {
 }
 
 pub trait PageState {
+    /// Canonical, stable page identifier used in config (e.g. `"git"`, `"github"`).
+    /// This is what `default.kdl`'s `app` block references via `page:<id>` — keep it
+    /// distinct from [`label`](Self::label), which is the human-facing display name.
+    fn id(&self) -> &'static str;
     fn label(&self) -> &'static str;
     fn help_bindings(&self) -> Vec<(String, String)> {
         vec![]
@@ -90,6 +94,10 @@ pub struct Page(Box<dyn PageState>);
 impl Page {
     pub fn new(state: impl PageState + 'static) -> Self {
         Self(Box::new(state))
+    }
+
+    pub fn id(&self) -> &'static str {
+        self.0.id()
     }
 
     pub fn label(&self) -> &'static str {
@@ -145,7 +153,7 @@ pub struct App {
 
 impl App {
     pub fn new(ctx: AppContext, pages: Vec<Page>) -> Self {
-        let page_names: Vec<&str> = pages.iter().map(|p| p.label()).collect();
+        let page_names: Vec<&str> = pages.iter().map(|p| p.id()).collect();
         let entries = crate::core::config::load_app_entries();
         let app_keymap = build_app_keymap(&entries, &page_names)
             .expect("default.kdl app keymap is always valid");
@@ -229,5 +237,52 @@ impl App {
 
         // Delegate to active page
         self.pages[idx].handle_key(&mut self.ctx, key)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::keymap::KeyInput;
+
+    /// Regression guard for the page-switch bindings in `default.kdl`'s `app` block.
+    ///
+    /// The block references pages by their canonical id (`page:git`, `page:github`),
+    /// so `App::new` must resolve those against [`PageState::id`] — not the display
+    /// `label()` ("Git"/"GitHub"). Using `label()` made every `page:*` binding fail to
+    /// resolve, which previously was silently dropped (1/2 page switching did nothing)
+    /// and now panics via the embedded-default `expect`. This builds the keymap the
+    /// same way `App::new` does, from the real pages, so the two can't drift apart.
+    #[test]
+    fn app_keymap_resolves_page_switch_bindings() {
+        let cwd = std::env::current_dir().unwrap();
+        let (git_page, workdir) = crate::git::page::new_page(&cwd).expect("git page");
+        let gh_page = crate::github::page::new_page();
+        let pages = vec![git_page, gh_page];
+
+        let ctx = AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: pages.iter().map(|p| p.label()).collect(),
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir,
+        };
+
+        // Builds the app keymap exactly as production does; the embedded-default
+        // `expect` inside `App::new` makes this panic (failing the test) if the page
+        // ids ever drift from the `page:*` references in `default.kdl`.
+        let app = App::new(ctx, pages);
+
+        let look = |s: &str| {
+            let ki: KeyInput = s.parse().unwrap();
+            app.app_keymap
+                .lookup(KeyEvent::new(ki.code, ki.modifiers))
+                .cloned()
+        };
+        assert_eq!(look("1"), Some(AppAction::SwitchPage(0)));
+        assert_eq!(look("2"), Some(AppAction::SwitchPage(1)));
+        assert_eq!(look("Ctrl+c"), Some(AppAction::Quit));
     }
 }
