@@ -1,7 +1,8 @@
+use crate::core::keymap::{build_app_keymap, AppAction, Keymap};
 use crate::core::page::PageAction;
 pub use crate::core::search::SearchMatch;
 use anyhow::Result;
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::KeyEvent;
 use std::path::PathBuf;
 
 pub struct ErrorDialogState {
@@ -139,11 +140,19 @@ impl Page {
 pub struct App {
     pub ctx: AppContext,
     pages: Vec<Page>,
+    app_keymap: Keymap<AppAction>,
 }
 
 impl App {
     pub fn new(ctx: AppContext, pages: Vec<Page>) -> Self {
-        Self { ctx, pages }
+        let page_names: Vec<&str> = pages.iter().map(|p| p.label()).collect();
+        let entries = crate::core::config::load_app_entries();
+        let app_keymap = build_app_keymap(&entries, &page_names);
+        Self {
+            ctx,
+            pages,
+            app_keymap,
+        }
     }
 
     pub fn drain_all_background(&mut self) {
@@ -200,20 +209,21 @@ impl App {
             return self.pages[idx].handle_key(&mut self.ctx, key);
         }
 
-        // Ctrl+c always quits
-        if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
-            self.ctx.should_quit = true;
-            return Ok(PageAction::None);
-        }
-
-        // Page switching: '1'..'9' maps to page index 0..8
-        if let KeyCode::Char(c @ '1'..='9') = key.code {
-            let new_idx = (c as usize) - ('1' as usize);
-            if new_idx < self.pages.len() && new_idx != idx {
-                self.ctx.active_page = new_idx;
-                self.pages[new_idx].on_activate(&mut self.ctx);
+        // App-level keymap handles Quit and page switching.
+        if let Some(action) = self.app_keymap.lookup(key) {
+            match action.clone() {
+                AppAction::Quit => {
+                    self.ctx.should_quit = true;
+                    return Ok(PageAction::None);
+                }
+                AppAction::SwitchPage(new_idx) => {
+                    if new_idx < self.pages.len() && new_idx != idx {
+                        self.ctx.active_page = new_idx;
+                        self.pages[new_idx].on_activate(&mut self.ctx);
+                    }
+                    return Ok(PageAction::None);
+                }
             }
-            return Ok(PageAction::None);
         }
 
         // Delegate to active page
