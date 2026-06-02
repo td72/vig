@@ -1,4 +1,5 @@
 pub mod app;
+pub mod config;
 pub mod browser;
 pub mod event;
 pub mod highlight;
