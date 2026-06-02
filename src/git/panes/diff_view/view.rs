@@ -1,0 +1,881 @@
+use super::DiffViewPane;
+use super::{CursorPos, DiffSide, DiffViewMode};
+use crate::core::app::SearchMatch;
+use crate::core::pane::PaneShared;
+use crate::core::theme;
+use crate::git::domain::diff::{FileDiff, LineType, SideBySideRow};
+use crate::git::state::PANE_DIFF_VIEW;
+use ratatui::{
+    layout::{Constraint, Direction, Layout, Rect},
+    style::{Color, Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
+};
+use std::collections::HashMap;
+use std::rc::Rc;
+
+const GUTTER_WIDTH: usize = 5; // "1234 "
+
+/// Pre-computed search highlight info for the current file
+struct SearchHighlightInfo {
+    /// row_idx → Vec<(col_start, col_end, is_current, side)>
+    row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>>,
+}
+
+impl SearchHighlightInfo {
+    fn from_search_state(search: &crate::core::search::SearchState) -> Option<Self> {
+        let query = search.query.as_ref()?;
+        if query.is_empty() || search.matches.is_empty() {
+            return None;
+        }
+
+        let current_idx = search.current_match_idx;
+        let mut row_matches: HashMap<usize, Vec<(usize, usize, bool, DiffSide)>> = HashMap::new();
+
+        for (i, m) in search.matches.iter().enumerate() {
+            if let SearchMatch::DiffLine {
+                row,
+                col_start,
+                col_end,
+                side,
+            } = m
+            {
+                let is_current = current_idx == Some(i);
+                row_matches
+                    .entry(*row)
+                    .or_default()
+                    .push((*col_start, *col_end, is_current, *side));
+            }
+        }
+
+        Some(Self { row_matches })
+    }
+
+    /// Check if a character at (row, col) on the given side has a search highlight.
+    /// Returns Some(is_current) if highlighted, None otherwise.
+    fn get_highlight(&self, row_idx: usize, col: usize, is_left: bool) -> Option<bool> {
+        let side = if is_left {
+            DiffSide::Left
+        } else {
+            DiffSide::Right
+        };
+        if let Some(matches) = self.row_matches.get(&row_idx) {
+            for &(col_start, col_end, is_current, match_side) in matches {
+                if match_side == side && col >= col_start && col < col_end {
+                    return Some(is_current);
+                }
+            }
+        }
+        None
+    }
+}
+
+/// Selection range info passed to rendering functions
+struct SelectionInfo {
+    start: CursorPos,
+    end: CursorPos,
+    mode: DiffViewMode,
+    cursor: CursorPos,
+}
+
+pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &PaneShared, area: Rect) {
+    let block = theme::pane_block("Diff", shared.focused_pane == PANE_DIFF_VIEW);
+
+    let inner = block.inner(area);
+    f.render_widget(block, area);
+
+    let files = Rc::clone(&pane.files);
+    let file_idx = match pane.current_file_idx {
+        Some(idx) => idx,
+        None => {
+            let msg = Paragraph::new(Line::from(Span::styled(
+                "  No file selected",
+                Style::default().fg(Color::DarkGray),
+            )));
+            f.render_widget(msg, inner);
+            pane.scroll.total_lines = 0;
+            return;
+        }
+    };
+    let file = match files.get(file_idx) {
+        Some(f) => f,
+        None => {
+            pane.scroll.total_lines = 0;
+            return;
+        }
+    };
+
+    if file.is_binary {
+        let msg = Paragraph::new(Line::from(Span::styled(
+            "  Binary file",
+            Style::default().fg(Color::DarkGray),
+        )));
+        f.render_widget(msg, inner);
+        pane.scroll.total_lines = 0;
+        return;
+    }
+
+    // Reserve 1 line at bottom for status line
+    let content_area = Rect {
+        height: inner.height.saturating_sub(1),
+        ..inner
+    };
+    let statusline_area = Rect {
+        y: inner.y + content_area.height,
+        height: 1.min(inner.height),
+        ..inner
+    };
+
+    // Ensure syntax highlighting covers the visible range (incremental)
+    let visible_end = (pane.scroll.y as usize) + (content_area.height as usize) + 1;
+    let (path, left, right, starts) = file.highlight_data();
+    pane.highlight
+        .ensure_file_highlight(&path, left, right, starts, visible_end);
+
+    // Split content area: left half | separator | right half
+    let left_width = (content_area.width.saturating_sub(1)) / 2;
+    let right_width = content_area.width.saturating_sub(left_width + 1);
+    let panes = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Length(left_width),
+            Constraint::Length(1),
+            Constraint::Length(right_width),
+        ])
+        .split(content_area);
+
+    // Build selection info if in visual mode
+    let selection = build_selection_info(pane);
+
+    // Build search highlight info
+    let search_hl = SearchHighlightInfo::from_search_state(&shared.search);
+
+    // Access cached highlight colors by reference (no clone)
+    let ctx = RenderCtx {
+        scroll_x: pane.scroll.x as usize,
+        selection: &selection,
+        search_hl: &search_hl,
+    };
+
+    let (left_lines, right_lines) = {
+        let empty: Vec<Vec<Color>> = Vec::new();
+        let (lc, rc) = match &pane.highlight.cache {
+            Some(c) => (&c.left_colors, &c.right_colors),
+            None => (&empty, &empty),
+        };
+        build_side_by_side_lines(
+            file,
+            left_width as usize,
+            right_width as usize,
+            &ctx,
+            lc,
+            rc,
+        )
+    };
+
+    let total_lines = left_lines.len() as u16;
+    pane.scroll.total_lines = total_lines;
+    pane.scroll.view_height = content_area.height;
+
+    let left_para = Paragraph::new(left_lines).scroll((pane.scroll.y, 0));
+    f.render_widget(left_para, panes[0]);
+
+    // Separator
+    let sep_lines: Vec<Line> = (0..content_area.height)
+        .map(|_| Line::from(Span::styled("│", Style::default().fg(Color::DarkGray))))
+        .collect();
+    let sep = Paragraph::new(sep_lines).scroll((0, 0));
+    f.render_widget(sep, panes[1]);
+
+    let right_para = Paragraph::new(right_lines).scroll((pane.scroll.y, 0));
+    f.render_widget(right_para, panes[2]);
+
+    // Status line
+    render_diff_statusline(f, pane, &file.path, total_lines, statusline_area);
+}
+
+fn render_diff_statusline(
+    f: &mut Frame,
+    pane: &DiffViewPane,
+    file_path: &str,
+    total_lines: u16,
+    area: Rect,
+) {
+    let width = area.width as usize;
+
+    // Mode badge
+    let (mode_label, mode_style) = match pane.vim.mode {
+        DiffViewMode::Scroll => (
+            "SCROLL",
+            Style::default().fg(Color::Black).bg(Color::DarkGray),
+        ),
+        DiffViewMode::Normal => ("NORMAL", Style::default().fg(Color::Black).bg(Color::Cyan)),
+        DiffViewMode::Visual => (
+            "VISUAL",
+            Style::default().fg(Color::Black).bg(Color::Magenta),
+        ),
+        DiffViewMode::VisualLine => (
+            "V-LINE",
+            Style::default().fg(Color::Black).bg(Color::Magenta),
+        ),
+    };
+
+    // File type from extension
+    let filetype = file_path
+        .rsplit('.')
+        .next()
+        .filter(|ext| ext.len() < 10 && !ext.contains('/'))
+        .unwrap_or("");
+
+    // Side indicator
+    let side = match pane.vim.mode {
+        DiffViewMode::Scroll => "",
+        _ => match pane.vim.cursor.side {
+            DiffSide::Left => "LEFT",
+            DiffSide::Right => "RIGHT",
+        },
+    };
+
+    // Cursor position / scroll percentage
+    let position_info = match pane.vim.mode {
+        DiffViewMode::Scroll => {
+            if total_lines == 0 {
+                "Empty".to_string()
+            } else if total_lines <= pane.scroll.view_height {
+                "All".to_string()
+            } else if pane.scroll.y == 0 {
+                "Top".to_string()
+            } else if pane.scroll.y >= total_lines.saturating_sub(pane.scroll.view_height) {
+                "Bot".to_string()
+            } else {
+                format!(
+                    "{}%",
+                    pane.scroll.y as u32 * 100 / total_lines.saturating_sub(1) as u32
+                )
+            }
+        }
+        _ => {
+            format!("{}:{}", pane.vim.cursor.row + 1, pane.vim.cursor.col + 1)
+        }
+    };
+
+    // Build left part: " MODE  filetype  side "
+    let mut spans = vec![Span::styled(format!(" {mode_label} "), mode_style)];
+    if !filetype.is_empty() {
+        spans.push(Span::styled(
+            format!(" {filetype} "),
+            Style::default().fg(Color::White).bg(Color::Rgb(50, 50, 50)),
+        ));
+    }
+    if !side.is_empty() {
+        spans.push(Span::styled(
+            format!(" {side} "),
+            Style::default().fg(Color::White).bg(Color::Rgb(50, 50, 50)),
+        ));
+    }
+
+    // Calculate left part width
+    let left_len: usize = spans.iter().map(|s| s.content.chars().count()).sum();
+
+    // Showcmd (pending key sequence)
+    let mut showcmd = String::new();
+    if let Some(c) = pane.vim.count {
+        showcmd.push_str(&c.to_string());
+    }
+    if let Some(k) = pane.vim.pending_key {
+        if k == 'w' {
+            showcmd.push_str("Ctrl+w");
+        } else {
+            showcmd.push(k);
+        }
+    }
+
+    // Right-aligned showcmd + position info
+    let right_part = format!(" {position_info} ");
+    let right_len = right_part.chars().count();
+    let showcmd_part = if showcmd.is_empty() {
+        String::new()
+    } else {
+        format!(" {showcmd} ")
+    };
+    let showcmd_len = showcmd_part.chars().count();
+    let gap = width.saturating_sub(left_len + showcmd_len + right_len);
+
+    spans.push(Span::styled(
+        " ".repeat(gap),
+        Style::default().bg(Color::Rgb(30, 30, 30)),
+    ));
+    if !showcmd_part.is_empty() {
+        spans.push(Span::styled(
+            showcmd_part,
+            Style::default()
+                .fg(Color::Yellow)
+                .bg(Color::Rgb(30, 30, 30)),
+        ));
+    }
+    spans.push(Span::styled(
+        right_part,
+        Style::default().fg(Color::White).bg(Color::Rgb(50, 50, 50)),
+    ));
+
+    let line = Line::from(spans);
+    f.render_widget(Paragraph::new(line), area);
+}
+
+fn build_selection_info(pane: &DiffViewPane) -> Option<SelectionInfo> {
+    match pane.vim.mode {
+        DiffViewMode::Normal => Some(SelectionInfo {
+            start: pane.vim.cursor,
+            end: pane.vim.cursor,
+            mode: DiffViewMode::Normal,
+            cursor: pane.vim.cursor,
+        }),
+        DiffViewMode::Visual => {
+            let anchor = pane.vim.visual_anchor?;
+            let (start, end) = if anchor.row < pane.vim.cursor.row
+                || (anchor.row == pane.vim.cursor.row && anchor.col <= pane.vim.cursor.col)
+            {
+                (anchor, pane.vim.cursor)
+            } else {
+                (pane.vim.cursor, anchor)
+            };
+            Some(SelectionInfo {
+                start,
+                end,
+                mode: DiffViewMode::Visual,
+                cursor: pane.vim.cursor,
+            })
+        }
+        DiffViewMode::VisualLine => {
+            let anchor = pane.vim.visual_anchor?;
+            let start_row = anchor.row.min(pane.vim.cursor.row);
+            let end_row = anchor.row.max(pane.vim.cursor.row);
+            Some(SelectionInfo {
+                start: CursorPos {
+                    row: start_row,
+                    col: 0,
+                    side: pane.vim.cursor.side,
+                },
+                end: CursorPos {
+                    row: end_row,
+                    col: usize::MAX,
+                    side: pane.vim.cursor.side,
+                },
+                mode: DiffViewMode::VisualLine,
+                cursor: pane.vim.cursor,
+            })
+        }
+        DiffViewMode::Scroll => None,
+    }
+}
+
+/// Shared rendering context to reduce parameter passing.
+struct RenderCtx<'b> {
+    scroll_x: usize,
+    selection: &'b Option<SelectionInfo>,
+    search_hl: &'b Option<SearchHighlightInfo>,
+}
+
+fn build_side_by_side_lines<'a>(
+    file: &FileDiff,
+    left_width: usize,
+    right_width: usize,
+    ctx: &RenderCtx<'_>,
+    left_colors: &[Vec<Color>],
+    right_colors: &[Vec<Color>],
+) -> (Vec<Line<'a>>, Vec<Line<'a>>) {
+    let mut left_lines = Vec::new();
+    let mut right_lines = Vec::new();
+    let mut row_idx: usize = 0;
+
+    for hunk in &file.hunks {
+        let (left, right) = render_hunk_header(&hunk.header, left_width, right_width, row_idx, ctx);
+        left_lines.push(left);
+        right_lines.push(right);
+        row_idx += 1;
+
+        for row in &hunk.rows {
+            let left_syntax = left_colors.get(row_idx).map(|v| v.as_slice());
+            let right_syntax = right_colors.get(row_idx).map(|v| v.as_slice());
+            let (left, right) = render_row(
+                row,
+                left_width,
+                right_width,
+                row_idx,
+                ctx,
+                left_syntax,
+                right_syntax,
+            );
+            left_lines.push(left);
+            right_lines.push(right);
+            row_idx += 1;
+        }
+    }
+
+    if left_lines.is_empty() {
+        left_lines.push(Line::from(Span::styled(
+            "  No changes",
+            Style::default().fg(Color::DarkGray),
+        )));
+        right_lines.push(Line::from(Span::raw("")));
+    }
+
+    (left_lines, right_lines)
+}
+
+/// Render a hunk header line for both sides, applying selection/search highlights.
+fn render_hunk_header<'a>(
+    header: &str,
+    left_width: usize,
+    right_width: usize,
+    row_idx: usize,
+    ctx: &RenderCtx<'_>,
+) -> (Line<'a>, Line<'a>) {
+    let header_style = Style::default()
+        .fg(Color::Cyan)
+        .add_modifier(Modifier::BOLD);
+
+    let mut left = Line::from(Span::styled(pad_to_width(header, left_width), header_style));
+    let mut right = Line::from(Span::styled(
+        pad_to_width(header, right_width),
+        header_style,
+    ));
+
+    if let Some(sel) = ctx.selection {
+        if sel.cursor.side == DiffSide::Left {
+            left = apply_selection_to_line(
+                header,
+                row_idx,
+                left_width,
+                ctx.scroll_x,
+                sel,
+                header_style,
+                None,
+                ctx.search_hl,
+                true,
+            );
+        }
+        if sel.cursor.side == DiffSide::Right {
+            right = apply_selection_to_line(
+                header,
+                row_idx,
+                right_width,
+                ctx.scroll_x,
+                sel,
+                header_style,
+                None,
+                ctx.search_hl,
+                false,
+            );
+        }
+    } else if ctx.search_hl.is_some() {
+        left = apply_search_to_line(
+            header,
+            row_idx,
+            left_width,
+            ctx.scroll_x,
+            header_style,
+            None,
+            ctx.search_hl,
+            true,
+        );
+        right = apply_search_to_line(
+            header,
+            row_idx,
+            right_width,
+            ctx.scroll_x,
+            header_style,
+            None,
+            ctx.search_hl,
+            false,
+        );
+    }
+
+    (left, right)
+}
+
+fn render_row<'a>(
+    row: &SideBySideRow,
+    left_width: usize,
+    right_width: usize,
+    row_idx: usize,
+    ctx: &RenderCtx<'_>,
+    left_syntax: Option<&[Color]>,
+    right_syntax: Option<&[Color]>,
+) -> (Line<'a>, Line<'a>) {
+    let left = render_side_with_selection(
+        row.left.as_ref(),
+        row.line_type,
+        true,
+        left_width,
+        row_idx,
+        ctx,
+        left_syntax,
+    );
+    let right = render_side_with_selection(
+        row.right.as_ref(),
+        row.line_type,
+        false,
+        right_width,
+        row_idx,
+        ctx,
+        right_syntax,
+    );
+    (left, right)
+}
+
+fn render_side_with_selection<'a>(
+    side: Option<&crate::git::domain::diff::SideLine>,
+    line_type: LineType,
+    is_left: bool,
+    width: usize,
+    row_idx: usize,
+    ctx: &RenderCtx<'_>,
+    syntax_colors: Option<&[Color]>,
+) -> Line<'a> {
+    match side {
+        Some(line) => {
+            let content_width = width.saturating_sub(GUTTER_WIDTH);
+            let gutter = format!("{:>4} ", line.line_no);
+            let (fg, bg) = line_colors(line_type, is_left);
+            let base_style = style_for(fg, bg);
+
+            let sel_side = ctx.selection.as_ref().map(|s| s.cursor.side);
+            let on_active_side = matches!(
+                (is_left, sel_side),
+                (true, Some(DiffSide::Left)) | (false, Some(DiffSide::Right))
+            );
+
+            if on_active_side {
+                if let Some(sel) = ctx.selection {
+                    let needs_highlight = match sel.mode {
+                        DiffViewMode::Normal => sel.cursor.row == row_idx,
+                        DiffViewMode::Visual | DiffViewMode::VisualLine => true,
+                        DiffViewMode::Scroll => false,
+                    };
+                    let has_search = ctx
+                        .search_hl
+                        .as_ref()
+                        .is_some_and(|sh| sh.row_matches.contains_key(&row_idx));
+                    if needs_highlight || has_search {
+                        let spans = build_highlighted_spans(
+                            &line.content,
+                            row_idx,
+                            content_width,
+                            ctx.scroll_x,
+                            sel,
+                            base_style,
+                            syntax_colors,
+                            ctx.search_hl,
+                            is_left,
+                        );
+                        let mut all_spans =
+                            vec![Span::styled(gutter, Style::default().fg(Color::DarkGray))];
+                        all_spans.extend(spans);
+                        return Line::from(all_spans);
+                    }
+                }
+            }
+
+            // Non-active side or scroll mode — still apply syntax highlighting + search
+            let has_search = ctx
+                .search_hl
+                .as_ref()
+                .is_some_and(|sh| sh.row_matches.contains_key(&row_idx));
+            if syntax_colors.is_some() || has_search {
+                let syn_colors = syntax_colors.unwrap_or(&[]);
+                let spans = build_syntax_spans(
+                    &line.content,
+                    content_width,
+                    ctx.scroll_x,
+                    base_style,
+                    syn_colors,
+                    ctx.search_hl,
+                    row_idx,
+                    is_left,
+                );
+                let mut all_spans =
+                    vec![Span::styled(gutter, Style::default().fg(Color::DarkGray))];
+                all_spans.extend(spans);
+                return Line::from(all_spans);
+            }
+
+            let content = scroll_content(&line.content, ctx.scroll_x, content_width);
+            Line::from(vec![
+                Span::styled(gutter, Style::default().fg(Color::DarkGray)),
+                Span::styled(pad_to_width(&content, content_width), base_style),
+            ])
+        }
+        None => Line::from(Span::styled(pad_to_width("", width), Style::default())),
+    }
+}
+
+/// Build spans with syntax fg colors but no cursor/selection (for scroll mode / inactive side).
+#[allow(clippy::too_many_arguments)]
+fn build_syntax_spans<'a>(
+    content: &str,
+    content_width: usize,
+    scroll_x: usize,
+    base_style: Style,
+    syntax_colors: &[Color],
+    search_hl: &Option<SearchHighlightInfo>,
+    row_idx: usize,
+    is_left: bool,
+) -> Vec<Span<'a>> {
+    let chars: Vec<char> = content.chars().collect();
+    let start = scroll_x.min(chars.len());
+
+    let mut spans = Vec::new();
+    let mut i = 0;
+    while i < content_width {
+        let content_idx = start + i;
+        let ch = if content_idx < chars.len() {
+            chars[content_idx]
+        } else {
+            ' '
+        };
+        let fg = if content_idx < syntax_colors.len() {
+            syntax_colors[content_idx]
+        } else {
+            base_style.fg.unwrap_or(Color::Reset)
+        };
+        let search_highlight = search_hl
+            .as_ref()
+            .and_then(|sh| sh.get_highlight(row_idx, content_idx, is_left));
+
+        // Batch consecutive chars with same fg and same search state
+        let mut j = i + 1;
+        let mut run = String::new();
+        run.push(ch);
+        while j < content_width {
+            let cidx = start + j;
+            let next_ch = if cidx < chars.len() { chars[cidx] } else { ' ' };
+            let next_fg = if cidx < syntax_colors.len() {
+                syntax_colors[cidx]
+            } else {
+                base_style.fg.unwrap_or(Color::Reset)
+            };
+            let next_search = search_hl
+                .as_ref()
+                .and_then(|sh| sh.get_highlight(row_idx, cidx, is_left));
+            if next_fg != fg || next_search != search_highlight {
+                break;
+            }
+            run.push(next_ch);
+            j += 1;
+        }
+
+        let style = if let Some(is_current) = search_highlight {
+            if is_current {
+                base_style
+                    .fg(theme::SEARCH_CURRENT_FG)
+                    .bg(theme::SEARCH_CURRENT_BG)
+            } else {
+                base_style.fg(fg).bg(theme::SEARCH_MATCH_BG)
+            }
+        } else {
+            base_style.fg(fg)
+        };
+        spans.push(Span::styled(run, style));
+        i = j;
+    }
+
+    spans
+}
+
+/// Build spans for a content area with cursor/selection highlighting + optional syntax colors
+#[allow(clippy::too_many_arguments)]
+fn build_highlighted_spans<'a>(
+    content: &str,
+    row_idx: usize,
+    content_width: usize,
+    scroll_x: usize,
+    sel: &SelectionInfo,
+    base_style: Style,
+    syntax_colors: Option<&[Color]>,
+    search_hl: &Option<SearchHighlightInfo>,
+    is_left: bool,
+) -> Vec<Span<'a>> {
+    let chars: Vec<char> = content.chars().collect();
+    // Pad to content_width
+    let mut display: Vec<char> = Vec::with_capacity(content_width);
+    let start = scroll_x.min(chars.len());
+    for i in start..(start + content_width) {
+        if i < chars.len() {
+            display.push(chars[i]);
+        } else {
+            display.push(' ');
+        }
+    }
+
+    // Determine which columns (in content coords, pre-scroll) are selected
+    let mut spans = Vec::new();
+    let mut i = 0;
+    while i < display.len() {
+        let content_col = i + scroll_x;
+        let is_cursor = sel.cursor.row == row_idx && sel.cursor.col == content_col;
+        let is_selected = is_in_selection(row_idx, content_col, sel);
+        let search_highlight = search_hl
+            .as_ref()
+            .and_then(|sh| sh.get_highlight(row_idx, content_col, is_left));
+        // Get syntax fg for this character
+        let syn_fg = syntax_colors.and_then(|sc| sc.get(content_col).copied());
+
+        // Find run of chars with same highlight state AND same syntax color
+        let mut j = i + 1;
+        while j < display.len() {
+            let cc = j + scroll_x;
+            let next_cursor = sel.cursor.row == row_idx && sel.cursor.col == cc;
+            let next_selected = is_in_selection(row_idx, cc, sel);
+            let next_search = search_hl
+                .as_ref()
+                .and_then(|sh| sh.get_highlight(row_idx, cc, is_left));
+            let next_syn_fg = syntax_colors.and_then(|sc| sc.get(cc).copied());
+            if next_cursor != is_cursor
+                || next_selected != is_selected
+                || next_syn_fg != syn_fg
+                || next_search != search_highlight
+            {
+                break;
+            }
+            j += 1;
+        }
+
+        let text: String = display[i..j].iter().collect();
+        let syn_fg_or_default = syn_fg.unwrap_or(base_style.fg.unwrap_or(Color::Reset));
+        let style = if is_cursor {
+            base_style.fg(theme::CURSOR_FG).bg(theme::CURSOR_BG)
+        } else if let Some(is_current) = search_highlight {
+            if is_current {
+                base_style
+                    .fg(theme::SEARCH_CURRENT_FG)
+                    .bg(theme::SEARCH_CURRENT_BG)
+            } else {
+                base_style.fg(syn_fg_or_default).bg(theme::SEARCH_MATCH_BG)
+            }
+        } else if is_selected {
+            base_style.fg(syn_fg_or_default).bg(theme::SELECTION_BG)
+        } else {
+            base_style.fg(syn_fg_or_default)
+        };
+        spans.push(Span::styled(text, style));
+        i = j;
+    }
+
+    spans
+}
+
+fn is_in_selection(row: usize, col: usize, sel: &SelectionInfo) -> bool {
+    match sel.mode {
+        DiffViewMode::Normal => false,
+        DiffViewMode::VisualLine => row >= sel.start.row && row <= sel.end.row,
+        DiffViewMode::Visual => {
+            if row < sel.start.row || row > sel.end.row {
+                return false;
+            }
+            if sel.start.row == sel.end.row {
+                col >= sel.start.col && col <= sel.end.col
+            } else if row == sel.start.row {
+                col >= sel.start.col
+            } else if row == sel.end.row {
+                col <= sel.end.col
+            } else {
+                true
+            }
+        }
+        DiffViewMode::Scroll => false,
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn apply_selection_to_line<'a>(
+    content: &str,
+    row_idx: usize,
+    width: usize,
+    scroll_x: usize,
+    sel: &SelectionInfo,
+    base_style: Style,
+    syntax_colors: Option<&[Color]>,
+    search_hl: &Option<SearchHighlightInfo>,
+    is_left: bool,
+) -> Line<'a> {
+    let spans = build_highlighted_spans(
+        content,
+        row_idx,
+        width,
+        scroll_x,
+        sel,
+        base_style,
+        syntax_colors,
+        search_hl,
+        is_left,
+    );
+    Line::from(spans)
+}
+
+/// Apply search highlighting to a line without selection
+#[allow(clippy::too_many_arguments)]
+fn apply_search_to_line<'a>(
+    content: &str,
+    row_idx: usize,
+    width: usize,
+    scroll_x: usize,
+    base_style: Style,
+    syntax_colors: Option<&[Color]>,
+    search_hl: &Option<SearchHighlightInfo>,
+    is_left: bool,
+) -> Line<'a> {
+    let syn_colors = syntax_colors.unwrap_or(&[]);
+    let spans = build_syntax_spans(
+        content, width, scroll_x, base_style, syn_colors, search_hl, row_idx, is_left,
+    );
+    Line::from(spans)
+}
+
+fn line_colors(line_type: LineType, is_left: bool) -> (Color, Option<Color>) {
+    match line_type {
+        LineType::Context => (Color::Reset, None),
+        LineType::Added => {
+            if is_left {
+                (Color::Reset, Some(Color::Rgb(0, 40, 0)))
+            } else {
+                (Color::Green, Some(Color::Rgb(0, 40, 0)))
+            }
+        }
+        LineType::Deleted => {
+            if is_left {
+                (Color::Red, Some(Color::Rgb(40, 0, 0)))
+            } else {
+                (Color::Green, Some(Color::Rgb(0, 40, 0)))
+            }
+        }
+        LineType::HunkHeader => (Color::Cyan, None),
+    }
+}
+
+fn style_for(fg: Color, bg: Option<Color>) -> Style {
+    let mut s = Style::default().fg(fg);
+    if let Some(bg) = bg {
+        s = s.bg(bg);
+    }
+    s
+}
+
+fn scroll_content(content: &str, scroll_x: usize, width: usize) -> String {
+    let chars: Vec<char> = content.chars().collect();
+    let start = scroll_x.min(chars.len());
+    let end = (start + width).min(chars.len());
+    chars[start..end].iter().collect()
+}
+
+fn pad_to_width(s: &str, width: usize) -> String {
+    let char_count = s.chars().count();
+    if char_count >= width {
+        s.chars().take(width).collect()
+    } else {
+        let mut result = s.to_string();
+        result.extend(std::iter::repeat_n(' ', width - char_count));
+        result
+    }
+}
