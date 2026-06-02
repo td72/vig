@@ -34,7 +34,7 @@ use ratatui::layout::Constraint;
 const GH_SLOT_DETAIL: usize = 0;
 
 /// Map pane names used in `default.kdl` to their numeric GH_PANE_* constants.
-pub fn pane_name_map() -> HashMap<&'static str, usize> {
+fn pane_name_map() -> HashMap<&'static str, usize> {
     let mut m = HashMap::new();
     m.insert("issue_list", GH_PANE_ISSUE_LIST);
     m.insert("pr_list", GH_PANE_PR_LIST);
@@ -217,8 +217,7 @@ impl GitHubState {
             page_cfg
                 .pane_keys
                 .get("issue_list")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'issue_list' block"),
         )
         .expect("default.kdl issue_list keymap is always valid");
 
@@ -226,8 +225,7 @@ impl GitHubState {
             page_cfg
                 .pane_keys
                 .get("pr_list")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'pr_list' block"),
         )
         .expect("default.kdl pr_list keymap is always valid");
 
@@ -235,8 +233,7 @@ impl GitHubState {
             page_cfg
                 .pane_keys
                 .get("issue_detail")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'issue_detail' block"),
         )
         .expect("default.kdl issue_detail keymap is always valid");
 
@@ -244,8 +241,7 @@ impl GitHubState {
             page_cfg
                 .pane_keys
                 .get("pr_detail")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'pr_detail' block"),
         )
         .expect("default.kdl pr_detail keymap is always valid");
 
@@ -253,8 +249,7 @@ impl GitHubState {
             page_cfg
                 .pane_keys
                 .get("view")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'view' block"),
         )
         .expect("default.kdl github view keymap is always valid");
 

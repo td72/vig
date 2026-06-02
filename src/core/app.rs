@@ -147,7 +147,8 @@ impl App {
     pub fn new(ctx: AppContext, pages: Vec<Page>) -> Self {
         let page_names: Vec<&str> = pages.iter().map(|p| p.label()).collect();
         let entries = crate::core::config::load_app_entries();
-        let app_keymap = build_app_keymap(&entries, &page_names);
+        let app_keymap = build_app_keymap(&entries, &page_names)
+            .expect("default.kdl app keymap is always valid");
         Self {
             ctx,
             pages,

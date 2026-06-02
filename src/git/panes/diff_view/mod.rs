@@ -1,4 +1,4 @@
-pub mod keys;
+pub(crate) mod keys;
 pub(crate) mod view;
 
 use crate::core::app::AppContext;

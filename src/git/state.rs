@@ -44,7 +44,7 @@ use ratatui::layout::Constraint;
 const SLOT_MAIN: usize = 0;
 
 /// Map pane names used in `default.kdl` to their numeric PANE_* constants.
-pub fn pane_name_map() -> HashMap<&'static str, usize> {
+fn pane_name_map() -> HashMap<&'static str, usize> {
     let mut m = HashMap::new();
     m.insert("file_tree", PANE_FILE_TREE);
     m.insert("branch_list", PANE_BRANCH_LIST);
@@ -206,8 +206,7 @@ impl GitState {
             page_cfg
                 .pane_keys
                 .get("file_tree")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'file_tree' block"),
         )
         .expect("default.kdl file_tree keymap is always valid");
 
@@ -215,8 +214,7 @@ impl GitState {
             page_cfg
                 .pane_keys
                 .get("branch_list")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'branch_list' block"),
         )
         .expect("default.kdl branch_list keymap is always valid");
 
@@ -224,8 +222,7 @@ impl GitState {
             page_cfg
                 .pane_keys
                 .get("git_log")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'git_log' block"),
         )
         .expect("default.kdl git_log keymap is always valid");
 
@@ -233,8 +230,7 @@ impl GitState {
             page_cfg
                 .pane_keys
                 .get("reflog")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'reflog' block"),
         )
         .expect("default.kdl reflog keymap is always valid");
 
@@ -242,8 +238,7 @@ impl GitState {
             page_cfg
                 .pane_keys
                 .get("diff_view")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'diff_view' block"),
         )
         .expect("default.kdl diff_view keymap is always valid");
 
@@ -251,8 +246,7 @@ impl GitState {
             page_cfg
                 .pane_keys
                 .get("view")
-                .map(Vec::as_slice)
-                .unwrap_or(&[]),
+                .expect("default.kdl missing 'view' block"),
         )
         .expect("default.kdl git view keymap is always valid");
 
