@@ -1,0 +1,170 @@
+// vig default configuration
+// Faithfully reproduces all hardcoded defaults in git/state.rs and github/state.rs.
+
+app {
+    "Ctrl+c" "Quit"
+    "1" "page:git"
+    "2" "page:github"
+}
+
+page "git" {
+    layout {
+        split direction="vertical" {
+            split direction="horizontal" size="40%" {
+                place "file_tree" size="30"
+                place "branch_list" size="35%"
+                place "reflog" size="min:20"
+            }
+            slot "main" size="min:3" then="git_log" default="diff_view" {
+                triggers "branch_list" "reflog" "git_log"
+            }
+        }
+    }
+    tabs "file_tree" "branch_list" "reflog"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "h" "PrevTab"
+            "l" "NextTab"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+            "e" "OpenEditor"
+        }
+    }
+
+    pane "file_tree" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Space" "ToggleDir"
+            "Right" "ExpandOrOpen"
+            "Enter" "ExpandOrOpen"
+            "i" "FocusDiff"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "branch_list" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Enter" "OpenActionMenu"
+            "i" "FocusLog"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "git_log" {
+        keys {
+            preset "nav"
+            preset "search"
+            "y" "YankHash"
+            "o" "OpenGitHub"
+            "h" "FocusReflog"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "reflog" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Enter" "SetDiffBase"
+            "i" "FocusLog"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "diff_view" {
+        keys {
+            preset "nav"
+            preset "search"
+            "h" "ScrollLeft"
+            "Left" "ScrollLeft"
+            "l" "ScrollRight"
+            "Right" "ScrollRight"
+            "i" "EnterNormalMode"
+            "Esc" "Esc"
+        }
+    }
+}
+
+page "github" {
+    layout {
+        split direction="vertical" {
+            split direction="horizontal" size="40%" {
+                place "issue_list" size="50%"
+                place "pr_list" size="50%"
+            }
+            slot "detail" size="min:3" then="pr_detail" default="issue_detail" {
+                triggers "pr_list" "pr_detail"
+            }
+        }
+    }
+    tabs "issue_list" "pr_list"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "h" "PrevTab"
+            "l" "NextTab"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+        }
+    }
+
+    pane "issue_list" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "OpenDetail"
+            "Enter" "OpenDetail"
+            "Tab" "SwitchTab"
+            "o" "OpenBrowser"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "pr_list" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "OpenDetail"
+            "Enter" "OpenDetail"
+            "BackTab" "SwitchTab"
+            "o" "OpenBrowser"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "issue_detail" {
+        keys {
+            preset "nav"
+            "h" "FocusBody"
+            "l" "FocusRight"
+            "Tab" "CycleForward"
+            "BackTab" "CycleBackward"
+            "w" "ToggleWatch"
+            "o" "OpenItem"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "pr_detail" {
+        keys {
+            preset "nav"
+            "h" "FocusBody"
+            "l" "FocusRight"
+            "Tab" "CycleForward"
+            "BackTab" "CycleBackward"
+            "w" "ToggleWatch"
+            "o" "OpenItem"
+            "Esc" "Esc"
+        }
+    }
+}
