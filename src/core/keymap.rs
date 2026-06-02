@@ -451,7 +451,8 @@ impl ActionHelp for ViewAction {
     }
 }
 
-/// Generate default view-level key bindings.
+/// Generate default view-level key bindings. Kept for regression tests.
+#[allow(dead_code)]
 pub fn view_bindings<A: Clone>(wrap: impl Fn(ViewAction) -> A) -> Vec<(KeyCode, KeyModifiers, A)> {
     vec![
         (
@@ -505,6 +506,78 @@ pub fn help_section(title: &str) -> Vec<HelpEntry> {
 /// short viewports.
 pub fn half_page_step(view_height: u16) -> u16 {
     (view_height / 2).max(1)
+}
+
+/// Application-level actions for global key bindings (Ctrl+c, page switching).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AppAction {
+    /// Quit the application.
+    Quit,
+    /// Switch to the page at the given 0-indexed position.
+    SwitchPage(usize),
+}
+
+impl FromStr for AppAction {
+    type Err = String;
+
+    /// Parse action strings used in the `app { }` KDL block.
+    ///
+    /// - `"Quit"` → `AppAction::Quit`
+    /// - `"page:<name>"` → `AppAction::SwitchPage(idx)` (resolved at load time by the config
+    ///   loader, which converts page names to indices before calling this).
+    /// - `"SwitchPage:<n>"` → `AppAction::SwitchPage(n)` (programmatic form used in tests).
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s == "Quit" {
+            return Ok(Self::Quit);
+        }
+        if let Some(idx_str) = s.strip_prefix("SwitchPage:") {
+            let idx: usize = idx_str
+                .parse()
+                .map_err(|_| format!("Invalid page index in SwitchPage: {idx_str:?}"))?;
+            return Ok(Self::SwitchPage(idx));
+        }
+        Err(format!("Unknown AppAction: {s:?}"))
+    }
+}
+
+/// Build an app-level keymap from `(key_str, action_str)` pairs.
+///
+/// Page-name strings like `"page:git"` are resolved to indices using `page_names`.
+pub fn build_app_keymap(
+    entries: &[(String, String)],
+    page_names: &[&str],
+) -> Keymap<AppAction> {
+    let mut km = Keymap::new();
+    for (key_str, action_str) in entries {
+        let ki = match key_str.parse::<KeyInput>() {
+            Ok(k) => k,
+            Err(e) => {
+                eprintln!("WARN: invalid app key {key_str:?}: {e}");
+                continue;
+            }
+        };
+        let action = if action_str == "Quit" {
+            AppAction::Quit
+        } else if let Some(name) = action_str.strip_prefix("page:") {
+            match page_names.iter().position(|p| *p == name) {
+                Some(idx) => AppAction::SwitchPage(idx),
+                None => {
+                    eprintln!("WARN: unknown page name in app keymap: {name:?}");
+                    continue;
+                }
+            }
+        } else {
+            match action_str.parse::<AppAction>() {
+                Ok(a) => a,
+                Err(e) => {
+                    eprintln!("WARN: invalid app action {action_str:?}: {e}");
+                    continue;
+                }
+            }
+        };
+        km = km.bind(ki.code, ki.modifiers, action);
+    }
+    km
 }
 
 /// Execute a navigation action on a list, updating `selected_idx`.
