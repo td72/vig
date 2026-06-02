@@ -12,8 +12,11 @@ pub struct KeyInput {
 
 impl From<KeyEvent> for KeyInput {
     fn from(key: KeyEvent) -> Self {
-        // Strip SHIFT for uppercase letters (crossterm sends SHIFT+Char('G'))
-        let mods = if matches!(key.code, KeyCode::Char('A'..='Z')) {
+        // SHIFT is redundant for printable chars (the char itself already
+        // encodes the shifted form, e.g. 'G' or '?') and for BackTab (which is
+        // Shift+Tab by definition). crossterm reports it inconsistently across
+        // terminals, so strip it to keep the same logical key matchable.
+        let mods = if matches!(key.code, KeyCode::Char(_) | KeyCode::BackTab) {
             key.modifiers & !KeyModifiers::SHIFT
         } else {
             key.modifiers
@@ -483,7 +486,7 @@ pub fn view_bindings<A: Clone>(wrap: impl Fn(ViewAction) -> A) -> Vec<(KeyCode, 
         ),
         (
             KeyCode::BackTab,
-            KeyModifiers::SHIFT,
+            KeyModifiers::NONE,
             wrap(ViewAction::CyclePaneBackward),
         ),
     ]
