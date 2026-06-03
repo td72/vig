@@ -103,7 +103,6 @@ jobs:
           SHA_LINUX_X86=$(cut -d ' ' -f 1 vig-x86_64-unknown-linux-gnu.tar.gz.sha256)
           SHA_LINUX_ARM=$(cut -d ' ' -f 1 vig-aarch64-unknown-linux-gnu.tar.gz.sha256)
           SHA_MACOS_ARM=$(cut -d ' ' -f 1 vig-aarch64-apple-darwin.tar.gz.sha256)
-          SHA_MACOS_X86=$(cut -d ' ' -f 1 vig-x86_64-apple-darwin.tar.gz.sha256)
 
           cat > homebrew-tap/Formula/vig.rb <<FORMULA
           class Vig < Formula
@@ -116,10 +115,6 @@ jobs:
               on_arm do
                 url "https://github.com/td72/vig/releases/download/v#{version}/vig-aarch64-apple-darwin.tar.gz"
                 sha256 "${SHA_MACOS_ARM}"
-              end
-              on_intel do
-                url "https://github.com/td72/vig/releases/download/v#{version}/vig-x86_64-apple-darwin.tar.gz"
-                sha256 "${SHA_MACOS_X86}"
               end
             end
 
