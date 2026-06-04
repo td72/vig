@@ -184,6 +184,10 @@ impl BranchListPane {
         }
     }
 
+    pub fn set_keymap(&mut self, km: Keymap<BranchListAction>) {
+        self.keymap = km;
+    }
+
     pub fn selected_branch(&self) -> Option<&BranchInfo> {
         self.branches.get(self.selected_idx)
     }

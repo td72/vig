@@ -1,8 +1,7 @@
 use crate::core::app::AppContext;
-use crate::core::keymap::{view_bindings, Keymap, ViewAction};
-use crate::core::layout::{
-    split_page_frame, LayoutNode, PageLayoutConfig, SlotRule, SplitDirection,
-};
+use crate::core::config::{build_keymap, load_git_page_config};
+use crate::core::keymap::{Keymap, ViewAction};
+use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::{ExternalCommand, PageAction};
 pub use crate::core::pane::PaneEvent;
 use crate::core::pane::{self, Pane, PaneSet, PaneShared};
@@ -12,11 +11,17 @@ use crate::core::ui::status_bar;
 use crate::git::domain::diff::{DiffMeta, FileDiff};
 use crate::git::domain::repository::Repo;
 use crate::git::domain::search;
+use crate::git::panes::branch_list::BranchListAction;
+use crate::git::panes::diff_view::keys::DiffScrollAction;
+use crate::git::panes::file_tree::FileTreeAction;
+use crate::git::panes::git_log::GitLogAction;
+use crate::git::panes::reflog::ReflogAction;
 use crate::git::panes::{BranchListPane, DiffViewPane, FileTreePane, GitLogPane, ReflogPane};
 use anyhow::Result;
-use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::layout::{Constraint, Rect};
+use crossterm::event::KeyEvent;
+use ratatui::layout::Rect;
 use ratatui::Frame;
+use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
@@ -26,8 +31,30 @@ pub const PANE_GIT_LOG: usize = 2;
 pub const PANE_REFLOG: usize = 3;
 pub const PANE_DIFF_VIEW: usize = 4;
 
+#[cfg(test)]
+use crate::core::keymap::view_bindings;
+#[cfg(test)]
+use crate::core::layout::{LayoutNode, SlotRule, SplitDirection};
+#[cfg(test)]
+use crossterm::event::KeyCode;
+#[cfg(test)]
+use ratatui::layout::Constraint;
+
+#[cfg(test)]
 const SLOT_MAIN: usize = 0;
 
+/// Map pane names used in `default.kdl` to their numeric PANE_* constants.
+fn pane_name_map() -> HashMap<&'static str, usize> {
+    let mut m = HashMap::new();
+    m.insert("file_tree", PANE_FILE_TREE);
+    m.insert("branch_list", PANE_BRANCH_LIST);
+    m.insert("git_log", PANE_GIT_LOG);
+    m.insert("reflog", PANE_REFLOG);
+    m.insert("diff_view", PANE_DIFF_VIEW);
+    m
+}
+
+#[cfg(test)]
 fn default_layout_config() -> PageLayoutConfig {
     PageLayoutConfig {
         tree: LayoutNode::Split {
@@ -146,6 +173,7 @@ impl PaneSet for GitPanes {
     }
 }
 
+#[cfg(test)]
 fn default_view_keymap() -> Keymap<ViewAction> {
     Keymap::new()
         .bindings(view_bindings(|v| v))
@@ -164,9 +192,79 @@ pub struct GitState {
 
 impl GitState {
     pub fn new(cwd: &Path) -> Result<Self> {
+        // Load layout + pane keymaps from the embedded default KDL config.
+        let name_map = pane_name_map();
+        let page_cfg =
+            load_git_page_config(&name_map).expect("default.kdl git page config is always valid");
+
         let repo = Repo::discover(cwd)?;
         let result = repo.diff_workdir(None)?;
         let files = Rc::new(result.files);
+
+        // Build pane keymaps from KDL entries.
+        let file_tree_km = build_keymap::<FileTreeAction>(
+            page_cfg
+                .pane_keys
+                .get("file_tree")
+                .expect("default.kdl missing 'file_tree' block"),
+        )
+        .expect("default.kdl file_tree keymap is always valid");
+
+        let branch_list_km = build_keymap::<BranchListAction>(
+            page_cfg
+                .pane_keys
+                .get("branch_list")
+                .expect("default.kdl missing 'branch_list' block"),
+        )
+        .expect("default.kdl branch_list keymap is always valid");
+
+        let git_log_km = build_keymap::<GitLogAction>(
+            page_cfg
+                .pane_keys
+                .get("git_log")
+                .expect("default.kdl missing 'git_log' block"),
+        )
+        .expect("default.kdl git_log keymap is always valid");
+
+        let reflog_km = build_keymap::<ReflogAction>(
+            page_cfg
+                .pane_keys
+                .get("reflog")
+                .expect("default.kdl missing 'reflog' block"),
+        )
+        .expect("default.kdl reflog keymap is always valid");
+
+        let diff_view_km = build_keymap::<DiffScrollAction>(
+            page_cfg
+                .pane_keys
+                .get("diff_view")
+                .expect("default.kdl missing 'diff_view' block"),
+        )
+        .expect("default.kdl diff_view keymap is always valid");
+
+        let view_km = build_keymap::<ViewAction>(
+            page_cfg
+                .pane_keys
+                .get("view")
+                .expect("default.kdl missing 'view' block"),
+        )
+        .expect("default.kdl git view keymap is always valid");
+
+        let mut file_tree = FileTreePane::new(Rc::clone(&files));
+        file_tree.set_keymap(file_tree_km);
+
+        let mut branch_list = BranchListPane::new();
+        branch_list.set_keymap(branch_list_km);
+
+        let mut git_log = GitLogPane::new();
+        git_log.set_keymap(git_log_km);
+
+        let mut reflog = ReflogPane::new();
+        reflog.set_keymap(reflog_km);
+
+        let mut diff_view = DiffViewPane::new(Rc::clone(&files));
+        diff_view.set_scroll_keymap(diff_view_km);
+
         let mut state = Self {
             pane: PaneShared {
                 focused_pane: PANE_FILE_TREE,
@@ -175,14 +273,14 @@ impl GitState {
             },
             panes: GitPanes {
                 file_tab: Tab {
-                    list: FileTreePane::new(Rc::clone(&files)),
-                    detail: DiffViewPane::new(Rc::clone(&files)),
+                    list: file_tree,
+                    detail: diff_view,
                 },
                 branch_tab: Tab {
-                    list: BranchListPane::new(),
-                    detail: GitLogPane::new(),
+                    list: branch_list,
+                    detail: git_log,
                 },
-                reflog: ReflogPane::new(),
+                reflog,
             },
             repo,
             diff_meta: DiffMeta {
@@ -191,8 +289,8 @@ impl GitState {
                 file_count: files.len(),
             },
             diff_base_ref: None,
-            layout_config: default_layout_config(),
-            view_keymap: default_view_keymap(),
+            layout_config: page_cfg.layout,
+            view_keymap: view_km,
         };
         state.panes.file_tab.on_files_changed(None);
         state.load_branches();
@@ -379,6 +477,10 @@ impl GitState {
 }
 
 impl crate::core::app::PageState for GitState {
+    fn id(&self) -> &'static str {
+        "git"
+    }
+
     fn label(&self) -> &'static str {
         "Git"
     }
@@ -476,5 +578,195 @@ impl crate::core::app::PageState for GitState {
 
     fn drain_background(&mut self) {
         self.panes.file_tab.detail.drain_background();
+    }
+}
+
+#[cfg(test)]
+mod kdl_regression {
+    use super::*;
+    use crate::core::config::{build_keymap, load_git_page_config};
+    use crate::core::keymap::{KeyInput, ViewAction};
+    use crate::core::layout::resolve_layout;
+    use crate::git::panes::branch_list::{default_keymap as branch_default, BranchListAction};
+    use crate::git::panes::diff_view::keys::{default_scroll_keymap, DiffScrollAction};
+    use crate::git::panes::file_tree::{default_keymap as file_tree_default, FileTreeAction};
+    use crate::git::panes::git_log::{default_keymap as git_log_default, GitLogAction};
+    use crate::git::panes::reflog::{default_keymap as reflog_default, ReflogAction};
+    use crossterm::event::KeyEvent;
+    use ratatui::layout::Rect;
+
+    fn key(s: &str) -> KeyEvent {
+        let ki: KeyInput = s.parse().unwrap();
+        KeyEvent::new(ki.code, ki.modifiers)
+    }
+
+    fn kdl_cfg() -> crate::core::config::loader::LoadedPageConfig {
+        load_git_page_config(&pane_name_map()).unwrap()
+    }
+
+    // ── Layout regression ─────────────────────────────────────────────────────
+
+    #[test]
+    fn layout_tree_structure_matches() {
+        let hardcoded = default_layout_config();
+        let from_kdl = kdl_cfg().layout;
+
+        let area = Rect::new(0, 0, 200, 60);
+
+        // Compare for focus on file_tree (default slot: diff_view)
+        let slots_hc = hardcoded.resolve_slots(PANE_FILE_TREE);
+        let slots_kd = from_kdl.resolve_slots(PANE_FILE_TREE);
+
+        let layout_hc = resolve_layout(area, &hardcoded.tree, &slots_hc);
+        let layout_kd = resolve_layout(area, &from_kdl.tree, &slots_kd);
+
+        assert_eq!(
+            layout_hc, layout_kd,
+            "layout resolution differs for file_tree focus"
+        );
+
+        // Compare for focus on branch_list (slot → git_log)
+        let slots_hc2 = hardcoded.resolve_slots(PANE_BRANCH_LIST);
+        let slots_kd2 = from_kdl.resolve_slots(PANE_BRANCH_LIST);
+        let layout_hc2 = resolve_layout(area, &hardcoded.tree, &slots_hc2);
+        let layout_kd2 = resolve_layout(area, &from_kdl.tree, &slots_kd2);
+        assert_eq!(
+            layout_hc2, layout_kd2,
+            "layout resolution differs for branch_list focus"
+        );
+    }
+
+    #[test]
+    fn tab_panes_match() {
+        let hardcoded = default_layout_config();
+        let from_kdl = kdl_cfg().layout;
+        assert_eq!(hardcoded.tab_panes, from_kdl.tab_panes);
+    }
+
+    #[test]
+    fn slot_rules_match() {
+        let hardcoded = default_layout_config();
+        let from_kdl = kdl_cfg().layout;
+        assert_eq!(hardcoded.slot_rules.len(), from_kdl.slot_rules.len());
+        let r_hc = &hardcoded.slot_rules[0];
+        let r_kd = &from_kdl.slot_rules[0];
+        assert_eq!(r_hc.slot_id, r_kd.slot_id);
+        assert_eq!(r_hc.then_pane, r_kd.then_pane);
+        assert_eq!(r_hc.default_pane, r_kd.default_pane);
+        let mut tp_hc = r_hc.trigger_panes.clone();
+        tp_hc.sort();
+        let mut tp_kd = r_kd.trigger_panes.clone();
+        tp_kd.sort();
+        assert_eq!(tp_hc, tp_kd);
+    }
+
+    // ── Keymap regression helpers ─────────────────────────────────────────────
+
+    fn check_keys<A: Clone + std::fmt::Debug>(
+        hc: &crate::core::keymap::Keymap<A>,
+        kd: &crate::core::keymap::Keymap<A>,
+        test_keys: &[&str],
+    ) {
+        for k in test_keys {
+            let ev = key(k);
+            let a_hc = hc.lookup(ev);
+            let a_kd = kd.lookup(ev);
+            assert_eq!(
+                a_hc.is_some(),
+                a_kd.is_some(),
+                "key {k:?}: hardcoded={a_hc:?}, kdl={a_kd:?}"
+            );
+            if let (Some(h), Some(d)) = (a_hc, a_kd) {
+                assert_eq!(
+                    format!("{h:?}"),
+                    format!("{d:?}"),
+                    "key {k:?} action mismatch"
+                );
+            }
+        }
+    }
+
+    // ── FileTreeAction ─────────────────────────────────────────────────────────
+
+    #[test]
+    fn file_tree_keymap_matches() {
+        let hc = file_tree_default();
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<FileTreeAction> =
+            build_keymap(entries["file_tree"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "Space", "Right", "Enter", "i",
+            "Esc", "Down", "Up",
+        ];
+        check_keys(&hc, &kd, &test_keys);
+    }
+
+    // ── BranchListAction ───────────────────────────────────────────────────────
+
+    #[test]
+    fn branch_list_keymap_matches() {
+        let hc = branch_default();
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<BranchListAction> =
+            build_keymap(entries["branch_list"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "Enter", "i", "Esc",
+        ];
+        check_keys(&hc, &kd, &test_keys);
+    }
+
+    // ── GitLogAction ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn git_log_keymap_matches() {
+        let hc = git_log_default();
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<GitLogAction> =
+            build_keymap(entries["git_log"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "y", "o", "h", "Esc",
+        ];
+        check_keys(&hc, &kd, &test_keys);
+    }
+
+    // ── ReflogAction ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn reflog_keymap_matches() {
+        let hc = reflog_default();
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<ReflogAction> =
+            build_keymap(entries["reflog"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "Enter", "i", "Esc",
+        ];
+        check_keys(&hc, &kd, &test_keys);
+    }
+
+    // ── DiffScrollAction ───────────────────────────────────────────────────────
+
+    #[test]
+    fn diff_view_keymap_matches() {
+        let hc = default_scroll_keymap();
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<DiffScrollAction> =
+            build_keymap(entries["diff_view"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "h", "Left", "l", "Right", "i",
+            "Esc", "Down", "Up",
+        ];
+        check_keys(&hc, &kd, &test_keys);
+    }
+
+    // ── ViewAction (git page) ─────────────────────────────────────────────────
+
+    #[test]
+    fn view_keymap_matches() {
+        let hc = default_view_keymap();
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<ViewAction> =
+            build_keymap(entries["view"].as_slice()).unwrap();
+        let test_keys = ["q", "?", "r", "h", "l", "Tab", "BackTab", "e"];
+        check_keys(&hc, &kd, &test_keys);
     }
 }

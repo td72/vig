@@ -451,7 +451,8 @@ impl ActionHelp for ViewAction {
     }
 }
 
-/// Generate default view-level key bindings.
+/// Generate default view-level key bindings. Kept for regression tests.
+#[allow(dead_code)]
 pub fn view_bindings<A: Clone>(wrap: impl Fn(ViewAction) -> A) -> Vec<(KeyCode, KeyModifiers, A)> {
     vec![
         (
@@ -505,6 +506,71 @@ pub fn help_section(title: &str) -> Vec<HelpEntry> {
 /// short viewports.
 pub fn half_page_step(view_height: u16) -> u16 {
     (view_height / 2).max(1)
+}
+
+/// Application-level actions for global key bindings (Ctrl+c, page switching).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AppAction {
+    /// Quit the application.
+    Quit,
+    /// Switch to the page at the given 0-indexed position.
+    SwitchPage(usize),
+}
+
+impl FromStr for AppAction {
+    type Err = String;
+
+    /// Parse action strings for `AppAction`.
+    ///
+    /// - `"Quit"` → `AppAction::Quit`
+    /// - `"SwitchPage:<n>"` → `AppAction::SwitchPage(n)`
+    ///
+    /// Note: `"page:<name>"` strings from the KDL config are **not** handled here.
+    /// `build_app_keymap` resolves page names to indices and constructs
+    /// `AppAction::SwitchPage` directly, without going through `FromStr`.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s == "Quit" {
+            return Ok(Self::Quit);
+        }
+        if let Some(idx_str) = s.strip_prefix("SwitchPage:") {
+            let idx: usize = idx_str
+                .parse()
+                .map_err(|_| format!("Invalid page index in SwitchPage: {idx_str:?}"))?;
+            return Ok(Self::SwitchPage(idx));
+        }
+        Err(format!("Unknown AppAction: {s:?}"))
+    }
+}
+
+/// Build an app-level keymap from `(key_str, action_str)` pairs.
+///
+/// Page-name strings like `"page:git"` are resolved to indices using `page_names`.
+/// Returns `Err` on the first invalid key, unknown page name, or invalid action.
+pub fn build_app_keymap(
+    entries: &[(String, String)],
+    page_names: &[&str],
+) -> Result<Keymap<AppAction>, String> {
+    let mut km = Keymap::new();
+    for (key_str, action_str) in entries {
+        let ki = key_str
+            .parse::<KeyInput>()
+            .map_err(|e| format!("invalid app key {key_str:?}: {e}"))?;
+        let action = if action_str == "Quit" {
+            AppAction::Quit
+        } else if let Some(name) = action_str.strip_prefix("page:") {
+            let idx = page_names
+                .iter()
+                .position(|p| *p == name)
+                .ok_or_else(|| format!("unknown page name in app keymap: {name:?}"))?;
+            AppAction::SwitchPage(idx)
+        } else {
+            action_str
+                .parse::<AppAction>()
+                .map_err(|e| format!("invalid app action {action_str:?}: {e}"))?
+        };
+        km = km.bind(ki.code, ki.modifiers, action);
+    }
+    Ok(km)
 }
 
 /// Execute a navigation action on a list, updating `selected_idx`.

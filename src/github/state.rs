@@ -1,8 +1,7 @@
 use crate::core::app::AppContext;
-use crate::core::keymap::{view_bindings, Keymap, ViewAction};
-use crate::core::layout::{
-    split_page_frame, LayoutNode, PageLayoutConfig, SlotRule, SplitDirection,
-};
+use crate::core::config::{build_keymap, load_github_page_config};
+use crate::core::keymap::{Keymap, ViewAction};
+use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::PageAction;
 use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
@@ -10,14 +9,15 @@ use crate::core::tab::Tab;
 use crate::core::ui::status_bar;
 use crate::github::domain::client;
 use crate::github::domain::types::*;
-use crate::github::panes::detail_view::GhDetailViewPane;
-use crate::github::panes::gh_list::{GhListItem, GhListPane};
+use crate::github::panes::detail_view::{DetailAction, GhDetailViewPane};
+use crate::github::panes::gh_list::{GhListAction, GhListItem, GhListPane};
 use crate::github::panes::issue_list::{self, GhIssueListPane};
 use crate::github::panes::pr_list::{self, GhPrListPane};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
-use ratatui::layout::{Constraint, Rect};
+use ratatui::layout::Rect;
 use ratatui::Frame;
+use std::collections::HashMap;
 use std::sync::mpsc;
 
 pub const GH_PANE_ISSUE_LIST: usize = 0;
@@ -25,8 +25,25 @@ pub const GH_PANE_PR_LIST: usize = 1;
 pub const GH_PANE_ISSUE_DETAIL: usize = 2;
 pub const GH_PANE_PR_DETAIL: usize = 3;
 
+#[cfg(test)]
+use crate::core::layout::{LayoutNode, SlotRule, SplitDirection};
+#[cfg(test)]
+use ratatui::layout::Constraint;
+
+#[cfg(test)]
 const GH_SLOT_DETAIL: usize = 0;
 
+/// Map pane names used in `default.kdl` to their numeric GH_PANE_* constants.
+fn pane_name_map() -> HashMap<&'static str, usize> {
+    let mut m = HashMap::new();
+    m.insert("issue_list", GH_PANE_ISSUE_LIST);
+    m.insert("pr_list", GH_PANE_PR_LIST);
+    m.insert("issue_detail", GH_PANE_ISSUE_DETAIL);
+    m.insert("pr_detail", GH_PANE_PR_DETAIL);
+    m
+}
+
+#[cfg(test)]
 fn default_gh_layout_config() -> PageLayoutConfig {
     PageLayoutConfig {
         tree: LayoutNode::Split {
@@ -190,6 +207,64 @@ pub struct GitHubState {
 
 impl GitHubState {
     pub fn new() -> Self {
+        // Load layout + pane keymaps from the embedded default KDL config.
+        let name_map = pane_name_map();
+        let page_cfg = load_github_page_config(&name_map)
+            .expect("default.kdl github page config is always valid");
+
+        // Build pane keymaps from KDL entries.
+        let issue_list_km = build_keymap::<GhListAction>(
+            page_cfg
+                .pane_keys
+                .get("issue_list")
+                .expect("default.kdl missing 'issue_list' block"),
+        )
+        .expect("default.kdl issue_list keymap is always valid");
+
+        let pr_list_km = build_keymap::<GhListAction>(
+            page_cfg
+                .pane_keys
+                .get("pr_list")
+                .expect("default.kdl missing 'pr_list' block"),
+        )
+        .expect("default.kdl pr_list keymap is always valid");
+
+        let issue_detail_km = build_keymap::<DetailAction>(
+            page_cfg
+                .pane_keys
+                .get("issue_detail")
+                .expect("default.kdl missing 'issue_detail' block"),
+        )
+        .expect("default.kdl issue_detail keymap is always valid");
+
+        let pr_detail_km = build_keymap::<DetailAction>(
+            page_cfg
+                .pane_keys
+                .get("pr_detail")
+                .expect("default.kdl missing 'pr_detail' block"),
+        )
+        .expect("default.kdl pr_detail keymap is always valid");
+
+        let view_km = build_keymap::<ViewAction>(
+            page_cfg
+                .pane_keys
+                .get("view")
+                .expect("default.kdl missing 'view' block"),
+        )
+        .expect("default.kdl github view keymap is always valid");
+
+        let mut issue_list = issue_list::new_pane();
+        issue_list.set_keymap(issue_list_km);
+
+        let mut pr_list = pr_list::new_pane();
+        pr_list.set_keymap(pr_list_km);
+
+        let mut issue_detail = GhDetailViewPane::new(GH_PANE_ISSUE_DETAIL);
+        issue_detail.set_keymap(issue_detail_km);
+
+        let mut pr_detail = GhDetailViewPane::new(GH_PANE_PR_DETAIL);
+        pr_detail.set_keymap(pr_detail_km);
+
         Self {
             pane: PaneShared {
                 focused_pane: GH_PANE_ISSUE_LIST,
@@ -198,12 +273,12 @@ impl GitHubState {
             },
             panes: GhPanes {
                 issue_tab: Tab {
-                    list: issue_list::new_pane(),
-                    detail: GhDetailViewPane::new(GH_PANE_ISSUE_DETAIL),
+                    list: issue_list,
+                    detail: issue_detail,
                 },
                 pr_tab: Tab {
-                    list: pr_list::new_pane(),
-                    detail: GhDetailViewPane::new(GH_PANE_PR_DETAIL),
+                    list: pr_list,
+                    detail: pr_detail,
                 },
             },
             gh_available: None,
@@ -211,8 +286,8 @@ impl GitHubState {
             bg_rx: None,
             bg_tx: None,
             initialized: false,
-            layout_config: default_gh_layout_config(),
-            view_keymap: Keymap::new().bindings(view_bindings(|v| v)),
+            layout_config: page_cfg.layout,
+            view_keymap: view_km,
         }
     }
 
@@ -444,6 +519,10 @@ impl GitHubState {
 }
 
 impl crate::core::app::PageState for GitHubState {
+    fn id(&self) -> &'static str {
+        "github"
+    }
+
     fn label(&self) -> &'static str {
         "GitHub"
     }
@@ -501,5 +580,129 @@ impl crate::core::app::PageState for GitHubState {
 
     fn drain_background(&mut self) {
         self.drain_bg_messages();
+    }
+}
+
+#[cfg(test)]
+mod kdl_regression {
+    use super::*;
+    use crate::core::config::{build_keymap, load_github_page_config};
+    use crate::core::keymap::KeyInput;
+    use crate::core::layout::resolve_layout;
+    use crate::github::panes::detail_view::DetailAction;
+    use crate::github::panes::gh_list::GhListAction;
+    use crossterm::event::KeyEvent;
+    use ratatui::layout::Rect;
+
+    fn key(s: &str) -> KeyEvent {
+        let ki: KeyInput = s.parse().unwrap();
+        KeyEvent::new(ki.code, ki.modifiers)
+    }
+
+    fn kdl_cfg() -> crate::core::config::loader::LoadedPageConfig {
+        load_github_page_config(&pane_name_map()).unwrap()
+    }
+
+    fn check_keys<A: Clone + std::fmt::Debug>(
+        hc: &crate::core::keymap::Keymap<A>,
+        kd: &crate::core::keymap::Keymap<A>,
+        test_keys: &[&str],
+    ) {
+        for k in test_keys {
+            let ev = key(k);
+            let a_hc = hc.lookup(ev);
+            let a_kd = kd.lookup(ev);
+            assert_eq!(
+                a_hc.is_some(),
+                a_kd.is_some(),
+                "key {k:?}: hardcoded={a_hc:?}, kdl={a_kd:?}"
+            );
+            if let (Some(h), Some(d)) = (a_hc, a_kd) {
+                assert_eq!(
+                    format!("{h:?}"),
+                    format!("{d:?}"),
+                    "key {k:?} action mismatch"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn layout_tree_structure_matches() {
+        let hardcoded = default_gh_layout_config();
+        let from_kdl = kdl_cfg().layout;
+        let area = Rect::new(0, 0, 200, 60);
+        let slots_hc = hardcoded.resolve_slots(GH_PANE_ISSUE_LIST);
+        let slots_kd = from_kdl.resolve_slots(GH_PANE_ISSUE_LIST);
+        let layout_hc = resolve_layout(area, &hardcoded.tree, &slots_hc);
+        let layout_kd = resolve_layout(area, &from_kdl.tree, &slots_kd);
+        assert_eq!(
+            layout_hc, layout_kd,
+            "layout resolution differs for issue_list focus"
+        );
+    }
+
+    #[test]
+    fn tab_panes_match() {
+        let hardcoded = default_gh_layout_config();
+        let from_kdl = kdl_cfg().layout;
+        assert_eq!(hardcoded.tab_panes, from_kdl.tab_panes);
+    }
+
+    #[test]
+    fn slot_rules_match() {
+        let hardcoded = default_gh_layout_config();
+        let from_kdl = kdl_cfg().layout;
+        assert_eq!(hardcoded.slot_rules.len(), from_kdl.slot_rules.len());
+        let r_hc = &hardcoded.slot_rules[0];
+        let r_kd = &from_kdl.slot_rules[0];
+        assert_eq!(r_hc.slot_id, r_kd.slot_id);
+        assert_eq!(r_hc.then_pane, r_kd.then_pane);
+        assert_eq!(r_hc.default_pane, r_kd.default_pane);
+        let mut tp_hc = r_hc.trigger_panes.clone();
+        tp_hc.sort();
+        let mut tp_kd = r_kd.trigger_panes.clone();
+        tp_kd.sort();
+        assert_eq!(tp_hc, tp_kd);
+    }
+
+    #[test]
+    fn issue_list_keymap_matches() {
+        use crate::github::panes::gh_list::default_keymap as gh_default;
+        let hc = gh_default(KeyCode::Tab);
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<GhListAction> =
+            build_keymap(entries["issue_list"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "i", "Enter", "Tab", "o", "Esc",
+        ];
+        check_keys(&hc, &kd, &test_keys);
+    }
+
+    #[test]
+    fn pr_list_keymap_matches() {
+        use crate::github::panes::gh_list::default_keymap as gh_default;
+        let hc = gh_default(KeyCode::BackTab);
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<GhListAction> =
+            build_keymap(entries["pr_list"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "i", "Enter", "BackTab", "o",
+            "Esc",
+        ];
+        check_keys(&hc, &kd, &test_keys);
+    }
+
+    #[test]
+    fn detail_keymap_matches() {
+        use crate::github::panes::detail_view::default_keymap as detail_default;
+        let hc = detail_default();
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<DetailAction> =
+            build_keymap(entries["issue_detail"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "h", "l", "Tab", "BackTab", "w", "o", "Esc",
+        ];
+        check_keys(&hc, &kd, &test_keys);
     }
 }

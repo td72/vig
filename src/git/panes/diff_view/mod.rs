@@ -98,6 +98,10 @@ impl DiffViewPane {
         self.files = files;
     }
 
+    pub fn set_scroll_keymap(&mut self, km: Keymap<keys::DiffScrollAction>) {
+        self.scroll_keymap = km;
+    }
+
     pub fn reset_scroll(&mut self) {
         self.scroll.y = 0;
         self.scroll.x = 0;
