@@ -2,9 +2,7 @@ use crate::core::pane::PaneEvent;
 use crate::github::domain::types::GhIssueListItem;
 use crate::github::domain::{client, disk_cache};
 use crate::github::panes::gh_list::{GhListItem, GhListPane};
-use crate::github::state::{
-    GhBgMessage, GH_PANE_ISSUE_DETAIL, GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST,
-};
+use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
 use ratatui::{
     style::{Color, Style},
@@ -73,11 +71,6 @@ impl GhListItem for GhIssueListItem {
 
 pub type GhIssueListPane = GhListPane<GhIssueListItem>;
 
-pub fn new_pane() -> GhIssueListPane {
-    GhListPane::new(
-        GH_PANE_ISSUE_LIST,
-        GH_PANE_ISSUE_DETAIL,
-        KeyCode::Tab,
-        GH_PANE_PR_LIST,
-    )
+pub fn new_pane(pane_id: usize, detail_id: usize, switch_target: usize) -> GhIssueListPane {
+    GhListPane::new(pane_id, detail_id, KeyCode::Tab, switch_target)
 }

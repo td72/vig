@@ -69,10 +69,11 @@ pub struct DiffViewPane {
     pub current_file_idx: Option<usize>,
     pub files: Rc<Vec<FileDiff>>,
     pub(crate) scroll_keymap: Keymap<keys::DiffScrollAction>,
+    pub pane_id: usize,
 }
 
 impl DiffViewPane {
-    pub fn new(files: Rc<Vec<FileDiff>>) -> Self {
+    pub fn new(files: Rc<Vec<FileDiff>>, pane_id: usize) -> Self {
         Self {
             scroll: DiffScroll::default(),
             vim: VimState::default(),
@@ -81,6 +82,7 @@ impl DiffViewPane {
             current_file_idx: None,
             files,
             scroll_keymap: keys::default_scroll_keymap(),
+            pane_id,
         }
     }
 

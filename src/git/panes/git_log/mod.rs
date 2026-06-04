@@ -6,7 +6,7 @@ use crate::core::keymap::{
 use crate::core::pane::{self, Pane, PaneShared, SubPaneScroll};
 use crate::git::domain::graph::{self, GraphRow};
 use crate::git::domain::repository::{CommitFileChange, CommitInfo, Repo};
-use crate::git::state::{PaneEvent, PANE_REFLOG};
+use crate::git::state::PaneEvent;
 use crossterm::event::KeyCode;
 use ratatui::{layout::Rect, Frame};
 
@@ -61,10 +61,13 @@ pub struct GitLogPane {
     pub detail_view_height: u16,
     pub detail_changed_files: Vec<CommitFileChange>,
     keymap: Keymap<GitLogAction>,
+    pub pane_id: usize,
+    reflog_id: usize,
+    pub branch_list_id: usize,
 }
 
 impl GitLogPane {
-    pub fn new() -> Self {
+    pub fn new(pane_id: usize, reflog_id: usize, branch_list_id: usize) -> Self {
         Self {
             commits: Vec::new(),
             selected_idx: 0,
@@ -75,6 +78,9 @@ impl GitLogPane {
             detail_view_height: 0,
             detail_changed_files: Vec::new(),
             keymap: default_keymap(),
+            pane_id,
+            reflog_id,
+            branch_list_id,
         }
     }
 
@@ -112,14 +118,14 @@ impl GitLogPane {
         if let Some(events) = pane::try_dispatch_search_esc(
             &action,
             shared,
-            crate::git::state::PANE_GIT_LOG,
+            self.pane_id,
             vec![PaneEvent::SetFocus(shared.previous_pane)],
         ) {
             return events;
         }
         match action {
             GitLogAction::FocusReflog => {
-                return vec![PaneEvent::SetFocus(PANE_REFLOG)];
+                return vec![PaneEvent::SetFocus(self.reflog_id)];
             }
             GitLogAction::Nav(nav) => {
                 return pane::execute_list_nav(

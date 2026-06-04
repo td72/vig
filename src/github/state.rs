@@ -17,66 +17,39 @@ use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::layout::Rect;
 use ratatui::Frame;
-use std::collections::HashMap;
 use std::sync::mpsc;
 
-pub const GH_PANE_ISSUE_LIST: usize = 0;
-pub const GH_PANE_PR_LIST: usize = 1;
-pub const GH_PANE_ISSUE_DETAIL: usize = 2;
-pub const GH_PANE_PR_DETAIL: usize = 3;
+// === Pane ID registry ===
+
+pub struct GhPaneIds {
+    pub issue_list: usize,
+    pub pr_list: usize,
+    pub issue_detail: usize,
+    pub pr_detail: usize,
+}
+
+impl GhPaneIds {
+    fn from_config(pane_ids: &[(String, usize)]) -> Self {
+        let resolve = |name: &str| -> usize {
+            pane_ids
+                .iter()
+                .find(|(n, _)| n == name)
+                .map(|(_, id)| *id)
+                .unwrap_or_else(|| panic!("default.kdl missing pane {name:?}"))
+        };
+        Self {
+            issue_list: resolve("issue_list"),
+            pr_list: resolve("pr_list"),
+            issue_detail: resolve("issue_detail"),
+            pr_detail: resolve("pr_detail"),
+        }
+    }
+}
 
 #[cfg(test)]
 use crate::core::layout::{LayoutNode, SlotRule, SplitDirection};
 #[cfg(test)]
 use ratatui::layout::Constraint;
-
-#[cfg(test)]
-const GH_SLOT_DETAIL: usize = 0;
-
-/// Map pane names used in `default.kdl` to their numeric GH_PANE_* constants.
-fn pane_name_map() -> HashMap<&'static str, usize> {
-    let mut m = HashMap::new();
-    m.insert("issue_list", GH_PANE_ISSUE_LIST);
-    m.insert("pr_list", GH_PANE_PR_LIST);
-    m.insert("issue_detail", GH_PANE_ISSUE_DETAIL);
-    m.insert("pr_detail", GH_PANE_PR_DETAIL);
-    m
-}
-
-#[cfg(test)]
-fn default_gh_layout_config() -> PageLayoutConfig {
-    PageLayoutConfig {
-        tree: LayoutNode::Split {
-            direction: SplitDirection::Vertical,
-            children: vec![
-                (
-                    Constraint::Percentage(40),
-                    LayoutNode::Split {
-                        direction: SplitDirection::Horizontal,
-                        children: vec![
-                            (
-                                Constraint::Percentage(50),
-                                LayoutNode::Pane(GH_PANE_ISSUE_LIST),
-                            ),
-                            (
-                                Constraint::Percentage(50),
-                                LayoutNode::Pane(GH_PANE_PR_LIST),
-                            ),
-                        ],
-                    },
-                ),
-                (Constraint::Min(3), LayoutNode::Slot(GH_SLOT_DETAIL)),
-            ],
-        },
-        tab_panes: vec![GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST],
-        slot_rules: vec![SlotRule {
-            slot_id: GH_SLOT_DETAIL,
-            trigger_panes: vec![GH_PANE_PR_LIST, GH_PANE_PR_DETAIL],
-            then_pane: GH_PANE_PR_DETAIL,
-            default_pane: GH_PANE_ISSUE_DETAIL,
-        }],
-    }
-}
 
 #[derive(Debug, Clone)]
 pub enum GhDetailContent {
@@ -158,6 +131,7 @@ impl PrTab {
 pub struct GhPanes {
     pub issue_tab: IssueTab,
     pub pr_tab: PrTab,
+    pub ids: GhPaneIds,
 }
 
 impl pane::PageLayout for GitHubState {
@@ -181,12 +155,19 @@ impl pane::PageLayout for GitHubState {
 
 impl PaneSet for GhPanes {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
-        self.issue_tab
-            .get_pane_mut(GH_PANE_ISSUE_LIST, GH_PANE_ISSUE_DETAIL, idx)
-            .or_else(|| {
-                self.pr_tab
-                    .get_pane_mut(GH_PANE_PR_LIST, GH_PANE_PR_DETAIL, idx)
-            })
+        let (il, id_, pl, pd) = (
+            self.ids.issue_list,
+            self.ids.issue_detail,
+            self.ids.pr_list,
+            self.ids.pr_detail,
+        );
+        if idx == il || idx == id_ {
+            self.issue_tab.get_pane_mut(il, id_, idx)
+        } else if idx == pl || idx == pd {
+            self.pr_tab.get_pane_mut(pl, pd, idx)
+        } else {
+            None
+        }
     }
 }
 
@@ -208,9 +189,10 @@ pub struct GitHubState {
 impl GitHubState {
     pub fn new() -> Self {
         // Load layout + pane keymaps from the embedded default KDL config.
-        let name_map = pane_name_map();
-        let page_cfg = load_github_page_config(&name_map)
-            .expect("default.kdl github page config is always valid");
+        let page_cfg =
+            load_github_page_config().expect("default.kdl github page config is always valid");
+
+        let ids = GhPaneIds::from_config(&page_cfg.pane_ids);
 
         // Build pane keymaps from KDL entries.
         let issue_list_km = build_keymap::<GhListAction>(
@@ -253,22 +235,24 @@ impl GitHubState {
         )
         .expect("default.kdl github view keymap is always valid");
 
-        let mut issue_list = issue_list::new_pane();
+        let mut issue_list = issue_list::new_pane(ids.issue_list, ids.issue_detail, ids.pr_list);
         issue_list.set_keymap(issue_list_km);
 
-        let mut pr_list = pr_list::new_pane();
+        let mut pr_list = pr_list::new_pane(ids.pr_list, ids.pr_detail, ids.issue_list);
         pr_list.set_keymap(pr_list_km);
 
-        let mut issue_detail = GhDetailViewPane::new(GH_PANE_ISSUE_DETAIL);
+        let mut issue_detail = GhDetailViewPane::new(ids.issue_detail);
         issue_detail.set_keymap(issue_detail_km);
 
-        let mut pr_detail = GhDetailViewPane::new(GH_PANE_PR_DETAIL);
+        let mut pr_detail = GhDetailViewPane::new(ids.pr_detail);
         pr_detail.set_keymap(pr_detail_km);
+
+        let initial_focus = ids.issue_list;
 
         Self {
             pane: PaneShared {
-                focused_pane: GH_PANE_ISSUE_LIST,
-                previous_pane: GH_PANE_ISSUE_LIST,
+                focused_pane: initial_focus,
+                previous_pane: initial_focus,
                 search: SearchState::new(),
             },
             panes: GhPanes {
@@ -280,6 +264,7 @@ impl GitHubState {
                     list: pr_list,
                     detail: pr_detail,
                 },
+                ids,
             },
             gh_available: None,
             gh_error: None,
@@ -376,12 +361,11 @@ impl GitHubState {
 
     /// Is the user currently on the PR tab (list or detail)?
     fn is_on_pr_tab(&self) -> bool {
-        matches!(self.pane.focused_pane, GH_PANE_PR_LIST | GH_PANE_PR_DETAIL)
+        let fp = self.pane.focused_pane;
+        fp == self.panes.ids.pr_list || fp == self.panes.ids.pr_detail
     }
 
     /// The detail pane of the currently active tab (issue or PR).
-    /// Both tabs share the same `GhDetailViewPane` type, so callers that
-    /// only touch the detail side can avoid branching on `is_on_pr_tab`.
     fn active_detail(&self) -> &GhDetailViewPane {
         if self.is_on_pr_tab() {
             &self.panes.pr_tab.detail
@@ -449,12 +433,18 @@ impl GitHubState {
         ctx: &mut AppContext,
         events: Vec<PaneEvent>,
     ) -> Result<PageAction> {
+        // Copy IDs as usize (Copy) before any mutable borrows.
+        let issue_detail_id = self.panes.ids.issue_detail;
+        let pr_detail_id = self.panes.ids.pr_detail;
+        let issue_list_id = self.panes.ids.issue_list;
+        let pr_list_id = self.panes.ids.pr_list;
+
         for event in events {
             if pane::process_common_event(&mut self.pane, ctx, &event) {
                 continue;
             }
             match event {
-                PaneEvent::SetFocus(GH_PANE_ISSUE_DETAIL | GH_PANE_PR_DETAIL) => {
+                PaneEvent::SetFocus(id) if id == issue_detail_id || id == pr_detail_id => {
                     self.sync_active_detail();
                 }
                 PaneEvent::SelectionChanged => {
@@ -481,7 +471,7 @@ impl GitHubState {
                         self.pane
                             .jump_to_search_match(&mut self.panes, ctx, forward)
                     {
-                        if matches!(origin, GH_PANE_ISSUE_LIST | GH_PANE_PR_LIST) {
+                        if origin == issue_list_id || origin == pr_list_id {
                             self.sync_active_detail();
                         }
                     }
@@ -501,10 +491,10 @@ impl GitHubState {
                 return Ok(page_action);
             }
             if *action == ViewAction::Refresh {
-                if matches!(
-                    self.pane.focused_pane,
-                    GH_PANE_ISSUE_DETAIL | GH_PANE_PR_DETAIL
-                ) {
+                let fp = self.pane.focused_pane;
+                let is_on_detail =
+                    fp == self.panes.ids.issue_detail || fp == self.panes.ids.pr_detail;
+                if is_on_detail {
                     self.refresh_detail();
                 } else {
                     self.refresh();
@@ -594,13 +584,54 @@ mod kdl_regression {
     use crossterm::event::KeyEvent;
     use ratatui::layout::Rect;
 
+    // Test-local pane ID constants (match default.kdl declaration order)
+    const GH_PANE_ISSUE_LIST: usize = 0;
+    const GH_PANE_PR_LIST: usize = 1;
+    const GH_PANE_ISSUE_DETAIL: usize = 2;
+    const GH_PANE_PR_DETAIL: usize = 3;
+    const GH_SLOT_DETAIL: usize = 0;
+
     fn key(s: &str) -> KeyEvent {
         let ki: KeyInput = s.parse().unwrap();
         KeyEvent::new(ki.code, ki.modifiers)
     }
 
     fn kdl_cfg() -> crate::core::config::loader::LoadedPageConfig {
-        load_github_page_config(&pane_name_map()).unwrap()
+        load_github_page_config().unwrap()
+    }
+
+    fn default_gh_layout_config() -> PageLayoutConfig {
+        PageLayoutConfig {
+            tree: LayoutNode::Split {
+                direction: SplitDirection::Vertical,
+                children: vec![
+                    (
+                        Constraint::Percentage(40),
+                        LayoutNode::Split {
+                            direction: SplitDirection::Horizontal,
+                            children: vec![
+                                (
+                                    Constraint::Percentage(50),
+                                    LayoutNode::Pane(GH_PANE_ISSUE_LIST),
+                                ),
+                                (
+                                    Constraint::Percentage(50),
+                                    LayoutNode::Pane(GH_PANE_PR_LIST),
+                                ),
+                            ],
+                        },
+                    ),
+                    (Constraint::Min(3), LayoutNode::Slot(GH_SLOT_DETAIL)),
+                ],
+            },
+            tab_panes: vec![GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST],
+            slot_rules: vec![SlotRule {
+                slot_id: GH_SLOT_DETAIL,
+                trigger_panes: vec![GH_PANE_PR_LIST, GH_PANE_PR_DETAIL],
+                then_pane: GH_PANE_PR_DETAIL,
+                default_pane: GH_PANE_ISSUE_DETAIL,
+            }],
+        }
     }
 
     fn check_keys<A: Clone + std::fmt::Debug>(
@@ -704,5 +735,36 @@ mod kdl_regression {
             "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "h", "l", "Tab", "BackTab", "w", "o", "Esc",
         ];
         check_keys(&hc, &kd, &test_keys);
+    }
+
+    #[test]
+    fn pane_ids_from_config() {
+        let cfg = kdl_cfg();
+        let ids = GhPaneIds::from_config(&cfg.pane_ids);
+        assert_eq!(ids.issue_list, GH_PANE_ISSUE_LIST);
+        assert_eq!(ids.pr_list, GH_PANE_PR_LIST);
+        assert_eq!(ids.issue_detail, GH_PANE_ISSUE_DETAIL);
+        assert_eq!(ids.pr_detail, GH_PANE_PR_DETAIL);
+    }
+
+    #[test]
+    fn bindings_match_expected_pairs() {
+        let cfg = kdl_cfg();
+        assert!(
+            cfg.bindings
+                .contains(&("issue_list".to_string(), "issue_detail".to_string())),
+            "missing bind issue_list→issue_detail"
+        );
+        assert!(
+            cfg.bindings
+                .contains(&("pr_list".to_string(), "pr_detail".to_string())),
+            "missing bind pr_list→pr_detail"
+        );
+        let issue_detail_id = cfg.resolve_id("issue_detail").unwrap();
+        let pr_detail_id = cfg.resolve_id("pr_detail").unwrap();
+        assert_ne!(
+            issue_detail_id, pr_detail_id,
+            "issue_detail and pr_detail must be distinct instances"
+        );
     }
 }

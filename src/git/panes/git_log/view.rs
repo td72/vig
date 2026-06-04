@@ -2,7 +2,6 @@ use crate::core::pane::PaneShared;
 use crate::core::theme;
 use crate::git::domain::graph::{GraphCell, GraphRow, NUM_GRAPH_COLORS};
 use crate::git::panes::GitLogPane;
-use crate::git::state::{PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -60,9 +59,8 @@ fn graph_spans(
 
 /// Render the Git Log component: outer border with left (commit list) and right (detail).
 pub fn render(f: &mut Frame, pane: &mut GitLogPane, shared: &PaneShared, area: Rect) {
-    let is_focused = shared.focused_pane == PANE_GIT_LOG
-        || shared.focused_pane == PANE_BRANCH_LIST
-        || shared.focused_pane == PANE_REFLOG;
+    let fp = shared.focused_pane;
+    let is_focused = fp == pane.pane_id || fp == pane.branch_list_id || fp == pane.reflog_id;
 
     let block = theme::pane_block("Git Log", is_focused);
 
@@ -95,12 +93,11 @@ fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &PaneShared, area: 
     let max_graph_width = pane.graph.iter().map(|r| r.cells.len()).max().unwrap_or(0);
 
     // Build set of matched commit entry indices
-    let (match_set, current_match_idx) = theme::list_search_highlights(shared, PANE_GIT_LOG);
+    let (match_set, current_match_idx) = theme::list_search_highlights(shared, pane.pane_id);
 
     // Highlight pipes originating from the selected commit (lazygit-style)
-    let highlight_from = if shared.focused_pane == PANE_GIT_LOG
-        || shared.focused_pane == PANE_BRANCH_LIST
-        || shared.focused_pane == PANE_REFLOG
+    let fp = shared.focused_pane;
+    let highlight_from = if fp == pane.pane_id || fp == pane.branch_list_id || fp == pane.reflog_id
     {
         Some(pane.selected_idx)
     } else {
