@@ -17,6 +17,7 @@ use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::layout::Rect;
 use ratatui::Frame;
+use std::collections::HashMap;
 use std::sync::mpsc;
 
 // === Pane ID registry ===
@@ -182,6 +183,10 @@ pub struct GitHubState {
     bg_rx: Option<mpsc::Receiver<GhBgMessage>>,
     pub(crate) bg_tx: Option<mpsc::Sender<GhBgMessage>>,
     pub initialized: bool,
+    /// select_id → detail_id, built from KDL `bind` declarations at construction time.
+    select_bindings: HashMap<usize, usize>,
+    /// detail_id → select_id (reverse of select_bindings).
+    detail_bindings: HashMap<usize, usize>,
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
 }
@@ -193,6 +198,10 @@ impl GitHubState {
             load_github_page_config().expect("default.kdl github page config is always valid");
 
         let ids = GhPaneIds::from_config(&page_cfg.pane_ids);
+        // Build select→detail and reverse detail→select dispatch maps.
+        let select_bindings = page_cfg.resolve_select_bindings();
+        let detail_bindings: HashMap<usize, usize> =
+            select_bindings.iter().map(|(&s, &d)| (d, s)).collect();
 
         // Build pane keymaps from KDL entries.
         let issue_list_km = build_keymap::<GhListAction>(
@@ -271,6 +280,8 @@ impl GitHubState {
             bg_rx: None,
             bg_tx: None,
             initialized: false,
+            select_bindings,
+            detail_bindings,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
         }
@@ -360,9 +371,11 @@ impl GitHubState {
     }
 
     /// Is the user currently on the PR tab (list or detail)?
+    /// Uses `detail_bindings` to check whether the focused detail pane is paired with `pr_list`.
     fn is_on_pr_tab(&self) -> bool {
         let fp = self.pane.focused_pane;
-        fp == self.panes.ids.pr_list || fp == self.panes.ids.pr_detail
+        let pr_list = self.panes.ids.pr_list;
+        fp == pr_list || self.detail_bindings.get(&fp).copied() == Some(pr_list)
     }
 
     /// The detail pane of the currently active tab (issue or PR).
@@ -383,12 +396,22 @@ impl GitHubState {
     }
 
     /// Sync the active tab's detail view.
+    /// Routes via KDL-resolved `select_bindings`/`detail_bindings`; dispatches to the
+    /// typed tab whose select pane matches the currently focused pane (or its paired select).
     pub fn sync_active_detail(&mut self) {
         let tx = match &self.bg_tx {
             Some(tx) => tx,
             None => return,
         };
-        if self.is_on_pr_tab() {
+        let fp = self.pane.focused_pane;
+        // Resolve focused pane to its select pane: fp itself if it's a select pane,
+        // or look up the reverse map if fp is a detail pane.
+        let select_id = if self.select_bindings.contains_key(&fp) {
+            fp
+        } else {
+            self.detail_bindings.get(&fp).copied().unwrap_or(fp)
+        };
+        if select_id == self.panes.ids.pr_list {
             self.panes.pr_tab.sync_detail(tx);
         } else {
             self.panes.issue_tab.sync_detail(tx);
@@ -765,6 +788,43 @@ mod kdl_regression {
         assert_ne!(
             issue_detail_id, pr_detail_id,
             "issue_detail and pr_detail must be distinct instances"
+        );
+    }
+
+    #[test]
+    fn gh_select_bindings_drive_sync_dispatch() {
+        let cfg = kdl_cfg();
+        let ids = GhPaneIds::from_config(&cfg.pane_ids);
+        let select_bindings = cfg.resolve_select_bindings();
+        // issue_list → issue_detail
+        assert_eq!(
+            select_bindings.get(&ids.issue_list),
+            Some(&ids.issue_detail),
+            "select_bindings must map issue_list→issue_detail"
+        );
+        // pr_list → pr_detail
+        assert_eq!(
+            select_bindings.get(&ids.pr_list),
+            Some(&ids.pr_detail),
+            "select_bindings must map pr_list→pr_detail"
+        );
+        assert_eq!(
+            select_bindings.len(),
+            2,
+            "expected exactly 2 select bindings"
+        );
+        // Verify reverse (detail_bindings)
+        let detail_bindings: HashMap<usize, usize> =
+            select_bindings.iter().map(|(&s, &d)| (d, s)).collect();
+        assert_eq!(
+            detail_bindings.get(&ids.issue_detail),
+            Some(&ids.issue_list),
+            "detail_bindings must map issue_detail→issue_list"
+        );
+        assert_eq!(
+            detail_bindings.get(&ids.pr_detail),
+            Some(&ids.pr_list),
+            "detail_bindings must map pr_detail→pr_list"
         );
     }
 }

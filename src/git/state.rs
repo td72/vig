@@ -21,6 +21,7 @@ use anyhow::Result;
 use crossterm::event::KeyEvent;
 use ratatui::layout::Rect;
 use ratatui::Frame;
+use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
@@ -158,6 +159,8 @@ pub struct GitState {
     pub repo: Repo,
     pub diff_meta: DiffMeta,
     pub diff_base_ref: Option<String>,
+    /// select_id → detail_id, built from KDL `bind` declarations at construction time.
+    select_bindings: HashMap<usize, usize>,
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
 }
@@ -169,6 +172,8 @@ impl GitState {
 
         // Resolve pane IDs from config (declaration order = current 0..4)
         let ids = GitPaneIds::from_config(&page_cfg.pane_ids);
+        // Build select→detail dispatch map from KDL `bind` declarations.
+        let select_bindings = page_cfg.resolve_select_bindings();
 
         let repo = Repo::discover(cwd)?;
         let result = repo.diff_workdir(None)?;
@@ -264,6 +269,7 @@ impl GitState {
                 file_count: files.len(),
             },
             diff_base_ref: None,
+            select_bindings,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
         };
@@ -380,18 +386,19 @@ impl GitState {
     }
 
     /// Synchronize detail pane when the selected item in `selected` pane changes.
-    /// Uses resolved IDs from the KDL config (bindings: file_tree→diff_view, branch_list→git_log).
+    /// Routes via KDL-resolved `select_bindings`; typed dispatch follows from the detail pane ID.
     fn sync_detail(&mut self, selected: usize) {
-        let ft = self.panes.ids.file_tree;
-        let bl = self.panes.ids.branch_list;
-        let gl = self.panes.ids.git_log;
         let dv = self.panes.ids.diff_view;
-        if selected == ft {
-            self.panes.file_tab.sync_detail();
-            search::re_search_on_file_change(self, dv);
-        } else if selected == bl {
-            self.panes.branch_tab.sync_detail(&self.repo);
+        let gl = self.panes.ids.git_log;
+        if let Some(&detail) = self.select_bindings.get(&selected) {
+            if detail == dv {
+                self.panes.file_tab.sync_detail();
+                search::re_search_on_file_change(self, dv);
+            } else if detail == gl {
+                self.panes.branch_tab.sync_detail(&self.repo);
+            }
         } else if selected == gl {
+            // git_log is itself a detail pane; navigate within it to load commit detail.
             self.panes.branch_tab.detail.load_detail(&self.repo);
         }
     }
@@ -817,5 +824,26 @@ mod kdl_regression {
             resolved.contains(&(ids.branch_list, ids.git_log)),
             "binding branch_list→git_log missing"
         );
+    }
+
+    #[test]
+    fn select_bindings_drive_sync_dispatch() {
+        let cfg = kdl_cfg();
+        let ids = GitPaneIds::from_config(&cfg.pane_ids);
+        let bindings = cfg.resolve_select_bindings();
+        // file_tree → diff_view
+        assert_eq!(
+            bindings.get(&ids.file_tree),
+            Some(&ids.diff_view),
+            "select_bindings must map file_tree→diff_view"
+        );
+        // branch_list → git_log
+        assert_eq!(
+            bindings.get(&ids.branch_list),
+            Some(&ids.git_log),
+            "select_bindings must map branch_list→git_log"
+        );
+        // Exactly these two bindings exist
+        assert_eq!(bindings.len(), 2, "expected exactly 2 select bindings");
     }
 }

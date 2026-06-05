@@ -20,18 +20,33 @@ pub struct LoadedPageConfig {
     /// Pane names and their auto-assigned IDs (declaration order, layout panes only).
     pub pane_ids: Vec<(String, usize)>,
     /// select→detail instance bindings declared in the KDL.
-    #[allow(dead_code)]
     pub bindings: Vec<(String, String)>,
 }
 
 impl LoadedPageConfig {
     /// Resolve a pane name to its numeric ID.
-    #[allow(dead_code)]
     pub fn resolve_id(&self, name: &str) -> Option<usize> {
         self.pane_ids
             .iter()
             .find(|(n, _)| n == name)
             .map(|(_, id)| *id)
+    }
+
+    /// Build a `select_id → detail_id` map from the KDL `bind` declarations.
+    /// Panics if any pane name in the bindings does not exist in this config.
+    pub fn resolve_select_bindings(&self) -> HashMap<usize, usize> {
+        self.bindings
+            .iter()
+            .map(|(sel, det)| {
+                let s = self
+                    .resolve_id(sel)
+                    .unwrap_or_else(|| panic!("bind select={sel:?}: pane not found in config"));
+                let d = self
+                    .resolve_id(det)
+                    .unwrap_or_else(|| panic!("bind detail={det:?}: pane not found in config"));
+                (s, d)
+            })
+            .collect()
     }
 }
 
@@ -134,7 +149,7 @@ fn load_page_from_doc(doc: &KdlDocument, page_name: &str) -> Result<LoadedPageCo
     let pane_keys = parse_all_pane_keys(children, page_name)?;
 
     // select→detail bindings
-    let bindings = parse_bindings(children);
+    let bindings = parse_bindings(children, &name_map, page_name)?;
 
     Ok(LoadedPageConfig {
         name: page_name.to_string(),
@@ -212,15 +227,37 @@ fn build_pane_ids(page_children: &KdlDocument, layout_names: &[String]) -> Vec<(
 
 // ── Bindings parser ───────────────────────────────────────────────────────────
 
-fn parse_bindings(page_children: &KdlDocument) -> Vec<(String, String)> {
+fn parse_bindings(
+    page_children: &KdlDocument,
+    name_map: &HashMap<&str, usize>,
+    page: &str,
+) -> Result<Vec<(String, String)>> {
     page_children
         .nodes()
         .iter()
         .filter(|n| n.name().value() == "bind")
-        .filter_map(|n| {
-            let select = n.get("select").and_then(|v| v.as_string())?.to_string();
-            let detail = n.get("detail").and_then(|v| v.as_string())?.to_string();
-            Some((select, detail))
+        .map(|n| {
+            let select = n
+                .get("select")
+                .and_then(|v| v.as_string())
+                .ok_or_else(|| anyhow!("bind in page {page:?} missing select= attribute"))?
+                .to_string();
+            let detail = n
+                .get("detail")
+                .and_then(|v| v.as_string())
+                .ok_or_else(|| anyhow!("bind in page {page:?} missing detail= attribute"))?
+                .to_string();
+            if !name_map.contains_key(select.as_str()) {
+                return Err(anyhow!(
+                    "bind select={select:?} in page {page:?}: pane not found"
+                ));
+            }
+            if !name_map.contains_key(detail.as_str()) {
+                return Err(anyhow!(
+                    "bind detail={detail:?} in page {page:?}: pane not found"
+                ));
+            }
+            Ok((select, detail))
         })
         .collect()
 }
