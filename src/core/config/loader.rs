@@ -11,8 +11,7 @@ static DEFAULT_KDL: &str = include_str!("../../../assets/default.kdl");
 
 /// Parsed config for a single page.
 pub struct LoadedPageConfig {
-    /// Page name (e.g. `"git"`, `"github"`). Used in tests for identity checks.
-    #[allow(dead_code)]
+    /// Page name (e.g. `"git"`, `"github"`).
     pub name: String,
     pub layout: PageLayoutConfig,
     /// Pane keymaps keyed by pane name (e.g. `"file_tree"`, `"view"`, …).
@@ -30,6 +29,13 @@ impl LoadedPageConfig {
             .iter()
             .find(|(n, _)| n == name)
             .map(|(_, id)| *id)
+    }
+
+    /// Resolve a pane name to its numeric ID, panicking if not found.
+    /// Use this for pane names known statically by the page (e.g. `"file_tree"`).
+    pub fn resolve_id_expect(&self, name: &str) -> usize {
+        self.resolve_id(name)
+            .unwrap_or_else(|| panic!("pane {name:?} not found in {:?} page config", self.name))
     }
 
     /// Build a `select_id → detail_id` map from the KDL `bind` declarations.
@@ -166,10 +172,18 @@ fn load_page_from_doc(doc: &KdlDocument, page_name: &str) -> Result<LoadedPageCo
 
 // ── Pane ID builder ───────────────────────────────────────────────────────────
 
-/// Recursively collect all pane names referenced in a layout node
-/// (from `place`, `slot then=`/`default=`, and `triggers` children).
+/// Collect all pane names referenced in a layout node
+/// (from `place`, `slot then=`/`default=`, and `triggers` children),
+/// deduplicated while preserving first-occurrence order.
 fn collect_layout_pane_names(node: &KdlNode) -> Vec<String> {
     let mut names = Vec::new();
+    collect_layout_pane_names_into(node, &mut names);
+    let mut seen = std::collections::HashSet::new();
+    names.retain(|n| seen.insert(n.clone()));
+    names
+}
+
+fn collect_layout_pane_names_into(node: &KdlNode, names: &mut Vec<String>) {
     match node.name().value() {
         "place" => {
             if let Some(name) = node.get(0usize).and_then(|v| v.as_string()) {
@@ -198,13 +212,12 @@ fn collect_layout_pane_names(node: &KdlNode) -> Vec<String> {
         "split" => {
             if let Some(children) = node.children() {
                 for child in children.nodes() {
-                    names.extend(collect_layout_pane_names(child));
+                    collect_layout_pane_names_into(child, names);
                 }
             }
         }
         _ => {}
     }
-    names
 }
 
 /// Assign sequential IDs to panes that appear in the layout,

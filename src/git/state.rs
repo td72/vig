@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::config::{build_keymap, load_git_page_config};
+use crate::core::config::{build_keymap, load_git_page_config, LoadedPageConfig};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::{ExternalCommand, PageAction};
@@ -44,20 +44,13 @@ pub struct GitPaneIds {
 }
 
 impl GitPaneIds {
-    fn from_config(pane_ids: &[(String, usize)]) -> Self {
-        let resolve = |name: &str| {
-            pane_ids
-                .iter()
-                .find(|(n, _)| n == name)
-                .map(|(_, id)| *id)
-                .unwrap_or_else(|| panic!("pane {name:?} not found in git page config"))
-        };
+    fn from_config(cfg: &LoadedPageConfig) -> Self {
         Self {
-            file_tree: resolve("file_tree"),
-            branch_list: resolve("branch_list"),
-            git_log: resolve("git_log"),
-            reflog: resolve("reflog"),
-            diff_view: resolve("diff_view"),
+            file_tree: cfg.resolve_id_expect("file_tree"),
+            branch_list: cfg.resolve_id_expect("branch_list"),
+            git_log: cfg.resolve_id_expect("git_log"),
+            reflog: cfg.resolve_id_expect("reflog"),
+            diff_view: cfg.resolve_id_expect("diff_view"),
         }
     }
 }
@@ -171,7 +164,7 @@ impl GitState {
         let page_cfg = load_git_page_config().expect("default.kdl git page config is always valid");
 
         // Resolve pane IDs from config (declaration order = current 0..4)
-        let ids = GitPaneIds::from_config(&page_cfg.pane_ids);
+        let ids = GitPaneIds::from_config(&page_cfg);
         // Build select→detail dispatch map from KDL `bind` declarations.
         let select_bindings = page_cfg.resolve_select_bindings();
 
@@ -805,7 +798,7 @@ mod kdl_regression {
     #[test]
     fn bindings_match_expected_pairs() {
         let cfg = kdl_cfg();
-        let ids = GitPaneIds::from_config(&cfg.pane_ids);
+        let ids = GitPaneIds::from_config(&cfg);
         // Verify bindings resolve to the correct ID pairs
         let resolved: Vec<(usize, usize)> = cfg
             .bindings
@@ -829,7 +822,7 @@ mod kdl_regression {
     #[test]
     fn select_bindings_drive_sync_dispatch() {
         let cfg = kdl_cfg();
-        let ids = GitPaneIds::from_config(&cfg.pane_ids);
+        let ids = GitPaneIds::from_config(&cfg);
         let bindings = cfg.resolve_select_bindings();
         // file_tree → diff_view
         assert_eq!(

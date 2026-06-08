@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::config::{build_keymap, load_github_page_config};
+use crate::core::config::{build_keymap, load_github_page_config, LoadedPageConfig};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::PageAction;
@@ -30,19 +30,12 @@ pub struct GhPaneIds {
 }
 
 impl GhPaneIds {
-    fn from_config(pane_ids: &[(String, usize)]) -> Self {
-        let resolve = |name: &str| -> usize {
-            pane_ids
-                .iter()
-                .find(|(n, _)| n == name)
-                .map(|(_, id)| *id)
-                .unwrap_or_else(|| panic!("default.kdl missing pane {name:?}"))
-        };
+    fn from_config(cfg: &LoadedPageConfig) -> Self {
         Self {
-            issue_list: resolve("issue_list"),
-            pr_list: resolve("pr_list"),
-            issue_detail: resolve("issue_detail"),
-            pr_detail: resolve("pr_detail"),
+            issue_list: cfg.resolve_id_expect("issue_list"),
+            pr_list: cfg.resolve_id_expect("pr_list"),
+            issue_detail: cfg.resolve_id_expect("issue_detail"),
+            pr_detail: cfg.resolve_id_expect("pr_detail"),
         }
     }
 }
@@ -197,7 +190,7 @@ impl GitHubState {
         let page_cfg =
             load_github_page_config().expect("default.kdl github page config is always valid");
 
-        let ids = GhPaneIds::from_config(&page_cfg.pane_ids);
+        let ids = GhPaneIds::from_config(&page_cfg);
         // Build select→detail and reverse detail→select dispatch maps.
         let select_bindings = page_cfg.resolve_select_bindings();
         let detail_bindings: HashMap<usize, usize> =
@@ -763,7 +756,7 @@ mod kdl_regression {
     #[test]
     fn pane_ids_from_config() {
         let cfg = kdl_cfg();
-        let ids = GhPaneIds::from_config(&cfg.pane_ids);
+        let ids = GhPaneIds::from_config(&cfg);
         assert_eq!(ids.issue_list, GH_PANE_ISSUE_LIST);
         assert_eq!(ids.pr_list, GH_PANE_PR_LIST);
         assert_eq!(ids.issue_detail, GH_PANE_ISSUE_DETAIL);
@@ -794,7 +787,7 @@ mod kdl_regression {
     #[test]
     fn gh_select_bindings_drive_sync_dispatch() {
         let cfg = kdl_cfg();
-        let ids = GhPaneIds::from_config(&cfg.pane_ids);
+        let ids = GhPaneIds::from_config(&cfg);
         let select_bindings = cfg.resolve_select_bindings();
         // issue_list → issue_detail
         assert_eq!(
