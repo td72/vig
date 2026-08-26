@@ -282,12 +282,9 @@ impl PaneShared {
     ) -> Option<usize> {
         // Re-execute search if no active query but last_query exists (n/N reuse)
         if self.search.query.is_none() {
-            if let Some(last) = self.search.last_query.clone() {
-                self.search.query = Some(last);
-                self.execute_search(panes);
-            } else {
-                return None;
-            }
+            let last = self.search.last_query.clone()?;
+            self.search.query = Some(last);
+            self.execute_search(panes);
         }
 
         if self.search.matches.is_empty() {
