@@ -1,4 +1,8 @@
-pub mod diff;
-pub mod graph;
-pub mod repository;
-pub mod watcher;
+// Shared architecture
+pub(crate) mod page;
+pub(crate) mod panes;
+pub mod state;
+
+// Domain-specific
+pub(crate) mod domain;
+pub use domain::watcher;

@@ -12,8 +12,8 @@ hooks = [
 [[repos]]
 repo = "local"
 hooks = [
-  { id = "cargo-fmt", name = "cargo fmt", language = "system", entry = "cargo fmt", args = ["--check"], files = '\\.rs$' },
-  { id = "cargo-clippy", name = "cargo clippy", language = "system", entry = "cargo clippy", args = ["--all-targets", "--", "-D", "warnings"], files = '\\.rs$', pass_filenames = false },
+  { id = "cargo-fmt", name = "cargo fmt", language = "system", entry = "cargo fmt", args = ["--check"], files = "\\.rs$", pass_filenames = false },
+  { id = "cargo-clippy", name = "cargo clippy", language = "system", entry = "cargo clippy", args = ["--all-targets", "--", "-D", "warnings"], files = "\\.rs$", pass_filenames = false },
   { id = "check-gif-freshness", name = "check gif freshness", language = "system", entry = "bash", args = ["-c", """
 staged=$(git diff --cached --name-only)
 tapes=$(echo "$staged" | grep '\\.tape$' || true)

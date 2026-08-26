@@ -1,4 +1,7 @@
-pub mod client;
-pub mod disk_cache;
+// Shared architecture
+pub(crate) mod page;
+pub(crate) mod panes;
 pub mod state;
-pub mod types;
+
+// Domain-specific
+pub(crate) mod domain;
