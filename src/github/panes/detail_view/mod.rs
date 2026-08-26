@@ -171,6 +171,10 @@ impl GhDetailViewPane {
         self.keymap = km;
     }
 
+    pub fn keymap(&self) -> &Keymap<DetailAction> {
+        &self.keymap
+    }
+
     /// Set the content to an error state.
     pub fn set_error(&mut self, msg: String) {
         self.content = GhDetailContent::Error(msg);

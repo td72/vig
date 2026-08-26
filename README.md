@@ -19,6 +19,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - Live file watching with auto-refresh
 - Open files in external editor (`$EDITOR`)
 - **GitHub View** — Browse Issues and Pull Requests (body, comments, reviews, CI status) via `gh` CLI
+- Configurable layout and key bindings via `~/.config/vig/config.kdl`
 
 ## Installation
 
@@ -64,6 +65,36 @@ Run in a Git repository:
 ```bash
 vig
 ```
+
+## Configuration
+
+vig works out of the box. To change the layout or key bindings, drop a KDL
+file at `~/.config/vig/config.kdl` (or pass `--config <path>` / set
+`$VIG_CONFIG`). Only the parts you write are overridden; everything else
+keeps its default.
+
+![config demo](assets/demo-config.gif)
+
+```kdl
+// ~/.config/vig/config.kdl
+page "git" {
+    pane "file_tree" {
+        keys {
+            "o" "ExpandOrOpen"   // add a binding
+            "Space" "None"       // remove a binding
+        }
+    }
+}
+```
+
+```bash
+vig config path   # show which file would be used
+vig config dump   # print the built-in defaults as a starting point
+```
+
+Layouts can be rearranged too (e.g. sidebar on the right). A broken config
+fails fast with the file path and line number rather than silently falling
+back to defaults. See [docs/config.md](docs/config.md) for the full schema.
 
 ## Key Bindings
 

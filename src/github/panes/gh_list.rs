@@ -105,6 +105,10 @@ impl<T: GhListItem> GhListPane<T> {
         self.keymap = km;
     }
 
+    pub fn keymap(&self) -> &Keymap<GhListAction> {
+        &self.keymap
+    }
+
     /// Number of items in the list.
     pub fn item_count(&self) -> usize {
         self.items.len()

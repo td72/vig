@@ -1,7 +1,8 @@
+use crate::core::config::Config;
 use crate::core::keymap::{build_app_keymap, AppAction, Keymap};
 use crate::core::page::PageAction;
 pub use crate::core::search::SearchMatch;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use crossterm::event::KeyEvent;
 use std::path::PathBuf;
 
@@ -152,16 +153,16 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(ctx: AppContext, pages: Vec<Page>) -> Self {
+    pub fn new(ctx: AppContext, pages: Vec<Page>, cfg: &Config) -> Result<Self> {
         let page_names: Vec<&str> = pages.iter().map(|p| p.id()).collect();
-        let entries = crate::core::config::load_app_entries();
+        let entries = cfg.app_entries()?;
         let app_keymap = build_app_keymap(&entries, &page_names)
-            .expect("default.kdl app keymap is always valid");
-        Self {
+            .map_err(|e| anyhow!("invalid {}: app block: {e}", cfg.describe()))?;
+        Ok(Self {
             ctx,
             pages,
             app_keymap,
-        }
+        })
     }
 
     pub fn drain_all_background(&mut self) {
@@ -256,8 +257,9 @@ mod tests {
     #[test]
     fn app_keymap_resolves_page_switch_bindings() {
         let cwd = std::env::current_dir().unwrap();
-        let (git_page, workdir) = crate::git::page::new_page(&cwd).expect("git page");
-        let gh_page = crate::github::page::new_page();
+        let cfg = Config::builtin();
+        let (git_page, workdir) = crate::git::page::new_page(&cwd, &cfg).expect("git page");
+        let gh_page = crate::github::page::new_page(&cfg).expect("github page");
         let pages = vec![git_page, gh_page];
 
         let ctx = AppContext {
@@ -270,10 +272,10 @@ mod tests {
             workdir,
         };
 
-        // Builds the app keymap exactly as production does; the embedded-default
-        // `expect` inside `App::new` makes this panic (failing the test) if the page
-        // ids ever drift from the `page:*` references in `default.kdl`.
-        let app = App::new(ctx, pages);
+        // Builds the app keymap exactly as production does; `App::new` fails
+        // (failing the test) if the page ids ever drift from the `page:*`
+        // references in `default.kdl`.
+        let app = App::new(ctx, pages, &cfg).expect("app keymap");
 
         let look = |s: &str| {
             let ki: KeyInput = s.parse().unwrap();

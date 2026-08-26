@@ -88,6 +88,10 @@ impl FileTreePane {
         self.keymap = km;
     }
 
+    pub fn keymap(&self) -> &Keymap<FileTreeAction> {
+        &self.keymap
+    }
+
     /// Collect highlight data for all non-binary files.
     #[allow(clippy::type_complexity)]
     pub fn highlight_file_data(&self) -> Vec<(String, Vec<String>, Vec<String>, Vec<usize>)> {

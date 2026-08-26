@@ -19,6 +19,7 @@ Git の差分をサイドバイサイドで表示する TUI ビューア。vim �
 - ファイル監視による自動リフレッシュ
 - 外部エディタでファイルを開く（`$EDITOR`）
 - **GitHub View** — Issue と Pull Request を閲覧（本文、コメント、レビュー、CI ステータス）。`gh` CLI 使用
+- `~/.config/vig/config.kdl` でレイアウトとキーバインドをカスタマイズ可能
 
 ## インストール
 
@@ -64,6 +65,35 @@ Git リポジトリ内で実行:
 ```bash
 vig
 ```
+
+## 設定
+
+設定なしでそのまま使えます。レイアウトやキーバインドを変えたい場合は
+`~/.config/vig/config.kdl`（または `--config <path>` / `$VIG_CONFIG`）に
+KDL ファイルを置きます。書いた部分だけが上書きされ、それ以外はデフォルトのままです。
+
+![config demo](../assets/demo-config.gif)
+
+```kdl
+// ~/.config/vig/config.kdl
+page "git" {
+    pane "file_tree" {
+        keys {
+            "o" "ExpandOrOpen"   // バインドを追加
+            "Space" "None"       // バインドを解除
+        }
+    }
+}
+```
+
+```bash
+vig config path   # 使用される設定ファイルのパスを表示
+vig config dump   # 組み込みデフォルトを出力（これをコピーして編集）
+```
+
+レイアウトの入れ替え（サイドバーを右側にする等）も可能です。設定に誤りがあると
+デフォルトへ黙ってフォールバックせず、ファイルパスと行番号付きで起動時にエラーになります。
+スキーマの全体は [config.md](config.md) を参照してください。
 
 ## キーバインド
 
