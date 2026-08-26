@@ -54,7 +54,7 @@ fn main() -> Result<()> {
 
     match cli.command {
         Some(Commands::Update) => update::run()?,
-        Some(Commands::Config { command }) => run_config(command, cli.config),
+        Some(Commands::Config { command }) => run_config(command, cli.config)?,
         None => {
             let cfg = crate::core::config::source::load(cli.config)?;
             run_tui(cfg)?
@@ -64,22 +64,33 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn run_config(command: ConfigCommands, explicit: Option<PathBuf>) {
+fn run_config(command: ConfigCommands, explicit: Option<PathBuf>) -> Result<()> {
     match command {
         ConfigCommands::Path => match ConfigSource::resolve(explicit) {
             ConfigSource::Unavailable => {
-                eprintln!("no config path: home directory could not be determined")
+                anyhow::bail!("no config path: home directory could not be determined")
             }
-            source => {
-                let path = source.path().expect("resolved source has a path");
+            ConfigSource::Default(path) => {
                 println!("{}", path.display());
                 if !path.exists() {
                     eprintln!("(not found; built-in defaults are in effect)");
                 }
             }
+            ConfigSource::Explicit(path) => {
+                println!("{}", path.display());
+                if !path.exists() {
+                    anyhow::bail!(
+                        "config file {} does not exist (set via --config / ${}); \
+                         vig will not start until it does",
+                        path.display(),
+                        crate::core::config::source::ENV_VAR
+                    );
+                }
+            }
         },
         ConfigCommands::Dump => print!("{}", Config::default_text()),
     }
+    Ok(())
 }
 
 fn run_tui(cfg: Config) -> Result<()> {

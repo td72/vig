@@ -40,13 +40,6 @@ impl ConfigSource {
             None => Self::Unavailable,
         }
     }
-
-    pub fn path(&self) -> Option<&Path> {
-        match self {
-            Self::Explicit(p) | Self::Default(p) => Some(p),
-            Self::Unavailable => None,
-        }
-    }
 }
 
 /// `$XDG_CONFIG_HOME/vig/config.kdl` or `~/.config/vig/config.kdl`.
