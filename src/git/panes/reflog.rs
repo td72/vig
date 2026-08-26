@@ -6,7 +6,7 @@ use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::git::domain::repository::{ReflogEntry, Repo};
-use crate::git::state::{PaneEvent, PANE_BRANCH_LIST, PANE_GIT_LOG, PANE_REFLOG};
+use crate::git::state::PaneEvent;
 use crossterm::event::KeyCode;
 use ratatui::{
     layout::Rect,
@@ -56,15 +56,21 @@ pub struct ReflogPane {
     pub selected_idx: usize,
     pub view_height: u16,
     keymap: Keymap<ReflogAction>,
+    pane_id: usize,
+    branch_list_id: usize,
+    git_log_id: usize,
 }
 
 impl ReflogPane {
-    pub fn new() -> Self {
+    pub fn new(pane_id: usize, branch_list_id: usize, git_log_id: usize) -> Self {
         Self {
             entries: Vec::new(),
             selected_idx: 0,
             view_height: 0,
             keymap: default_keymap(),
+            pane_id,
+            branch_list_id,
+            git_log_id,
         }
     }
 
@@ -83,14 +89,14 @@ impl ReflogPane {
         if let Some(events) = pane::try_dispatch_search_esc(
             &action,
             shared,
-            PANE_REFLOG,
-            vec![PaneEvent::SetFocus(PANE_BRANCH_LIST)],
+            self.pane_id,
+            vec![PaneEvent::SetFocus(self.branch_list_id)],
         ) {
             return events;
         }
         match action {
             ReflogAction::FocusLog => {
-                return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
+                return vec![PaneEvent::SetFocus(self.git_log_id)];
             }
             ReflogAction::Nav(nav) => {
                 return pane::execute_list_nav(
@@ -117,7 +123,7 @@ impl ReflogPane {
             f,
             area,
             shared,
-            PANE_REFLOG,
+            self.pane_id,
             "Reflog",
             Some(self.selected_idx),
             empty,

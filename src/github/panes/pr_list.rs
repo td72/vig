@@ -2,7 +2,7 @@ use crate::core::pane::PaneEvent;
 use crate::github::domain::types::GhPrListItem;
 use crate::github::domain::{client, disk_cache};
 use crate::github::panes::gh_list::{GhListItem, GhListPane};
-use crate::github::state::{GhBgMessage, GH_PANE_ISSUE_LIST, GH_PANE_PR_DETAIL, GH_PANE_PR_LIST};
+use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
 use ratatui::{
     style::{Color, Style},
@@ -96,11 +96,6 @@ impl GhListItem for GhPrListItem {
 
 pub type GhPrListPane = GhListPane<GhPrListItem>;
 
-pub fn new_pane() -> GhPrListPane {
-    GhListPane::new(
-        GH_PANE_PR_LIST,
-        GH_PANE_PR_DETAIL,
-        KeyCode::BackTab,
-        GH_PANE_ISSUE_LIST,
-    )
+pub fn new_pane(pane_id: usize, detail_id: usize, switch_target: usize) -> GhPrListPane {
+    GhListPane::new(pane_id, detail_id, KeyCode::BackTab, switch_target)
 }

@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::config::{build_keymap, load_git_page_config};
+use crate::core::config::{build_keymap, load_git_page_config, LoadedPageConfig};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::{ExternalCommand, PageAction};
@@ -25,12 +25,6 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
-pub const PANE_FILE_TREE: usize = 0;
-pub const PANE_BRANCH_LIST: usize = 1;
-pub const PANE_GIT_LOG: usize = 2;
-pub const PANE_REFLOG: usize = 3;
-pub const PANE_DIFF_VIEW: usize = 4;
-
 #[cfg(test)]
 use crate::core::keymap::view_bindings;
 #[cfg(test)]
@@ -40,50 +34,24 @@ use crossterm::event::KeyCode;
 #[cfg(test)]
 use ratatui::layout::Constraint;
 
-#[cfg(test)]
-const SLOT_MAIN: usize = 0;
-
-/// Map pane names used in `default.kdl` to their numeric PANE_* constants.
-fn pane_name_map() -> HashMap<&'static str, usize> {
-    let mut m = HashMap::new();
-    m.insert("file_tree", PANE_FILE_TREE);
-    m.insert("branch_list", PANE_BRANCH_LIST);
-    m.insert("git_log", PANE_GIT_LOG);
-    m.insert("reflog", PANE_REFLOG);
-    m.insert("diff_view", PANE_DIFF_VIEW);
-    m
+/// Resolved pane IDs for the git page, built from the KDL config's pane_ids.
+pub struct GitPaneIds {
+    pub file_tree: usize,
+    pub branch_list: usize,
+    pub git_log: usize,
+    pub reflog: usize,
+    pub diff_view: usize,
 }
 
-#[cfg(test)]
-fn default_layout_config() -> PageLayoutConfig {
-    PageLayoutConfig {
-        tree: LayoutNode::Split {
-            direction: SplitDirection::Vertical,
-            children: vec![
-                (
-                    Constraint::Percentage(40),
-                    LayoutNode::Split {
-                        direction: SplitDirection::Horizontal,
-                        children: vec![
-                            (Constraint::Length(30), LayoutNode::Pane(PANE_FILE_TREE)),
-                            (
-                                Constraint::Percentage(35),
-                                LayoutNode::Pane(PANE_BRANCH_LIST),
-                            ),
-                            (Constraint::Min(20), LayoutNode::Pane(PANE_REFLOG)),
-                        ],
-                    },
-                ),
-                (Constraint::Min(3), LayoutNode::Slot(SLOT_MAIN)),
-            ],
-        },
-        tab_panes: vec![PANE_FILE_TREE, PANE_BRANCH_LIST, PANE_REFLOG],
-        slot_rules: vec![SlotRule {
-            slot_id: SLOT_MAIN,
-            trigger_panes: vec![PANE_BRANCH_LIST, PANE_REFLOG, PANE_GIT_LOG],
-            then_pane: PANE_GIT_LOG,
-            default_pane: PANE_DIFF_VIEW,
-        }],
+impl GitPaneIds {
+    fn from_config(cfg: &LoadedPageConfig) -> Self {
+        Self {
+            file_tree: cfg.resolve_id_expect("file_tree"),
+            branch_list: cfg.resolve_id_expect("branch_list"),
+            git_log: cfg.resolve_id_expect("git_log"),
+            reflog: cfg.resolve_id_expect("reflog"),
+            diff_view: cfg.resolve_id_expect("diff_view"),
+        }
     }
 }
 
@@ -127,6 +95,7 @@ pub struct GitPanes {
     pub file_tab: FileTab,
     pub branch_tab: BranchTab,
     pub reflog: ReflogPane,
+    pub ids: GitPaneIds,
 }
 
 impl pane::PageLayout for GitState {
@@ -150,34 +119,31 @@ impl pane::PageLayout for GitState {
 
 impl PaneSet for GitPanes {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
-        match idx {
-            PANE_FILE_TREE | PANE_DIFF_VIEW => {
-                self.file_tab
-                    .get_pane_mut(PANE_FILE_TREE, PANE_DIFF_VIEW, idx)
-            }
-            PANE_BRANCH_LIST | PANE_GIT_LOG => {
-                self.branch_tab
-                    .get_pane_mut(PANE_BRANCH_LIST, PANE_GIT_LOG, idx)
-            }
-            PANE_REFLOG => Some(&mut self.reflog),
-            _ => None,
+        let (ft, dv, bl, gl, rl) = (
+            self.ids.file_tree,
+            self.ids.diff_view,
+            self.ids.branch_list,
+            self.ids.git_log,
+            self.ids.reflog,
+        );
+        if idx == ft || idx == dv {
+            self.file_tab.get_pane_mut(ft, dv, idx)
+        } else if idx == bl || idx == gl {
+            self.branch_tab.get_pane_mut(bl, gl, idx)
+        } else if idx == rl {
+            Some(&mut self.reflog)
+        } else {
+            None
         }
     }
 
     fn find_modal(&mut self) -> Option<usize> {
         if Pane::<PaneEvent>::is_modal(&self.branch_tab.list) {
-            Some(PANE_BRANCH_LIST)
+            Some(self.ids.branch_list)
         } else {
             None
         }
     }
-}
-
-#[cfg(test)]
-fn default_view_keymap() -> Keymap<ViewAction> {
-    Keymap::new()
-        .bindings(view_bindings(|v| v))
-        .key(KeyCode::Char('e'), ViewAction::OpenEditor)
 }
 
 pub struct GitState {
@@ -186,6 +152,8 @@ pub struct GitState {
     pub repo: Repo,
     pub diff_meta: DiffMeta,
     pub diff_base_ref: Option<String>,
+    /// select_id → detail_id, built from KDL `bind` declarations at construction time.
+    select_bindings: HashMap<usize, usize>,
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
 }
@@ -193,9 +161,12 @@ pub struct GitState {
 impl GitState {
     pub fn new(cwd: &Path) -> Result<Self> {
         // Load layout + pane keymaps from the embedded default KDL config.
-        let name_map = pane_name_map();
-        let page_cfg =
-            load_git_page_config(&name_map).expect("default.kdl git page config is always valid");
+        let page_cfg = load_git_page_config().expect("default.kdl git page config is always valid");
+
+        // Resolve pane IDs from config (declaration order = current 0..4)
+        let ids = GitPaneIds::from_config(&page_cfg);
+        // Build select→detail dispatch map from KDL `bind` declarations.
+        let select_bindings = page_cfg.resolve_select_bindings();
 
         let repo = Repo::discover(cwd)?;
         let result = repo.diff_workdir(None)?;
@@ -250,25 +221,26 @@ impl GitState {
         )
         .expect("default.kdl git view keymap is always valid");
 
-        let mut file_tree = FileTreePane::new(Rc::clone(&files));
+        let mut file_tree = FileTreePane::new(Rc::clone(&files), ids.file_tree, ids.diff_view);
         file_tree.set_keymap(file_tree_km);
 
-        let mut branch_list = BranchListPane::new();
+        let mut branch_list = BranchListPane::new(ids.branch_list, ids.git_log);
         branch_list.set_keymap(branch_list_km);
 
-        let mut git_log = GitLogPane::new();
+        let mut git_log = GitLogPane::new(ids.git_log, ids.reflog, ids.branch_list);
         git_log.set_keymap(git_log_km);
 
-        let mut reflog = ReflogPane::new();
+        let mut reflog = ReflogPane::new(ids.reflog, ids.branch_list, ids.git_log);
         reflog.set_keymap(reflog_km);
 
-        let mut diff_view = DiffViewPane::new(Rc::clone(&files));
+        let mut diff_view = DiffViewPane::new(Rc::clone(&files), ids.diff_view);
         diff_view.set_scroll_keymap(diff_view_km);
 
+        let focused = ids.file_tree;
         let mut state = Self {
             pane: PaneShared {
-                focused_pane: PANE_FILE_TREE,
-                previous_pane: PANE_FILE_TREE,
+                focused_pane: focused,
+                previous_pane: focused,
                 search: SearchState::new(),
             },
             panes: GitPanes {
@@ -281,6 +253,7 @@ impl GitState {
                     detail: git_log,
                 },
                 reflog,
+                ids,
             },
             repo,
             diff_meta: DiffMeta {
@@ -289,6 +262,7 @@ impl GitState {
                 file_count: files.len(),
             },
             diff_base_ref: None,
+            select_bindings,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
         };
@@ -389,10 +363,12 @@ impl GitState {
                         self.pane
                             .jump_to_search_match(&mut self.panes, ctx, forward)
                     {
-                        match origin {
-                            PANE_GIT_LOG => self.panes.branch_tab.detail.load_detail(&self.repo),
-                            PANE_BRANCH_LIST => self.panes.branch_tab.sync_detail(&self.repo),
-                            _ => {}
+                        let gl = self.panes.ids.git_log;
+                        let bl = self.panes.ids.branch_list;
+                        if origin == gl {
+                            self.panes.branch_tab.detail.load_detail(&self.repo);
+                        } else if origin == bl {
+                            self.panes.branch_tab.sync_detail(&self.repo);
                         }
                     }
                 }
@@ -403,19 +379,20 @@ impl GitState {
     }
 
     /// Synchronize detail pane when the selected item in `selected` pane changes.
+    /// Routes via KDL-resolved `select_bindings`; typed dispatch follows from the detail pane ID.
     fn sync_detail(&mut self, selected: usize) {
-        match selected {
-            PANE_FILE_TREE => {
+        let dv = self.panes.ids.diff_view;
+        let gl = self.panes.ids.git_log;
+        if let Some(&detail) = self.select_bindings.get(&selected) {
+            if detail == dv {
                 self.panes.file_tab.sync_detail();
-                search::re_search_on_file_change(self, PANE_DIFF_VIEW);
-            }
-            PANE_BRANCH_LIST => {
+                search::re_search_on_file_change(self, dv);
+            } else if detail == gl {
                 self.panes.branch_tab.sync_detail(&self.repo);
             }
-            PANE_GIT_LOG => {
-                self.panes.branch_tab.detail.load_detail(&self.repo);
-            }
-            _ => {}
+        } else if selected == gl {
+            // git_log is itself a detail pane; navigate within it to load commit detail.
+            self.panes.branch_tab.detail.load_detail(&self.repo);
         }
     }
 
@@ -436,8 +413,8 @@ impl GitState {
 
     pub fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // In Normal/Visual modes, keys are handled by the mode handler exclusively
-        if self.pane.focused_pane == PANE_DIFF_VIEW && self.panes.file_tab.detail.intercepts_keys()
-        {
+        let dv = self.panes.ids.diff_view;
+        if self.pane.focused_pane == dv && self.panes.file_tab.detail.intercepts_keys() {
             let events = self.dispatch_key(key);
             return self.process_events(ctx, events);
         }
@@ -595,13 +572,59 @@ mod kdl_regression {
     use crossterm::event::KeyEvent;
     use ratatui::layout::Rect;
 
+    // Test-local constants matching the expected IDs (pane block declaration order)
+    const PANE_FILE_TREE: usize = 0;
+    const PANE_BRANCH_LIST: usize = 1;
+    const PANE_GIT_LOG: usize = 2;
+    const PANE_REFLOG: usize = 3;
+    const PANE_DIFF_VIEW: usize = 4;
+    const SLOT_MAIN: usize = 0;
+
     fn key(s: &str) -> KeyEvent {
         let ki: KeyInput = s.parse().unwrap();
         KeyEvent::new(ki.code, ki.modifiers)
     }
 
     fn kdl_cfg() -> crate::core::config::loader::LoadedPageConfig {
-        load_git_page_config(&pane_name_map()).unwrap()
+        load_git_page_config().unwrap()
+    }
+
+    fn default_layout_config() -> PageLayoutConfig {
+        PageLayoutConfig {
+            tree: LayoutNode::Split {
+                direction: SplitDirection::Vertical,
+                children: vec![
+                    (
+                        Constraint::Percentage(40),
+                        LayoutNode::Split {
+                            direction: SplitDirection::Horizontal,
+                            children: vec![
+                                (Constraint::Length(30), LayoutNode::Pane(PANE_FILE_TREE)),
+                                (
+                                    Constraint::Percentage(35),
+                                    LayoutNode::Pane(PANE_BRANCH_LIST),
+                                ),
+                                (Constraint::Min(20), LayoutNode::Pane(PANE_REFLOG)),
+                            ],
+                        },
+                    ),
+                    (Constraint::Min(3), LayoutNode::Slot(SLOT_MAIN)),
+                ],
+            },
+            tab_panes: vec![PANE_FILE_TREE, PANE_BRANCH_LIST, PANE_REFLOG],
+            slot_rules: vec![SlotRule {
+                slot_id: SLOT_MAIN,
+                trigger_panes: vec![PANE_BRANCH_LIST, PANE_REFLOG, PANE_GIT_LOG],
+                then_pane: PANE_GIT_LOG,
+                default_pane: PANE_DIFF_VIEW,
+            }],
+        }
+    }
+
+    fn default_view_keymap() -> Keymap<ViewAction> {
+        Keymap::new()
+            .bindings(view_bindings(|v| v))
+            .key(KeyCode::Char('e'), ViewAction::OpenEditor)
     }
 
     // ── Layout regression ─────────────────────────────────────────────────────
@@ -768,5 +791,52 @@ mod kdl_regression {
             build_keymap(entries["view"].as_slice()).unwrap();
         let test_keys = ["q", "?", "r", "h", "l", "Tab", "BackTab", "e"];
         check_keys(&hc, &kd, &test_keys);
+    }
+
+    // ── Bindings regression ───────────────────────────────────────────────────
+
+    #[test]
+    fn bindings_match_expected_pairs() {
+        let cfg = kdl_cfg();
+        let ids = GitPaneIds::from_config(&cfg);
+        // Verify bindings resolve to the correct ID pairs
+        let resolved: Vec<(usize, usize)> = cfg
+            .bindings
+            .iter()
+            .filter_map(|(sel, det)| {
+                let s = cfg.resolve_id(sel)?;
+                let d = cfg.resolve_id(det)?;
+                Some((s, d))
+            })
+            .collect();
+        assert!(
+            resolved.contains(&(ids.file_tree, ids.diff_view)),
+            "binding file_tree→diff_view missing"
+        );
+        assert!(
+            resolved.contains(&(ids.branch_list, ids.git_log)),
+            "binding branch_list→git_log missing"
+        );
+    }
+
+    #[test]
+    fn select_bindings_drive_sync_dispatch() {
+        let cfg = kdl_cfg();
+        let ids = GitPaneIds::from_config(&cfg);
+        let bindings = cfg.resolve_select_bindings();
+        // file_tree → diff_view
+        assert_eq!(
+            bindings.get(&ids.file_tree),
+            Some(&ids.diff_view),
+            "select_bindings must map file_tree→diff_view"
+        );
+        // branch_list → git_log
+        assert_eq!(
+            bindings.get(&ids.branch_list),
+            Some(&ids.git_log),
+            "select_bindings must map branch_list→git_log"
+        );
+        // Exactly these two bindings exist
+        assert_eq!(bindings.len(), 2, "expected exactly 2 select bindings");
     }
 }

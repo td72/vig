@@ -121,8 +121,6 @@ use ratatui::{
     Frame,
 };
 
-use crate::git::state::{PANE_BRANCH_LIST, PANE_GIT_LOG};
-
 #[derive(Debug, Clone)]
 pub enum BranchListAction {
     Nav(NavAction),
@@ -164,16 +162,20 @@ pub struct BranchListPane {
     pub action_menu: Option<BranchActionMenuState>,
     keymap: Keymap<BranchListAction>,
     menu_keymap: Keymap<MenuAction>,
+    pane_id: usize,
+    git_log_id: usize,
 }
 
 impl BranchListPane {
-    pub fn new() -> Self {
+    pub fn new(pane_id: usize, git_log_id: usize) -> Self {
         Self {
             branches: Vec::new(),
             selected_idx: 0,
             action_menu: None,
             keymap: default_keymap(),
             menu_keymap: default_menu_keymap(),
+            pane_id,
+            git_log_id,
         }
     }
 
@@ -196,14 +198,14 @@ impl BranchListPane {
         if let Some(events) = pane::try_dispatch_search_esc(
             &action,
             shared,
-            PANE_BRANCH_LIST,
+            self.pane_id,
             vec![PaneEvent::SetDiffBase(None)],
         ) {
             return events;
         }
         match action {
             BranchListAction::FocusLog => {
-                return vec![PaneEvent::SetFocus(PANE_GIT_LOG)];
+                return vec![PaneEvent::SetFocus(self.git_log_id)];
             }
             BranchListAction::Nav(nav) => {
                 return pane::execute_list_nav(
@@ -300,7 +302,7 @@ impl BranchListPane {
             f,
             area,
             shared,
-            PANE_BRANCH_LIST,
+            self.pane_id,
             "Branches",
             Some(self.selected_idx),
             empty,

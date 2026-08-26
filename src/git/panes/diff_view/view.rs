@@ -4,7 +4,6 @@ use crate::core::app::SearchMatch;
 use crate::core::pane::PaneShared;
 use crate::core::theme;
 use crate::git::domain::diff::{FileDiff, LineType, SideBySideRow};
-use crate::git::state::PANE_DIFF_VIEW;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -80,7 +79,7 @@ struct SelectionInfo {
 }
 
 pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &PaneShared, area: Rect) {
-    let block = theme::pane_block("Diff", shared.focused_pane == PANE_DIFF_VIEW);
+    let block = theme::pane_block("Diff", shared.focused_pane == pane.pane_id);
 
     let inner = block.inner(area);
     f.render_widget(block, area);

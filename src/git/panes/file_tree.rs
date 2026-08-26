@@ -6,7 +6,7 @@ use crate::core::pane::{self, Pane, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::git::domain::diff::{FileDiff, FileStatus};
-use crate::git::state::{PaneEvent, PANE_DIFF_VIEW, PANE_FILE_TREE};
+use crate::git::state::PaneEvent;
 
 pub use crate::git::domain::tree::TreeEntry;
 use crossterm::event::KeyCode;
@@ -64,15 +64,19 @@ pub struct FileTreePane {
     pub collapsed_dirs: HashSet<String>,
     pub files: Rc<Vec<FileDiff>>,
     keymap: Keymap<FileTreeAction>,
+    pane_id: usize,
+    diff_view_id: usize,
 }
 
 impl FileTreePane {
-    pub fn new(files: Rc<Vec<FileDiff>>) -> Self {
+    pub fn new(files: Rc<Vec<FileDiff>>, pane_id: usize, diff_view_id: usize) -> Self {
         Self {
             selected_idx: 0,
             collapsed_dirs: HashSet::new(),
             files,
             keymap: default_keymap(),
+            pane_id,
+            diff_view_id,
         }
     }
 
@@ -136,12 +140,11 @@ impl FileTreePane {
 
     fn execute(&mut self, shared: &PaneShared, action: FileTreeAction) -> Vec<PaneEvent> {
         // Handle Search/Esc first
-        if let Some(events) = pane::try_dispatch_search_esc(&action, shared, PANE_FILE_TREE, vec![])
-        {
+        if let Some(events) = pane::try_dispatch_search_esc(&action, shared, self.pane_id, vec![]) {
             return events;
         }
         if let FileTreeAction::FocusDiff = action {
-            return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
+            return vec![PaneEvent::SetFocus(self.diff_view_id)];
         }
 
         let entries = self.tree_entries();
@@ -161,7 +164,7 @@ impl FileTreePane {
                     self.toggle_dir(&entries);
                 }
                 Some(TreeEntry::File { .. }) => {
-                    return vec![PaneEvent::SetFocus(PANE_DIFF_VIEW)];
+                    return vec![PaneEvent::SetFocus(self.diff_view_id)];
                 }
                 None => {}
             },
@@ -188,7 +191,7 @@ impl FileTreePane {
             f,
             area,
             shared,
-            PANE_FILE_TREE,
+            self.pane_id,
             "Files",
             Some(self.selected_idx),
             empty,

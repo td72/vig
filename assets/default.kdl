@@ -21,6 +21,8 @@ page "git" {
         }
     }
     tabs "file_tree" "branch_list" "reflog"
+    bind select="file_tree"   detail="diff_view"
+    bind select="branch_list" detail="git_log"
 
     pane "view" {
         keys {
@@ -105,6 +107,8 @@ page "github" {
         }
     }
     tabs "issue_list" "pr_list"
+    bind select="issue_list" detail="issue_detail"
+    bind select="pr_list"    detail="pr_detail"
 
     pane "view" {
         keys {

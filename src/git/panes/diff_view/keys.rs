@@ -3,7 +3,7 @@ use crate::core::keymap::{
     half_page_step, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
 };
 use crate::core::pane::{self, PaneShared};
-use crate::git::state::{PaneEvent, PANE_DIFF_VIEW};
+use crate::git::state::PaneEvent;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 #[derive(Debug, Clone)]
@@ -119,7 +119,7 @@ fn execute_diff_scroll(
             if sa == SearchAction::Start {
                 pane.vim.pending_key = None;
             }
-            return pane::execute_search(sa, PANE_DIFF_VIEW);
+            return pane::execute_search(sa, pane.pane_id);
         }
         DiffScrollAction::EnterNormalMode => {
             let lines = content_lines(pane, shared);
@@ -280,7 +280,7 @@ pub(crate) fn handle_diff_normal_key(
         KeyCode::Char('/') => {
             pane.vim.pending_key = None;
             pane.vim.count = None;
-            events.push(PaneEvent::StartSearch(PANE_DIFF_VIEW));
+            events.push(PaneEvent::StartSearch(pane.pane_id));
         }
         KeyCode::Char('n') => {
             events.push(PaneEvent::JumpToMatch(true));
@@ -578,7 +578,7 @@ pub(crate) fn handle_diff_visual_key(
         KeyCode::Char('/') => {
             pane.vim.pending_key = None;
             pane.vim.count = None;
-            events.push(PaneEvent::StartSearch(PANE_DIFF_VIEW));
+            events.push(PaneEvent::StartSearch(pane.pane_id));
         }
         KeyCode::Char('n') => {
             events.push(PaneEvent::JumpToMatch(true));
