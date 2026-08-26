@@ -1,4 +1,4 @@
-use crate::core::keymap::{KeyInput, Keymap};
+use crate::core::keymap::{KeyInput, Keymap, UNBIND_ACTION};
 use std::str::FromStr;
 
 /// A single entry in a pane's `keys { ... }` block.
@@ -36,6 +36,7 @@ fn expand_preset(name: &str) -> Result<Vec<(&'static str, &'static str)>, String
 ///
 /// Presets are expanded first; explicit bindings in the same block override
 /// preset bindings for the same key (preset先展開→明示バインド後勝ち上書き).
+/// The reserved action `"None"` removes the binding for that key.
 pub fn build_keymap<A>(entries: &[KeymapEntry]) -> Result<Keymap<A>, String>
 where
     A: Clone + FromStr<Err = String>,
@@ -65,6 +66,10 @@ where
         let ki: KeyInput = key_str
             .parse()
             .map_err(|e| format!("Invalid key {key_str:?}: {e}"))?;
+        if action_str == UNBIND_ACTION {
+            km = km.unbind(ki.code, ki.modifiers);
+            continue;
+        }
         let action: A = action_str
             .parse()
             .map_err(|e| format!("Invalid action {action_str:?}: {e}"))?;
@@ -135,6 +140,24 @@ mod tests {
             km.lookup(key_event("N")),
             Some(FileTreeAction::Search(SearchAction::Prev))
         ));
+    }
+
+    #[test]
+    fn none_unbinds_key() {
+        let entries = vec![
+            KeymapEntry::Preset("nav".into()),
+            KeymapEntry::Binding {
+                key: "j".into(),
+                action: "None".into(),
+            },
+        ];
+        let km: Keymap<FileTreeAction> = build_keymap(&entries).unwrap();
+        assert!(km.lookup(key_event("j")).is_none());
+        assert!(km.lookup(key_event("k")).is_some());
+        assert!(
+            !km.help_entries().iter().any(|(k, _)| k.contains('j')),
+            "unbound key must not appear in help"
+        );
     }
 
     #[test]

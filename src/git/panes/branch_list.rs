@@ -190,6 +190,10 @@ impl BranchListPane {
         self.keymap = km;
     }
 
+    pub fn keymap(&self) -> &Keymap<BranchListAction> {
+        &self.keymap
+    }
+
     pub fn selected_branch(&self) -> Option<&BranchInfo> {
         self.branches.get(self.selected_idx)
     }

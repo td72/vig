@@ -31,6 +31,7 @@ impl From<KeyEvent> for KeyInput {
 impl fmt::Display for KeyInput {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let key = match self.code {
+            KeyCode::Char(' ') => "Space".to_string(),
             KeyCode::Char(c) => c.to_string(),
             KeyCode::Enter => "Enter".to_string(),
             KeyCode::Esc => "Esc".to_string(),
@@ -138,6 +139,18 @@ impl<A: Clone> Keymap<A> {
             self.order.push(ki);
         }
         self.bindings.insert(ki, action);
+        self
+    }
+
+    /// Remove the binding for a key, if any.
+    pub fn unbind(mut self, code: KeyCode, mods: KeyModifiers) -> Self {
+        let ki = KeyInput {
+            code,
+            modifiers: mods,
+        };
+        if self.bindings.remove(&ki).is_some() {
+            self.order.retain(|k| *k != ki);
+        }
         self
     }
 
@@ -508,6 +521,9 @@ pub fn half_page_step(view_height: u16) -> u16 {
     (view_height / 2).max(1)
 }
 
+/// Reserved action name that removes a key binding instead of adding one.
+pub const UNBIND_ACTION: &str = "None";
+
 /// Application-level actions for global key bindings (Ctrl+c, page switching).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AppAction {
@@ -545,6 +561,7 @@ impl FromStr for AppAction {
 /// Build an app-level keymap from `(key_str, action_str)` pairs.
 ///
 /// Page-name strings like `"page:git"` are resolved to indices using `page_names`.
+/// `"None"` removes the binding for that key (used by user configs to unbind).
 /// Returns `Err` on the first invalid key, unknown page name, or invalid action.
 pub fn build_app_keymap(
     entries: &[(String, String)],
@@ -555,6 +572,10 @@ pub fn build_app_keymap(
         let ki = key_str
             .parse::<KeyInput>()
             .map_err(|e| format!("invalid app key {key_str:?}: {e}"))?;
+        if action_str == UNBIND_ACTION {
+            km = km.unbind(ki.code, ki.modifiers);
+            continue;
+        }
         let action = if action_str == "Quit" {
             AppAction::Quit
         } else if let Some(name) = action_str.strip_prefix("page:") {

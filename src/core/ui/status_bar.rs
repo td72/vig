@@ -221,7 +221,23 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
 pub fn render_help_overlay(f: &mut Frame, area: Rect, keybindings: &[(String, String)]) {
     use ratatui::widgets::{Block, Borders, Clear};
 
-    let help_width = 50u16.min(area.width.saturating_sub(4));
+    // Key column grows with the widest key group (user configs can bind
+    // several keys to one action, e.g. "→ / Enter / o").
+    let key_w = keybindings
+        .iter()
+        .map(|(k, _)| k.chars().count())
+        .max()
+        .unwrap_or(0)
+        .max(12);
+    let desc_w = keybindings
+        .iter()
+        .map(|(_, d)| d.chars().count())
+        .max()
+        .unwrap_or(0);
+    // 2 (indent) + key + 2 (gap) + desc + 2 (border)
+    let help_width = ((key_w + desc_w + 6) as u16)
+        .max(50)
+        .min(area.width.saturating_sub(4));
     let help_height = ((keybindings.len() as u16) + 2).min(area.height.saturating_sub(4));
     let x = (area.width.saturating_sub(help_width)) / 2;
     let y = (area.height.saturating_sub(help_height)) / 2;
@@ -234,7 +250,7 @@ pub fn render_help_overlay(f: &mut Frame, area: Rect, keybindings: &[(String, St
         .map(|(key, desc)| {
             Line::from(vec![
                 Span::styled(
-                    format!("  {key:<12}"),
+                    format!("  {key:<key_w$}  "),
                     Style::default()
                         .fg(Color::Cyan)
                         .add_modifier(Modifier::BOLD),

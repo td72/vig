@@ -85,6 +85,10 @@ impl ReflogPane {
         self.keymap = km;
     }
 
+    pub fn keymap(&self) -> &Keymap<ReflogAction> {
+        &self.keymap
+    }
+
     fn execute(&mut self, shared: &PaneShared, action: ReflogAction) -> Vec<PaneEvent> {
         if let Some(events) = pane::try_dispatch_search_esc(
             &action,

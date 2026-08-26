@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::config::{build_keymap, load_git_page_config, LoadedPageConfig};
+use crate::core::config::{Config, LoadedPageConfig};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::{ExternalCommand, PageAction};
@@ -159,9 +159,8 @@ pub struct GitState {
 }
 
 impl GitState {
-    pub fn new(cwd: &Path) -> Result<Self> {
-        // Load layout + pane keymaps from the embedded default KDL config.
-        let page_cfg = load_git_page_config().expect("default.kdl git page config is always valid");
+    pub fn new(cwd: &Path, cfg: &Config) -> Result<Self> {
+        let page_cfg = cfg.git_page()?;
 
         // Resolve pane IDs from config (declaration order = current 0..4)
         let ids = GitPaneIds::from_config(&page_cfg);
@@ -173,53 +172,12 @@ impl GitState {
         let files = Rc::new(result.files);
 
         // Build pane keymaps from KDL entries.
-        let file_tree_km = build_keymap::<FileTreeAction>(
-            page_cfg
-                .pane_keys
-                .get("file_tree")
-                .expect("default.kdl missing 'file_tree' block"),
-        )
-        .expect("default.kdl file_tree keymap is always valid");
-
-        let branch_list_km = build_keymap::<BranchListAction>(
-            page_cfg
-                .pane_keys
-                .get("branch_list")
-                .expect("default.kdl missing 'branch_list' block"),
-        )
-        .expect("default.kdl branch_list keymap is always valid");
-
-        let git_log_km = build_keymap::<GitLogAction>(
-            page_cfg
-                .pane_keys
-                .get("git_log")
-                .expect("default.kdl missing 'git_log' block"),
-        )
-        .expect("default.kdl git_log keymap is always valid");
-
-        let reflog_km = build_keymap::<ReflogAction>(
-            page_cfg
-                .pane_keys
-                .get("reflog")
-                .expect("default.kdl missing 'reflog' block"),
-        )
-        .expect("default.kdl reflog keymap is always valid");
-
-        let diff_view_km = build_keymap::<DiffScrollAction>(
-            page_cfg
-                .pane_keys
-                .get("diff_view")
-                .expect("default.kdl missing 'diff_view' block"),
-        )
-        .expect("default.kdl diff_view keymap is always valid");
-
-        let view_km = build_keymap::<ViewAction>(
-            page_cfg
-                .pane_keys
-                .get("view")
-                .expect("default.kdl missing 'view' block"),
-        )
-        .expect("default.kdl git view keymap is always valid");
+        let file_tree_km = page_cfg.keymap::<FileTreeAction>("file_tree")?;
+        let branch_list_km = page_cfg.keymap::<BranchListAction>("branch_list")?;
+        let git_log_km = page_cfg.keymap::<GitLogAction>("git_log")?;
+        let reflog_km = page_cfg.keymap::<ReflogAction>("reflog")?;
+        let diff_view_km = page_cfg.keymap::<DiffScrollAction>("diff_view")?;
+        let view_km = page_cfg.keymap::<ViewAction>("view")?;
 
         let mut file_tree = FileTreePane::new(Rc::clone(&files), ids.file_tree, ids.diff_view);
         file_tree.set_keymap(file_tree_km);
@@ -464,34 +422,22 @@ impl crate::core::app::PageState for GitState {
 
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
-        use crate::git::panes::branch_list;
-        use crate::git::panes::diff_view::keys;
-        use crate::git::panes::file_tree;
-        use crate::git::panes::git_log;
-        use crate::git::panes::reflog;
 
         let s = |k: &str, v: &str| (k.to_string(), v.to_string());
-        let mut entries = vec![
-            s("1 / 2", "Switch view"),
-            s("Tab", "Next pane"),
-            s("S-Tab", "Prev pane"),
-            s("v / V", "Visual / Visual Line"),
-            s("y", "Yank (copy) selection"),
-            s("e", "Open in $EDITOR"),
-            s("r", "Refresh diff + branches"),
-            s("?", "Toggle help"),
-            s("q", "Quit"),
-        ];
+        let mut entries = vec![s("1 / 2", "Switch view")];
+        entries.extend(self.view_keymap.help_entries());
+        entries.push(s("v / V", "Visual / Visual Line"));
+        entries.push(s("y", "Yank (copy) selection"));
         entries.extend(help_section("File Tree"));
-        entries.extend(file_tree::default_keymap().help_entries());
+        entries.extend(self.panes.file_tab.list.keymap().help_entries());
         entries.extend(help_section("Branch List"));
-        entries.extend(branch_list::default_keymap().help_entries());
+        entries.extend(self.panes.branch_tab.list.keymap().help_entries());
         entries.extend(help_section("Git Log"));
-        entries.extend(git_log::default_keymap().help_entries());
+        entries.extend(self.panes.branch_tab.detail.keymap().help_entries());
         entries.extend(help_section("Reflog"));
-        entries.extend(reflog::default_keymap().help_entries());
+        entries.extend(self.panes.reflog.keymap().help_entries());
         entries.extend(help_section("Diff View (Scroll)"));
-        entries.extend(keys::default_scroll_keymap().help_entries());
+        entries.extend(self.panes.file_tab.detail.scroll_keymap.help_entries());
         entries
     }
 

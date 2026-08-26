@@ -1,9 +1,13 @@
 use crate::core::config::constraint::parse_constraint;
-use crate::core::config::keymap_builder::KeymapEntry;
+use crate::core::config::keymap_builder::{build_keymap, KeymapEntry};
+use crate::core::config::merge::merge_user_config;
+use crate::core::keymap::Keymap;
 use crate::core::layout::{LayoutNode, PageLayoutConfig, SlotRule, SplitDirection};
 use anyhow::{anyhow, Context, Result};
 use kdl::{KdlDocument, KdlNode};
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 static DEFAULT_KDL: &str = include_str!("../../../assets/default.kdl");
 
@@ -20,9 +24,36 @@ pub struct LoadedPageConfig {
     pub pane_ids: Vec<(String, usize)>,
     /// select→detail instance bindings declared in the KDL.
     pub bindings: Vec<(String, String)>,
+    /// Path of the user config file this page came from, if any (for error messages).
+    pub source: Option<PathBuf>,
 }
 
 impl LoadedPageConfig {
+    fn describe_source(&self) -> String {
+        describe_source(self.source.as_deref())
+    }
+
+    /// Build the typed keymap for `pane` from this page's `keys { }` block.
+    pub fn keymap<A>(&self, pane: &str) -> Result<Keymap<A>>
+    where
+        A: Clone + FromStr<Err = String>,
+    {
+        let entries = self.pane_keys.get(pane).ok_or_else(|| {
+            anyhow!(
+                "invalid {}: page {:?} missing pane {pane:?} keys block",
+                self.describe_source(),
+                self.name
+            )
+        })?;
+        build_keymap::<A>(entries).map_err(|e| {
+            anyhow!(
+                "invalid {}: page {:?} pane {pane:?}: {e}",
+                self.describe_source(),
+                self.name
+            )
+        })
+    }
+
     /// Resolve a pane name to its numeric ID.
     pub fn resolve_id(&self, name: &str) -> Option<usize> {
         self.pane_ids
@@ -72,61 +103,179 @@ fn parse_app_block(doc: &KdlDocument) -> Result<Vec<(String, String)>> {
     Ok(entries)
 }
 
-// ── Public loaders ────────────────────────────────────────────────────────────
+fn describe_source(source: Option<&Path>) -> String {
+    match source {
+        Some(p) => format!("config file {}", p.display()),
+        None => "built-in config".to_string(),
+    }
+}
+
+// ── Config ────────────────────────────────────────────────────────────────────
+
+/// The effective configuration: the built-in defaults with an optional user
+/// document merged on top (see `merge.rs` for the rules).
+pub struct Config {
+    /// Pristine built-in defaults. Pane IDs are always derived from this
+    /// document so a user layout can never renumber panes.
+    default_doc: KdlDocument,
+    /// Defaults with the user document merged in.
+    doc: KdlDocument,
+    /// Path of the user config file, if any (for error messages).
+    source: Option<PathBuf>,
+}
+
+impl Config {
+    /// The raw text of the embedded default config.
+    pub fn default_text() -> &'static str {
+        DEFAULT_KDL
+    }
+
+    fn parse_default() -> KdlDocument {
+        DEFAULT_KDL.parse().expect("default.kdl is always valid")
+    }
+
+    /// Built-in defaults only.
+    pub fn builtin() -> Self {
+        let default_doc = Self::parse_default();
+        Self {
+            doc: default_doc.clone(),
+            default_doc,
+            source: None,
+        }
+    }
+
+    /// Defaults with `user` merged on top. Structural errors (unknown pages,
+    /// panes, incomplete layouts, …) are reported immediately.
+    pub fn with_user(user: &KdlDocument, source: PathBuf) -> Result<Self> {
+        let default_doc = Self::parse_default();
+        let mut doc = default_doc.clone();
+        merge_user_config(&mut doc, user)
+            .with_context(|| format!("invalid config file {}", source.display()))?;
+        let cfg = Self {
+            default_doc,
+            doc,
+            source: Some(source),
+        };
+        cfg.git_page()?;
+        cfg.github_page()?;
+        cfg.app_entries()?;
+        Ok(cfg)
+    }
+
+    /// Human-readable origin for error messages.
+    pub fn describe(&self) -> String {
+        describe_source(self.source.as_deref())
+    }
+
+    pub fn git_page(&self) -> Result<LoadedPageConfig> {
+        self.page("git")
+    }
+
+    pub fn github_page(&self) -> Result<LoadedPageConfig> {
+        self.page("github")
+    }
+
+    fn page(&self, name: &str) -> Result<LoadedPageConfig> {
+        load_page_from_doc(&self.doc, &self.default_doc, name)
+            .map(|mut p| {
+                p.source = self.source.clone();
+                p
+            })
+            .with_context(|| format!("invalid {}", self.describe()))
+    }
+
+    /// App-level `(key_str, action_str)` pairs.
+    pub fn app_entries(&self) -> Result<Vec<(String, String)>> {
+        self.doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "app")
+            .and_then(|n| n.children())
+            .map(parse_app_block)
+            .unwrap_or_else(|| Ok(Vec::new()))
+            .with_context(|| format!("invalid {}: app block", self.describe()))
+    }
+}
+
+// ── Built-in convenience loaders (tests) ──────────────────────────────────────
 
 /// Parse the git page from the embedded default config.
-/// Pane IDs are auto-assigned in declaration order (layout panes only).
+#[cfg(test)]
 pub fn load_git_page_config() -> Result<LoadedPageConfig> {
-    let doc: KdlDocument = DEFAULT_KDL.parse().context("KDL parse error")?;
-    load_page_from_doc(&doc, "git")
+    Config::builtin().git_page()
 }
 
 /// Parse the github page from the embedded default config.
-/// Pane IDs are auto-assigned in declaration order (layout panes only).
+#[cfg(test)]
 pub fn load_github_page_config() -> Result<LoadedPageConfig> {
-    let doc: KdlDocument = DEFAULT_KDL.parse().context("KDL parse error")?;
-    load_page_from_doc(&doc, "github")
+    Config::builtin().github_page()
 }
 
 /// Parse app-level key entries from the embedded default config.
-/// Returns `(key_str, action_str)` pairs.
+#[cfg(test)]
 pub fn load_app_entries() -> Vec<(String, String)> {
-    let doc: KdlDocument = DEFAULT_KDL.parse().expect("default.kdl is always valid");
-    doc.nodes()
-        .iter()
-        .find(|n| n.name().value() == "app")
-        .and_then(|n| n.children())
-        .map(|c| parse_app_block(c).expect("default.kdl app block is always valid"))
-        .unwrap_or_default()
+    Config::builtin()
+        .app_entries()
+        .expect("default.kdl app block is always valid")
 }
 
-fn load_page_from_doc(doc: &KdlDocument, page_name: &str) -> Result<LoadedPageConfig> {
-    let page_node = doc
-        .nodes()
+fn page_children<'a>(doc: &'a KdlDocument, page_name: &str) -> Result<&'a KdlDocument> {
+    doc.nodes()
         .iter()
         .filter(|n| n.name().value() == "page")
         .find(|n| n.get(0usize).and_then(|v| v.as_string()) == Some(page_name))
-        .ok_or_else(|| anyhow!("page {page_name:?} not found in default.kdl"))?;
-
-    let children = page_node
+        .ok_or_else(|| anyhow!("page {page_name:?} not found"))?
         .children()
-        .ok_or_else(|| anyhow!("page {page_name:?} has no children block"))?;
+        .ok_or_else(|| anyhow!("page {page_name:?} has no children block"))
+}
 
-    // Layout
+/// The `layout { }` block's children, and its single root element.
+fn layout_block<'a>(
+    children: &'a KdlDocument,
+    page_name: &str,
+) -> Result<(&'a KdlDocument, &'a KdlNode)> {
     let layout_doc = children
         .nodes()
         .iter()
         .find(|n| n.name().value() == "layout")
         .and_then(|n| n.children())
         .ok_or_else(|| anyhow!("page {page_name:?} missing layout block"))?;
-
-    // Build pane_ids: pre-scan layout for pane names, then assign IDs in pane block order.
-    let layout_root = layout_doc
+    let root = layout_doc
         .nodes()
         .first()
         .ok_or_else(|| anyhow!("page {page_name:?} layout is empty"))?;
-    let layout_pane_names = collect_layout_pane_names(layout_root);
-    let pane_ids = build_pane_ids(children, &layout_pane_names);
+    Ok((layout_doc, root))
+}
+
+fn load_page_from_doc(
+    doc: &KdlDocument,
+    default_doc: &KdlDocument,
+    page_name: &str,
+) -> Result<LoadedPageConfig> {
+    let children = page_children(doc, page_name)?;
+    let (layout_doc, layout_root) = layout_block(children, page_name)?;
+
+    // Pane IDs come from the *default* layout's pane set, in `pane` block
+    // declaration order, so a user layout can rearrange panes without
+    // renumbering them.
+    let default_children = page_children(default_doc, page_name)?;
+    let (_, default_layout_root) = layout_block(default_children, page_name)?;
+    let default_layout_names = collect_layout_pane_names(default_layout_root);
+    let pane_ids = build_pane_ids(children, &default_layout_names);
+
+    // Panes are compile-time fixed, so a layout may rearrange them but not
+    // drop them: every pane of the page must be placed somewhere.
+    let placed = collect_layout_pane_names(layout_root);
+    let missing: Vec<&str> = default_layout_names
+        .iter()
+        .filter(|n| !placed.contains(n))
+        .map(String::as_str)
+        .collect();
+    if !missing.is_empty() {
+        return Err(anyhow!(
+            "page {page_name:?}: layout must place every pane of the page; missing: {missing:?}"
+        ));
+    }
 
     // Build name_map from pane_ids for layout / tab / slot parsing.
     let name_map: HashMap<&str, usize> = pane_ids
@@ -167,6 +316,7 @@ fn load_page_from_doc(doc: &KdlDocument, page_name: &str) -> Result<LoadedPageCo
         pane_keys,
         pane_ids,
         bindings,
+        source: None,
     })
 }
 
@@ -662,6 +812,177 @@ mod tests {
                 .contains(&("pr_list".to_string(), "pr_detail".to_string())),
             "missing bind pr_list→pr_detail"
         );
+    }
+
+    // ── User config overlay ───────────────────────────────────────────────
+
+    fn user(kdl: &str) -> Result<Config> {
+        let doc: KdlDocument = kdl.parse().unwrap();
+        Config::with_user(&doc, PathBuf::from("/u/config.kdl"))
+    }
+
+    fn key(s: &str) -> crossterm::event::KeyEvent {
+        let ki: crate::core::keymap::KeyInput = s.parse().unwrap();
+        crossterm::event::KeyEvent::new(ki.code, ki.modifiers)
+    }
+
+    #[test]
+    fn user_overrides_and_unbinds_pane_keys() {
+        use crate::git::panes::file_tree::FileTreeAction;
+        let cfg = user(
+            r#"page "git" { pane "file_tree" { keys { "Space" "ExpandOrOpen"; "i" "None"; "x" "ToggleDir" } } }"#,
+        )
+        .unwrap();
+        let km = cfg
+            .git_page()
+            .unwrap()
+            .keymap::<FileTreeAction>("file_tree")
+            .unwrap();
+        assert!(matches!(
+            km.lookup(key("Space")),
+            Some(FileTreeAction::ExpandOrOpen)
+        ));
+        assert!(km.lookup(key("i")).is_none(), "i should be unbound");
+        assert!(matches!(
+            km.lookup(key("x")),
+            Some(FileTreeAction::ToggleDir)
+        ));
+        // Preset keys and untouched bindings survive.
+        assert!(km.lookup(key("j")).is_some());
+        assert!(matches!(
+            km.lookup(key("Enter")),
+            Some(FileTreeAction::ExpandOrOpen)
+        ));
+        // Other panes are untouched.
+        let default = Config::builtin().git_page().unwrap();
+        let merged = cfg.git_page().unwrap();
+        assert_eq!(
+            format!("{:?}", default.pane_keys["branch_list"]),
+            format!("{:?}", merged.pane_keys["branch_list"])
+        );
+    }
+
+    #[test]
+    fn user_app_keys_merge() {
+        let cfg = user(r#"app { "3" "page:github"; "1" "None" }"#).unwrap();
+        let entries = cfg.app_entries().unwrap();
+        let km = crate::core::keymap::build_app_keymap(&entries, &["git", "github"]).unwrap();
+        assert!(km.lookup(key("1")).is_none());
+        assert!(matches!(
+            km.lookup(key("2")),
+            Some(crate::core::keymap::AppAction::SwitchPage(1))
+        ));
+        assert!(matches!(
+            km.lookup(key("3")),
+            Some(crate::core::keymap::AppAction::SwitchPage(1))
+        ));
+        assert!(matches!(
+            km.lookup(key("Ctrl+c")),
+            Some(crate::core::keymap::AppAction::Quit)
+        ));
+    }
+
+    #[test]
+    fn user_layout_replaces_without_renumbering_panes() {
+        let cfg = user(
+            r#"page "git" {
+                layout {
+                    split direction="horizontal" {
+                        split direction="vertical" size="30%" {
+                            place "file_tree"
+                            place "branch_list"
+                            place "reflog"
+                        }
+                        slot "main" then="git_log" default="diff_view" {
+                            triggers "branch_list" "reflog" "git_log"
+                        }
+                    }
+                }
+                tabs "branch_list" "file_tree" "reflog"
+            }"#,
+        )
+        .unwrap();
+        let page = cfg.git_page().unwrap();
+        let default = Config::builtin().git_page().unwrap();
+        assert_eq!(page.pane_ids, default.pane_ids, "IDs must not change");
+        assert_eq!(page.bindings, default.bindings, "bind left untouched");
+        assert!(matches!(
+            page.layout.tree,
+            LayoutNode::Split {
+                direction: SplitDirection::Horizontal,
+                ..
+            }
+        ));
+        assert_eq!(page.layout.tab_panes, vec![1, 0, 3]);
+    }
+
+    #[test]
+    fn user_layout_must_place_every_pane() {
+        let err = user(
+            r#"page "git" {
+                layout { split direction="vertical" { place "file_tree"; place "diff_view" } }
+            }"#,
+        )
+        .err()
+        .expect("expected an error");
+        let msg = format!("{err:#}");
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("missing"), "{msg}");
+        for pane in ["branch_list", "git_log", "reflog"] {
+            assert!(msg.contains(pane), "{msg} should mention {pane}");
+        }
+    }
+
+    #[test]
+    fn user_structural_errors_mention_file() {
+        for bad in [
+            r#"page "nope" { }"#,
+            r#"page "git" { pane "nope" { keys { } } }"#,
+            r#"page "git" { layout { place "nope" } }"#,
+            r#"page "git" { tabs "nope" }"#,
+            r#"page "git" { bind select="file_tree" detail="nope" }"#,
+            r#"colors { }"#,
+        ] {
+            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
+        }
+    }
+
+    #[test]
+    fn user_invalid_action_mentions_file_page_and_pane() {
+        use crate::git::panes::file_tree::FileTreeAction;
+        let cfg =
+            user(r#"page "git" { pane "file_tree" { keys { "x" "NoSuchAction" } } }"#).unwrap();
+        let msg = format!(
+            "{:#}",
+            cfg.git_page()
+                .unwrap()
+                .keymap::<FileTreeAction>("file_tree")
+                .err()
+                .expect("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("\"git\""), "{msg}");
+        assert!(msg.contains("\"file_tree\""), "{msg}");
+        assert!(msg.contains("NoSuchAction"), "{msg}");
+    }
+
+    #[test]
+    fn empty_user_config_equals_builtin() {
+        let cfg = user("").unwrap();
+        let a = Config::builtin().git_page().unwrap();
+        let b = cfg.git_page().unwrap();
+        assert_eq!(a.pane_ids, b.pane_ids);
+        assert_eq!(a.bindings, b.bindings);
+        assert_eq!(a.layout.tab_panes, b.layout.tab_panes);
+        assert_eq!(a.pane_keys.len(), b.pane_keys.len());
+        for (pane, keys) in &a.pane_keys {
+            assert_eq!(
+                format!("{keys:?}"),
+                format!("{:?}", b.pane_keys[pane]),
+                "{pane}"
+            );
+        }
     }
 
     #[test]

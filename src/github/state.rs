@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::config::{build_keymap, load_github_page_config, LoadedPageConfig};
+use crate::core::config::{Config, LoadedPageConfig};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::PageAction;
@@ -14,7 +14,7 @@ use crate::github::panes::gh_list::{GhListAction, GhListItem, GhListPane};
 use crate::github::panes::issue_list::{self, GhIssueListPane};
 use crate::github::panes::pr_list::{self, GhPrListPane};
 use anyhow::Result;
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::KeyEvent;
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use std::collections::HashMap;
@@ -185,10 +185,8 @@ pub struct GitHubState {
 }
 
 impl GitHubState {
-    pub fn new() -> Self {
-        // Load layout + pane keymaps from the embedded default KDL config.
-        let page_cfg =
-            load_github_page_config().expect("default.kdl github page config is always valid");
+    pub fn new(cfg: &Config) -> Result<Self> {
+        let page_cfg = cfg.github_page()?;
 
         let ids = GhPaneIds::from_config(&page_cfg);
         // Build select→detail and reverse detail→select dispatch maps.
@@ -197,45 +195,11 @@ impl GitHubState {
             select_bindings.iter().map(|(&s, &d)| (d, s)).collect();
 
         // Build pane keymaps from KDL entries.
-        let issue_list_km = build_keymap::<GhListAction>(
-            page_cfg
-                .pane_keys
-                .get("issue_list")
-                .expect("default.kdl missing 'issue_list' block"),
-        )
-        .expect("default.kdl issue_list keymap is always valid");
-
-        let pr_list_km = build_keymap::<GhListAction>(
-            page_cfg
-                .pane_keys
-                .get("pr_list")
-                .expect("default.kdl missing 'pr_list' block"),
-        )
-        .expect("default.kdl pr_list keymap is always valid");
-
-        let issue_detail_km = build_keymap::<DetailAction>(
-            page_cfg
-                .pane_keys
-                .get("issue_detail")
-                .expect("default.kdl missing 'issue_detail' block"),
-        )
-        .expect("default.kdl issue_detail keymap is always valid");
-
-        let pr_detail_km = build_keymap::<DetailAction>(
-            page_cfg
-                .pane_keys
-                .get("pr_detail")
-                .expect("default.kdl missing 'pr_detail' block"),
-        )
-        .expect("default.kdl pr_detail keymap is always valid");
-
-        let view_km = build_keymap::<ViewAction>(
-            page_cfg
-                .pane_keys
-                .get("view")
-                .expect("default.kdl missing 'view' block"),
-        )
-        .expect("default.kdl github view keymap is always valid");
+        let issue_list_km = page_cfg.keymap::<GhListAction>("issue_list")?;
+        let pr_list_km = page_cfg.keymap::<GhListAction>("pr_list")?;
+        let issue_detail_km = page_cfg.keymap::<DetailAction>("issue_detail")?;
+        let pr_detail_km = page_cfg.keymap::<DetailAction>("pr_detail")?;
+        let view_km = page_cfg.keymap::<ViewAction>("view")?;
 
         let mut issue_list = issue_list::new_pane(ids.issue_list, ids.issue_detail, ids.pr_list);
         issue_list.set_keymap(issue_list_km);
@@ -251,7 +215,7 @@ impl GitHubState {
 
         let initial_focus = ids.issue_list;
 
-        Self {
+        Ok(Self {
             pane: PaneShared {
                 focused_pane: initial_focus,
                 previous_pane: initial_focus,
@@ -277,7 +241,7 @@ impl GitHubState {
             detail_bindings,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
-        }
+        })
     }
 
     /// Initialize on first switch to GitHub View.
@@ -535,22 +499,16 @@ impl crate::core::app::PageState for GitHubState {
 
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
-        use crate::github::panes::detail_view;
 
         let s = |k: &str, v: &str| (k.to_string(), v.to_string());
-        let mut entries = vec![
-            s("1 / 2", "Switch view"),
-            s("r", "Refresh data"),
-            s("?", "Toggle help"),
-            s("q", "Quit"),
-        ];
+        let mut entries = vec![s("1 / 2", "Switch view")];
+        entries.extend(self.view_keymap.help_entries());
         entries.extend(help_section("Issues"));
-        entries.extend(crate::github::panes::gh_list::default_keymap(KeyCode::Tab).help_entries());
+        entries.extend(self.panes.issue_tab.list.keymap().help_entries());
         entries.extend(help_section("Pull Requests"));
-        entries
-            .extend(crate::github::panes::gh_list::default_keymap(KeyCode::BackTab).help_entries());
+        entries.extend(self.panes.pr_tab.list.keymap().help_entries());
         entries.extend(help_section("Detail View"));
-        entries.extend(detail_view::default_keymap().help_entries());
+        entries.extend(self.panes.issue_tab.detail.keymap().help_entries());
         entries
     }
 
@@ -597,7 +555,7 @@ mod kdl_regression {
     use crate::core::layout::resolve_layout;
     use crate::github::panes::detail_view::DetailAction;
     use crate::github::panes::gh_list::GhListAction;
-    use crossterm::event::KeyEvent;
+    use crossterm::event::{KeyCode, KeyEvent};
     use ratatui::layout::Rect;
 
     // Test-local pane ID constants (match default.kdl declaration order)
