@@ -228,7 +228,7 @@ fn build_pane_ids(page_children: &KdlDocument, layout_names: &[String]) -> Vec<(
     for node in page_children.nodes() {
         if node.name().value() == "pane" {
             if let Some(name) = node.get(0usize).and_then(|v| v.as_string()) {
-                if layout_names.contains(&name.to_string()) {
+                if layout_names.iter().any(|n| n == name) {
                     result.push((name.to_string(), id));
                     id += 1;
                 }
