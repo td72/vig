@@ -5,6 +5,9 @@ use std::sync::{mpsc, Arc, Condvar, Mutex};
 use std::thread;
 use std::time::Duration;
 
+/// Sleep duration while the event thread is paused (waiting to resume).
+const PAUSE_SLEEP: Duration = Duration::from_millis(10);
+
 #[derive(Debug)]
 #[allow(dead_code)]
 pub enum Event {
@@ -40,7 +43,7 @@ impl EventHandler {
                 }
                 // Spin-wait with short sleeps until resumed
                 while paused_flag.load(Ordering::SeqCst) {
-                    thread::sleep(Duration::from_millis(10));
+                    thread::sleep(PAUSE_SLEEP);
                 }
                 continue;
             }
