@@ -1,6 +1,9 @@
 // vig default configuration
 // Faithfully reproduces all hardcoded defaults in git/state.rs and github/state.rs.
 
+// Syntax highlighting theme for the diff view. `vig config themes` lists the choices.
+theme "base16-eighties.dark"
+
 app {
     "Ctrl+c" "Quit"
     "1" "page:git"

@@ -19,7 +19,7 @@ Git の差分をサイドバイサイドで表示する TUI ビューア。vim �
 - ファイル監視による自動リフレッシュ
 - 外部エディタでファイルを開く（`$EDITOR`）
 - **GitHub View** — Issue と Pull Request を閲覧（本文、コメント、レビュー、CI ステータス）。`gh` CLI 使用
-- `~/.config/vig/config.kdl` でレイアウトとキーバインドをカスタマイズ可能
+- `~/.config/vig/config.kdl` でレイアウト・キーバインド・ハイライトテーマをカスタマイズ可能
 
 ## インストール
 
@@ -68,7 +68,7 @@ vig
 
 ## 設定
 
-設定なしでそのまま使えます。レイアウトやキーバインドを変えたい場合は
+設定なしでそのまま使えます。レイアウト・キーバインド・ハイライトテーマを変えたい場合は
 `~/.config/vig/config.kdl`（または `--config <path>` / `$VIG_CONFIG`）に
 KDL ファイルを置きます。書いた部分だけが上書きされ、それ以外はデフォルトのままです。
 
@@ -76,6 +76,7 @@ KDL ファイルを置きます。書いた部分だけが上書きされ、そ�
 
 ```kdl
 // ~/.config/vig/config.kdl
+theme "Solarized (dark)"
 page "git" {
     pane "file_tree" {
         keys {
@@ -87,8 +88,9 @@ page "git" {
 ```
 
 ```bash
-vig config path   # 使用される設定ファイルのパスを表示
-vig config dump   # 組み込みデフォルトを出力（これをコピーして編集）
+vig config path     # 使用される設定ファイルのパスを表示
+vig config dump     # 組み込みデフォルトを出力（これをコピーして編集）
+vig config themes   # 利用可能なハイライトテーマを一覧表示
 ```
 
 レイアウトの入れ替え（サイドバーを右側にする等）も可能です。設定に誤りがあると

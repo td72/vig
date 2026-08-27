@@ -159,7 +159,35 @@ impl Config {
         cfg.git_page()?;
         cfg.github_page()?;
         cfg.app_entries()?;
+        cfg.theme()?;
         Ok(cfg)
+    }
+
+    /// Syntax highlighting theme name, validated against the bundled themes.
+    pub fn theme(&self) -> Result<String> {
+        let name = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "theme")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("theme block missing name argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| crate::core::syntax::DEFAULT_THEME.to_string());
+        let available = crate::core::syntax::theme_names();
+        if !available.contains(&name) {
+            return Err(anyhow!(
+                "invalid {}: unknown theme {name:?}; available: {}",
+                self.describe(),
+                available.join(", ")
+            ));
+        }
+        Ok(name)
     }
 
     /// Human-readable origin for error messages.
@@ -968,6 +996,27 @@ mod tests {
     }
 
     #[test]
+    fn theme_default_override_and_validation() {
+        assert_eq!(
+            Config::builtin().theme().unwrap(),
+            crate::core::syntax::DEFAULT_THEME
+        );
+        let cfg = user(r#"theme "Solarized (dark)""#).unwrap();
+        assert_eq!(cfg.theme().unwrap(), "Solarized (dark)");
+
+        let msg = format!(
+            "{:#}",
+            user(r#"theme "nope""#).err().expect("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("unknown theme \"nope\""), "{msg}");
+        assert!(msg.contains("base16-eighties.dark"), "{msg}");
+
+        let msg = format!("{:#}", user(r#"theme"#).err().expect("expected an error"));
+        assert!(msg.contains("missing name"), "{msg}");
+    }
+
+    #[test]
     fn empty_user_config_equals_builtin() {
         let cfg = user("").unwrap();
         let a = Config::builtin().git_page().unwrap();
@@ -975,6 +1024,7 @@ mod tests {
         assert_eq!(a.pane_ids, b.pane_ids);
         assert_eq!(a.bindings, b.bindings);
         assert_eq!(a.layout.tab_panes, b.layout.tab_panes);
+        assert_eq!(cfg.theme().unwrap(), Config::builtin().theme().unwrap());
         assert_eq!(a.pane_keys.len(), b.pane_keys.len());
         for (pane, keys) in &a.pane_keys {
             assert_eq!(
