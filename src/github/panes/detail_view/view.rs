@@ -934,8 +934,9 @@ fn markdown_to_lines(text: &str, padding: &str, max_width: usize) -> Vec<Line<'s
 ///
 /// If the natural width exceeds `max_width`, the widest columns are narrowed
 /// (down to `MIN_COL_WIDTH`) until the table fits, and overflowing cells are
-/// truncated with `…`. A table with too many columns to fit even at the
-/// minimum width is left to the paragraph's wrapping.
+/// truncated with `…`. A table that still does not fit with every column at
+/// `MIN_COL_WIDTH` is emitted as-is; the enclosing `Paragraph`
+/// (`Wrap { trim: false }`) then wraps those lines like any other long line.
 fn table_to_lines(
     aligns: &[pulldown_cmark::Alignment],
     rows: Vec<Vec<Vec<Span<'static>>>>,
