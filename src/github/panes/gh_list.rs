@@ -86,8 +86,9 @@ pub struct TreePos {
 /// Depth-first order of `n` items nested under their parents.
 ///
 /// Top-level items (no parent, or a parent that is not in the list) keep
-/// their original relative order, and so do siblings. Items that only
-/// reach each other through a cycle are treated as top-level. Returns
+/// their original relative order, and so do siblings. Members of a parent
+/// cycle (an item whose parent chain leads back to itself) are top-level;
+/// items merely hanging off a cycle still nest under their parent. Returns
 /// `(original index, position)` per output row.
 pub fn nest_by(
     n: usize,
@@ -95,10 +96,26 @@ pub fn nest_by(
     parent: impl Fn(usize) -> Option<u64>,
 ) -> Vec<(usize, TreePos)> {
     let index_of = |num: u64| (0..n).find(|&i| number(i) == num);
+    let parent_idx: Vec<Option<usize>> = (0..n)
+        .map(|i| parent(i).and_then(index_of).filter(|&p| p != i))
+        .collect();
+    // An item whose parent chain comes back to itself is in a cycle; drop
+    // its parent link so every cycle member becomes a root.
+    let in_cycle = |i: usize| {
+        let mut cur = parent_idx[i];
+        for _ in 0..n {
+            match cur {
+                Some(p) if p == i => return true,
+                Some(p) => cur = parent_idx[p],
+                None => return false,
+            }
+        }
+        false
+    };
     let mut children: Vec<Vec<usize>> = vec![Vec::new(); n];
     let mut has_parent = vec![false; n];
     for (i, hp) in has_parent.iter_mut().enumerate() {
-        if let Some(p) = parent(i).and_then(index_of).filter(|&p| p != i) {
+        if let Some(p) = parent_idx[i].filter(|_| !in_cycle(i)) {
             children[p].push(i);
             *hp = true;
         }
@@ -155,7 +172,7 @@ pub fn nest_by(
     for (i, _) in has_parent.iter().enumerate().filter(|(_, hp)| !**hp) {
         walk(i, 0, &mut trail, true, &children, &mut visited, &mut out);
     }
-    // Members of cycles never became roots; surface them as top-level rows.
+    // Safety net: anything still unreached is surfaced as a top-level row.
     for i in 0..n {
         if !visited[i] {
             walk(i, 0, &mut trail, true, &children, &mut visited, &mut out);
@@ -400,11 +417,12 @@ mod tests {
 
     #[test]
     fn cycles_do_not_drop_items() {
-        // 1 → 2 → 1 plus a child hanging off the cycle.
+        // 1 → 2 → 1 plus a child hanging off the cycle: both cycle members
+        // are top-level, the child still nests under its parent.
         let spec = [(1, Some(2)), (2, Some(1)), (3, Some(2))];
-        let r = rows(&spec);
-        assert_eq!(r.len(), 3, "{r:?}");
-        assert_eq!(r[0], "#1");
-        assert!(r.iter().any(|x| x.ends_with("└─ #3")), "{r:?}");
+        assert_eq!(rows(&spec), ["#1", "#2", "└─ #3"]);
+        // A longer cycle behaves the same.
+        let spec = [(1, Some(3)), (2, Some(1)), (3, Some(2))];
+        assert_eq!(rows(&spec), ["#1", "#2", "#3"]);
     }
 }
