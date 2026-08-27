@@ -8,6 +8,7 @@ app {
     "Ctrl+c" "Quit"
     "1" "page:git"
     "2" "page:github"
+    "3" "page:files"
 }
 
 page "git" {
@@ -171,6 +172,57 @@ page "github" {
             "BackTab" "CycleBackward"
             "w" "ToggleWatch"
             "o" "OpenItem"
+            "Esc" "Esc"
+        }
+    }
+}
+
+page "files" {
+    layout {
+        split direction="horizontal" {
+            place "parent_dir" size="20%"
+            place "dir_list" size="30%"
+            place "preview" size="min:20"
+        }
+    }
+    tabs "dir_list" "preview"
+    bind select="dir_list" detail="preview"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+            "e" "OpenEditor"
+        }
+    }
+
+    // Display-only: shows the parent directory with the current one highlighted.
+    pane "parent_dir" {
+    }
+
+    pane "dir_list" {
+        keys {
+            preset "nav"
+            preset "search"
+            "l" "Enter"
+            "Right" "Enter"
+            "Enter" "Enter"
+            "h" "Parent"
+            "Left" "Parent"
+            "Backspace" "Parent"
+            "i" "FocusPreview"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "preview" {
+        keys {
+            preset "nav"
+            "h" "Back"
+            "Left" "Back"
             "Esc" "Esc"
         }
     }

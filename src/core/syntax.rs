@@ -312,6 +312,26 @@ impl SyntaxHighlighter {
     }
 }
 
+impl SyntaxHighlighter {
+    /// Highlight a plain sequence of lines (no hunks) for `file_path`.
+    /// Returns `None` if no syntax matches the file.
+    pub fn highlight_lines(&self, file_path: &str, lines: &[String]) -> Option<Vec<Vec<Color>>> {
+        let first = lines.iter().find(|l| !l.is_empty()).map(String::as_str);
+        let syntax = self.find_syntax(file_path, first)?;
+        let highlighter = Highlighter::new(&self.theme);
+        let mut parse = ParseState::new(syntax);
+        let mut hl = HighlightState::new(&highlighter, ScopeStack::new());
+        Some(
+            lines
+                .iter()
+                .map(|l| {
+                    highlight_line_colors(l, &mut parse, &mut hl, &self.syntax_set, &highlighter)
+                })
+                .collect(),
+        )
+    }
+}
+
 /// Highlight a single line using low-level syntect API, returning per-character colors.
 fn highlight_line_colors(
     line: &str,

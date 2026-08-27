@@ -43,7 +43,7 @@ Your file is a **partial override** of the defaults:
 | `page "<name>" { tabs ... }` | Replaces the tab order. |
 | `page "<name>" { bind ... }` | Replaces all select→detail bindings of that page. |
 
-Page names (`git`, `github`) and pane names are fixed — you can rearrange
+Page names (`git`, `github`, `files`) and pane names are fixed — you can rearrange
 and rebind them, but not add or remove them. A replaced layout must place
 every pane of the page.
 
@@ -91,6 +91,7 @@ theme "<name>"
 app { <key> <action> ... }
 page "git" { ... }
 page "github" { ... }
+page "files" { ... }
 ```
 
 ### `theme`
@@ -113,7 +114,7 @@ Global bindings that work on every page.
 | Action | Meaning |
 |---|---|
 | `"Quit"` | Quit vig |
-| `"page:git"`, `"page:github"` | Switch to that page |
+| `"page:git"`, `"page:github"`, `"page:files"` | Switch to that page |
 | `"None"` | Unbind the key |
 
 ### Keys
@@ -173,6 +174,15 @@ that has the corresponding preset.
 | `view` (page-wide) | `Quit`, `Help`, `Refresh`, `PrevTab`, `NextTab`, `CyclePaneForward`, `CyclePaneBackward` |
 | `issue_list`, `pr_list` | `OpenDetail`, `SwitchTab`, `OpenBrowser`, `Esc` |
 | `issue_detail`, `pr_detail` | `FocusBody`, `FocusRight`, `CycleForward`, `CycleBackward`, `ToggleWatch`, `OpenItem`, `Esc` |
+
+**Page `files`**
+
+| Pane | Actions |
+|---|---|
+| `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward`, `OpenEditor` |
+| `parent_dir` | display-only (no keys) |
+| `dir_list` | `Enter`, `Parent`, `FocusPreview`, `Esc` |
+| `preview` | `Back`, `Esc` |
 
 **Presets**
 

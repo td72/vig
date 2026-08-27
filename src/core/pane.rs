@@ -144,6 +144,9 @@ pub enum PaneEvent {
     // GitHub-specific
     OpenIssueBrowser(u64),
     OpenPrBrowser(u64),
+    // Files-specific
+    /// The directory list changed directory (enter / parent).
+    DirChanged,
 }
 
 pub struct PaneShared {
