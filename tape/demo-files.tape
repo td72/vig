@@ -145,6 +145,14 @@ Sleep 2s
 Escape
 Sleep 800ms
 
+# Open-with prompt (O): type an app name, then cancel
+Type "O"
+Sleep 1s
+Type "Preview"
+Sleep 1.5s
+Escape
+Sleep 800ms
+
 # Quit
 Type "q"
 Sleep 500ms

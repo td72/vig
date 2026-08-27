@@ -229,6 +229,8 @@ Entries get Nerd Font icons by file type; if your terminal font is not a
 | `h` / `Esc` (preview) | Back to file list |
 | `/` `n` `N` | Search file names |
 | `e` | Open selected file in external editor |
+| `o` | Open selected file with the OS default app |
+| `O` | Open selected file with an app you name (`open -a <app>` on macOS) |
 | `r` | Re-read the current directory |
 
 ### Other
