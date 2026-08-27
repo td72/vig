@@ -216,6 +216,8 @@ Browse GitHub Issues and Pull Requests directly within vig. Requires [GitHub CLI
 A read-only file browser rooted at the repository. The left column shows the
 parent directory, the middle the current one, and the right a preview of the
 selected entry (syntax-highlighted text, or a listing for directories).
+Entries get Nerd Font icons by file type; if your terminal font is not a
+[Nerd Font](https://www.nerdfonts.com/), put `icons "none"` in your config.
 
 | Key | Action |
 |-----|--------|

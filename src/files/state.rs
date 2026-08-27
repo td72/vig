@@ -95,6 +95,7 @@ impl FilesState {
     pub fn new(root: &Path, cfg: &Config) -> Result<Self> {
         let page_cfg = cfg.files_page()?;
         let theme = cfg.theme()?;
+        let icons = cfg.icons()?;
         let ids = FilesPaneIds::from_config(&page_cfg);
         // Validates the bind declarations (dir_list → preview).
         let _ = page_cfg.resolve_select_bindings();
@@ -103,11 +104,11 @@ impl FilesState {
         let preview_km = page_cfg.keymap::<PreviewAction>("preview")?;
         let view_km = page_cfg.keymap::<ViewAction>("view")?;
 
-        let mut list = DirListPane::new(ids.dir_list, ids.preview, root);
+        let mut list = DirListPane::new(ids.dir_list, ids.preview, root, icons);
         list.set_keymap(dir_list_km);
-        let mut preview = PreviewPane::new(ids.preview, ids.dir_list, &theme);
+        let mut preview = PreviewPane::new(ids.preview, ids.dir_list, &theme, icons);
         preview.set_keymap(preview_km);
-        let parent = ParentDirPane::new(ids.parent_dir, root);
+        let parent = ParentDirPane::new(ids.parent_dir, root, icons);
 
         let mut state = Self {
             pane: PaneShared {

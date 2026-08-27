@@ -161,7 +161,35 @@ impl Config {
         cfg.files_page()?;
         cfg.app_entries()?;
         cfg.theme()?;
+        cfg.icons()?;
         Ok(cfg)
+    }
+
+    /// Whether the Files view shows Nerd Font icons (`icons "nerd"` / `"none"`).
+    pub fn icons(&self) -> Result<bool> {
+        let modes = crate::files::domain::icons::ICON_MODES;
+        let mode = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "icons")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("icons block missing mode argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| modes[0].to_string());
+        if !modes.contains(&mode.as_str()) {
+            return Err(anyhow!(
+                "invalid {}: unknown icons mode {mode:?}; expected one of: {}",
+                self.describe(),
+                modes.join(", ")
+            ));
+        }
+        Ok(mode == "nerd")
     }
 
     /// Syntax highlighting theme name, validated against the bundled themes.
@@ -1045,6 +1073,19 @@ mod tests {
 
         let msg = format!("{:#}", user(r#"theme"#).err().expect("expected an error"));
         assert!(msg.contains("missing name"), "{msg}");
+    }
+
+    #[test]
+    fn icons_default_override_and_validation() {
+        assert!(Config::builtin().icons().unwrap());
+        assert!(!user(r#"icons "none""#).unwrap().icons().unwrap());
+        let msg = format!(
+            "{:#}",
+            user(r#"icons "emoji""#).err().expect("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("unknown icons mode \"emoji\""), "{msg}");
+        assert!(msg.contains("nerd, none"), "{msg}");
     }
 
     #[test]

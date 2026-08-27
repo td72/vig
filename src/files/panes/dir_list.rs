@@ -70,11 +70,13 @@ pub struct DirListPane {
     pane_id: usize,
     preview_pane_id: usize,
     view_height: u16,
+    icons: bool,
 }
 
 impl DirListPane {
-    pub fn new(pane_id: usize, preview_pane_id: usize, root: &Path) -> Self {
+    pub fn new(pane_id: usize, preview_pane_id: usize, root: &Path, icons: bool) -> Self {
         let mut p = Self {
+            icons,
             root: root.to_path_buf(),
             cwd: root.to_path_buf(),
             entries: Vec::new(),
@@ -233,7 +235,7 @@ impl Pane<PaneEvent> for DirListPane {
                     .iter()
                     .enumerate()
                     .map(|(idx, e)| {
-                        let mut li = ListItem::new(entry_line(e, width));
+                        let mut li = ListItem::new(entry_line(e, width, self.icons));
                         let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
                         if hl.is_active() {
                             li = li.style(hl.apply(Style::default()));

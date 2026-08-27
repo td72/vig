@@ -54,11 +54,13 @@ pub struct PreviewPane {
     colors: Option<Vec<Vec<Color>>>,
     scroll: usize,
     view_height: u16,
+    icons: bool,
 }
 
 impl PreviewPane {
-    pub fn new(pane_id: usize, list_pane_id: usize, theme: &str) -> Self {
+    pub fn new(pane_id: usize, list_pane_id: usize, theme: &str, icons: bool) -> Self {
         Self {
+            icons,
             pane_id,
             list_pane_id,
             keymap: default_keymap(),
@@ -201,7 +203,7 @@ impl Pane<PaneEvent> for PreviewPane {
                 .iter()
                 .skip(self.scroll)
                 .take(height)
-                .map(|e| entry_line(e, width))
+                .map(|e| entry_line(e, width, self.icons))
                 .collect(),
             Preview::Binary => vec![Line::from(Span::styled("  (binary file)", dim))],
             Preview::Empty => vec![Line::from(Span::styled(

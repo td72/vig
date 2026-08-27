@@ -13,6 +13,7 @@ use std::path::{Path, PathBuf};
 
 pub struct ParentDirPane {
     pane_id: usize,
+    icons: bool,
     /// The repository root; nothing above it is shown.
     root: PathBuf,
     parent: Option<PathBuf>,
@@ -21,9 +22,10 @@ pub struct ParentDirPane {
 }
 
 impl ParentDirPane {
-    pub fn new(pane_id: usize, root: &Path) -> Self {
+    pub fn new(pane_id: usize, root: &Path, icons: bool) -> Self {
         let mut p = Self {
             pane_id,
+            icons,
             root: root.to_path_buf(),
             parent: None,
             entries: Vec::new(),
@@ -72,7 +74,7 @@ impl Pane<PaneEvent> for ParentDirPane {
         let items: Vec<ListItem> = self
             .entries
             .iter()
-            .map(|e| ListItem::new(entry_line(e, width)))
+            .map(|e| ListItem::new(entry_line(e, width, self.icons)))
             .collect();
         let list = List::new(items)
             .block(block)
