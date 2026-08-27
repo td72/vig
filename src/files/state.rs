@@ -65,7 +65,7 @@ impl PaneSet for FilesPanes {
 }
 
 /// One-line input for the `OpenWith` action (`O`): the application name to
-/// open the selected file with.
+/// open the selected entry with.
 #[derive(Debug, Default)]
 pub struct OpenWithPrompt {
     pub active: bool,
@@ -205,10 +205,13 @@ impl FilesState {
         self.panes.tab.sync_detail();
     }
 
-    /// Open the selected file with the OS default application, or with `app`.
+    /// Open the selected entry with the OS default application, or with
+    /// `app`. Directories open in the system file manager (Finder,
+    /// Explorer, ...) because that is what `open` / `explorer` /
+    /// `xdg-open` do with a directory path.
     fn open_selected(&self, ctx: &mut AppContext, app: Option<&str>) {
-        let Some(entry) = self.selected().filter(|e| !e.is_dir) else {
-            ctx.status_message = Some("No file selected".to_string());
+        let Some(entry) = self.selected() else {
+            ctx.status_message = Some("Nothing selected".to_string());
             return;
         };
         let result = match app {
@@ -284,10 +287,10 @@ impl FilesState {
                     return Ok(PageAction::None);
                 }
                 ViewAction::OpenWith => {
-                    if self.selected().is_some_and(|e| !e.is_dir) {
+                    if self.selected().is_some() {
                         self.open_with.start();
                     } else {
-                        ctx.status_message = Some("No file selected".to_string());
+                        ctx.status_message = Some("Nothing selected".to_string());
                     }
                     return Ok(PageAction::None);
                 }
