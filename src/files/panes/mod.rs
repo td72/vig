@@ -22,10 +22,8 @@ pub fn entry_line(entry: &DirEntry, width: usize, icons: bool) -> Line<'static> 
     let mut used = 1;
     if icons {
         let icon = crate::files::domain::icons::icon_for(entry);
-        spans.push(Span::styled(
-            format!("{} ", icon.glyph),
-            Style::default().fg(icon.color),
-        ));
+        spans.push(Span::styled(icon.glyph, Style::default().fg(icon.color)));
+        spans.push(Span::raw(" "));
         used += 2;
     }
     spans.push(Span::styled(name.clone(), name_style));
