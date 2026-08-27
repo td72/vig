@@ -21,6 +21,8 @@ notify-debouncer-mini = "0.5"
 ratatui = "0.30"
 pulldown-cmark = { version = "0.13", default-features = false, features = ["simd"] }
 unicode-width = "0.2"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp"] }
+ratatui-image = { version = "11", default-features = false, features = ["crossterm"] }
 arboard = "3"
 dirs = "6"
 serde = { version = "1", features = ["derive"] }

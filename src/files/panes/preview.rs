@@ -7,12 +7,16 @@ use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::core::syntax::SyntaxHighlighter;
 use crate::core::theme;
 use crate::files::domain::fs::{self, DirEntry, Preview};
+use crate::files::domain::image::IMAGE_MAX_BYTES;
 use crate::files::panes::entry_line;
 use crossterm::event::KeyCode;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 use ratatui::{layout::Rect, Frame};
+use ratatui_image::picker::Picker;
+use ratatui_image::protocol::StatefulProtocol;
+use ratatui_image::StatefulImage;
 
 #[derive(Debug, Clone)]
 pub enum PreviewAction {
@@ -55,12 +59,29 @@ pub struct PreviewPane {
     scroll: usize,
     view_height: u16,
     icons: bool,
+    /// `None` when image previews are disabled (`image-preview "none"`).
+    picker: Option<Picker>,
+    /// Decoded image for `Preview::Image`, ready to draw.
+    image: Option<StatefulProtocol>,
+    /// An image was just replaced or removed: Sixel / iTerm2 output outside
+    /// the new content is not covered by ratatui's cell diff, so the screen
+    /// must be cleared once.
+    needs_full_redraw: bool,
 }
 
 impl PreviewPane {
-    pub fn new(pane_id: usize, list_pane_id: usize, theme: &str, icons: bool) -> Self {
+    pub fn new(
+        pane_id: usize,
+        list_pane_id: usize,
+        theme: &str,
+        icons: bool,
+        picker: Option<Picker>,
+    ) -> Self {
         Self {
             icons,
+            picker,
+            image: None,
+            needs_full_redraw: false,
             pane_id,
             list_pane_id,
             keymap: default_keymap(),
@@ -95,6 +116,55 @@ impl PreviewPane {
                 .highlighter
                 .highlight_lines(&e.path.to_string_lossy(), lines);
         }
+        if self.image.take().is_some() {
+            self.needs_full_redraw = true;
+        }
+        if let (Some(e), Preview::Image(_), Some(picker)) = (entry, &self.content, &self.picker) {
+            if e.size <= IMAGE_MAX_BYTES {
+                if let Ok(img) = ::image::open(&e.path) {
+                    self.image = Some(picker.new_resize_protocol(img));
+                }
+            }
+        }
+    }
+
+    /// Consume the pending full-redraw request (see `needs_full_redraw`).
+    pub fn take_full_redraw(&mut self) -> bool {
+        std::mem::take(&mut self.needs_full_redraw)
+    }
+
+    /// Status line shown above an image: `PNG 1920×1080  2.3M`, plus why the
+    /// image itself is not drawn, if it is not.
+    fn image_lines(&self, dim: Style) -> Vec<Line<'static>> {
+        let Preview::Image(info) = &self.content else {
+            return vec![];
+        };
+        let size = self.entry.as_ref().map_or(0, |e| e.size);
+        let protocol = match &self.picker {
+            Some(p) if self.image.is_some() => format!("  {:?}", p.protocol_type()).to_lowercase(),
+            _ => String::new(),
+        };
+        let mut lines = vec![Line::from(Span::styled(
+            format!(
+                "  {} {}×{}  {}{protocol}",
+                info.format,
+                info.width,
+                info.height,
+                fs::human_size(size)
+            ),
+            dim,
+        ))];
+        if self.image.is_none() {
+            let why = if self.picker.is_none() {
+                "(image preview disabled)"
+            } else if size > IMAGE_MAX_BYTES {
+                "(image too large to preview)"
+            } else {
+                "(could not decode image)"
+            };
+            lines.push(Line::from(Span::styled(format!("  {why}"), dim)));
+        }
+        lines
     }
 
     fn line_count(&self) -> usize {
@@ -205,6 +275,7 @@ impl Pane<PaneEvent> for PreviewPane {
                 .take(height)
                 .map(|e| entry_line(e, width, self.icons))
                 .collect(),
+            Preview::Image(_) => self.image_lines(dim),
             Preview::Binary => vec![Line::from(Span::styled("  (binary file)", dim))],
             Preview::Empty => vec![Line::from(Span::styled(
                 if self.entry.is_some() {
@@ -219,6 +290,18 @@ impl Pane<PaneEvent> for PreviewPane {
                 Style::default().fg(Color::Red),
             ))],
         };
+        let inner = block.inner(area);
         f.render_widget(Paragraph::new(lines).block(block), area);
+        if let Some(protocol) = self.image.as_mut() {
+            // Below the metadata line, inside the border.
+            let img_area = Rect {
+                y: inner.y.saturating_add(1),
+                height: inner.height.saturating_sub(1),
+                ..inner
+            };
+            if img_area.height > 0 && img_area.width > 0 {
+                f.render_stateful_widget(StatefulImage::default(), img_area, protocol);
+            }
+        }
     }
 }

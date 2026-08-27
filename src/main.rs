@@ -114,7 +114,10 @@ fn run_tui(cfg: Config) -> Result<()> {
     let cwd = std::env::current_dir()?;
     let (git_page, workdir) = crate::git::page::new_page(&cwd, &cfg)?;
     let gh_page = crate::github::page::new_page(&cfg)?;
-    let files_page = crate::files::page::new_page(&workdir, &cfg)?;
+    // Terminal graphics detection talks to the terminal directly, so it has
+    // to happen before the TUI takes over stdin/stdout.
+    let picker = crate::files::domain::image::make_picker(cfg.image_preview()?);
+    let files_page = crate::files::page::new_page(&workdir, &cfg, picker)?;
 
     let pages = vec![git_page, gh_page, files_page];
     let page_labels = pages.iter().map(|p| p.label()).collect();
@@ -126,6 +129,7 @@ fn run_tui(cfg: Config) -> Result<()> {
         status_message: None,
         error_dialog: None,
         workdir: workdir.clone(),
+        needs_full_redraw: false,
     };
     let mut app = App::new(ctx, pages, &cfg)?;
 
@@ -141,6 +145,9 @@ fn run_tui(cfg: Config) -> Result<()> {
         app.drain_all_background();
 
         // Draw
+        if app.ctx.take_full_redraw() {
+            terminal.clear()?;
+        }
         terminal.draw(|frame| {
             let area = frame.area();
             app.render(frame, area);

@@ -1,6 +1,7 @@
 //! Read-only filesystem access for the Files page: directory listings and
 //! file previews.
 
+use crate::files::domain::image::{self, ImageInfo};
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -82,6 +83,8 @@ pub enum Preview {
     },
     /// A directory listing.
     Dir(Vec<DirEntry>),
+    /// An image; decoding happens in the preview pane, this is header-only.
+    Image(ImageInfo),
     Binary,
     Empty,
     Error(String),
@@ -94,6 +97,11 @@ pub fn preview(entry: &DirEntry) -> Preview {
             Ok(entries) => Preview::Dir(entries),
             Err(e) => Preview::Error(e.to_string()),
         };
+    }
+    if image::is_image_path(&entry.path) {
+        if let Some(info) = image::probe(&entry.path) {
+            return Preview::Image(info);
+        }
     }
     read_text_preview(&entry.path)
 }
@@ -245,6 +253,22 @@ mod tests {
             }
         );
         assert_eq!(preview(by_name("bin")), Preview::Binary);
+        ::image::RgbImage::new(3, 2)
+            .save(d.join("pic.png"))
+            .unwrap();
+        fs::write(d.join("broken.png"), b"\x00\x00 not a png").unwrap();
+        let entries = list_dir(&d).unwrap();
+        let by_name = |n: &str| entries.iter().find(|e| e.name == n).unwrap();
+        assert_eq!(
+            preview(by_name("pic.png")),
+            Preview::Image(ImageInfo {
+                format: "PNG".into(),
+                width: 3,
+                height: 2
+            })
+        );
+        // Not decodable → falls through to the ordinary text/binary check.
+        assert_eq!(preview(by_name("broken.png")), Preview::Binary);
         assert_eq!(preview(by_name("empty")), Preview::Empty);
         assert!(matches!(preview(by_name("sub")), Preview::Dir(ref v) if v.is_empty()));
         fs::remove_dir_all(&d).unwrap();

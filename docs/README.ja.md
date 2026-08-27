@@ -218,6 +218,8 @@ GitHub の Issue と Pull Request を vig 内で閲覧可能。[GitHub CLI (`gh`
 ディレクトリは一覧）です。エントリにはファイル種別ごとの Nerd Font アイコンが付きます。
 端末のフォントが [Nerd Font](https://www.nerdfonts.com/) でない場合は設定に `icons "none"` を書いてください。
 
+画像 (PNG / JPEG / GIF / WebP) はペイン内にプレビューされ、1行目に形式・寸法・サイズ・使用中のレンダラが表示されます。グラフィックプロトコル対応端末 (Kitty, WezTerm, Ghostty, iTerm2、foot などの Sixel 対応端末) では元の解像度で描画され、それ以外では Unicode 半ブロックにフォールバックします。`image-preview "halfblocks"` で端末検出をスキップ、`"none"` でメタデータのみの表示になります。20 MB を超える画像はデコードしません。
+
 | キー | 操作 |
 |------|------|
 | `j` / `k` | 選択移動（プレビューが追従） |
