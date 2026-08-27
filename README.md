@@ -197,6 +197,7 @@ Search works in all panes (DiffView, FileTree, CommitLog, Reflog). Case-insensit
 ### GitHub View
 
 Browse GitHub Issues and Pull Requests directly within vig. Requires [GitHub CLI (`gh`)](https://cli.github.com/) to be installed and authenticated.
+Bodies and comments are rendered as Markdown (headings, lists, task lists, code, tables fitted to the pane width).
 
 | Key | Action |
 |-----|--------|

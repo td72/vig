@@ -196,6 +196,7 @@ vig config themes   # 利用可能なハイライトテーマを一覧表示
 ### GitHub View
 
 GitHub の Issue と Pull Request を vig 内で閲覧可能。[GitHub CLI (`gh`)](https://cli.github.com/) のインストールと認証が必要。
+本文とコメントは Markdown としてレンダリングされる (見出し・リスト・タスクリスト・コード・ペイン幅に合わせたテーブル)。
 
 | キー | 操作 |
 |------|------|
