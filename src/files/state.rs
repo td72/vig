@@ -211,7 +211,7 @@ impl FilesState {
     /// `xdg-open` do with a directory path.
     fn open_selected(&self, ctx: &mut AppContext, app: Option<&str>) {
         let Some(entry) = self.selected() else {
-            ctx.status_message = Some("Nothing selected".to_string());
+            ctx.status_message = Some("No entry selected".to_string());
             return;
         };
         let result = match app {
@@ -290,7 +290,7 @@ impl FilesState {
                     if self.selected().is_some() {
                         self.open_with.start();
                     } else {
-                        ctx.status_message = Some("Nothing selected".to_string());
+                        ctx.status_message = Some("No entry selected".to_string());
                     }
                     return Ok(PageAction::None);
                 }
