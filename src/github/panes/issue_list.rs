@@ -1,7 +1,7 @@
 use crate::core::pane::PaneEvent;
 use crate::github::domain::types::GhIssueListItem;
 use crate::github::domain::{client, disk_cache};
-use crate::github::panes::gh_list::{GhListItem, GhListPane};
+use crate::github::panes::gh_list::{GhListItem, GhListPane, TreePos};
 use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
 use ratatui::{
@@ -19,7 +19,7 @@ impl GhListItem for GhIssueListItem {
         "No issues"
     }
 
-    fn render_item(&self) -> ListItem<'static> {
+    fn render_item(&self, tree: &TreePos) -> ListItem<'static> {
         let icon = if self.state == "OPEN" { "●" } else { "✓" };
         let icon_color = if self.state == "OPEN" {
             Color::Green
@@ -29,6 +29,7 @@ impl GhListItem for GhIssueListItem {
 
         ListItem::new(Line::from(vec![
             Span::raw(" "),
+            Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
             Span::styled(icon, Style::default().fg(icon_color)),
             Span::raw(" "),
             Span::styled(
@@ -42,6 +43,10 @@ impl GhListItem for GhIssueListItem {
 
     fn number(&self) -> u64 {
         self.number
+    }
+
+    fn parent_number(&self, _items: &[Self]) -> Option<u64> {
+        self.parent.as_ref().map(|p| p.number)
     }
 
     fn search_text(&self) -> String {

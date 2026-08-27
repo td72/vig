@@ -54,6 +54,16 @@ pub struct GhIssueListItem {
     pub labels: Vec<GhLabel>,
     #[serde(rename = "createdAt")]
     pub created_at: String,
+    /// Parent issue when this is a sub-issue (absent in caches written
+    /// before the field existed).
+    #[serde(default)]
+    pub parent: Option<GhIssueRef>,
+}
+
+/// Minimal reference to another issue (e.g. a sub-issue's parent).
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct GhIssueRef {
+    pub number: u64,
 }
 
 // Issue detail
@@ -81,12 +91,29 @@ pub struct GhPrListItem {
     pub labels: Vec<GhLabel>,
     #[serde(rename = "headRefName")]
     pub head_ref_name: String,
+    /// Branch this PR merges into (absent in caches written before the
+    /// field existed).
+    #[serde(rename = "baseRefName", default)]
+    pub base_ref_name: String,
     #[serde(rename = "createdAt")]
     pub created_at: String,
     #[serde(rename = "reviewDecision")]
     pub review_decision: Option<String>,
     #[serde(rename = "isDraft")]
     pub is_draft: bool,
+    /// Membership of a GitHub pull request Stack (as created by `gh stack`),
+    /// merged in from a separate GraphQL query; absent in older caches.
+    #[serde(default)]
+    pub stack: Option<GhPrStackRef>,
+}
+
+/// A PR's place in a GitHub Stack: `position` is 1 at the bottom (closest to
+/// the stack's base branch) and grows towards the top.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+pub struct GhPrStackRef {
+    pub number: u64,
+    pub position: u32,
+    pub size: u32,
 }
 
 // PR detail
