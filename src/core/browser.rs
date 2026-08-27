@@ -8,14 +8,14 @@ use std::time::Duration;
 fn launcher(app: Option<&str>, target: &OsStr) -> Command {
     #[cfg(target_os = "windows")]
     {
-        // `start` is a cmd.exe builtin, not a standalone executable, so it must
-        // be invoked via `cmd /C start`. The empty "" is start's window-title
-        // argument.
-        let mut c = Command::new("cmd");
-        c.args(["/C", "start", ""]);
-        if let Some(app) = app {
-            c.arg(app);
-        }
+        // `explorer` opens both files (with their associated app) and URLs.
+        // It is used instead of `cmd /C start` so that shell metacharacters
+        // in a repository-controlled path (`&`, `|`, ...) are never
+        // interpreted by cmd.exe.
+        let mut c = match app {
+            Some(app) => Command::new(app),
+            None => Command::new("explorer"),
+        };
         c.arg(target);
         c
     }
