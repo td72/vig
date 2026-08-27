@@ -91,6 +91,10 @@ pub struct GhPrListItem {
     pub labels: Vec<GhLabel>,
     #[serde(rename = "headRefName")]
     pub head_ref_name: String,
+    /// Branch this PR merges into (absent in caches written before the
+    /// field existed).
+    #[serde(rename = "baseRefName", default)]
+    pub base_ref_name: String,
     #[serde(rename = "createdAt")]
     pub created_at: String,
     #[serde(rename = "reviewDecision")]

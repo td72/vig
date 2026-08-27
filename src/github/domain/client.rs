@@ -56,7 +56,7 @@ pub fn list_prs(limit: usize) -> Result<Vec<GhPrListItem>, String> {
             "pr",
             "list",
             "--json",
-            "number,title,state,author,labels,headRefName,createdAt,reviewDecision,isDraft",
+            "number,title,state,author,labels,headRefName,baseRefName,createdAt,reviewDecision,isDraft",
             "--limit",
             &limit.to_string(),
         ],
