@@ -129,6 +129,7 @@ fn run_tui(cfg: Config) -> Result<()> {
         status_message: None,
         error_dialog: None,
         workdir: workdir.clone(),
+        needs_full_redraw: false,
     };
     let mut app = App::new(ctx, pages, &cfg)?;
 
@@ -144,6 +145,9 @@ fn run_tui(cfg: Config) -> Result<()> {
         app.drain_all_background();
 
         // Draw
+        if app.ctx.take_full_redraw() {
+            terminal.clear()?;
+        }
         terminal.draw(|frame| {
             let area = frame.area();
             app.render(frame, area);

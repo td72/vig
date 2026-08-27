@@ -63,6 +63,10 @@ pub struct PreviewPane {
     picker: Option<Picker>,
     /// Decoded image for `Preview::Image`, ready to draw.
     image: Option<StatefulProtocol>,
+    /// An image was just replaced or removed: Sixel / iTerm2 output outside
+    /// the new content is not covered by ratatui's cell diff, so the screen
+    /// must be cleared once.
+    needs_full_redraw: bool,
 }
 
 impl PreviewPane {
@@ -77,6 +81,7 @@ impl PreviewPane {
             icons,
             picker,
             image: None,
+            needs_full_redraw: false,
             pane_id,
             list_pane_id,
             keymap: default_keymap(),
@@ -111,7 +116,9 @@ impl PreviewPane {
                 .highlighter
                 .highlight_lines(&e.path.to_string_lossy(), lines);
         }
-        self.image = None;
+        if self.image.take().is_some() {
+            self.needs_full_redraw = true;
+        }
         if let (Some(e), Preview::Image(_), Some(picker)) = (entry, &self.content, &self.picker) {
             if e.size <= IMAGE_MAX_BYTES {
                 if let Ok(img) = ::image::open(&e.path) {
@@ -119,6 +126,11 @@ impl PreviewPane {
                 }
             }
         }
+    }
+
+    /// Consume the pending full-redraw request (see `needs_full_redraw`).
+    pub fn take_full_redraw(&mut self) -> bool {
+        std::mem::take(&mut self.needs_full_redraw)
     }
 
     /// Status line shown above an image: `PNG 1920×1080  2.3M`, plus why the
@@ -283,7 +295,7 @@ impl Pane<PaneEvent> for PreviewPane {
         if let Some(protocol) = self.image.as_mut() {
             // Below the metadata line, inside the border.
             let img_area = Rect {
-                y: inner.y + 1,
+                y: inner.y.saturating_add(1),
                 height: inner.height.saturating_sub(1),
                 ..inner
             };

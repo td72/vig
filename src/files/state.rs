@@ -228,6 +228,13 @@ impl FilesState {
         });
     }
 
+    /// Forward the preview pane's full-redraw request to the app.
+    fn propagate_full_redraw(&mut self, ctx: &mut AppContext) {
+        if self.panes.tab.detail.take_full_redraw() {
+            ctx.needs_full_redraw = true;
+        }
+    }
+
     /// Re-read the current directory (fs change, refresh, editor return).
     fn reload(&mut self) {
         self.panes.tab.list.reload();
@@ -259,6 +266,24 @@ impl FilesState {
             }
         }
         Ok(PageAction::None)
+    }
+
+    fn handle_key_inner(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        if self.open_with.active {
+            if let Some(app) = self.open_with.handle_key(key) {
+                self.open_selected(ctx, Some(&app));
+            }
+            return Ok(PageAction::None);
+        }
+        if self.pane.handle_search_input(&mut self.panes, ctx, key) {
+            // Incremental search moves the list selection without emitting
+            // an event, so keep the preview in sync here.
+            if self.pane.search.origin == self.panes.ids.dir_list {
+                self.panes.tab.sync_detail();
+            }
+            return Ok(PageAction::None);
+        }
+        self.handle_view_key(ctx, key)
     }
 
     fn handle_view_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
@@ -325,21 +350,9 @@ impl PageState for FilesState {
     }
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
-        if self.open_with.active {
-            if let Some(app) = self.open_with.handle_key(key) {
-                self.open_selected(ctx, Some(&app));
-            }
-            return Ok(PageAction::None);
-        }
-        if self.pane.handle_search_input(&mut self.panes, ctx, key) {
-            // Incremental search moves the list selection without emitting
-            // an event, so keep the preview in sync here.
-            if self.pane.search.origin == self.panes.ids.dir_list {
-                self.panes.tab.sync_detail();
-            }
-            return Ok(PageAction::None);
-        }
-        self.handle_view_key(ctx, key)
+        let action = self.handle_key_inner(ctx, key);
+        self.propagate_full_redraw(ctx);
+        action
     }
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
@@ -353,17 +366,19 @@ impl PageState for FilesState {
         self.pane.search.active || self.open_with.active
     }
 
-    fn on_fs_change(&mut self, _ctx: &mut AppContext) -> Result<()> {
+    fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
         self.reload();
+        self.propagate_full_redraw(ctx);
         Ok(())
     }
 
     fn on_suspend_return(
         &mut self,
-        _ctx: &mut AppContext,
+        ctx: &mut AppContext,
         _status: std::io::Result<std::process::ExitStatus>,
     ) -> Result<()> {
         self.reload();
+        self.propagate_full_redraw(ctx);
         Ok(())
     }
 }

@@ -19,9 +19,17 @@ pub struct AppContext {
     pub status_message: Option<String>,
     pub error_dialog: Option<ErrorDialogState>,
     pub workdir: PathBuf,
+    /// Set when terminal content outside ratatui's buffer (inline images)
+    /// must be wiped: the main loop clears the terminal before the next draw.
+    pub needs_full_redraw: bool,
 }
 
 impl AppContext {
+    /// Consume the pending full-redraw request.
+    pub fn take_full_redraw(&mut self) -> bool {
+        std::mem::take(&mut self.needs_full_redraw)
+    }
+
     pub fn show_error(&mut self, title: &str, message: String) {
         self.error_dialog = Some(ErrorDialogState {
             title: title.to_string(),
@@ -271,6 +279,7 @@ mod tests {
             status_message: None,
             error_dialog: None,
             workdir,
+            needs_full_redraw: false,
         };
 
         // Builds the app keymap exactly as production does; `App::new` fails
