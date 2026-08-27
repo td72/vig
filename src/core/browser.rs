@@ -66,13 +66,13 @@ pub fn open_url(url: &str) -> Result<(), String> {
 
 /// Open `path` with the OS default application.
 pub fn open_path(path: &Path) -> Result<(), String> {
-    spawn_detached(launcher(None, path.as_os_str()), "file")
+    spawn_detached(launcher(None, path.as_os_str()), "path")
 }
 
 /// Open `path` with the named application (`open -a <app>` on macOS; the
 /// application is run directly elsewhere).
 pub fn open_path_with(app: &str, path: &Path) -> Result<(), String> {
-    spawn_detached(launcher(Some(app), path.as_os_str()), "file")
+    spawn_detached(launcher(Some(app), path.as_os_str()), "path")
 }
 
 #[cfg(test)]
