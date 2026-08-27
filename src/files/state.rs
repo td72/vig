@@ -2,6 +2,7 @@
 //! preview) rooted at the repository working directory.
 
 use crate::core::app::{AppContext, PageState};
+use crate::core::browser;
 use crate::core::config::{Config, LoadedPageConfig};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
@@ -15,7 +16,7 @@ use crate::files::panes::dir_list::{DirListAction, DirListPane};
 use crate::files::panes::parent_dir::ParentDirPane;
 use crate::files::panes::preview::{PreviewAction, PreviewPane};
 use anyhow::Result;
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
 use std::path::{Path, PathBuf};
 
@@ -63,9 +64,60 @@ impl PaneSet for FilesPanes {
     }
 }
 
+/// One-line input for the `OpenWith` action (`O`): the application name to
+/// open the selected file with.
+#[derive(Debug, Default)]
+pub struct OpenWithPrompt {
+    pub active: bool,
+    pub input: String,
+    /// Last confirmed application name; pre-filled the next time.
+    last: String,
+}
+
+impl OpenWithPrompt {
+    fn start(&mut self) {
+        self.active = true;
+        self.input = self.last.clone();
+    }
+
+    /// Handle a key while the prompt is active. Returns `Some(app)` when the
+    /// user confirmed a non-empty application name.
+    fn handle_key(&mut self, key: KeyEvent) -> Option<String> {
+        match key.code {
+            KeyCode::Enter => {
+                self.active = false;
+                let app = self.input.trim().to_string();
+                if app.is_empty() {
+                    return None;
+                }
+                self.last = app.clone();
+                Some(app)
+            }
+            KeyCode::Esc => {
+                self.active = false;
+                None
+            }
+            KeyCode::Backspace => {
+                self.input.pop();
+                None
+            }
+            KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.input.clear();
+                None
+            }
+            KeyCode::Char(c) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.input.push(c);
+                None
+            }
+            _ => None,
+        }
+    }
+}
+
 pub struct FilesState {
     pub pane: PaneShared,
     pub panes: FilesPanes,
+    pub open_with: OpenWithPrompt,
     /// Repository working directory; the header shows paths relative to it.
     pub root: PathBuf,
     layout_config: PageLayoutConfig,
@@ -124,6 +176,7 @@ impl FilesState {
                 },
                 ids,
             },
+            open_with: OpenWithPrompt::default(),
             root: root.to_path_buf(),
             layout_config: page_cfg.layout,
             view_keymap: view_km,
@@ -150,6 +203,25 @@ impl FilesState {
         let cwd = self.panes.tab.list.cwd.clone();
         self.panes.parent.update(&cwd);
         self.panes.tab.sync_detail();
+    }
+
+    /// Open the selected file with the OS default application, or with `app`.
+    fn open_selected(&self, ctx: &mut AppContext, app: Option<&str>) {
+        let Some(entry) = self.selected().filter(|e| !e.is_dir) else {
+            ctx.status_message = Some("No file selected".to_string());
+            return;
+        };
+        let result = match app {
+            Some(app) => browser::open_path_with(app, &entry.path),
+            None => browser::open_path(&entry.path),
+        };
+        ctx.status_message = Some(match result {
+            Ok(()) => match app {
+                Some(app) => format!("Opening with {app}..."),
+                None => "Opening...".to_string(),
+            },
+            Err(e) => e,
+        });
     }
 
     /// Re-read the current directory (fs change, refresh, editor return).
@@ -207,6 +279,18 @@ impl FilesState {
                     }
                     return Ok(PageAction::None);
                 }
+                ViewAction::OpenDefault => {
+                    self.open_selected(ctx, None);
+                    return Ok(PageAction::None);
+                }
+                ViewAction::OpenWith => {
+                    if self.selected().is_some_and(|e| !e.is_dir) {
+                        self.open_with.start();
+                    } else {
+                        ctx.status_message = Some("No file selected".to_string());
+                    }
+                    return Ok(PageAction::None);
+                }
                 _ => {}
             }
         }
@@ -237,6 +321,12 @@ impl PageState for FilesState {
     }
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        if self.open_with.active {
+            if let Some(app) = self.open_with.handle_key(key) {
+                self.open_selected(ctx, Some(&app));
+            }
+            return Ok(PageAction::None);
+        }
         if self.pane.handle_search_input(&mut self.panes, ctx, key) {
             // Incremental search moves the list selection without emitting
             // an event, so keep the preview in sync here.
@@ -256,7 +346,7 @@ impl PageState for FilesState {
     }
 
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active
+        self.pane.search.active || self.open_with.active
     }
 
     fn on_fs_change(&mut self, _ctx: &mut AppContext) -> Result<()> {
@@ -271,5 +361,61 @@ impl PageState for FilesState {
     ) -> Result<()> {
         self.reload();
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn key(code: KeyCode) -> KeyEvent {
+        KeyEvent::new(code, KeyModifiers::NONE)
+    }
+
+    fn ctrl(c: char) -> KeyEvent {
+        KeyEvent::new(KeyCode::Char(c), KeyModifiers::CONTROL)
+    }
+
+    fn type_str(p: &mut OpenWithPrompt, s: &str) {
+        for c in s.chars() {
+            assert_eq!(p.handle_key(key(KeyCode::Char(c))), None);
+        }
+    }
+
+    #[test]
+    fn open_with_prompt_confirms_trimmed_name_and_remembers_it() {
+        let mut p = OpenWithPrompt::default();
+        p.start();
+        assert!(p.active);
+        assert_eq!(p.input, "");
+        type_str(&mut p, " Preview ");
+        assert_eq!(
+            p.handle_key(key(KeyCode::Enter)),
+            Some("Preview".to_string())
+        );
+        assert!(!p.active);
+
+        // The last name is pre-filled next time and can be cleared with Ctrl+u.
+        p.start();
+        assert_eq!(p.input, "Preview");
+        assert_eq!(p.handle_key(ctrl('u')), None);
+        assert_eq!(p.input, "");
+        type_str(&mut p, "Xcode");
+        assert_eq!(p.handle_key(key(KeyCode::Backspace)), None);
+        assert_eq!(p.input, "Xcod");
+    }
+
+    #[test]
+    fn open_with_prompt_esc_and_empty_enter_cancel() {
+        let mut p = OpenWithPrompt::default();
+        p.start();
+        type_str(&mut p, "abc");
+        assert_eq!(p.handle_key(key(KeyCode::Esc)), None);
+        assert!(!p.active);
+
+        p.start();
+        assert_eq!(p.handle_key(key(KeyCode::Enter)), None);
+        assert!(!p.active);
+        assert_eq!(p.last, "");
     }
 }

@@ -199,6 +199,8 @@ page "files" {
             "Tab" "CyclePaneForward"
             "BackTab" "CyclePaneBackward"
             "e" "OpenEditor"
+            "o" "OpenDefault"
+            "O" "OpenWith"
         }
     }
 

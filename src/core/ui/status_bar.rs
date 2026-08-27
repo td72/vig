@@ -92,9 +92,13 @@ pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
 }
 
 fn render_search_prompt(f: &mut Frame, input: &str, area: Rect) {
-    let prompt = format!("/{}\u{2588}", input);
+    render_prompt(f, "/", input, area);
+}
+
+/// One-line input prompt in the status bar: `<label><input>█`.
+fn render_prompt(f: &mut Frame, label: &str, input: &str, area: Rect) {
     let line = Line::from(Span::styled(
-        format!(" {prompt}"),
+        format!(" {label}{input}\u{2588}"),
         Style::default().fg(Color::White),
     ));
     f.render_widget(Paragraph::new(line), area);
@@ -115,6 +119,10 @@ pub fn render_files_header(f: &mut Frame, ctx: &AppContext, files: &FilesState, 
 pub fn render_files_status_bar(f: &mut Frame, ctx: &AppContext, files: &FilesState, area: Rect) {
     if files.pane.search.active {
         render_search_prompt(f, &files.pane.search.input, area);
+        return;
+    }
+    if files.open_with.active {
+        render_prompt(f, "Open with: ", &files.open_with.input, area);
         return;
     }
     let line = if let Some(ref msg) = ctx.status_message {
