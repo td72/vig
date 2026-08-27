@@ -165,6 +165,10 @@ impl Pane<PaneEvent> for PreviewPane {
 
     fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
+        // A taller terminal lowers the maximum scroll; never leave the view blank.
+        self.scroll = self
+            .scroll
+            .min(self.line_count().saturating_sub(self.view_height as usize));
         let title = self
             .entry
             .as_ref()

@@ -9,25 +9,29 @@ use std::path::{Path, PathBuf};
 pub const PREVIEW_MAX_BYTES: u64 = 1024 * 1024;
 /// Maximum lines kept for a preview.
 pub const PREVIEW_MAX_LINES: usize = 5000;
-/// Directories never shown (their contents are never useful to browse in vig).
-const HIDDEN_DIRS: &[&str] = &[".git"];
+/// Entries never shown, whatever their type (`.git` is a directory in a normal
+/// checkout but a file in worktrees and submodules).
+const HIDDEN_NAMES: &[&str] = &[".git"];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DirEntry {
     pub name: String,
     pub path: PathBuf,
+    /// Directory (following symlinks, so symlinked directories are browsable).
     pub is_dir: bool,
+    pub is_symlink: bool,
     /// File size in bytes (0 for directories).
     pub size: u64,
 }
 
 impl DirEntry {
-    /// Display name: directories get a trailing `/`.
+    /// Display name, `ls -F` style: directories get a trailing `/`, symlinks `@`.
     pub fn display_name(&self) -> String {
-        if self.is_dir {
-            format!("{}/", self.name)
-        } else {
-            self.name.clone()
+        match (self.is_dir, self.is_symlink) {
+            (true, true) => format!("{}@/", self.name),
+            (true, false) => format!("{}/", self.name),
+            (false, true) => format!("{}@", self.name),
+            (false, false) => self.name.clone(),
         }
     }
 }
@@ -39,15 +43,23 @@ pub fn list_dir(dir: &Path) -> std::io::Result<Vec<DirEntry>> {
         .filter_map(|e| e.ok())
         .filter_map(|e| {
             let name = e.file_name().to_string_lossy().into_owned();
-            let meta = e.metadata().ok()?;
-            let is_dir = meta.is_dir();
-            if is_dir && HIDDEN_DIRS.contains(&name.as_str()) {
+            if HIDDEN_NAMES.contains(&name.as_str()) {
                 return None;
             }
+            let path = e.path();
+            let is_symlink = fs::symlink_metadata(&path).ok()?.is_symlink();
+            // Follow symlinks for the type/size; a dangling symlink is shown as a file.
+            let meta = fs::metadata(&path).ok();
+            let is_dir = meta.as_ref().is_some_and(|m| m.is_dir());
             Some(DirEntry {
-                path: e.path(),
+                path,
                 is_dir,
-                size: if is_dir { 0 } else { meta.len() },
+                is_symlink,
+                size: if is_dir {
+                    0
+                } else {
+                    meta.map_or(0, |m| m.len())
+                },
                 name,
             })
         })
@@ -91,8 +103,14 @@ fn read_text_preview(path: &Path) -> Preview {
         Ok(f) => f,
         Err(e) => return Preview::Error(e.to_string()),
     };
+    // Read one byte past the limit so a file of exactly PREVIEW_MAX_BYTES is
+    // not reported as truncated.
     let mut buf = Vec::new();
-    if let Err(e) = file.by_ref().take(PREVIEW_MAX_BYTES).read_to_end(&mut buf) {
+    if let Err(e) = file
+        .by_ref()
+        .take(PREVIEW_MAX_BYTES + 1)
+        .read_to_end(&mut buf)
+    {
         return Preview::Error(e.to_string());
     }
     if buf.is_empty() {
@@ -101,7 +119,8 @@ fn read_text_preview(path: &Path) -> Preview {
     if buf.iter().take(8192).any(|&b| b == 0) {
         return Preview::Binary;
     }
-    let mut truncated = buf.len() as u64 >= PREVIEW_MAX_BYTES;
+    let mut truncated = buf.len() as u64 > PREVIEW_MAX_BYTES;
+    buf.truncate(PREVIEW_MAX_BYTES as usize);
     let text = String::from_utf8_lossy(&buf);
     let mut lines: Vec<String> = text.lines().map(|l| l.replace('\t', "    ")).collect();
     if lines.len() > PREVIEW_MAX_LINES {
@@ -159,6 +178,53 @@ mod tests {
             .map(DirEntry::display_name)
             .collect();
         assert_eq!(names, vec!["Assets/", "src/", ".hidden", "A.txt", "b.txt"]);
+        fs::remove_dir_all(&d).unwrap();
+    }
+
+    #[test]
+    fn git_file_hidden_and_symlinks_marked() {
+        let d = tmpdir();
+        fs::write(d.join(".git"), "gitdir: ../.git/worktrees/x").unwrap();
+        fs::create_dir(d.join("real")).unwrap();
+        fs::write(d.join("file.txt"), "x").unwrap();
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink(d.join("real"), d.join("link_dir")).unwrap();
+            std::os::unix::fs::symlink(d.join("file.txt"), d.join("link_file")).unwrap();
+        }
+        let names: Vec<String> = list_dir(&d)
+            .unwrap()
+            .iter()
+            .map(DirEntry::display_name)
+            .collect();
+        assert!(!names.iter().any(|n| n.starts_with(".git")), "{names:?}");
+        #[cfg(unix)]
+        assert_eq!(names, vec!["link_dir@/", "real/", "file.txt", "link_file@"]);
+        fs::remove_dir_all(&d).unwrap();
+    }
+
+    #[test]
+    fn preview_exactly_at_limit_is_not_truncated() {
+        let d = tmpdir();
+        let exact = "a".repeat(PREVIEW_MAX_BYTES as usize);
+        fs::write(d.join("exact"), &exact).unwrap();
+        fs::write(d.join("over"), format!("{exact}b")).unwrap();
+        let entries = list_dir(&d).unwrap();
+        let by_name = |n: &str| entries.iter().find(|e| e.name == n).unwrap();
+        assert!(matches!(
+            preview(by_name("exact")),
+            Preview::Text {
+                truncated: false,
+                ..
+            }
+        ));
+        assert!(matches!(
+            preview(by_name("over")),
+            Preview::Text {
+                truncated: true,
+                ..
+            }
+        ));
         fs::remove_dir_all(&d).unwrap();
     }
 
