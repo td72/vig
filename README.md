@@ -230,7 +230,7 @@ Entries get Nerd Font icons by file type; if your terminal font is not a
 | `h` / `Esc` (preview) | Back to file list |
 | `/` `n` `N` | Search file names |
 | `e` | Open selected file in external editor |
-| `o` | Open selected entry with the OS default app (directories open in Finder / Explorer / your file manager) |
+| `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |
 | `O` | Open selected entry with an app you name (`open -a <app>` on macOS) |
 | `r` | Re-read the current directory |
 
