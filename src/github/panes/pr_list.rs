@@ -1,7 +1,7 @@
 use crate::core::pane::PaneEvent;
 use crate::github::domain::types::GhPrListItem;
 use crate::github::domain::{client, disk_cache};
-use crate::github::panes::gh_list::{GhListItem, GhListPane};
+use crate::github::panes::gh_list::{GhListItem, GhListPane, TreePos};
 use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
 use ratatui::{
@@ -19,7 +19,7 @@ impl GhListItem for GhPrListItem {
         "No pull requests"
     }
 
-    fn render_item(&self) -> ListItem<'static> {
+    fn render_item(&self, tree: &TreePos) -> ListItem<'static> {
         let (icon, icon_color) = match self.state.as_str() {
             "MERGED" => ("⊕", Color::Magenta),
             "CLOSED" => ("✓", Color::Red),
@@ -28,6 +28,7 @@ impl GhListItem for GhPrListItem {
 
         let mut spans = vec![
             Span::raw(" "),
+            Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
             Span::styled(icon, Style::default().fg(icon_color)),
             Span::raw(" "),
             Span::styled(

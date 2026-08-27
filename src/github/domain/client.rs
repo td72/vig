@@ -42,7 +42,7 @@ pub fn list_issues(limit: usize) -> Result<Vec<GhIssueListItem>, String> {
             "issue",
             "list",
             "--json",
-            "number,title,state,author,labels,createdAt",
+            "number,title,state,author,labels,createdAt,parent",
             "--limit",
             &limit.to_string(),
         ],

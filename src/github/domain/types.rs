@@ -54,6 +54,16 @@ pub struct GhIssueListItem {
     pub labels: Vec<GhLabel>,
     #[serde(rename = "createdAt")]
     pub created_at: String,
+    /// Parent issue when this is a sub-issue (absent in caches written
+    /// before the field existed).
+    #[serde(default)]
+    pub parent: Option<GhIssueRef>,
+}
+
+/// Minimal reference to another issue (e.g. a sub-issue's parent).
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct GhIssueRef {
+    pub number: u64,
 }
 
 // Issue detail
