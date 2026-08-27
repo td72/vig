@@ -64,7 +64,7 @@ Type@1ms "cat > config.kdl << 'EOF'"
 Enter
 Type@1ms `theme "Solarized (dark)"`
 Enter
-Type@1ms ``
+Type@1ms ""
 Enter
 Type@1ms `page "git" {`
 Enter
