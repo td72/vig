@@ -58,9 +58,13 @@ Type@1ms "EOF"
 Enter
 Sleep 200ms
 
-# --- The user config: sidebar on the right + a custom key ---
+# --- The user config: theme, sidebar on the right, a custom key ---
 
 Type@1ms "cat > config.kdl << 'EOF'"
+Enter
+Type@1ms `theme "Solarized (dark)"`
+Enter
+Type@1ms ``
 Enter
 Type@1ms `page "git" {`
 Enter
@@ -128,9 +132,11 @@ Type "vig --config config.kdl"
 Enter
 Sleep 3s
 
-# Custom key: 'o' opens the file in the diff view
+# Custom key: 'o' opens the selected file (main.rs) in the diff view
+Type "j"
+Sleep 800ms
 Type "o"
-Sleep 2s
+Sleep 2.5s
 
 # Help overlay reflects the custom bindings
 Type "?"

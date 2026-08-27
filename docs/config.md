@@ -35,6 +35,7 @@ Your file is a **partial override** of the defaults:
 
 | Block | Rule |
 |---|---|
+| `theme "<name>"` | Replaces the syntax highlighting theme. |
 | `app { }` | Merged per key. A key you set replaces the default binding for that key. |
 | `page "<name>" { pane "<pane>" { keys { } } }` | Merged per key, on top of the default keys (including expanded presets). |
 | `"<key>" "None"` | Removes the binding for that key. |
@@ -50,6 +51,8 @@ every pane of the page.
 
 ```kdl
 // ~/.config/vig/config.kdl
+
+theme "Solarized (dark)"   // `vig config themes` lists the choices
 
 app {
     "q" "Quit"          // quit from anywhere, not only from a pane
@@ -84,10 +87,24 @@ page "git" {
 ### Top level
 
 ```kdl
+theme "<name>"
 app { <key> <action> ... }
 page "git" { ... }
 page "github" { ... }
 ```
+
+### `theme`
+
+The syntax highlighting theme used in the diff view. Only the themes bundled
+with [syntect](https://github.com/trishume/syntect) are available; run
+`vig config themes` to list them (`*` marks the active one):
+
+`InspiredGitHub`, `Solarized (dark)`, `Solarized (light)`,
+`base16-eighties.dark` (default), `base16-mocha.dark`, `base16-ocean.dark`,
+`base16-ocean.light`
+
+Only foreground colors are taken from the theme, so the light themes are
+readable mainly on a light terminal background.
 
 ### `app`
 

@@ -47,6 +47,8 @@ enum ConfigCommands {
     Path,
     /// Print the built-in default config (copy it to start your own)
     Dump,
+    /// List the available syntax highlighting themes (`*` marks the active one)
+    Themes,
 }
 
 fn main() -> Result<()> {
@@ -89,6 +91,13 @@ fn run_config(command: ConfigCommands, explicit: Option<PathBuf>) -> Result<()> 
             }
         },
         ConfigCommands::Dump => print!("{}", Config::default_text()),
+        ConfigCommands::Themes => {
+            let active = crate::core::config::source::load(explicit)?.theme()?;
+            for name in crate::core::syntax::theme_names() {
+                let mark = if name == active { '*' } else { ' ' };
+                println!("{mark} {name}");
+            }
+        }
     }
     Ok(())
 }

@@ -161,6 +161,7 @@ pub struct GitState {
 impl GitState {
     pub fn new(cwd: &Path, cfg: &Config) -> Result<Self> {
         let page_cfg = cfg.git_page()?;
+        let theme = cfg.theme()?;
 
         // Resolve pane IDs from config (declaration order = current 0..4)
         let ids = GitPaneIds::from_config(&page_cfg);
@@ -191,7 +192,7 @@ impl GitState {
         let mut reflog = ReflogPane::new(ids.reflog, ids.branch_list, ids.git_log);
         reflog.set_keymap(reflog_km);
 
-        let mut diff_view = DiffViewPane::new(Rc::clone(&files), ids.diff_view);
+        let mut diff_view = DiffViewPane::new(Rc::clone(&files), ids.diff_view, &theme);
         diff_view.set_scroll_keymap(diff_view_km);
 
         let focused = ids.file_tree;

@@ -4,15 +4,22 @@ use std::sync::mpsc;
 
 pub struct HighlightState {
     pub highlighter: SyntaxHighlighter,
+    /// Theme name, kept so background threads can build an equivalent highlighter.
+    theme_name: String,
     pub cache: Option<HighlightCache>,
     pub(crate) bg_highlights: HashMap<String, HighlightPair>,
     pub(crate) bg_highlight_rx: Option<mpsc::Receiver<(String, HighlightPair)>>,
 }
 
 impl HighlightState {
-    pub fn new() -> Self {
+    /// `theme_name` must be one of [`crate::core::syntax::theme_names`]; the
+    /// config loader validates it, so an unknown name here falls back to the
+    /// default theme rather than failing.
+    pub fn new(theme_name: &str) -> Self {
+        let highlighter = SyntaxHighlighter::with_theme(theme_name).unwrap_or_default();
         Self {
-            highlighter: SyntaxHighlighter::new(),
+            highlighter,
+            theme_name: theme_name.to_string(),
             cache: None,
             bg_highlights: HashMap::new(),
             bg_highlight_rx: None,
@@ -71,9 +78,10 @@ impl HighlightState {
 
         let (tx, rx) = mpsc::channel();
         self.bg_highlight_rx = Some(rx);
+        let theme_name = self.theme_name.clone();
 
         std::thread::spawn(move || {
-            let highlighter = SyntaxHighlighter::new();
+            let highlighter = SyntaxHighlighter::with_theme(&theme_name).unwrap_or_default();
             for (path, left_lines, right_lines, hunk_starts) in file_data {
                 if let Some(pair) =
                     highlighter.highlight_all_lines(&path, &left_lines, &right_lines, &hunk_starts)

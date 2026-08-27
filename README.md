@@ -19,7 +19,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - Live file watching with auto-refresh
 - Open files in external editor (`$EDITOR`)
 - **GitHub View** — Browse Issues and Pull Requests (body, comments, reviews, CI status) via `gh` CLI
-- Configurable layout and key bindings via `~/.config/vig/config.kdl`
+- Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
 
 ## Installation
 
@@ -68,7 +68,7 @@ vig
 
 ## Configuration
 
-vig works out of the box. To change the layout or key bindings, drop a KDL
+vig works out of the box. To change the layout, key bindings, or highlighting theme, drop a KDL
 file at `~/.config/vig/config.kdl` (or pass `--config <path>` / set
 `$VIG_CONFIG`). Only the parts you write are overridden; everything else
 keeps its default.
@@ -77,6 +77,7 @@ keeps its default.
 
 ```kdl
 // ~/.config/vig/config.kdl
+theme "Solarized (dark)"
 page "git" {
     pane "file_tree" {
         keys {
@@ -88,8 +89,9 @@ page "git" {
 ```
 
 ```bash
-vig config path   # show which file would be used
-vig config dump   # print the built-in defaults as a starting point
+vig config path     # show which file would be used
+vig config dump     # print the built-in defaults as a starting point
+vig config themes   # list the available highlighting themes
 ```
 
 Layouts can be rearranged too (e.g. sidebar on the right). A broken config

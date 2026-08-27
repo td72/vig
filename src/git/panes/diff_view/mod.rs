@@ -73,11 +73,11 @@ pub struct DiffViewPane {
 }
 
 impl DiffViewPane {
-    pub fn new(files: Rc<Vec<FileDiff>>, pane_id: usize) -> Self {
+    pub fn new(files: Rc<Vec<FileDiff>>, pane_id: usize, theme: &str) -> Self {
         Self {
             scroll: DiffScroll::default(),
             vim: VimState::default(),
-            highlight: HighlightState::new(),
+            highlight: HighlightState::new(theme),
             content_lines_cache: None,
             current_file_idx: None,
             files,

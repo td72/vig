@@ -1,6 +1,7 @@
 //! Overlay a user KDL document on top of the built-in default document.
 //!
 //! Merge rules (see `docs/config.md`):
+//! - `theme "<name>"` — replaced.
 //! - `app { }` — merged per key; a user entry replaces the default entry with the same key.
 //! - `page "x"` — must exist in the defaults.
 //!   - `layout { }`, `tabs`, `bind` — replaced wholesale when present in the user page.
@@ -23,16 +24,27 @@ fn find_mut(doc: &mut KdlDocument, pred: impl Fn(&KdlNode) -> bool) -> Option<&m
 pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Result<()> {
     for unode in user.nodes() {
         match unode.name().value() {
+            "theme" => replace_single(default, unode),
             "app" => merge_app(default, unode)?,
             "page" => merge_page(default, unode)?,
             other => {
                 return Err(anyhow!(
-                    "unknown top-level block {other:?} (expected `app` or `page`)"
+                    "unknown top-level block {other:?} (expected `theme`, `app`, or `page`)"
                 ))
             }
         }
     }
     Ok(())
+}
+
+/// Replace the (single) node with the same name, or append it.
+fn replace_single(target: &mut KdlDocument, node: &KdlNode) {
+    let name = node.name().value();
+    let nodes = target.nodes_mut();
+    match nodes.iter_mut().find(|n| n.name().value() == name) {
+        Some(existing) => *existing = node.clone(),
+        None => nodes.push(node.clone()),
+    }
 }
 
 fn merge_app(default: &mut KdlDocument, unode: &KdlNode) -> Result<()> {
@@ -154,6 +166,7 @@ mod tests {
     use super::*;
 
     const DEFAULT: &str = r#"
+theme "dark"
 app {
     "Ctrl+c" "Quit"
     "1" "page:git"
@@ -306,6 +319,18 @@ page "git" {
     }
 
     #[test]
+    fn theme_replaced() {
+        let d = merged(r#"theme "light""#).unwrap();
+        let themes: Vec<&str> = d
+            .nodes()
+            .iter()
+            .filter(|n| n.name().value() == "theme")
+            .filter_map(arg0)
+            .collect();
+        assert_eq!(themes, vec!["light"]);
+    }
+
+    #[test]
     fn unknown_page_pane_and_blocks_fail() {
         let err = merged(r#"page "nope" { }"#).unwrap_err().to_string();
         assert!(err.contains("unknown page \"nope\""), "{err}");
@@ -313,8 +338,8 @@ page "git" {
             .unwrap_err()
             .to_string();
         assert!(err.contains("unknown pane \"nope\""), "{err}");
-        let err = merged(r#"theme "x""#).unwrap_err().to_string();
-        assert!(err.contains("unknown top-level block \"theme\""), "{err}");
+        let err = merged(r#"colors "x""#).unwrap_err().to_string();
+        assert!(err.contains("unknown top-level block \"colors\""), "{err}");
         let err = merged(r#"page "git" { pane "a" { colors { } } }"#)
             .unwrap_err()
             .to_string();

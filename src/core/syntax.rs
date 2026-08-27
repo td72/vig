@@ -118,21 +118,38 @@ contexts:
       pop: true
 "#;
 
+/// Theme used when the config does not name one.
+pub const DEFAULT_THEME: &str = "base16-eighties.dark";
+
+/// Names of the themes bundled with syntect, sorted.
+pub fn theme_names() -> Vec<String> {
+    let mut names: Vec<String> = ThemeSet::load_defaults().themes.into_keys().collect();
+    names.sort();
+    names
+}
+
+impl Default for SyntaxHighlighter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SyntaxHighlighter {
+    /// Highlighter using [`DEFAULT_THEME`].
     pub fn new() -> Self {
+        Self::with_theme(DEFAULT_THEME).expect("default theme is bundled with syntect")
+    }
+
+    /// Highlighter using the named bundled theme; `None` if no such theme exists
+    /// (see [`theme_names`]).
+    pub fn with_theme(theme_name: &str) -> Option<Self> {
+        let theme = ThemeSet::load_defaults().themes.remove(theme_name)?;
         let mut builder = SyntaxSet::load_defaults_newlines().into_builder();
         if let Ok(toml_def) = SyntaxDefinition::load_from_str(TOML_SYNTAX, true, None) {
             builder.add(toml_def);
         }
         let syntax_set = builder.build();
-        let theme_set = ThemeSet::load_defaults();
-        let theme = theme_set
-            .themes
-            .get("base16-eighties.dark")
-            .cloned()
-            .or_else(|| theme_set.themes.values().next().cloned())
-            .expect("No themes available in ThemeSet");
-        Self { syntax_set, theme }
+        Some(Self { syntax_set, theme })
     }
 
     /// Find the syntax definition for a file path by extension,
