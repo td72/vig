@@ -18,6 +18,7 @@ use crate::files::panes::preview::{PreviewAction, PreviewPane};
 use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{layout::Rect, Frame};
+use ratatui_image::picker::Picker;
 use std::path::{Path, PathBuf};
 
 /// Pane IDs resolved from the KDL config at construction time.
@@ -144,7 +145,7 @@ impl pane::PageLayout for FilesState {
 }
 
 impl FilesState {
-    pub fn new(root: &Path, cfg: &Config) -> Result<Self> {
+    pub fn new(root: &Path, cfg: &Config, picker: Option<Picker>) -> Result<Self> {
         let page_cfg = cfg.files_page()?;
         let theme = cfg.theme()?;
         let icons = cfg.icons()?;
@@ -158,7 +159,7 @@ impl FilesState {
 
         let mut list = DirListPane::new(ids.dir_list, ids.preview, root, icons);
         list.set_keymap(dir_list_km);
-        let mut preview = PreviewPane::new(ids.preview, ids.dir_list, &theme, icons);
+        let mut preview = PreviewPane::new(ids.preview, ids.dir_list, &theme, icons, picker);
         preview.set_keymap(preview_km);
         let parent = ParentDirPane::new(ids.parent_dir, root, icons);
 

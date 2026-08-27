@@ -18,6 +18,11 @@ Hide
 Type@1ms "cd $(mktemp -d)"
 Enter
 Sleep 300ms
+# VHS's xterm.js claims iTerm2 image support but does not draw it, so force
+# the unicode half-block renderer for the recording.
+Type@1ms `echo 'image-preview "halfblocks"' > ../vig-demo.kdl && export VIG_CONFIG=$PWD/../vig-demo.kdl`
+Enter
+Sleep 300ms
 Type@1ms "git init -q && git config user.email a@b.c && git config user.name demo"
 Enter
 Sleep 300ms
@@ -78,6 +83,8 @@ Enter
 
 Type@1ms "echo 'Notes go here.' > docs/notes.md"
 Enter
+Type@1ms "echo 'iVBORw0KGgoAAAANSUhEUgAAAUAAAACgCAIAAADywSLLAAACa0lEQVR42u3TMRWAMBBEwQhDRGqUIAc5KElNQ48FihTcZvZ9CTtt9K7g+jkUXHNxgAWwABbAAlgAC2CABbAAFsACWAALYIAFsAAWwAJYAAtggAWwABbAAlgAC2ABDLAAFsACWAALYAEMsAAWwAJYAAtgAQywABbAAlgAC2ABDLAAFsACWAALYAEsgAEWwAJYAAtgASyAARbAAlgAC2ABLIABFsACWAALYAEsgAH2coAFsAAWwAJYAAtggAWwABbAAlgAC2CABbAAFsACWAALYIAFsAAWwAJYAAtguTjA+mPP7MEAsMpwRRpgBaKFGWCFoIUZYEXRxRhg1XZLMsAKoYsxwOhiLIDRxRhg0cswwFqaLsYA08uwAKaXYYBFL8MA08swbwDTy7AAppdhgAUwwADTy7AABhhggEUvwwADbAADDDDAAhhggHMB79ehWZH5cfe1aUoAAwwwwAIYYIABBlgAAwwwwGKYXoABNoABZpheAQwwwACLYXoBZpheAcwwvQCLYXoBFsP0AswwvQIYY3QBFsP0Aqw1GBMFMMboCmCM0QVYJHMLsKIYYwOwimFGBWAVw4wHwCpDGgaA9btcHGABLIAFsAAWwAIYYAEsgAWwABbAAhhgASyABbAAFsACGGABLIAFsAAWwAJYAAMsgAWwABbAAlgAAyyABbAAFsACWAADLIAFsAAWwAJYAAMsgAWwABbAAlgAC2CABbAAFsACWAALYIAFsAAWwAJYAAtggAWwABbAAlgAC2CAvRxgASyABbAAFsACGGABLIAFsAAWwAIYYAEsgAWwABbAAhhgASyABbAAFsACWC+uQR6jr4JbpwAAAABJRU5ErkJggg==' | base64 -d > logo.png"
+Enter
 Type@1ms "git add -A && git commit -q -m 'initial commit'"
 Enter
 Sleep 300ms
@@ -103,8 +110,9 @@ Type "j"
 Sleep 1.2s
 Type "j"
 Sleep 1.5s
+# logo.png: images are previewed too
 Type "j"
-Sleep 1.5s
+Sleep 2.5s
 
 # Enter src/ and look at main.rs
 Type "k"
@@ -129,6 +137,8 @@ Type "h"
 Sleep 1.5s
 
 # Focus the preview of README.md, then back to the list
+Type "j"
+Sleep 600ms
 Type "j"
 Sleep 600ms
 Type "j"

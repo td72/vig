@@ -162,7 +162,34 @@ impl Config {
         cfg.app_entries()?;
         cfg.theme()?;
         cfg.icons()?;
+        cfg.image_preview()?;
         Ok(cfg)
+    }
+
+    /// How the Files view previews images (`image-preview "auto"` / `"halfblocks"` / `"none"`).
+    pub fn image_preview(&self) -> Result<crate::files::domain::image::ImagePreviewMode> {
+        use crate::files::domain::image::{ImagePreviewMode, IMAGE_PREVIEW_MODES};
+        let mode = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "image-preview")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("image-preview block missing mode argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| IMAGE_PREVIEW_MODES[0].to_string());
+        ImagePreviewMode::parse(&mode).ok_or_else(|| {
+            anyhow!(
+                "invalid {}: unknown image-preview mode {mode:?}; expected one of: {}",
+                self.describe(),
+                IMAGE_PREVIEW_MODES.join(", ")
+            )
+        })
     }
 
     /// Whether the Files view shows Nerd Font icons (`icons "nerd"` / `"none"`).
@@ -1086,6 +1113,33 @@ mod tests {
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown icons mode \"emoji\""), "{msg}");
         assert!(msg.contains("nerd, none"), "{msg}");
+    }
+
+    #[test]
+    fn image_preview_default_override_and_validation() {
+        use crate::files::domain::image::ImagePreviewMode;
+        assert_eq!(
+            Config::builtin().image_preview().unwrap(),
+            ImagePreviewMode::Auto
+        );
+        assert_eq!(
+            user(r#"image-preview "none""#)
+                .unwrap()
+                .image_preview()
+                .unwrap(),
+            ImagePreviewMode::None
+        );
+        let msg = format!(
+            "{:#}",
+            user(r#"image-preview "sixel""#)
+                .err()
+                .expect("expected an error")
+        );
+        assert!(
+            msg.contains("unknown image-preview mode \"sixel\""),
+            "{msg}"
+        );
+        assert!(msg.contains("auto, halfblocks, none"), "{msg}");
     }
 
     #[test]

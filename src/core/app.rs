@@ -260,7 +260,7 @@ mod tests {
         let cfg = Config::builtin();
         let (git_page, workdir) = crate::git::page::new_page(&cwd, &cfg).expect("git page");
         let gh_page = crate::github::page::new_page(&cfg).expect("github page");
-        let files_page = crate::files::page::new_page(&workdir, &cfg).expect("files page");
+        let files_page = crate::files::page::new_page(&workdir, &cfg, None).expect("files page");
         let pages = vec![git_page, gh_page, files_page];
 
         let ctx = AppContext {

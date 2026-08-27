@@ -7,6 +7,10 @@ theme "base16-eighties.dark"
 // File icons in the Files view: "nerd" (requires a Nerd Font) or "none".
 icons "nerd"
 
+// Image previews in the Files view: "auto" (detect Kitty / iTerm2 / Sixel,
+// fall back to unicode halfblocks), "halfblocks" (skip detection), or "none".
+image-preview "auto"
+
 app {
     "Ctrl+c" "Quit"
     "1" "page:git"

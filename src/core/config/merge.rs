@@ -24,12 +24,12 @@ fn find_mut(doc: &mut KdlDocument, pred: impl Fn(&KdlNode) -> bool) -> Option<&m
 pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Result<()> {
     for unode in user.nodes() {
         match unode.name().value() {
-            "theme" | "icons" => replace_single(default, unode),
+            "theme" | "icons" | "image-preview" => replace_single(default, unode),
             "app" => merge_app(default, unode)?,
             "page" => merge_page(default, unode)?,
             other => {
                 return Err(anyhow!(
-                "unknown top-level block {other:?} (expected `theme`, `icons`, `app`, or `page`)"
+                "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, `app`, or `page`)"
             ))
             }
         }
