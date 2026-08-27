@@ -1,4 +1,5 @@
 mod core;
+mod files;
 mod git;
 mod github;
 mod update;
@@ -113,8 +114,9 @@ fn run_tui(cfg: Config) -> Result<()> {
     let cwd = std::env::current_dir()?;
     let (git_page, workdir) = crate::git::page::new_page(&cwd, &cfg)?;
     let gh_page = crate::github::page::new_page(&cfg)?;
+    let files_page = crate::files::page::new_page(&workdir, &cfg)?;
 
-    let pages = vec![git_page, gh_page];
+    let pages = vec![git_page, gh_page, files_page];
     let page_labels = pages.iter().map(|p| p.label()).collect();
     let ctx = AppContext {
         should_quit: false,

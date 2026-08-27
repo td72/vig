@@ -158,6 +158,7 @@ impl Config {
         };
         cfg.git_page()?;
         cfg.github_page()?;
+        cfg.files_page()?;
         cfg.app_entries()?;
         cfg.theme()?;
         Ok(cfg)
@@ -201,6 +202,10 @@ impl Config {
 
     pub fn github_page(&self) -> Result<LoadedPageConfig> {
         self.page("github")
+    }
+
+    pub fn files_page(&self) -> Result<LoadedPageConfig> {
+        self.page("files")
     }
 
     fn page(&self, name: &str) -> Result<LoadedPageConfig> {
@@ -676,19 +681,20 @@ fn parse_all_pane_keys(
 }
 
 fn parse_pane_keys(pane_node: &KdlNode, pane_name: &str) -> Result<Vec<KeymapEntry>> {
-    let pane_children = pane_node
-        .children()
-        .ok_or_else(|| anyhow!("pane {pane_name:?} has no children block"))?;
+    let Some(pane_children) = pane_node.children() else {
+        return Ok(Vec::new());
+    };
 
-    let keys_node = pane_children
+    // A pane may have no bindings at all (display-only panes such as the
+    // Files page's parent directory column).
+    let Some(keys_children) = pane_children
         .nodes()
         .iter()
         .find(|n| n.name().value() == "keys")
-        .ok_or_else(|| anyhow!("pane {pane_name:?} missing keys {{ }} block"))?;
-
-    let keys_children = keys_node
-        .children()
-        .ok_or_else(|| anyhow!("pane {pane_name:?} keys block is empty"))?;
+        .and_then(|n| n.children())
+    else {
+        return Ok(Vec::new());
+    };
 
     let mut entries = Vec::new();
     for node in keys_children.nodes() {
@@ -792,6 +798,31 @@ mod tests {
                 "pane {name:?} should have id {id}"
             );
         }
+    }
+
+    #[test]
+    fn files_page_ids_keys_and_bindings() {
+        let cfg = Config::builtin().files_page().unwrap();
+        assert_eq!(cfg.name, "files");
+        assert_eq!(cfg.resolve_id("parent_dir"), Some(0));
+        assert_eq!(cfg.resolve_id("dir_list"), Some(1));
+        assert_eq!(cfg.resolve_id("preview"), Some(2));
+        assert_eq!(cfg.layout.tab_panes, vec![1, 2]);
+        assert_eq!(
+            cfg.bindings,
+            vec![("dir_list".to_string(), "preview".to_string())]
+        );
+        for name in ["view", "parent_dir", "dir_list", "preview"] {
+            assert!(
+                cfg.pane_keys.contains_key(name),
+                "missing pane keys for {name}"
+            );
+        }
+        // Display-only pane: a `pane` block without keys is allowed and empty.
+        assert!(cfg.pane_keys["parent_dir"].is_empty());
+        // App block switches to it with "3".
+        let entries = Config::builtin().app_entries().unwrap();
+        assert!(entries.contains(&("3".to_string(), "page:files".to_string())));
     }
 
     #[test]

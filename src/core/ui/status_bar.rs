@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::files::state::FilesState;
 use crate::git::state::GitState;
 use crate::github::state::GitHubState;
 use ratatui::{
@@ -96,6 +97,50 @@ fn render_search_prompt(f: &mut Frame, input: &str, area: Rect) {
         format!(" {prompt}"),
         Style::default().fg(Color::White),
     ));
+    f.render_widget(Paragraph::new(line), area);
+}
+
+pub fn render_files_header(f: &mut Frame, ctx: &AppContext, files: &FilesState, area: Rect) {
+    render_header_common(
+        f,
+        ctx,
+        vec![Span::styled(
+            format!(" {} ", files.cwd_display()),
+            Style::default().fg(Color::Black).bg(Color::Blue),
+        )],
+        area,
+    );
+}
+
+pub fn render_files_status_bar(f: &mut Frame, ctx: &AppContext, files: &FilesState, area: Rect) {
+    if files.pane.search.active {
+        render_search_prompt(f, &files.pane.search.input, area);
+        return;
+    }
+    let line = if let Some(ref msg) = ctx.status_message {
+        Line::from(Span::styled(
+            format!(" {msg}"),
+            Style::default().fg(Color::Yellow),
+        ))
+    } else {
+        let list = &files.panes.tab.list;
+        let n = list.entries.len();
+        let mut spans = vec![Span::styled(
+            format!(" {n} item{}", if n == 1 { "" } else { "s" }),
+            Style::default().fg(Color::White),
+        )];
+        if let Some(e) = files.selected() {
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(
+                e.path
+                    .strip_prefix(&files.root)
+                    .map(|p| p.to_string_lossy().into_owned())
+                    .unwrap_or_else(|_| e.path.to_string_lossy().into_owned()),
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+        Line::from(spans)
+    };
     f.render_widget(Paragraph::new(line), area);
 }
 

@@ -19,6 +19,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - Live file watching with auto-refresh
 - Open files in external editor (`$EDITOR`)
 - **GitHub View** — Browse Issues and Pull Requests (body, comments, reviews, CI status) via `gh` CLI
+- **Files View** — yazi-like three-column file browser (parent / current / preview) with syntax-highlighted previews
 - Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
 
 ## Installation
@@ -106,6 +107,7 @@ back to defaults. See [docs/config.md](docs/config.md) for the full schema.
 |-----|--------|
 | `1` | Switch to Git View |
 | `2` | Switch to GitHub View |
+| `3` | Switch to Files View |
 
 ### Pane Navigation
 
@@ -206,6 +208,26 @@ Browse GitHub Issues and Pull Requests directly within vig. Requires [GitHub CLI
 | `Ctrl+d` / `Ctrl+u` | Half page scroll (detail view) |
 | `g` / `G` | Top / Bottom |
 | `r` | Refresh data |
+
+### Files View
+
+![files demo](assets/demo-files.gif)
+
+A read-only file browser rooted at the repository. The left column shows the
+parent directory, the middle the current one, and the right a preview of the
+selected entry (syntax-highlighted text, or a listing for directories).
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` | Move selection (preview follows) |
+| `l` / `→` / `Enter` | Enter directory / focus preview |
+| `h` / `←` / `Backspace` | Parent directory |
+| `i` | Focus preview |
+| `j` / `k` / `Ctrl+d` / `Ctrl+u` (preview) | Scroll |
+| `h` / `Esc` (preview) | Back to file list |
+| `/` `n` `N` | Search file names |
+| `e` | Open selected file in external editor |
+| `r` | Re-read the current directory |
 
 ### Other
 
