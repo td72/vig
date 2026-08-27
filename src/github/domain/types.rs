@@ -101,6 +101,19 @@ pub struct GhPrListItem {
     pub review_decision: Option<String>,
     #[serde(rename = "isDraft")]
     pub is_draft: bool,
+    /// Membership of a GitHub pull request Stack (as created by `gh stack`),
+    /// merged in from a separate GraphQL query; absent in older caches.
+    #[serde(default)]
+    pub stack: Option<GhPrStackRef>,
+}
+
+/// A PR's place in a GitHub Stack: `position` is 1 at the bottom (closest to
+/// the stack's base branch) and grows towards the top.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+pub struct GhPrStackRef {
+    pub number: u64,
+    pub position: u32,
+    pub size: u32,
 }
 
 // PR detail
