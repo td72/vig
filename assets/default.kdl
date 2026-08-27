@@ -4,6 +4,9 @@
 // Syntax highlighting theme for the diff view. `vig config themes` lists the choices.
 theme "base16-eighties.dark"
 
+// File icons in the Files view: "nerd" (requires a Nerd Font) or "none".
+icons "nerd"
+
 app {
     "Ctrl+c" "Quit"
     "1" "page:git"

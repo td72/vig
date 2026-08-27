@@ -3,6 +3,7 @@ Output assets/demo-files.gif
 Require vig
 
 Set Shell "bash"
+Set FontFamily "Hack Nerd Font Mono"
 Set FontSize 16
 Set Width 1200
 Set Height 700

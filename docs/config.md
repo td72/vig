@@ -36,6 +36,7 @@ Your file is a **partial override** of the defaults:
 | Block | Rule |
 |---|---|
 | `theme "<name>"` | Replaces the syntax highlighting theme. |
+| `icons "<mode>"` | Replaces the Files view icon mode. |
 | `app { }` | Merged per key. A key you set replaces the default binding for that key. |
 | `page "<name>" { pane "<pane>" { keys { } } }` | Merged per key, on top of the default keys (including expanded presets). |
 | `"<key>" "None"` | Removes the binding for that key. |
@@ -88,6 +89,7 @@ page "git" {
 
 ```kdl
 theme "<name>"
+icons "<mode>"
 app { <key> <action> ... }
 page "git" { ... }
 page "github" { ... }
@@ -106,6 +108,16 @@ with [syntect](https://github.com/trishume/syntect) are available; run
 
 Only foreground colors are taken from the theme, so the light themes are
 readable mainly on a light terminal background.
+
+### `icons`
+
+File icons in the Files view. `"nerd"` (default) shows Nerd Font glyphs by
+file type and needs a [Nerd Font](https://www.nerdfonts.com/) in your
+terminal; `"none"` shows plain names.
+
+```kdl
+icons "none"
+```
 
 ### `app`
 
