@@ -20,6 +20,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - Open files in external editor (`$EDITOR`)
 - **GitHub View** — Browse Issues and Pull Requests (body, comments, reviews, CI status) via `gh` CLI
 - **Files View** — yazi-like three-column file browser (parent / current / preview) with syntax-highlighted previews
+- **Docker View** — Containers grouped by compose project, images, inspect summary and a live log tail via the `docker` CLI (read-only)
 - Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
 
 ## Installation
@@ -108,6 +109,7 @@ back to defaults. See [docs/config.md](docs/config.md) for the full schema.
 | `1` | Switch to Git View |
 | `2` | Switch to GitHub View |
 | `3` | Switch to Files View |
+| `4` | Switch to Docker View |
 
 ### Pane Navigation
 
@@ -241,6 +243,32 @@ only the metadata. Images over 20 MB are not decoded.
 | `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |
 | `O` | Open selected entry with an app you name (`open -a <app>` on macOS) |
 | `r` | Re-read the current directory |
+
+### Docker View
+
+![docker demo](assets/demo-docker.gif)
+
+A read-only view of the local Docker daemon, built on the `docker` CLI's JSON
+output (`docker ps`, `docker images`, `docker inspect`, `docker logs`). If
+`docker` is not installed or the daemon is not running, the view shows a notice
+instead of the panes. Containers are grouped under their compose project
+(running ones first), the detail pane shows an inspect summary for the selected
+container or image, and the logs pane tails the selected container
+(`--tail 200`, then `--since` appends every second while following). The lists
+refresh every 5 seconds. Environment variables are never displayed, and nothing
+in this view starts, stops or removes anything.
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` | Move selection (detail and logs follow) |
+| `i` / `Enter` | Focus the detail pane |
+| `l` (containers) | Focus the logs pane |
+| `Tab` / `Shift+Tab` | Cycle panes: Containers → Images → Detail → Logs |
+| `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail, logs) | Scroll (scrolling the logs pauses following) |
+| `G` (logs) | Jump to the end and resume following |
+| `/` `n` `N` | Search container / image names, or log lines |
+| `h` / `Esc` (detail, logs) | Back to the list |
+| `r` | Re-fetch containers, images, detail and logs |
 
 ### Other
 

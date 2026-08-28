@@ -44,7 +44,7 @@ Your file is a **partial override** of the defaults:
 | `page "<name>" { tabs ... }` | Replaces the tab order. |
 | `page "<name>" { bind ... }` | Replaces all select→detail bindings of that page. |
 
-Page names (`git`, `github`, `files`) and pane names are fixed — you can rearrange
+Page names (`git`, `github`, `files`, `docker`) and pane names are fixed — you can rearrange
 and rebind them, but not add or remove them. A replaced layout must place
 every pane of the page.
 
@@ -94,6 +94,7 @@ app { <key> <action> ... }
 page "git" { ... }
 page "github" { ... }
 page "files" { ... }
+page "docker" { ... }
 ```
 
 ### `theme`
@@ -126,7 +127,7 @@ Global bindings that work on every page.
 | Action | Meaning |
 |---|---|
 | `"Quit"` | Quit vig |
-| `"page:git"`, `"page:github"`, `"page:files"` | Switch to that page |
+| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"` | Switch to that page |
 | `"None"` | Unbind the key |
 
 ### Keys
@@ -195,6 +196,16 @@ that has the corresponding preset.
 | `parent_dir` | display-only (no keys) |
 | `dir_list` | `Enter`, `Parent`, `FocusPreview`, `Esc` |
 | `preview` | `Back`, `Esc` |
+
+**Page `docker`**
+
+| Pane | Actions |
+|---|---|
+| `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward` |
+| `containers` | `OpenDetail`, `FocusLogs`, `Esc` |
+| `images` | `OpenDetail`, `Esc` |
+| `detail` | `Back`, `Esc` |
+| `logs` | `Back`, `Esc` (`Nav.JumpBottom` resumes following) |
 
 **Presets**
 
