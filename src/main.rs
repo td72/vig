@@ -3,6 +3,7 @@ mod docker;
 mod files;
 mod git;
 mod github;
+mod procs;
 mod update;
 
 use crate::core::app::{App, AppContext};
@@ -121,7 +122,9 @@ fn run_tui(cfg: Config) -> Result<()> {
     let files_page = crate::files::page::new_page(&workdir, &cfg, picker)?;
     let docker_page = crate::docker::page::new_page(&cfg)?;
 
-    let pages = vec![git_page, gh_page, files_page, docker_page];
+    let procs_page = crate::procs::page::new_page(&cfg)?;
+
+    let pages = vec![git_page, gh_page, files_page, docker_page, procs_page];
     let page_labels = pages.iter().map(|p| p.label()).collect();
     let ctx = AppContext {
         should_quit: false,

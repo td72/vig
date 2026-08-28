@@ -11,12 +11,17 @@ icons "nerd"
 // fall back to unicode halfblocks), "halfblocks" (skip detection), or "none".
 image-preview "auto"
 
+// How often the Procs view re-reads processes and listening ports
+// ("2s", "500ms", ...; at least 250ms). Sampling pauses while another view is shown.
+procs-refresh-interval "2s"
+
 app {
     "Ctrl+c" "Quit"
     "1" "page:git"
     "2" "page:github"
     "3" "page:files"
     "4" "page:docker"
+    "5" "page:procs"
 }
 
 page "git" {
@@ -299,6 +304,60 @@ page "docker" {
             preset "nav"
             preset "search"
             "h" "Back"
+            "Esc" "Esc"
+        }
+    }
+}
+
+page "procs" {
+    layout {
+        split direction="horizontal" {
+            place "processes" size="55%"
+            split direction="vertical" size="min:30" {
+                place "ports" size="45%"
+                place "detail" size="min:5"
+            }
+        }
+    }
+    tabs "processes" "ports" "detail"
+    bind select="processes" detail="detail"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+        }
+    }
+
+    pane "processes" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Enter" "FocusDetail"
+            "i" "FocusDetail"
+            "l" "FocusDetail"
+            "s" "CycleSort"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "ports" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Enter" "JumpToProcess"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "detail" {
+        keys {
+            preset "nav"
+            "h" "Back"
+            "Left" "Back"
             "Esc" "Esc"
         }
     }

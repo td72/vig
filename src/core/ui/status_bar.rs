@@ -3,6 +3,7 @@ use crate::docker::state::DockerState;
 use crate::files::state::FilesState;
 use crate::git::state::GitState;
 use crate::github::state::GitHubState;
+use crate::procs::state::ProcsState;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -216,6 +217,54 @@ pub fn render_docker_status_bar(f: &mut Frame, ctx: &AppContext, dk: &DockerStat
         ));
     }
     f.render_widget(Paragraph::new(Line::from(spans)), area);
+}
+
+pub fn render_procs_header(f: &mut Frame, ctx: &AppContext, procs: &ProcsState, area: Rect) {
+    render_header_common(
+        f,
+        ctx,
+        vec![Span::styled(
+            format!(" {} ", procs.host),
+            Style::default().fg(Color::Black).bg(Color::Green),
+        )],
+        area,
+    );
+}
+
+pub fn render_procs_status_bar(f: &mut Frame, ctx: &AppContext, procs: &ProcsState, area: Rect) {
+    if procs.pane.search.active {
+        render_search_prompt(f, &procs.pane.search.input, area);
+        return;
+    }
+    let line = if let Some(ref msg) = ctx.status_message {
+        Line::from(Span::styled(
+            format!(" {msg}"),
+            Style::default().fg(Color::Yellow),
+        ))
+    } else {
+        let n = procs.panes.tab.list.len();
+        let m = procs.panes.ports.entries.len();
+        let mut spans = vec![
+            Span::styled(
+                format!(" {n} process{}", if n == 1 { "" } else { "es" }),
+                Style::default().fg(Color::White),
+            ),
+            Span::raw("  "),
+            Span::styled(
+                format!("{m} listening port{}", if m == 1 { "" } else { "s" }),
+                Style::default().fg(Color::White),
+            ),
+        ];
+        if procs.is_refreshing() {
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(
+                "↻ Updating...",
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+        Line::from(spans)
+    };
+    f.render_widget(Paragraph::new(line), area);
 }
 
 pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
