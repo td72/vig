@@ -2,8 +2,10 @@
 //! record as `<job>\t<step>\t<timestamp> <text>`; the REST endpoint
 //! (`gh api …/jobs/<id>/logs`, used while a job is still running) prints
 //! the raw `<timestamp> <text>` form. Both are turned into the flat line
-//! buffer the shared `TailPane` renders, with step boundaries and
-//! `##[group]` markers kept as section lines.
+//! buffer the shared `TailPane` renders. `##[group]` markers become section
+//! lines in both cases; step headers only exist for the `gh run view` form,
+//! since the REST form carries no step column (they appear once the job
+//! completes and the buffer is replaced by the `gh run view --log` output).
 //!
 //! Sections are encoded into the stored string with a leading marker byte so
 //! the (plain `fn`) line formatter can recognise them without side tables:
@@ -101,8 +103,8 @@ pub fn parse_job_log(raw: &str) -> Vec<String> {
         if text.starts_with("##[endgroup]") {
             continue;
         }
-        // Control characters would confuse the marker prefix; keep the
-        // payload printable.
+        // The marker byte would make a payload line look like a section
+        // header; strip just that one (other control characters pass).
         let text: String = text.chars().filter(|c| *c != MARK).collect();
         match ts {
             Some(ts) => out.push(format!("{ts} {text}")),

@@ -313,7 +313,7 @@ pub fn render_actions_status_bar(f: &mut Frame, ctx: &AppContext, ac: &ActionsSt
         if active > 0 {
             spans.push(Span::raw("  "));
             spans.push(Span::styled(
-                format!("◐ {active} in progress"),
+                format!("◐ {active} active"),
                 Style::default().fg(Color::Yellow),
             ));
         }

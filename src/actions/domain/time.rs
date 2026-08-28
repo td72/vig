@@ -23,10 +23,30 @@ pub fn parse_iso8601(iso: &str) -> Option<i64> {
     let h = num(11, 13)?;
     let mi = num(14, 16)?;
     let se = num(17, 19)?;
-    if !(1..=12).contains(&mo) || !(1..=31).contains(&d) || h > 23 || mi > 59 || se > 60 {
+    if !(1..=12).contains(&mo)
+        || !(1..=days_in_month(y, mo)).contains(&d)
+        || h > 23
+        || mi > 59
+        || se > 60
+    {
         return None;
     }
     Some(days_from_civil(y, mo, d) * 86_400 + h * 3600 + mi * 60 + se)
+}
+
+fn days_in_month(y: i64, m: i64) -> i64 {
+    match m {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        _ => {
+            let leap = (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
+            if leap {
+                29
+            } else {
+                28
+            }
+        }
+    }
 }
 
 /// Days since 1970-01-01 for a proleptic Gregorian date (Howard Hinnant's
@@ -163,5 +183,14 @@ mod tests {
     fn clock_of_extracts_hh_mm_ss() {
         assert_eq!(clock_of("2026-08-28T08:17:29.4631070Z"), Some("08:17:29"));
         assert_eq!(clock_of("not a time"), None);
+    }
+
+    #[test]
+    fn parse_iso8601_rejects_impossible_dates() {
+        assert!(parse_iso8601("2026-02-31T00:00:00Z").is_none());
+        assert!(parse_iso8601("2025-02-29T00:00:00Z").is_none());
+        assert!(parse_iso8601("2024-02-29T00:00:00Z").is_some());
+        assert!(parse_iso8601("2026-04-31T00:00:00Z").is_none());
+        assert!(parse_iso8601("2026-04-30T00:00:00Z").is_some());
     }
 }
