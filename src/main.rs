@@ -143,6 +143,7 @@ fn run_tui(cfg: Config) -> Result<()> {
         should_quit: false,
         active_page: 0,
         page_labels,
+        page_keys: Vec::new(),
         show_help: false,
         status_message: None,
         error_dialog: None,

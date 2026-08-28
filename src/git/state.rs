@@ -425,8 +425,7 @@ impl crate::core::app::PageState for GitState {
         use crate::core::keymap::help_section;
 
         let s = |k: &str, v: &str| (k.to_string(), v.to_string());
-        let mut entries = vec![s("1 / 2 / 3", "Switch view")];
-        entries.extend(self.view_keymap.help_entries());
+        let mut entries = self.view_keymap.help_entries();
         entries.push(s("v / V", "Visual / Visual Line"));
         entries.push(s("y", "Yank (copy) selection"));
         entries.extend(help_section("File Tree"));

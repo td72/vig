@@ -31,7 +31,13 @@ fn page_tab_spans(ctx: &AppContext) -> Vec<Span<'static>> {
         } else {
             inactive_style
         };
-        spans.push(Span::styled(format!(" {}:{} ", i + 1, label), style));
+        // `<key>:<label>` with the first app-keymap key that switches to the
+        // page; a page without one shows the bare label.
+        let text = match ctx.page_keys.get(i).and_then(|keys| keys.first()) {
+            Some(key) => format!(" {key}:{label} "),
+            None => format!(" {label} "),
+        };
+        spans.push(Span::styled(text, style));
     }
     spans
 }
