@@ -317,7 +317,7 @@ The preview on the right follows the selection: for a worktree it shows the
 HEAD commit (hash, author, date, subject) and its changed files; for a stash
 it shows the stash's patch, including untracked files it carries, in the same
 side-by-side diff view as the Git view — syntax highlighting, search, and
-Normal / Visual mode with yank all work there. Nothing is ever applied,
+Normal / Visual mode with yank work there. Nothing is ever applied,
 dropped, added or removed from this view.
 
 | Key | Action |

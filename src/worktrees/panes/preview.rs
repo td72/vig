@@ -15,7 +15,7 @@ use crate::git::panes::DiffViewPane;
 use crate::worktrees::domain::stash::stash_patch;
 use crate::worktrees::domain::types::{CommitSummary, Stash, Worktree};
 use crate::worktrees::domain::worktree::head_summary;
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
@@ -169,8 +169,13 @@ impl PreviewPane {
             Ok(files) => (files, None),
             Err(e) => (Vec::new(), Some(e.to_string())),
         };
+        self.set_stash(stash.name(), files, error);
+    }
+
+    /// Show an already-parsed stash patch (see [`show_stash`](Self::show_stash)).
+    fn set_stash(&mut self, name: String, files: Vec<FileDiff>, error: Option<String>) {
         self.content = Content::Stash {
-            name: stash.name(),
+            name,
             files: Rc::new(files.clone()),
             error,
         };
@@ -343,7 +348,23 @@ fn stat_line(stat: &str) -> Line<'static> {
 }
 
 impl Pane<PaneEvent> for PreviewPane {
-    crate::impl_handle_key!(keymap);
+    /// Scroll mode goes through this pane's keymap (which maps the scroll /
+    /// search / file-stepping actions onto the diff widget). Once the stash
+    /// diff has entered Normal / Visual mode, the widget owns every key —
+    /// `h j k l w b`, `v` / `V`, `y` motions, counts, `Esc` — so the event is
+    /// handed to it untouched, exactly as the Git page does for its diff view.
+    fn handle_key(&mut self, shared: &PaneShared, key: KeyEvent) -> Vec<PaneEvent> {
+        if self.intercepts_keys() {
+            return self.diff.handle_key(shared, key);
+        }
+        match self.keymap.lookup(key).cloned() {
+            Some(action) => self.execute(shared, action),
+            // Unmapped keys are not forwarded to the widget's built-in scroll
+            // keymap: the KDL `preview` block is the single source of truth
+            // for scroll-mode bindings (including keys the user unbinds).
+            None => vec![],
+        }
+    }
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
@@ -396,6 +417,103 @@ impl Pane<PaneEvent> for PreviewPane {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::search::SearchState;
+    use crate::git::panes::diff_view::DiffViewMode;
+    use crate::worktrees::domain::stash::patch_to_files;
+    use crossterm::event::KeyModifiers;
+
+    const PREVIEW: usize = 2;
+    const STASHES: usize = 1;
+
+    fn shared() -> PaneShared {
+        PaneShared {
+            focused_pane: PREVIEW,
+            previous_pane: STASHES,
+            search: SearchState::new(),
+        }
+    }
+
+    fn key(c: char) -> KeyEvent {
+        KeyEvent::new(KeyCode::Char(c), KeyModifiers::NONE)
+    }
+
+    fn esc() -> KeyEvent {
+        KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE)
+    }
+
+    /// A preview showing a one-file stash patch, as `show_stash` would.
+    fn stash_preview() -> PreviewPane {
+        let patch = concat!(
+            "diff --git a/src/lib.rs b/src/lib.rs\n",
+            "index 1111111..2222222 100644\n",
+            "--- a/src/lib.rs\n",
+            "+++ b/src/lib.rs\n",
+            "@@ -1,3 +1,3 @@\n",
+            " fn a() {}\n",
+            "-fn b() {}\n",
+            "+fn b() { todo!() }\n",
+            " fn c() {}\n",
+        );
+        let files = patch_to_files(patch.as_bytes()).unwrap();
+        let mut p = PreviewPane::new(PREVIEW, STASHES, "base16-eighties.dark");
+        p.set_stash("stash@{0}".to_string(), files, None);
+        p
+    }
+
+    #[test]
+    fn normal_and_visual_mode_keys_reach_the_diff_widget() {
+        let mut p = stash_preview();
+        let sh = shared();
+        assert!(!p.intercepts_keys());
+
+        // `i` (this pane's keymap) enters Normal mode; from then on the
+        // widget owns the keys.
+        assert!(p.handle_key(&sh, key('i')).is_empty());
+        assert_eq!(p.diff.vim.mode, DiffViewMode::Normal);
+        assert!(p.intercepts_keys());
+
+        // `j` moves the cursor (row 1 = "fn a() {}") instead of scrolling.
+        p.handle_key(&sh, key('j'));
+        assert_eq!(p.diff.vim.cursor.row, 1);
+        assert_eq!(p.diff.scroll.y, 0);
+
+        // `V` then `y` yanks the selected line and drops back to Normal mode.
+        p.handle_key(&sh, key('V'));
+        assert_eq!(p.diff.vim.mode, DiffViewMode::VisualLine);
+        let events = p.handle_key(&sh, key('y'));
+        assert!(
+            matches!(&events[..], [PaneEvent::CopyToClipboard(t)] if t == "fn a() {}"),
+            "expected a yank of the selected line"
+        );
+        assert_eq!(p.diff.vim.mode, DiffViewMode::Normal);
+
+        // `v` + `y` (character-wise) works too.
+        p.handle_key(&sh, key('v'));
+        assert_eq!(p.diff.vim.mode, DiffViewMode::Visual);
+        p.handle_key(&sh, key('l'));
+        let events = p.handle_key(&sh, key('y'));
+        assert!(matches!(&events[..], [PaneEvent::CopyToClipboard(t)] if t == "fn"));
+
+        // Esc leaves Normal mode without leaving the pane; a second Esc
+        // (Scroll mode, this pane's keymap) goes back to the stash list.
+        assert!(p.handle_key(&sh, esc()).is_empty());
+        assert_eq!(p.diff.vim.mode, DiffViewMode::Scroll);
+        assert!(!p.intercepts_keys());
+        let events = p.handle_key(&sh, esc());
+        assert!(matches!(&events[..], [PaneEvent::SetFocus(STASHES)]));
+    }
+
+    #[test]
+    fn scroll_mode_uses_the_pane_keymap_only() {
+        let mut p = stash_preview();
+        let sh = shared();
+        // `v` is not bound in Scroll mode: nothing happens, no mode change.
+        assert!(p.handle_key(&sh, key('v')).is_empty());
+        assert_eq!(p.diff.vim.mode, DiffViewMode::Scroll);
+        // Backspace (Back) returns to the list.
+        let events = p.handle_key(&sh, KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE));
+        assert!(matches!(&events[..], [PaneEvent::SetFocus(STASHES)]));
+    }
 
     fn text(line: &Line) -> String {
         line.spans.iter().map(|s| s.content.as_ref()).collect()
