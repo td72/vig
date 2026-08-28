@@ -1,4 +1,5 @@
 mod core;
+mod docker;
 mod files;
 mod git;
 mod github;
@@ -118,8 +119,9 @@ fn run_tui(cfg: Config) -> Result<()> {
     // to happen before the TUI takes over stdin/stdout.
     let picker = crate::files::domain::image::make_picker(cfg.image_preview()?);
     let files_page = crate::files::page::new_page(&workdir, &cfg, picker)?;
+    let docker_page = crate::docker::page::new_page(&cfg)?;
 
-    let pages = vec![git_page, gh_page, files_page];
+    let pages = vec![git_page, gh_page, files_page, docker_page];
     let page_labels = pages.iter().map(|p| p.label()).collect();
     let ctx = AppContext {
         should_quit: false,

@@ -16,6 +16,7 @@ app {
     "1" "page:git"
     "2" "page:github"
     "3" "page:files"
+    "4" "page:docker"
 }
 
 page "git" {
@@ -232,6 +233,72 @@ page "files" {
             preset "nav"
             "h" "Back"
             "Left" "Back"
+            "Esc" "Esc"
+        }
+    }
+}
+
+page "docker" {
+    layout {
+        split direction="horizontal" {
+            split direction="vertical" size="45%" {
+                place "containers" size="60%"
+                place "images" size="min:5"
+            }
+            split direction="vertical" size="min:30" {
+                place "detail" size="55%"
+                place "logs" size="min:5"
+            }
+        }
+    }
+    tabs "containers" "images" "detail" "logs"
+    bind select="containers" detail="detail"
+    bind select="images"     detail="detail"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+        }
+    }
+
+    pane "containers" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "OpenDetail"
+            "Enter" "OpenDetail"
+            "l" "FocusLogs"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "images" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "OpenDetail"
+            "Enter" "OpenDetail"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "detail" {
+        keys {
+            preset "nav"
+            "h" "Back"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "logs" {
+        keys {
+            preset "nav"
+            preset "search"
+            "h" "Back"
             "Esc" "Esc"
         }
     }

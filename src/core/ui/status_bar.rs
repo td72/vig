@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::docker::state::DockerState;
 use crate::files::state::FilesState;
 use crate::git::state::GitState;
 use crate::github::state::GitHubState;
@@ -150,6 +151,71 @@ pub fn render_files_status_bar(f: &mut Frame, ctx: &AppContext, files: &FilesSta
         Line::from(spans)
     };
     f.render_widget(Paragraph::new(line), area);
+}
+
+pub fn render_docker_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
+    render_header_common(
+        f,
+        ctx,
+        vec![Span::styled(
+            " Docker ",
+            Style::default()
+                .fg(Color::Black)
+                .bg(Color::Rgb(36, 150, 237)),
+        )],
+        area,
+    );
+}
+
+pub fn render_docker_status_bar(f: &mut Frame, ctx: &AppContext, dk: &DockerState, area: Rect) {
+    if dk.pane.search.active {
+        render_search_prompt(f, &dk.pane.search.input, area);
+        return;
+    }
+    if let Some(ref err) = dk.docker_error {
+        let line = Line::from(Span::styled(
+            format!(" {err}"),
+            Style::default().fg(Color::Red),
+        ));
+        f.render_widget(Paragraph::new(line), area);
+        return;
+    }
+    let (containers, running, images) = dk.counts();
+    let mut spans = Vec::new();
+    if dk.is_updating() && containers == 0 && images == 0 {
+        spans.push(Span::styled(
+            " Loading...",
+            Style::default().fg(Color::DarkGray),
+        ));
+    } else {
+        spans.push(Span::styled(
+            format!(
+                " {containers} container{} ({running} running)",
+                if containers == 1 { "" } else { "s" }
+            ),
+            Style::default().fg(Color::White),
+        ));
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            format!("{images} image{}", if images == 1 { "" } else { "s" }),
+            Style::default().fg(Color::White),
+        ));
+        if dk.is_updating() {
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(
+                "↻ Updating...",
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+    }
+    if let Some(ref msg) = ctx.status_message {
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            msg.clone(),
+            Style::default().fg(Color::Yellow),
+        ));
+    }
+    f.render_widget(Paragraph::new(Line::from(spans)), area);
 }
 
 pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {

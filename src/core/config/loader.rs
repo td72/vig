@@ -159,6 +159,7 @@ impl Config {
         cfg.git_page()?;
         cfg.github_page()?;
         cfg.files_page()?;
+        cfg.docker_page()?;
         cfg.app_entries()?;
         cfg.theme()?;
         cfg.icons()?;
@@ -261,6 +262,10 @@ impl Config {
 
     pub fn files_page(&self) -> Result<LoadedPageConfig> {
         self.page("files")
+    }
+
+    pub fn docker_page(&self) -> Result<LoadedPageConfig> {
+        self.page("docker")
     }
 
     fn page(&self, name: &str) -> Result<LoadedPageConfig> {
@@ -881,6 +886,33 @@ mod tests {
     }
 
     #[test]
+    fn docker_page_ids_keys_and_bindings() {
+        let cfg = Config::builtin().docker_page().unwrap();
+        assert_eq!(cfg.name, "docker");
+        assert_eq!(cfg.resolve_id("containers"), Some(0));
+        assert_eq!(cfg.resolve_id("images"), Some(1));
+        assert_eq!(cfg.resolve_id("detail"), Some(2));
+        assert_eq!(cfg.resolve_id("logs"), Some(3));
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2, 3]);
+        assert_eq!(
+            cfg.bindings,
+            vec![
+                ("containers".to_string(), "detail".to_string()),
+                ("images".to_string(), "detail".to_string()),
+            ]
+        );
+        for name in ["view", "containers", "images", "detail", "logs"] {
+            assert!(
+                cfg.pane_keys.contains_key(name),
+                "missing pane keys for {name}"
+            );
+        }
+        // App block switches to it with "4".
+        let entries = Config::builtin().app_entries().unwrap();
+        assert!(entries.contains(&("4".to_string(), "page:docker".to_string())));
+    }
+
+    #[test]
     fn github_pane_ids_correct() {
         let cfg = load_github_page_config().unwrap();
         let expected = [
@@ -980,7 +1012,9 @@ mod tests {
     fn user_app_keys_merge() {
         let cfg = user(r#"app { "3" "page:github"; "1" "None" }"#).unwrap();
         let entries = cfg.app_entries().unwrap();
-        let km = crate::core::keymap::build_app_keymap(&entries, &["git", "github"]).unwrap();
+        let km =
+            crate::core::keymap::build_app_keymap(&entries, &["git", "github", "files", "docker"])
+                .unwrap();
         assert!(km.lookup(key("1")).is_none());
         assert!(matches!(
             km.lookup(key("2")),
