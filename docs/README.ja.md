@@ -20,6 +20,7 @@ Git の差分をサイドバイサイドで表示する TUI ビューア。vim �
 - 外部エディタでファイルを開く（`$EDITOR`）
 - **GitHub View** — Issue と Pull Request を閲覧（本文、コメント、レビュー、CI ステータス）。`gh` CLI 使用
 - **Files View** — yazi 風の 3 カラムファイルブラウザ（親 / 現在 / プレビュー）。シンタックスハイライト付きプレビュー
+- **Docker View** — compose プロジェクトごとにまとめたコンテナ一覧、イメージ一覧、inspect サマリ、ログのライブ tail。`docker` CLI 使用（読み取り専用）
 - `~/.config/vig/config.kdl` でレイアウト・キーバインド・ハイライトテーマをカスタマイズ可能
 
 ## インストール
@@ -107,6 +108,7 @@ vig config themes   # 利用可能なハイライトテーマを一覧表示
 | `1` | Git View に切り替え |
 | `2` | GitHub View に切り替え |
 | `3` | Files View に切り替え |
+| `4` | Docker View に切り替え |
 
 ### ペイン操作
 
@@ -234,6 +236,30 @@ sub-issue は親 issue の下に、GitHub Stack ([`gh stack`](https://github.com
 | `o` | 選択中のファイル / ディレクトリを OS の既定アプリで開く (`open` / `xdg-open` / `explorer`) |
 | `O` | アプリ名を入力して選択中の項目を開く (macOS では `open -a <app>`) |
 | `r` | 現在のディレクトリを再読込 |
+
+### Docker View
+
+![docker demo](../assets/demo-docker.gif)
+
+ローカルの Docker デーモンを読み取り専用で閲覧するビューです。`docker` CLI の JSON 出力
+(`docker ps` / `docker images` / `docker inspect` / `docker logs`) だけを使います。`docker` が
+インストールされていない、またはデーモンが起動していない場合はペインの代わりに通知を表示します。
+コンテナは compose プロジェクトごとにまとめて表示され（実行中が先頭）、詳細ペインには選択中の
+コンテナ / イメージの inspect サマリ、ログペインには選択中コンテナのログ (`--tail 200` のあと
+follow 中は毎秒 `--since` で追記) が表示されます。一覧は 5 秒ごとに更新されます。
+環境変数は決して表示されず、このビューがコンテナを起動・停止・削除することもありません。
+
+| キー | 操作 |
+|------|------|
+| `j` / `k` | 選択移動（詳細とログが追従） |
+| `i` / `Enter` | 詳細ペインにフォーカス |
+| `l`（コンテナ一覧） | ログペインにフォーカス |
+| `Tab` / `Shift+Tab` | ペイン切り替え: Containers → Images → Detail → Logs |
+| `j` / `k` / `Ctrl+d` / `Ctrl+u`（詳細・ログ） | スクロール（ログをスクロールすると follow が一時停止） |
+| `G`（ログ） | 末尾へ移動して follow を再開 |
+| `/` `n` `N` | コンテナ / イメージ名、またはログ行を検索 |
+| `h` / `Esc`（詳細・ログ） | 一覧に戻る |
+| `r` | コンテナ・イメージ・詳細・ログを再取得 |
 
 ### その他
 

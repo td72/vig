@@ -269,7 +269,8 @@ mod tests {
         let (git_page, workdir) = crate::git::page::new_page(&cwd, &cfg).expect("git page");
         let gh_page = crate::github::page::new_page(&cfg).expect("github page");
         let files_page = crate::files::page::new_page(&workdir, &cfg, None).expect("files page");
-        let pages = vec![git_page, gh_page, files_page];
+        let docker_page = crate::docker::page::new_page(&cfg).expect("docker page");
+        let pages = vec![git_page, gh_page, files_page, docker_page];
 
         let ctx = AppContext {
             should_quit: false,
@@ -296,6 +297,7 @@ mod tests {
         assert_eq!(look("1"), Some(AppAction::SwitchPage(0)));
         assert_eq!(look("2"), Some(AppAction::SwitchPage(1)));
         assert_eq!(look("3"), Some(AppAction::SwitchPage(2)));
+        assert_eq!(look("4"), Some(AppAction::SwitchPage(3)));
         assert_eq!(look("Ctrl+c"), Some(AppAction::Quit));
     }
 }
