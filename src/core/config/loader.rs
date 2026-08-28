@@ -21,13 +21,10 @@ const MIN_PROCS_REFRESH_MS: u64 = 250;
 /// [`MIN_PROCS_REFRESH_MS`]. `None` for anything else.
 pub fn parse_interval(s: &str) -> Option<Duration> {
     let s = s.trim();
-    let (num, per_unit_ms) = if let Some(n) = s.strip_suffix("ms") {
-        (n, 1.0)
-    } else if let Some(n) = s.strip_suffix('s') {
-        (n, 1000.0)
-    } else {
-        return None;
-    };
+    let (num, per_unit_ms) = s
+        .strip_suffix("ms")
+        .map(|n| (n, 1.0))
+        .or_else(|| s.strip_suffix('s').map(|n| (n, 1000.0)))?;
     let value: f64 = num.trim().parse().ok()?;
     if !value.is_finite() || value <= 0.0 {
         return None;
