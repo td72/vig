@@ -4,6 +4,7 @@ use crate::files::state::FilesState;
 use crate::git::state::GitState;
 use crate::github::state::GitHubState;
 use crate::procs::state::ProcsState;
+use crate::worktrees::state::WorktreesState;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -263,6 +264,80 @@ pub fn render_procs_status_bar(f: &mut Frame, ctx: &AppContext, procs: &ProcsSta
                 "↻ Updating...",
                 Style::default().fg(Color::DarkGray),
             ));
+        }
+        Line::from(spans)
+    };
+    f.render_widget(Paragraph::new(line), area);
+}
+
+pub fn render_worktrees_header(f: &mut Frame, ctx: &AppContext, wt: &WorktreesState, area: Rect) {
+    let current = wt
+        .panes
+        .worktrees
+        .items
+        .iter()
+        .find(|w| w.is_current)
+        .map(|w| w.display_path.clone())
+        .unwrap_or_else(|| "Worktrees".to_string());
+    render_header_common(
+        f,
+        ctx,
+        vec![Span::styled(
+            format!(" {current} "),
+            Style::default().fg(Color::Black).bg(Color::Green),
+        )],
+        area,
+    );
+}
+
+pub fn render_worktrees_status_bar(
+    f: &mut Frame,
+    ctx: &AppContext,
+    wt: &WorktreesState,
+    area: Rect,
+) {
+    if wt.pane.search.active {
+        render_search_prompt(f, &wt.pane.search.input, area);
+        return;
+    }
+    let line = if let Some(ref msg) = ctx.status_message {
+        Line::from(Span::styled(
+            format!(" {msg}"),
+            Style::default().fg(Color::Yellow),
+        ))
+    } else if let Some(ref err) = wt.error {
+        Line::from(Span::styled(
+            format!(" {err}"),
+            Style::default().fg(Color::Red),
+        ))
+    } else {
+        let n = wt.panes.worktrees.items.len();
+        let m = wt.panes.stashes.items.len();
+        let mut spans = vec![
+            Span::styled(
+                format!(" {n} worktree{}", if n == 1 { "" } else { "s" }),
+                Style::default().fg(Color::White),
+            ),
+            Span::raw("  "),
+            Span::styled(
+                format!("{m} stash{}", if m == 1 { "" } else { "es" }),
+                Style::default().fg(Color::White),
+            ),
+        ];
+        let ids = wt.panes.ids;
+        let detail = if wt.pane.focused_pane == ids.stashes {
+            wt.panes.stashes.selected().map(|s| s.message.clone())
+        } else if wt.pane.focused_pane == ids.worktrees {
+            wt.panes
+                .worktrees
+                .selected()
+                .map(|w| w.path.to_string_lossy().into_owned())
+        } else {
+            None
+        };
+        if let Some(detail) = detail.filter(|d| !d.is_empty()) {
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(detail, Style::default().fg(Color::DarkGray)));
         }
         Line::from(spans)
     };

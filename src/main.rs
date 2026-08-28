@@ -5,6 +5,7 @@ mod git;
 mod github;
 mod procs;
 mod update;
+mod worktrees;
 
 use crate::core::app::{App, AppContext};
 use crate::core::config::source::ConfigSource;
@@ -121,10 +122,18 @@ fn run_tui(cfg: Config) -> Result<()> {
     let picker = crate::files::domain::image::make_picker(cfg.image_preview()?);
     let files_page = crate::files::page::new_page(&workdir, &cfg, picker)?;
     let docker_page = crate::docker::page::new_page(&cfg)?;
+    let worktrees_page = crate::worktrees::page::new_page(&workdir, &cfg)?;
 
     let procs_page = crate::procs::page::new_page(&cfg)?;
 
-    let pages = vec![git_page, gh_page, files_page, docker_page, procs_page];
+    let pages = vec![
+        git_page,
+        gh_page,
+        files_page,
+        docker_page,
+        procs_page,
+        worktrees_page,
+    ];
     let page_labels = pages.iter().map(|p| p.label()).collect();
     let ctx = AppContext {
         should_quit: false,
