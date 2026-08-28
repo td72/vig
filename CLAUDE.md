@@ -62,12 +62,13 @@ Use gitmoji prefix: `✨` new feature, `🐛` bug fix, `🩹` minor fix, `♻️
 
 ### Key Architecture
 
-- `src/main.rs` — CLI, event loop, page registration (`pages = vec![git, github, files, docker]`)
+- `src/main.rs` — CLI, event loop, page registration (`pages = vec![git, github, files, docker, procs]`)
 - `src/core/` — Page-agnostic framework: `app.rs` (`App`, `AppContext`, `PageState` trait), `pane.rs` (`Pane`, `PaneSet`, `PaneShared`, event dispatch), `layout.rs`, `keymap.rs`, `search.rs`, `tab.rs`, `tree.rs` (`nest_by` tree layout), `config/` (KDL loader / merge), `ui/` (status bar, help overlay, confirm dialog, `tail_pane.rs` log tail component)
 - `src/git/` — Git page: `domain/` (repository, diff, watcher), `panes/` (file tree, branch list, reflog, git log, diff view), `state.rs`
 - `src/github/` — GitHub page (`gh` CLI): issue / PR lists with detail views, disk cache
 - `src/files/` — Files page: yazi-like parent / current / preview columns
 - `src/docker/` — Docker page (`docker` CLI, read-only): containers grouped by compose project, images, inspect summary, log tail
+- `src/procs/` — Procs page (`sysinfo` + `lsof` / `ss`, read-only): process tree, listening ports, process detail
 - `assets/default.kdl` — Built-in config: every page's layout, tabs, bindings and keys live here
 
 Each page follows the same shape: `page.rs` (`new_page(...) -> Result<Page>`), `state.rs` (the `PageState` impl owning a `PaneShared` and a `PaneSet` of panes), `panes/` (one `Pane` impl per pane), `domain/` (data fetching / parsing, no UI).
@@ -84,5 +85,5 @@ Use the Docker page (`src/docker/`) as the template. Checklist:
 6. **Background work** — an `mpsc` channel of a `<Page>BgMessage` enum, fetched on worker threads and drained in `drain_background()`; lazy-initialize on the first `on_activate`. External CLIs are detected on first use and a "not available" notice replaces the panes when missing.
 7. **Help** — `help_bindings()` starts with `"1 / 2 / 3 / 4"` (update every page's view-switch entry when the page count changes) followed by the `view` keymap and one `help_section` per pane.
 8. **Docs** — a Features bullet, a `| n |` row in View Switching and a `### <Page> View` key table in both `README.md` and `docs/README.ja.md`; the page and its actions in `docs/config.md`.
-9. **Demo** — `tape/demo-<page>.tape` + `assets/demo-<page>.gif`, a `[tasks."demo:<page>"]` entry in `mise.toml` added to `demo:all`, recorded with `mise run demo:<page>`.
+9. **Demo** — `tape/demo-<page>.tape` + `assets/demo-<page>.gif`, a `[tasks."demo:<page>"]` entry in `mise.toml` added to `demo:all`, recorded with `mise run demo:<page>`. Recordings must not show the recording machine (no hostname, real processes or private paths); the Procs tape records with `VIG_PROCS_ROOT_PID` so only synthetic demo processes appear.
 10. **Read-only** — only inspecting commands; nothing that mutates the system.

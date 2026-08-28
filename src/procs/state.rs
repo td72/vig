@@ -2,6 +2,12 @@
 //! their owners, and a per-process detail. Read-only by design — nothing
 //! here sends a signal or touches a process, and environment variables are
 //! never read.
+//!
+//! Recording / test hook: when `VIG_PROCS_ROOT_PID=<pid>` is set (read once
+//! at page creation, never shown), the page only lists that pid and its
+//! descendants, and the ports pane only lists ports owned by them. The demo
+//! tape uses it so a GIF shows synthetic processes rather than the machine
+//! that recorded it. It is not a user-facing option.
 
 use crate::core::app::{AppContext, PageState};
 use crate::core::config::{Config, LoadedPageConfig};
@@ -21,8 +27,19 @@ use crate::procs::panes::processes::{ProcessesAction, ProcessesPane};
 use anyhow::Result;
 use crossterm::event::KeyEvent;
 use ratatui::{layout::Rect, Frame};
+use std::collections::HashSet;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
+
+/// Environment variable naming the pid whose subtree is the whole view.
+const ROOT_PID_ENV: &str = "VIG_PROCS_ROOT_PID";
+
+/// `VIG_PROCS_ROOT_PID` as a pid; unset, empty or non-numeric means "all".
+fn root_pid_from_env() -> Option<u32> {
+    std::env::var(ROOT_PID_ENV)
+        .ok()
+        .and_then(|v| v.trim().parse().ok())
+}
 
 /// Pane IDs resolved from the KDL config at construction time.
 #[derive(Debug, Clone, Copy)]
@@ -83,8 +100,13 @@ pub enum ProcsBgMessage {
 pub struct ProcsState {
     pub pane: PaneShared,
     pub panes: ProcsPanes,
-    /// Shown in the header.
-    pub host: String,
+    /// `VIG_PROCS_ROOT_PID`: restrict the view to this pid's subtree.
+    root_pid: Option<u32>,
+    /// Pids shown after the `root_pid` filter (every pid when unset); the
+    /// port list is restricted to owners in this set.
+    visible_pids: HashSet<u32>,
+    /// The last port list as fetched, so a later snapshot can re-filter it.
+    last_ports: Option<Result<Vec<PortEntry>, String>>,
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
     bg_rx: Option<mpsc::Receiver<ProcsBgMessage>>,
@@ -148,7 +170,9 @@ impl ProcsState {
                 ports,
                 ids,
             },
-            host: sysinfo::System::host_name().unwrap_or_else(|| "localhost".to_string()),
+            root_pid: root_pid_from_env(),
+            visible_pids: HashSet::new(),
+            last_ports: None,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
             bg_rx: None,
@@ -213,17 +237,43 @@ impl ProcsState {
         }
         for msg in messages {
             match msg {
-                ProcsBgMessage::Snapshot(procs) => {
+                ProcsBgMessage::Snapshot(mut procs) => {
                     self.snapshot_pending = false;
+                    if let Some(root) = self.root_pid {
+                        snapshot::retain_subtree(&mut procs, root);
+                        self.visible_pids = procs.iter().map(|p| p.pid).collect();
+                    }
                     self.panes.tab.list.apply_snapshot(procs);
+                    // The owners changed, so the port list may too.
+                    if self.root_pid.is_some() {
+                        if let Some(ports) = self.last_ports.clone() {
+                            self.apply_ports(ports);
+                        }
+                    }
                 }
                 ProcsBgMessage::Ports(result) => {
                     self.ports_pending = false;
-                    self.panes.ports.apply(result);
+                    if self.root_pid.is_some() {
+                        self.last_ports = Some(result.clone());
+                    }
+                    self.apply_ports(result);
                 }
             }
         }
         self.panes.sync_detail();
+    }
+
+    /// Hand a port list to the pane, dropping ports outside the root
+    /// subtree when `VIG_PROCS_ROOT_PID` is set.
+    fn apply_ports(&mut self, result: Result<Vec<PortEntry>, String>) {
+        let result = match (self.root_pid, result) {
+            (Some(_), Ok(mut entries)) => {
+                entries.retain(|e| e.pid.is_some_and(|pid| self.visible_pids.contains(&pid)));
+                Ok(entries)
+            }
+            (_, result) => result,
+        };
+        self.panes.ports.apply(result);
     }
 
     fn process_events(
@@ -311,7 +361,7 @@ impl PageState for ProcsState {
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let frame = split_page_frame(area);
-        status_bar::render_procs_header(f, ctx, self, frame.header);
+        status_bar::render_procs_header(f, ctx, frame.header);
         pane::render_page_content(self, f, ctx, frame.content);
         status_bar::render_procs_status_bar(f, ctx, self, frame.status_bar);
     }

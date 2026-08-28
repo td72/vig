@@ -6,6 +6,7 @@
 //! is not part of the refresh kind) — the page shows command lines only.
 
 use crate::procs::domain::types::ProcessInfo;
+use std::collections::HashSet;
 use std::sync::mpsc;
 use std::time::Duration;
 use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind, Users};
@@ -84,6 +85,37 @@ impl Sampler {
     }
 }
 
+/// Pids of `root` and everything below it (transitively, by ppid). Empty
+/// when `root` is not in `procs`. Used by the `VIG_PROCS_ROOT_PID` hook so
+/// a recording only shows processes started for it.
+pub fn subtree_pids(procs: &[ProcessInfo], root: u32) -> HashSet<u32> {
+    let mut keep = HashSet::new();
+    if !procs.iter().any(|p| p.pid == root) {
+        return keep;
+    }
+    keep.insert(root);
+    // Each pass adopts the children of what is already kept; the number of
+    // passes is bounded by the tree depth.
+    loop {
+        let before = keep.len();
+        for p in procs {
+            if p.pid != root && p.ppid.is_some_and(|pp| keep.contains(&pp)) {
+                keep.insert(p.pid);
+            }
+        }
+        if keep.len() == before {
+            break;
+        }
+    }
+    keep
+}
+
+/// Keep only `root` and its descendants.
+pub fn retain_subtree(procs: &mut Vec<ProcessInfo>, root: u32) {
+    let keep = subtree_pids(procs, root);
+    procs.retain(|p| keep.contains(&p.pid));
+}
+
 /// Start the sampler thread. Every `()` received on the returned sender
 /// produces one snapshot on `out`; the thread ends when the sender is
 /// dropped. The first request waits for the CPU baseline to settle.
@@ -108,6 +140,60 @@ pub fn spawn_worker<M: Send + 'static>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::procs::domain::types::proc;
+
+    fn pids(procs: &[ProcessInfo]) -> Vec<u32> {
+        procs.iter().map(|p| p.pid).collect()
+    }
+
+    #[test]
+    fn subtree_keeps_root_and_transitive_children_only() {
+        // 1 ─ 10 ─ 100 ─ 1000        (10 is the root of interest)
+        //   └ 20 ─ 200
+        // 10 ─ 101
+        // 5 orphan (ppid None), 999 with a missing parent
+        let procs = vec![
+            proc(1, None, 0.0, 0),
+            proc(10, Some(1), 0.0, 0),
+            proc(100, Some(10), 0.0, 0),
+            proc(1000, Some(100), 0.0, 0),
+            proc(101, Some(10), 0.0, 0),
+            proc(20, Some(1), 0.0, 0),
+            proc(200, Some(20), 0.0, 0),
+            proc(5, None, 0.0, 0),
+            proc(999, Some(4242), 0.0, 0),
+        ];
+        let keep = subtree_pids(&procs, 10);
+        assert_eq!(keep, HashSet::from([10, 100, 1000, 101]));
+
+        let mut filtered = procs.clone();
+        retain_subtree(&mut filtered, 10);
+        assert_eq!(pids(&filtered), [10, 100, 1000, 101]);
+
+        // Order of appearance does not matter: a child listed before its
+        // parent is still adopted.
+        let mut reversed = procs.clone();
+        reversed.reverse();
+        retain_subtree(&mut reversed, 10);
+        assert_eq!(pids(&reversed), [101, 1000, 100, 10]);
+    }
+
+    #[test]
+    fn subtree_of_unknown_root_is_empty() {
+        let mut procs = vec![proc(1, None, 0.0, 0), proc(2, Some(1), 0.0, 0)];
+        assert!(subtree_pids(&procs, 77).is_empty());
+        retain_subtree(&mut procs, 77);
+        assert!(procs.is_empty());
+    }
+
+    #[test]
+    fn subtree_ignores_a_process_that_claims_to_be_its_own_parent() {
+        // pid 0 / launchd-style rows may report ppid == pid; that must not
+        // loop forever or pull the root's siblings in.
+        let procs = vec![proc(0, Some(0), 0.0, 0), proc(3, Some(0), 0.0, 0)];
+        assert_eq!(subtree_pids(&procs, 0), HashSet::from([0, 3]));
+        assert_eq!(subtree_pids(&procs, 3), HashSet::from([3]));
+    }
 
     #[test]
     fn snapshot_contains_this_process_with_its_parent() {

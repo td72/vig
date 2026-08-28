@@ -219,12 +219,14 @@ pub fn render_docker_status_bar(f: &mut Frame, ctx: &AppContext, dk: &DockerStat
     f.render_widget(Paragraph::new(Line::from(spans)), area);
 }
 
-pub fn render_procs_header(f: &mut Frame, ctx: &AppContext, procs: &ProcsState, area: Rect) {
+pub fn render_procs_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
+    // Deliberately no hostname: the header must not leak machine names
+    // into screenshots and recordings.
     render_header_common(
         f,
         ctx,
         vec![Span::styled(
-            format!(" {} ", procs.host),
+            " Procs ",
             Style::default().fg(Color::Black).bg(Color::Green),
         )],
         area,
