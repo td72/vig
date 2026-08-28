@@ -62,6 +62,11 @@ run = "PATH=$PWD/target/release:$PATH vhs tape/demo-docker.tape"
 depends = ["demo:build"]
 description = "Record Docker view demo GIF (requires a running Docker daemon)"
 
+[tasks."demo:procs"]
+run = "PATH=$PWD/target/release:$PATH vhs tape/demo-procs.tape"
+depends = ["demo:build"]
+description = "Record Procs view demo GIF"
+
 [tasks."demo:all"]
-depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr", "demo:commit-log", "demo:config", "demo:files", "demo:docker"]
+depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr", "demo:commit-log", "demo:config", "demo:files", "demo:docker", "demo:procs"]
 description = "Record all demo GIFs"
