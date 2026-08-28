@@ -442,9 +442,10 @@ pub fn container_lines(c: &ContainerInspect) -> Vec<Line<'static>> {
     }
 
     lines.push(Line::default());
-    let ports = c.network_settings.ports.clone().unwrap_or_default();
+    let empty_ports = Default::default();
+    let ports = c.network_settings.ports.as_ref().unwrap_or(&empty_ports);
     lines.push(section(&format!("Ports ({})", ports.len())));
-    for (port, bindings) in &ports {
+    for (port, bindings) in ports {
         match bindings {
             Some(b) if !b.is_empty() => {
                 for pb in b {
@@ -456,9 +457,14 @@ pub fn container_lines(c: &ContainerInspect) -> Vec<Line<'static>> {
     }
 
     lines.push(Line::default());
-    let networks = c.network_settings.networks.clone().unwrap_or_default();
+    let empty_networks = Default::default();
+    let networks = c
+        .network_settings
+        .networks
+        .as_ref()
+        .unwrap_or(&empty_networks);
     lines.push(section(&format!("Networks ({})", networks.len())));
-    for (name, n) in &networks {
+    for (name, n) in networks {
         let ip = if n.ip_address.is_empty() {
             "-".to_string()
         } else {
