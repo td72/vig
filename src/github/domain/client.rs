@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::process::Command;
 
 /// Run a `gh` command and return its stdout on success.
-fn run_gh(args: &[&str], context: &str) -> Result<Vec<u8>, String> {
+pub(crate) fn run_gh(args: &[&str], context: &str) -> Result<Vec<u8>, String> {
     let output = Command::new("gh")
         .args(args)
         .output()
@@ -17,7 +17,10 @@ fn run_gh(args: &[&str], context: &str) -> Result<Vec<u8>, String> {
 }
 
 /// Run a `gh` command and parse the JSON output.
-fn run_gh_json<T: serde::de::DeserializeOwned>(args: &[&str], context: &str) -> Result<T, String> {
+pub(crate) fn run_gh_json<T: serde::de::DeserializeOwned>(
+    args: &[&str],
+    context: &str,
+) -> Result<T, String> {
     let stdout = run_gh(args, context)?;
     serde_json::from_slice(&stdout).map_err(|e| format!("JSON parse error: {e}"))
 }

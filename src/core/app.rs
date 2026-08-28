@@ -271,6 +271,7 @@ mod tests {
         let files_page = crate::files::page::new_page(&workdir, &cfg, None).expect("files page");
         let docker_page = crate::docker::page::new_page(&cfg).expect("docker page");
         let procs_page = crate::procs::page::new_page(&cfg).expect("procs page");
+        let actions_page = crate::actions::page::new_page(&cfg).expect("actions page");
         let worktrees_page =
             crate::worktrees::page::new_page(&workdir, &cfg).expect("worktrees page");
         let pages = vec![
@@ -279,9 +280,11 @@ mod tests {
             files_page,
             docker_page,
             procs_page,
+            actions_page,
             worktrees_page,
         ];
         let procs_idx = pages.iter().position(|p| p.id() == "procs").unwrap();
+        let actions_idx = pages.iter().position(|p| p.id() == "actions").unwrap();
         let worktrees_idx = pages.iter().position(|p| p.id() == "worktrees").unwrap();
 
         let ctx = AppContext {
@@ -311,6 +314,7 @@ mod tests {
         assert_eq!(look("3"), Some(AppAction::SwitchPage(2)));
         assert_eq!(look("4"), Some(AppAction::SwitchPage(3)));
         assert_eq!(look("5"), Some(AppAction::SwitchPage(procs_idx)));
+        assert_eq!(look("6"), Some(AppAction::SwitchPage(actions_idx)));
         assert_eq!(look("7"), Some(AppAction::SwitchPage(worktrees_idx)));
         assert_eq!(look("Ctrl+c"), Some(AppAction::Quit));
     }

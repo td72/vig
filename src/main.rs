@@ -1,3 +1,4 @@
+mod actions;
 mod core;
 mod docker;
 mod files;
@@ -126,12 +127,15 @@ fn run_tui(cfg: Config) -> Result<()> {
 
     let procs_page = crate::procs::page::new_page(&cfg)?;
 
+    let actions_page = crate::actions::page::new_page(&cfg)?;
+
     let pages = vec![
         git_page,
         gh_page,
         files_page,
         docker_page,
         procs_page,
+        actions_page,
         worktrees_page,
     ];
     let page_labels = pages.iter().map(|p| p.label()).collect();

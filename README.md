@@ -22,6 +22,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - **Files View** — yazi-like three-column file browser (parent / current / preview) with syntax-highlighted previews
 - **Docker View** — Containers grouped by compose project, images, inspect summary and a live log tail via the `docker` CLI (read-only)
 - **Procs View** — read-only process tree with CPU / memory, listening ports and their owners, and a per-process detail
+- **Actions View** — GitHub Actions workflow runs, their jobs and steps, and the job log via `gh run` (read-only, no rerun / cancel)
 - **Worktrees View** — git worktrees and stashes at a glance, with the HEAD commit or the stash diff (side-by-side) in a preview pane
 - Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
 
@@ -113,6 +114,7 @@ back to defaults. See [docs/config.md](docs/config.md) for the full schema.
 | `3` | Switch to Files View |
 | `4` | Switch to Docker View |
 | `5` | Switch to Procs View |
+| `6` | Switch to Actions View |
 | `7` | Switch to Worktrees View |
 
 ### Pane Navigation
@@ -302,6 +304,35 @@ view is shown (`procs-refresh-interval` in the config) and on `r`.
 | `h` / `Esc` (detail) | Back to the process list |
 | `r` | Refresh now |
 
+### Actions View
+
+![actions demo](assets/demo-actions.gif)
+
+A read-only view of the repository's GitHub Actions, built on the `gh` CLI
+(`gh run list`, `gh run view --json jobs`, `gh run view --log --job`). If `gh`
+is not installed or not authenticated, the view shows a notice instead of the
+panes. The runs pane lists the latest 50 workflow runs with their status,
+workflow, run number, branch, event, duration (elapsed while running) and age;
+while any run is queued or in progress the list refreshes every 5 seconds. The
+jobs pane shows the selected run's jobs with their steps nested underneath
+(failed steps in red), and the log pane shows one job's log with step
+boundaries and `##[group]` markers rendered as section lines. Logs of jobs
+that are still running are polled every 5 seconds and followed like a tail.
+Nothing in this view reruns, cancels or deletes anything.
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` | Move selection (jobs follow the selected run) |
+| `i` / `Enter` (runs) | Focus the jobs pane |
+| `i` / `Enter` (jobs) | Show the job's log (a step row scrolls to that step) |
+| `o` | Open the run / job in the browser |
+| `Tab` / `Shift+Tab` | Cycle panes: Runs → Jobs → Log |
+| `j` / `k` / `Ctrl+d` / `Ctrl+u` (log) | Scroll (pauses following for a running job) |
+| `G` (log) | Jump to the end and resume following |
+| `]` / `[` (log) | Next / previous failed step |
+| `/` `n` `N` | Search workflow / branch / event, job and step names, or log lines |
+| `h` / `Esc` (jobs, log) | Back to the previous pane |
+| `r` | Re-fetch runs, jobs and the log |
 ### Worktrees View
 
 ![worktrees demo](assets/demo-worktrees.gif)
