@@ -22,6 +22,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - **Files View** — yazi-like three-column file browser (parent / current / preview) with syntax-highlighted previews
 - **Docker View** — Containers grouped by compose project, images, inspect summary and a live log tail via the `docker` CLI (read-only)
 - **Procs View** — read-only process tree with CPU / memory, listening ports and their owners, and a per-process detail
+- **Worktrees View** — git worktrees and stashes at a glance, with the HEAD commit or the stash diff (side-by-side) in a preview pane
 - Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
 
 ## Installation
@@ -112,6 +113,7 @@ back to defaults. See [docs/config.md](docs/config.md) for the full schema.
 | `3` | Switch to Files View |
 | `4` | Switch to Docker View |
 | `5` | Switch to Procs View |
+| `7` | Switch to Worktrees View |
 
 ### Pane Navigation
 
@@ -299,6 +301,37 @@ view is shown (`procs-refresh-interval` in the config) and on `r`.
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |
 | `h` / `Esc` (detail) | Back to the process list |
 | `r` | Refresh now |
+
+### Worktrees View
+
+![worktrees demo](assets/demo-worktrees.gif)
+
+A read-only overview of the repository's worktrees and stashes. The top-left
+pane lists the worktrees (`git worktree list`) with their path — relative to
+the main worktree where possible — the checked-out branch (or a detached
+HEAD), and flags such as `[main]`, `[locked]`, `[prunable]` or `[bare]`; the
+worktree vig is running in is marked with `*`. The bottom-left pane lists the
+stashes (`stash@{n}`, message, the branch they were made on and how long ago).
+
+The preview on the right follows the selection: for a worktree it shows the
+HEAD commit (hash, author, date, subject) and its changed files; for a stash
+it shows the stash's patch, including untracked files it carries, in the same
+side-by-side diff view as the Git view — syntax highlighting, search, and
+Normal / Visual mode with yank all work there. Nothing is ever applied,
+dropped, added or removed from this view.
+
+| Key | Action |
+|-----|--------|
+| `Tab` / `Shift+Tab` | Cycle panes: Worktrees → Stashes → Preview |
+| `j` / `k` | Move selection (preview follows) |
+| `i` / `l` / `Enter` | Focus the preview |
+| `j` / `k` / `Ctrl+d` / `Ctrl+u` (preview) | Scroll |
+| `h` / `l` (preview) | Scroll the diff horizontally |
+| `[` / `]` (preview) | Previous / next file in a multi-file stash |
+| `i` (preview) | Normal mode in the stash diff (`v` / `V` / `y` as in the Git view) |
+| `Esc` / `Backspace` (preview) | Back to the list |
+| `/` `n` `N` | Search paths / branches (worktrees), messages / branches (stashes), or the diff |
+| `r` | Re-read worktrees and stashes |
 
 ### Other
 

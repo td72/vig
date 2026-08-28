@@ -45,7 +45,7 @@ Your file is a **partial override** of the defaults:
 | `page "<name>" { tabs ... }` | Replaces the tab order. |
 | `page "<name>" { bind ... }` | Replaces all select→detail bindings of that page. |
 
-Page names (`git`, `github`, `files`, `docker`, `procs`) and pane names are fixed — you can rearrange
+Page names (`git`, `github`, `files`, `docker`, `procs`, `worktrees`) and pane names are fixed — you can rearrange
 and rebind them, but not add or remove them. A replaced layout must place
 every pane of the page.
 
@@ -98,6 +98,7 @@ page "github" { ... }
 page "files" { ... }
 page "docker" { ... }
 page "procs" { ... }
+page "worktrees" { ... }
 ```
 
 ### `theme`
@@ -140,7 +141,7 @@ Global bindings that work on every page.
 | Action | Meaning |
 |---|---|
 | `"Quit"` | Quit vig |
-| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"` | Switch to that page |
+| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"`, `"page:worktrees"` | Switch to that page |
 | `"None"` | Unbind the key |
 
 ### Keys
@@ -228,6 +229,14 @@ that has the corresponding preset.
 | `processes` | `FocusDetail`, `CycleSort`, `Esc` |
 | `ports` | `JumpToProcess`, `Esc` |
 | `detail` | `Back`, `Esc` |
+
+**Page `worktrees`**
+
+| Pane | Actions |
+|---|---|
+| `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward` |
+| `worktrees`, `stashes` | `FocusPreview`, `Esc` |
+| `preview` | `ScrollLeft`, `ScrollRight`, `EnterNormalMode`, `NextFile`, `PrevFile`, `Back`, `Esc` |
 
 **Presets**
 
