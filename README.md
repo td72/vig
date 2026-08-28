@@ -21,6 +21,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - **GitHub View** — Browse Issues and Pull Requests (body, comments, reviews, CI status) via `gh` CLI
 - **Files View** — yazi-like three-column file browser (parent / current / preview) with syntax-highlighted previews
 - **Docker View** — Containers grouped by compose project, images, inspect summary and a live log tail via the `docker` CLI (read-only)
+- **Procs View** — read-only process tree with CPU / memory, listening ports and their owners, and a per-process detail
 - Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
 
 ## Installation
@@ -110,6 +111,7 @@ back to defaults. See [docs/config.md](docs/config.md) for the full schema.
 | `2` | Switch to GitHub View |
 | `3` | Switch to Files View |
 | `4` | Switch to Docker View |
+| `5` | Switch to Procs View |
 
 ### Pane Navigation
 
@@ -269,6 +271,34 @@ in this view starts, stops or removes anything.
 | `/` `n` `N` | Search container / image names, or log lines |
 | `h` / `Esc` (detail, logs) | Back to the list |
 | `r` | Re-fetch containers, images, detail and logs |
+
+### Procs View
+
+![procs demo](assets/demo-procs.gif)
+
+A read-only view of what is running: the processes as a tree by parent pid
+with CPU % and resident memory, the listening TCP / UDP ports with the
+process that owns each one, and a detail of the selected process (pid, ppid,
+user, state, uptime, CPU / memory, full command line, cwd, executable,
+children, listening ports). Values that need privileges you do not have are
+shown as `(no access)`; environment variables are never read or displayed.
+The view only inspects — it never sends a signal.
+
+Processes come from [sysinfo](https://crates.io/crates/sysinfo); ports from
+`lsof` on macOS and `ss` on Linux. Both are re-read every 2 seconds while the
+view is shown (`procs-refresh-interval` in the config) and on `r`.
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` / `Ctrl+d` / `Ctrl+u` / `g` / `G` | Move in the process tree (detail follows) |
+| `s` | Cycle the sort: CPU → MEM → PID (shown in the pane title) |
+| `Enter` / `i` / `l` | Focus the detail pane |
+| `/` `n` `N` | Search command lines (processes) or address / port / name (ports) |
+| `Tab` / `Shift+Tab` | Cycle panes: Processes → Ports → Detail |
+| `Enter` (ports) | Jump to the process that owns the port |
+| `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |
+| `h` / `Esc` (detail) | Back to the process list |
+| `r` | Refresh now |
 
 ### Other
 

@@ -8,8 +8,30 @@ use kdl::{KdlDocument, KdlNode};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::time::Duration;
 
 static DEFAULT_KDL: &str = include_str!("../../../assets/default.kdl");
+
+/// Used when the config has no `procs-refresh-interval` node.
+const DEFAULT_PROCS_REFRESH_INTERVAL: &str = "2s";
+/// Ticks fire every 250 ms, so a shorter interval cannot be honoured.
+const MIN_PROCS_REFRESH_MS: u64 = 250;
+
+/// Parse `"2s"`, `"1.5s"` or `"500ms"` into a duration of at least
+/// [`MIN_PROCS_REFRESH_MS`]. `None` for anything else.
+pub fn parse_interval(s: &str) -> Option<Duration> {
+    let s = s.trim();
+    let (num, per_unit_ms) = s
+        .strip_suffix("ms")
+        .map(|n| (n, 1.0))
+        .or_else(|| s.strip_suffix('s').map(|n| (n, 1000.0)))?;
+    let value: f64 = num.trim().parse().ok()?;
+    if !value.is_finite() || value <= 0.0 {
+        return None;
+    }
+    let ms = (value * per_unit_ms).round() as u64;
+    (ms >= MIN_PROCS_REFRESH_MS).then(|| Duration::from_millis(ms))
+}
 
 // ── Public output types ───────────────────────────────────────────────────────
 
@@ -160,11 +182,42 @@ impl Config {
         cfg.github_page()?;
         cfg.files_page()?;
         cfg.docker_page()?;
+        cfg.procs_page()?;
         cfg.app_entries()?;
         cfg.theme()?;
         cfg.icons()?;
         cfg.image_preview()?;
+        cfg.procs_refresh_interval()?;
         Ok(cfg)
+    }
+
+    /// How often the Procs view re-reads processes and ports
+    /// (`procs-refresh-interval "2s"`; also `"500ms"`, `"1.5s"`; at least 250 ms).
+    pub fn procs_refresh_interval(&self) -> Result<Duration> {
+        let raw = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "procs-refresh-interval")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| {
+                        anyhow!("procs-refresh-interval block missing interval argument")
+                    })
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| DEFAULT_PROCS_REFRESH_INTERVAL.to_string());
+        parse_interval(&raw).ok_or_else(|| {
+            anyhow!(
+                "invalid {}: bad procs-refresh-interval {raw:?}; expected a duration such as \
+                 \"2s\" or \"500ms\" (at least {}ms)",
+                self.describe(),
+                MIN_PROCS_REFRESH_MS
+            )
+        })
     }
 
     /// How the Files view previews images (`image-preview "auto"` / `"halfblocks"` / `"none"`).
@@ -266,6 +319,10 @@ impl Config {
 
     pub fn docker_page(&self) -> Result<LoadedPageConfig> {
         self.page("docker")
+    }
+
+    pub fn procs_page(&self) -> Result<LoadedPageConfig> {
+        self.page("procs")
     }
 
     fn page(&self, name: &str) -> Result<LoadedPageConfig> {
@@ -913,6 +970,64 @@ mod tests {
     }
 
     #[test]
+    fn procs_page_ids_keys_and_bindings() {
+        let cfg = Config::builtin().procs_page().unwrap();
+        assert_eq!(cfg.name, "procs");
+        assert_eq!(cfg.resolve_id("processes"), Some(0));
+        assert_eq!(cfg.resolve_id("ports"), Some(1));
+        assert_eq!(cfg.resolve_id("detail"), Some(2));
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2]);
+        assert_eq!(
+            cfg.bindings,
+            vec![("processes".to_string(), "detail".to_string())]
+        );
+        for name in ["view", "processes", "ports", "detail"] {
+            assert!(
+                cfg.pane_keys.contains_key(name),
+                "missing pane keys for {name}"
+            );
+        }
+        // App block switches to it with "5".
+        let entries = Config::builtin().app_entries().unwrap();
+        assert!(entries.contains(&("5".to_string(), "page:procs".to_string())));
+    }
+
+    #[test]
+    fn procs_refresh_interval_default_override_and_validation() {
+        assert_eq!(
+            Config::builtin().procs_refresh_interval().unwrap(),
+            Duration::from_secs(2)
+        );
+        assert_eq!(
+            user(r#"procs-refresh-interval "500ms""#)
+                .unwrap()
+                .procs_refresh_interval()
+                .unwrap(),
+            Duration::from_millis(500)
+        );
+        assert_eq!(
+            user(r#"procs-refresh-interval "1.5s""#)
+                .unwrap()
+                .procs_refresh_interval()
+                .unwrap(),
+            Duration::from_millis(1500)
+        );
+        for bad in [
+            r#"procs-refresh-interval "fast""#,
+            r#"procs-refresh-interval "100ms""#,
+        ] {
+            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
+            assert!(msg.contains("procs-refresh-interval"), "{bad}: {msg}");
+        }
+        assert_eq!(parse_interval("2s"), Some(Duration::from_secs(2)));
+        assert_eq!(parse_interval(" 250ms "), Some(Duration::from_millis(250)));
+        assert_eq!(parse_interval("0s"), None);
+        assert_eq!(parse_interval("-1s"), None);
+        assert_eq!(parse_interval("2"), None);
+    }
+
+    #[test]
     fn github_pane_ids_correct() {
         let cfg = load_github_page_config().unwrap();
         let expected = [
@@ -1012,9 +1127,11 @@ mod tests {
     fn user_app_keys_merge() {
         let cfg = user(r#"app { "3" "page:github"; "1" "None" }"#).unwrap();
         let entries = cfg.app_entries().unwrap();
-        let km =
-            crate::core::keymap::build_app_keymap(&entries, &["git", "github", "files", "docker"])
-                .unwrap();
+        let km = crate::core::keymap::build_app_keymap(
+            &entries,
+            &["git", "github", "files", "docker", "procs"],
+        )
+        .unwrap();
         assert!(km.lookup(key("1")).is_none());
         assert!(matches!(
             km.lookup(key("2")),

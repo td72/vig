@@ -37,6 +37,7 @@ Your file is a **partial override** of the defaults:
 |---|---|
 | `theme "<name>"` | Replaces the syntax highlighting theme. |
 | `icons "<mode>"` | Replaces the Files view icon mode. |
+| `procs-refresh-interval "<duration>"` | Replaces how often the Procs view re-reads processes and ports. |
 | `app { }` | Merged per key. A key you set replaces the default binding for that key. |
 | `page "<name>" { pane "<pane>" { keys { } } }` | Merged per key, on top of the default keys (including expanded presets). |
 | `"<key>" "None"` | Removes the binding for that key. |
@@ -44,7 +45,7 @@ Your file is a **partial override** of the defaults:
 | `page "<name>" { tabs ... }` | Replaces the tab order. |
 | `page "<name>" { bind ... }` | Replaces all select→detail bindings of that page. |
 
-Page names (`git`, `github`, `files`, `docker`) and pane names are fixed — you can rearrange
+Page names (`git`, `github`, `files`, `docker`, `procs`) and pane names are fixed — you can rearrange
 and rebind them, but not add or remove them. A replaced layout must place
 every pane of the page.
 
@@ -90,11 +91,13 @@ page "git" {
 ```kdl
 theme "<name>"
 icons "<mode>"
+procs-refresh-interval "<duration>"
 app { <key> <action> ... }
 page "git" { ... }
 page "github" { ... }
 page "files" { ... }
 page "docker" { ... }
+page "procs" { ... }
 ```
 
 ### `theme`
@@ -120,6 +123,16 @@ terminal; `"none"` shows plain names.
 icons "none"
 ```
 
+### `procs-refresh-interval`
+
+How often the Procs view re-reads the process list and the listening ports
+while it is shown. A number with `s` or `ms` (`"2s"` by default, `"1.5s"`,
+`"500ms"`); at least `250ms`. Sampling pauses on the other views.
+
+```kdl
+procs-refresh-interval "5s"
+```
+
 ### `app`
 
 Global bindings that work on every page.
@@ -127,7 +140,7 @@ Global bindings that work on every page.
 | Action | Meaning |
 |---|---|
 | `"Quit"` | Quit vig |
-| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"` | Switch to that page |
+| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"` | Switch to that page |
 | `"None"` | Unbind the key |
 
 ### Keys
@@ -206,6 +219,15 @@ that has the corresponding preset.
 | `images` | `OpenDetail`, `Esc` |
 | `detail` | `Back`, `Esc` |
 | `logs` | `Back`, `Esc` (`Nav.JumpBottom` resumes following) |
+
+**Page `procs`**
+
+| Pane | Actions |
+|---|---|
+| `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward` |
+| `processes` | `FocusDetail`, `CycleSort`, `Esc` |
+| `ports` | `JumpToProcess`, `Esc` |
+| `detail` | `Back`, `Esc` |
 
 **Presets**
 

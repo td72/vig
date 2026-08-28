@@ -147,6 +147,9 @@ pub enum PaneEvent {
     // Files-specific
     /// The directory list changed directory (enter / parent).
     DirChanged,
+    // Procs-specific
+    /// Select this pid in the process list and focus it.
+    JumpToProcess(u32),
 }
 
 pub struct PaneShared {
