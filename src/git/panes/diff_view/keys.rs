@@ -74,7 +74,7 @@ pub(crate) fn handle_diff_scroll_key(
     execute_diff_scroll(pane, shared, action)
 }
 
-fn execute_diff_scroll(
+pub(crate) fn execute_diff_scroll(
     pane: &mut super::DiffViewPane,
     shared: &PaneShared,
     action: DiffScrollAction,

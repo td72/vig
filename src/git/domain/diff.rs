@@ -117,7 +117,12 @@ pub fn parse_diff(repo: &Repository, base_ref: Option<&str>) -> anyhow::Result<V
     opts.show_untracked_content(true);
 
     let diff = repo.diff_tree_to_workdir_with_index(head.as_ref(), Some(&mut opts))?;
+    files_from_diff(&diff)
+}
 
+/// Convert a libgit2 diff (working tree, tree-to-tree, or one parsed from a
+/// patch buffer with `git2::Diff::from_buffer`) into side-by-side `FileDiff`s.
+pub fn files_from_diff(diff: &git2::Diff) -> anyhow::Result<Vec<FileDiff>> {
     let mut files = Vec::new();
 
     let num_deltas = diff.deltas().count();
@@ -126,7 +131,7 @@ pub fn parse_diff(repo: &Repository, base_ref: Option<&str>) -> anyhow::Result<V
         let status = delta_status(&delta);
         let path = delta_path(&delta);
 
-        if let Ok(Some(patch)) = Patch::from_diff(&diff, idx) {
+        if let Ok(Some(patch)) = Patch::from_diff(diff, idx) {
             let is_binary = patch.delta().flags().is_binary();
             if is_binary {
                 files.push(FileDiff {

@@ -183,6 +183,7 @@ impl Config {
         cfg.files_page()?;
         cfg.docker_page()?;
         cfg.procs_page()?;
+        cfg.worktrees_page()?;
         cfg.app_entries()?;
         cfg.theme()?;
         cfg.icons()?;
@@ -323,6 +324,10 @@ impl Config {
 
     pub fn procs_page(&self) -> Result<LoadedPageConfig> {
         self.page("procs")
+    }
+
+    pub fn worktrees_page(&self) -> Result<LoadedPageConfig> {
+        self.page("worktrees")
     }
 
     fn page(&self, name: &str) -> Result<LoadedPageConfig> {
@@ -1028,6 +1033,36 @@ mod tests {
     }
 
     #[test]
+    fn worktrees_page_ids_keys_and_bindings() {
+        let cfg = Config::builtin().worktrees_page().unwrap();
+        assert_eq!(cfg.name, "worktrees");
+        assert_eq!(cfg.resolve_id("worktrees"), Some(0));
+        assert_eq!(cfg.resolve_id("stashes"), Some(1));
+        assert_eq!(cfg.resolve_id("preview"), Some(2));
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2]);
+        assert_eq!(
+            cfg.bindings,
+            vec![
+                ("worktrees".to_string(), "preview".to_string()),
+                ("stashes".to_string(), "preview".to_string()),
+            ]
+        );
+        // Both lists drive the same preview pane.
+        let select = cfg.resolve_select_bindings();
+        assert_eq!(select.get(&0), Some(&2));
+        assert_eq!(select.get(&1), Some(&2));
+        for name in ["view", "worktrees", "stashes", "preview"] {
+            assert!(
+                cfg.pane_keys.contains_key(name),
+                "missing pane keys for {name}"
+            );
+        }
+        // App block switches to it with "7".
+        let entries = Config::builtin().app_entries().unwrap();
+        assert!(entries.contains(&("7".to_string(), "page:worktrees".to_string())));
+    }
+
+    #[test]
     fn github_pane_ids_correct() {
         let cfg = load_github_page_config().unwrap();
         let expected = [
@@ -1129,7 +1164,7 @@ mod tests {
         let entries = cfg.app_entries().unwrap();
         let km = crate::core::keymap::build_app_keymap(
             &entries,
-            &["git", "github", "files", "docker", "procs"],
+            &["git", "github", "files", "docker", "procs", "worktrees"],
         )
         .unwrap();
         assert!(km.lookup(key("1")).is_none());

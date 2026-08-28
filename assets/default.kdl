@@ -22,6 +22,7 @@ app {
     "3" "page:files"
     "4" "page:docker"
     "5" "page:procs"
+    "7" "page:worktrees"
 }
 
 page "git" {
@@ -358,6 +359,71 @@ page "procs" {
             preset "nav"
             "h" "Back"
             "Left" "Back"
+            "Esc" "Esc"
+        }
+    }
+}
+
+page "worktrees" {
+    layout {
+        split direction="horizontal" {
+            split direction="vertical" size="40%" {
+                place "worktrees" size="40%"
+                place "stashes" size="min:3"
+            }
+            place "preview" size="min:20"
+        }
+    }
+    tabs "worktrees" "stashes" "preview"
+    bind select="worktrees" detail="preview"
+    bind select="stashes"   detail="preview"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+        }
+    }
+
+    pane "worktrees" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "FocusPreview"
+            "l" "FocusPreview"
+            "Enter" "FocusPreview"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "stashes" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "FocusPreview"
+            "l" "FocusPreview"
+            "Enter" "FocusPreview"
+            "Esc" "Esc"
+        }
+    }
+
+    // Stash patches use the side-by-side diff view: h / l scroll
+    // horizontally, `i` enters Normal mode (cursor, yank, visual selection).
+    pane "preview" {
+        keys {
+            preset "nav"
+            preset "search"
+            "h" "ScrollLeft"
+            "Left" "ScrollLeft"
+            "l" "ScrollRight"
+            "Right" "ScrollRight"
+            "]" "NextFile"
+            "[" "PrevFile"
+            "i" "EnterNormalMode"
+            "Backspace" "Back"
             "Esc" "Esc"
         }
     }

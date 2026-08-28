@@ -70,6 +70,8 @@ pub struct DiffViewPane {
     pub files: Rc<Vec<FileDiff>>,
     pub(crate) scroll_keymap: Keymap<keys::DiffScrollAction>,
     pub pane_id: usize,
+    /// Pane border title (`"Diff"` on the Git page; other pages may override).
+    pub title: String,
 }
 
 impl DiffViewPane {
@@ -83,6 +85,7 @@ impl DiffViewPane {
             files,
             scroll_keymap: keys::default_scroll_keymap(),
             pane_id,
+            title: "Diff".to_string(),
         }
     }
 
