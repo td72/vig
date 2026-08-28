@@ -100,7 +100,7 @@ pub fn stash_patch(root: &Path, index: usize) -> Result<Vec<FileDiff>> {
 ///
 /// Old git prints ``error: unknown option `include-untracked'``; the check
 /// accepts either half so a differently worded message still matches.
-pub fn include_untracked_unsupported(stderr: &str) -> bool {
+fn include_untracked_unsupported(stderr: &str) -> bool {
     let text = stderr.to_ascii_lowercase();
     text.contains("unknown option") || text.contains("include-untracked")
 }

@@ -166,7 +166,7 @@ pub struct App {
 
 /// Display strings of the keys bound to `SwitchPage(idx)` for every page
 /// index below `page_count`, in keymap insertion order.
-pub fn page_keys(app_keymap: &Keymap<AppAction>, page_count: usize) -> Vec<Vec<String>> {
+fn page_keys(app_keymap: &Keymap<AppAction>, page_count: usize) -> Vec<Vec<String>> {
     let mut keys = vec![Vec::new(); page_count];
     for (ki, action) in app_keymap.entries() {
         if let AppAction::SwitchPage(idx) = action {
