@@ -1,3 +1,8 @@
+# Recorded with VIG_PROCS_ROOT_PID set to the tape's own shell so the GIF only
+# shows the synthetic processes started below (plus the shell and vig), never
+# the recording machine's real processes, ports or paths. The hostname is not
+# rendered by the Procs header at all.
+
 Output assets/demo-procs.gif
 
 Require vig
@@ -12,7 +17,7 @@ Set WindowBar Colorful
 Set CursorBlink false
 Set TypingSpeed 50ms
 
-# --- Hidden setup: a repository plus a small server that listens on a port ---
+# --- Hidden setup: a repository plus a few synthetic processes to look at ---
 Hide
 
 Type@1ms "cd $(mktemp -d)"
@@ -24,7 +29,18 @@ Sleep 300ms
 Type@1ms "echo demo > README.md && git add -A && git commit -q -m 'initial commit'"
 Enter
 Sleep 300ms
-# Something for the Ports pane to find: an HTTP server owned by this shell.
+# Only this shell's subtree is shown (see the comment at the top).
+Type@1ms "export VIG_PROCS_ROOT_PID=$$"
+Enter
+Sleep 200ms
+# Two leaf processes, one parent / child pair, and an HTTP server that
+# listens on a port for the Ports pane to find.
+Type@1ms "sleep 600 & sleep 600 &"
+Enter
+Sleep 200ms
+Type@1ms "sh -c 'sleep 600; true' &"
+Enter
+Sleep 200ms
 Type@1ms "python3 -m http.server 8765 >/dev/null 2>&1 &"
 Enter
 Sleep 1s
@@ -64,11 +80,8 @@ Type "/http.server"
 Enter
 Sleep 2.5s
 
-# Tab to the Ports pane and find the server's port
+# Tab to the Ports pane: the server's port, owned by python3
 Tab
-Sleep 1.5s
-Type "/8765"
-Enter
 Sleep 2s
 
 # Enter jumps to the process that owns the port
@@ -95,8 +108,8 @@ Sleep 800ms
 Type "q"
 Sleep 500ms
 
-# --- Hidden teardown: stop the server ---
+# --- Hidden teardown: stop the synthetic processes ---
 Hide
-Type@1ms "kill %1"
+Type@1ms "kill $(jobs -p) 2>/dev/null; wait 2>/dev/null"
 Enter
 Sleep 300ms
