@@ -11,5 +11,6 @@ pub mod search;
 pub mod syntax;
 pub mod tab;
 pub mod theme;
+pub mod tree;
 pub mod tui;
 pub mod ui;
