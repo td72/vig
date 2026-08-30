@@ -72,6 +72,11 @@ run = "PATH=$PWD/target/release:$PATH vhs tape/demo-worktrees.tape"
 depends = ["demo:build"]
 description = "Record Worktrees view demo GIF"
 
+[tasks."demo:projects"]
+run = "PATH=$PWD/target/release:$PATH vhs tape/demo-projects.tape"
+depends = ["demo:build"]
+description = "Record Projects view demo GIF (requires gh with the project scope)"
+
 [tasks."demo:all"]
-depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr", "demo:commit-log", "demo:config", "demo:files", "demo:docker", "demo:procs", "demo:worktrees"]
+depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr", "demo:commit-log", "demo:config", "demo:files", "demo:docker", "demo:procs", "demo:worktrees", "demo:projects"]
 description = "Record all demo GIFs"
