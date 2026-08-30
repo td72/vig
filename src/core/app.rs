@@ -341,11 +341,20 @@ mod tests {
         let app = app_with(&cfg);
         assert_eq!(
             labels(&app),
-            ["Git", "GitHub", "Files", "Docker", "Procs", "Worktrees"],
+            [
+                "Git",
+                "GitHub",
+                "Files",
+                "Docker",
+                "Procs",
+                "Worktrees",
+                "Projects"
+            ],
             "builtin `pages` order defines the slots"
         );
         let procs_idx = page_index(&app, "procs");
         let worktrees_idx = page_index(&app, "worktrees");
+        let projects_idx = page_index(&app, "projects");
 
         let look = |s: &str| {
             let ki: KeyInput = s.parse().unwrap();
@@ -359,11 +368,8 @@ mod tests {
         assert_eq!(look("4"), Some(AppAction::SwitchPage(3)));
         assert_eq!(look("5"), Some(AppAction::SwitchPage(procs_idx)));
         assert_eq!(look("6"), Some(AppAction::SwitchPage(worktrees_idx)));
-        assert_eq!(
-            look("7"),
-            None,
-            "the Actions page is gone (folded into GitHub)"
-        );
+        assert_eq!(look("7"), Some(AppAction::SwitchPage(projects_idx)));
+        assert_eq!(look("8"), None);
         assert_eq!(look("Ctrl+c"), Some(AppAction::Quit));
     }
 
@@ -387,14 +393,15 @@ mod tests {
                 vec!["3"],
                 vec!["4"],
                 vec!["5"],
-                vec!["6"]
+                vec!["6"],
+                vec!["7"]
             ]
         );
         let help = app.active_help_bindings();
         assert_eq!(
             help[0],
             (
-                "1 / 2 / 3 / 4 / 5 / 6".to_string(),
+                "1 / 2 / 3 / 4 / 5 / 6 / 7".to_string(),
                 "Switch view".to_string()
             )
         );
@@ -408,14 +415,17 @@ mod tests {
         let app = app_with(&user_config(r#"app { "w" "page:worktrees" }"#));
         let idx = page_index(&app, "worktrees");
         assert_eq!(app.ctx.page_keys[idx], vec!["6", "w"]);
-        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / 6 / w");
+        assert_eq!(
+            app.active_help_bindings()[0].0,
+            "1 / 2 / 3 / 4 / 5 / 6 / w / 7"
+        );
 
         // Unbinding the built-in key leaves only the user's key, so the
         // header shows `w:Worktrees`.
         let app = app_with(&user_config(r#"app { "6" "None"; "w" "page:worktrees" }"#));
         let idx = page_index(&app, "worktrees");
         assert_eq!(app.ctx.page_keys[idx], vec!["w"]);
-        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / w");
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / w / 7");
     }
 
     /// `pages` reorders the slots: the header (`page_labels`) follows the

@@ -18,7 +18,7 @@ procs-refresh-interval "2s"
 // Pages in tab order: the position here is the slot shown in the header
 // (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
 // wholesale; pages left out are disabled. `app` bindings address pages by name.
-pages "git" "github" "files" "docker" "procs" "worktrees"
+pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 
 app {
     "Ctrl+c" "Quit"
@@ -28,6 +28,7 @@ app {
     "4" "page:docker"
     "5" "page:procs"
     "6" "page:worktrees"
+    "7" "page:projects"
 }
 
 page "git" {
@@ -461,6 +462,72 @@ page "worktrees" {
             "[" "PrevFile"
             "i" "EnterNormalMode"
             "Backspace" "Back"
+            "Esc" "Esc"
+        }
+    }
+}
+
+page "projects" {
+    layout {
+        split direction="horizontal" {
+            place "projects" size="22%"
+            split direction="vertical" size="min:30" {
+                place "board" size="60%"
+                place "detail" size="min:5"
+            }
+        }
+    }
+    tabs "projects" "board" "detail"
+    bind select="projects" detail="board"
+    bind select="board"    detail="detail"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+        }
+    }
+
+    pane "projects" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Enter" "OpenBoard"
+            "i" "OpenBoard"
+            "l" "OpenBoard"
+            "o" "OpenBrowser"
+            "Esc" "Esc"
+        }
+    }
+
+    // Board mode: h / l move between columns, j / k within one. Table mode
+    // (`t`): j / k walk the rows, h / l and `s` pick the sort column.
+    pane "board" {
+        keys {
+            preset "nav"
+            preset "search"
+            "h" "PrevColumn"
+            "Left" "PrevColumn"
+            "l" "NextColumn"
+            "Right" "NextColumn"
+            "t" "ToggleTable"
+            "s" "CycleSort"
+            "Enter" "OpenDetail"
+            "i" "OpenDetail"
+            "o" "OpenBrowser"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "detail" {
+        keys {
+            preset "nav"
+            "h" "Back"
+            "Left" "Back"
+            "o" "OpenBrowser"
             "Esc" "Esc"
         }
     }

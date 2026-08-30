@@ -4,6 +4,7 @@ use crate::files::state::FilesState;
 use crate::git::state::GitState;
 use crate::github::state::GitHubState;
 use crate::procs::state::ProcsState;
+use crate::projects::state::ProjectsState;
 use crate::worktrees::state::WorktreesState;
 use ratatui::{
     layout::Rect,
@@ -344,6 +345,95 @@ pub fn render_worktrees_status_bar(
         Line::from(spans)
     };
     f.render_widget(Paragraph::new(line), area);
+}
+
+pub fn render_projects_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
+    render_header_common(
+        f,
+        ctx,
+        vec![Span::styled(
+            " Projects ",
+            Style::default()
+                .fg(Color::White)
+                .bg(Color::Rgb(130, 80, 160)),
+        )],
+        area,
+    );
+}
+
+pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &ProjectsState, area: Rect) {
+    if pj.pane.search.active {
+        render_search_prompt(f, &pj.pane.search.input, area);
+        return;
+    }
+    if pj.scope_missing {
+        let line = Line::from(Span::styled(
+            format!(" {}", crate::projects::state::SCOPE_NOTICE),
+            Style::default().fg(Color::Red),
+        ));
+        f.render_widget(Paragraph::new(line), area);
+        return;
+    }
+    if let Some(ref err) = pj.gh_error {
+        let line = Line::from(Span::styled(
+            format!(" {err}"),
+            Style::default().fg(Color::Red),
+        ));
+        f.render_widget(Paragraph::new(line), area);
+        return;
+    }
+    let (projects, items, columns, truncated) = pj.counts();
+    let mut spans = Vec::new();
+    if pj.is_loading() && projects == 0 {
+        spans.push(Span::styled(
+            " Loading...",
+            Style::default().fg(Color::DarkGray),
+        ));
+    } else {
+        spans.push(Span::styled(
+            format!(
+                " {projects} project{}",
+                if projects == 1 { "" } else { "s" }
+            ),
+            Style::default().fg(Color::White),
+        ));
+        if pj.panes.board.board.is_some() {
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(
+                format!(
+                    "{items} item{} in {columns} column{}",
+                    if items == 1 { "" } else { "s" },
+                    if columns == 1 { "" } else { "s" }
+                ),
+                Style::default().fg(Color::White),
+            ));
+            if truncated {
+                spans.push(Span::raw(" "));
+                spans.push(Span::styled(
+                    format!(
+                        "(truncated at {})",
+                        crate::projects::domain::client::ITEM_LIMIT
+                    ),
+                    Style::default().fg(Color::Yellow),
+                ));
+            }
+        }
+        if pj.is_loading() {
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(
+                "↻ Updating...",
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+    }
+    if let Some(ref msg) = ctx.status_message {
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            msg.clone(),
+            Style::default().fg(Color::Yellow),
+        ));
+    }
+    f.render_widget(Paragraph::new(Line::from(spans)), area);
 }
 
 pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {

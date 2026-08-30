@@ -5,6 +5,7 @@ mod git;
 mod github;
 mod pages;
 mod procs;
+mod projects;
 mod update;
 mod worktrees;
 
