@@ -193,7 +193,12 @@ impl ProjectsState {
         let (tx, rx) = mpsc::channel();
         self.bg_tx = Some(tx);
         self.bg_rx = Some(rx);
-        if let Some(cache) = disk_cache::load_project_list().filter(|_| self.use_disk_cache) {
+        let cached = if self.use_disk_cache {
+            disk_cache::load_project_list()
+        } else {
+            None
+        };
+        if let Some(cache) = cached {
             self.owner = Some(cache.owner);
             self.linked = cache.linked.clone();
             self.panes

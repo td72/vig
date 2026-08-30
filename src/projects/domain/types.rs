@@ -563,7 +563,10 @@ pub fn sort_items(items: &[ProjectItem], column: &TableColumn, board: &Board) ->
             let nb: f64 = cb.trim_start_matches('#').parse().unwrap_or(0.0);
             na.partial_cmp(&nb).unwrap_or(std::cmp::Ordering::Equal)
         } else {
-            ca.to_lowercase().cmp(&cb.to_lowercase())
+            // Compare lowercased char streams without allocating per comparison.
+            ca.chars()
+                .flat_map(char::to_lowercase)
+                .cmp(cb.chars().flat_map(char::to_lowercase))
         }
     });
     order
