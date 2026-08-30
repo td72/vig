@@ -199,6 +199,7 @@ impl Config {
         cfg.docker_page()?;
         cfg.procs_page()?;
         cfg.worktrees_page()?;
+        cfg.projects_page()?;
         cfg.app_entries()?;
         cfg.theme()?;
         cfg.icons()?;
@@ -453,6 +454,10 @@ impl Config {
 
     pub fn worktrees_page(&self) -> Result<LoadedPageConfig> {
         self.page("worktrees")
+    }
+
+    pub fn projects_page(&self) -> Result<LoadedPageConfig> {
+        self.page("projects")
     }
 
     fn page(&self, name: &str) -> Result<LoadedPageConfig> {
@@ -1158,6 +1163,43 @@ mod tests {
     }
 
     #[test]
+    fn projects_page_ids_keys_and_bindings() {
+        let cfg = Config::builtin().projects_page().unwrap();
+        assert_eq!(cfg.name, "projects");
+        assert_eq!(cfg.resolve_id("projects"), Some(0));
+        assert_eq!(cfg.resolve_id("board"), Some(1));
+        assert_eq!(cfg.resolve_id("detail"), Some(2));
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2]);
+        assert_eq!(
+            cfg.bindings,
+            vec![
+                ("projects".to_string(), "board".to_string()),
+                ("board".to_string(), "detail".to_string()),
+            ]
+        );
+        for name in ["view", "projects", "board", "detail"] {
+            assert!(
+                cfg.pane_keys.contains_key(name),
+                "missing pane keys for {name}"
+            );
+        }
+        let board = format!("{:?}", cfg.pane_keys["board"]);
+        for (k, a) in [
+            ("t", "ToggleTable"),
+            ("s", "CycleSort"),
+            ("h", "PrevColumn"),
+        ] {
+            assert!(
+                board.contains(&format!("key: {k:?}, action: {a:?}")),
+                "board pane binds {k} to {a}: {board}"
+            );
+        }
+        // App block switches to it with "7".
+        let entries = Config::builtin().app_entries().unwrap();
+        assert!(entries.contains(&("7".to_string(), "page:projects".to_string())));
+    }
+
+    #[test]
     fn procs_page_ids_keys_and_bindings() {
         let cfg = Config::builtin().procs_page().unwrap();
         assert_eq!(cfg.name, "procs");
@@ -1430,7 +1472,15 @@ mod tests {
 
     // ── pages ─────────────────────────────────────────────────────────────
 
-    const ALL_PAGES: [&str; 6] = ["git", "github", "files", "docker", "procs", "worktrees"];
+    const ALL_PAGES: [&str; 7] = [
+        "git",
+        "github",
+        "files",
+        "docker",
+        "procs",
+        "worktrees",
+        "projects",
+    ];
 
     #[test]
     fn builtin_pages_list_every_page_in_declaration_order() {

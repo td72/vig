@@ -70,29 +70,43 @@ pub fn list_prs(limit: usize) -> Result<Vec<GhPrListItem>, String> {
 }
 
 pub fn get_issue(number: u64) -> Result<GhIssueDetail, String> {
-    run_gh_json(
-        &[
-            "issue",
-            "view",
-            &number.to_string(),
-            "--json",
-            "number,title,state,author,body,comments,labels,createdAt",
-        ],
-        "gh issue view failed",
-    )
+    get_issue_in(None, number)
+}
+
+/// `gh issue view` in `repo` (`owner/repo`; `None` for the current one).
+pub fn get_issue_in(repo: Option<&str>, number: u64) -> Result<GhIssueDetail, String> {
+    let number = number.to_string();
+    let mut args = vec![
+        "issue",
+        "view",
+        &number,
+        "--json",
+        "number,title,state,author,body,comments,labels,createdAt",
+    ];
+    if let Some(repo) = repo {
+        args.extend(["--repo", repo]);
+    }
+    run_gh_json(&args, "gh issue view failed")
 }
 
 pub fn get_pr(number: u64) -> Result<GhPrDetail, String> {
-    run_gh_json(
-        &[
-            "pr",
-            "view",
-            &number.to_string(),
-            "--json",
-            "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName",
-        ],
-        "gh pr view failed",
-    )
+    get_pr_in(None, number)
+}
+
+/// `gh pr view` in `repo` (`owner/repo`; `None` for the current one).
+pub fn get_pr_in(repo: Option<&str>, number: u64) -> Result<GhPrDetail, String> {
+    let number = number.to_string();
+    let mut args = vec![
+        "pr",
+        "view",
+        &number,
+        "--json",
+        "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName",
+    ];
+    if let Some(repo) = repo {
+        args.extend(["--repo", repo]);
+    }
+    run_gh_json(&args, "gh pr view failed")
 }
 
 pub fn open_issue_in_browser(number: u64) -> Result<(), String> {

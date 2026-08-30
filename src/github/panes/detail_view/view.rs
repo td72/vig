@@ -387,7 +387,7 @@ fn pane_border_style(is_active: bool, is_detail_focused: bool) -> Style {
 
 // --- Helpers ---
 
-fn format_date(iso: &str) -> &str {
+pub(crate) fn format_date(iso: &str) -> &str {
     if iso.len() >= 10 {
         &iso[..10]
     } else {
@@ -465,7 +465,7 @@ fn build_detail_header_base(
     (title_line, spans)
 }
 
-fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
+pub(crate) fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
     let (title_line, mut spans) = build_detail_header_base(
         detail.number,
         &detail.title,
@@ -477,7 +477,7 @@ fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
     vec![title_line, Line::from(spans)]
 }
 
-fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
+pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
     let (title_line, mut spans) = build_detail_header_base(
         detail.number,
         &detail.title,
@@ -838,7 +838,7 @@ fn build_comments_lines(
 /// Render a markdown body as styled lines. `max_width` is the text width
 /// available in the pane (including `padding`); block elements that cannot
 /// wrap gracefully (tables) are fitted into it.
-fn markdown_to_lines(text: &str, padding: &str, max_width: usize) -> Vec<Line<'static>> {
+pub(crate) fn markdown_to_lines(text: &str, padding: &str, max_width: usize) -> Vec<Line<'static>> {
     use pulldown_cmark::{Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 
     let opts = Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS | Options::ENABLE_TABLES;

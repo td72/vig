@@ -46,7 +46,7 @@ Your file is a **partial override** of the defaults:
 | `page "<name>" { tabs ... }` | Replaces the tab order. |
 | `page "<name>" { bind ... }` | Replaces all select→detail bindings of that page. |
 
-Page names (`git`, `github`, `files`, `docker`, `procs`, `worktrees`) and pane names are fixed — you can rearrange
+Page names (`git`, `github`, `files`, `docker`, `procs`, `worktrees`, `projects`) and pane names are fixed — you can rearrange
 and rebind them, but not add new ones. Pages can be reordered or disabled
 with `pages`; panes cannot be removed, and a replaced layout must place
 every pane of the page.
@@ -104,6 +104,7 @@ page "files" { ... }
 page "docker" { ... }
 page "procs" { ... }
 page "worktrees" { ... }
+page "projects" { ... }
 ```
 
 ### `theme`
@@ -146,7 +147,7 @@ page's *slot* — the number shown in the header (`1:Git`, `2:GitHub`, …) and
 the page reached by `Tab` cycling. The default lists every page:
 
 ```kdl
-pages "git" "github" "files" "docker" "procs" "worktrees"
+pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 ```
 
 Your `pages` replaces this list wholesale. Pages you leave out are disabled
@@ -160,7 +161,7 @@ gives a three-tab vig with `1:Git 2:Files 3:Worktrees`. Unknown or repeated
 names are errors.
 
 Keys are bindings *onto* pages, not slots: `app { "<key>" "page:<name>" }`
-keeps addressing a page by name wherever it sits, so the built-in `1` … `6`
+keeps addressing a page by name wherever it sits, so the built-in `1` … `7`
 still switch to the same pages after reordering (the help overlay lists them
 as `1 / 3 / 6` in the example above). Built-in keys of disabled pages are
 dropped; a binding in *your* `app { }` block to a page that is not listed in
@@ -177,7 +178,7 @@ Global bindings that work on every page.
 | Action | Meaning |
 |---|---|
 | `"Quit"` | Quit vig |
-| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"`, `"page:worktrees"` | Switch to that page (it must be listed in `pages`) |
+| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"`, `"page:worktrees"`, `"page:projects"` | Switch to that page (it must be listed in `pages`) |
 | `"None"` | Unbind the key |
 
 ### Keys
@@ -279,6 +280,15 @@ that has the corresponding preset.
 | `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward` |
 | `worktrees`, `stashes` | `FocusPreview`, `Esc` |
 | `preview` | `ScrollLeft`, `ScrollRight`, `EnterNormalMode`, `NextFile`, `PrevFile`, `Back`, `Esc` |
+
+**Page `projects`**
+
+| Pane | Actions |
+|---|---|
+| `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward` |
+| `projects` | `OpenBoard`, `OpenBrowser`, `Esc` |
+| `board` | `PrevColumn`, `NextColumn` (table mode: sort column), `ToggleTable`, `CycleSort`, `OpenDetail`, `OpenBrowser`, `Esc` (back to the project list) |
+| `detail` | `Back`, `OpenBrowser`, `Esc` |
 
 **Presets**
 

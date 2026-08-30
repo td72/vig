@@ -1,0 +1,902 @@
+//! Board pane: the selected project's items as kanban columns (one per
+//! `Status` option, GitHub's order, plus `No status`) or, in table mode,
+//! one row per item with the project fields as sortable columns.
+
+use crate::core::app::AppContext;
+use crate::core::keymap::{
+    nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
+};
+use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
+use crate::core::search::SearchMatch;
+use crate::core::theme;
+use crate::projects::domain::types::{
+    sort_items, table_columns, Board, Column, ItemKind, ProjectItem, TableColumn,
+};
+use crossterm::event::KeyCode;
+use ratatui::{
+    layout::{Constraint, Layout, Rect},
+    style::{Color, Modifier, Style},
+    text::{Line, Span},
+    widgets::{Block, Borders, Cell, Paragraph, Row, Table, TableState},
+    Frame,
+};
+use std::collections::HashSet;
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+
+/// Narrowest a kanban column gets before the board scrolls horizontally.
+const MIN_COLUMN_WIDTH: u16 = 24;
+/// Lines per card (title line + assignees line).
+const CARD_HEIGHT: usize = 2;
+/// Widest a table column (other than Title) grows to.
+const MAX_CELL_WIDTH: usize = 24;
+
+#[derive(Debug, Clone)]
+pub enum BoardAction {
+    Nav(NavAction),
+    PrevColumn,
+    NextColumn,
+    ToggleTable,
+    CycleSort,
+    OpenDetail,
+    OpenBrowser,
+    Search(SearchAction),
+    Esc,
+}
+
+crate::impl_pane_action_from_str!(
+    BoardAction, nav: Nav, search: Search, esc: Esc,
+    PrevColumn, NextColumn, ToggleTable, CycleSort, OpenDetail, OpenBrowser
+);
+
+impl ActionHelp for BoardAction {
+    fn label(&self) -> Option<&'static str> {
+        match self {
+            BoardAction::Nav(NavAction::MoveDown) => Some("Next card / row"),
+            BoardAction::Nav(NavAction::MoveUp) => Some("Prev card / row"),
+            BoardAction::Nav(nav) => nav.label(),
+            BoardAction::PrevColumn => Some("Prev column"),
+            BoardAction::NextColumn => Some("Next column"),
+            BoardAction::ToggleTable => Some("Toggle table mode"),
+            BoardAction::CycleSort => Some("Cycle sort column (table)"),
+            BoardAction::OpenDetail => Some("Focus detail"),
+            BoardAction::OpenBrowser => Some("Open item in browser"),
+            BoardAction::Search(sa) => sa.label(),
+            BoardAction::Esc => Some("Clear search / back to projects"),
+        }
+    }
+}
+
+pub fn default_keymap() -> Keymap<BoardAction> {
+    Keymap::new()
+        .bindings(nav_bindings(BoardAction::Nav))
+        .bindings(search_bindings(BoardAction::Search))
+        .key(KeyCode::Char('h'), BoardAction::PrevColumn)
+        .key(KeyCode::Left, BoardAction::PrevColumn)
+        .key(KeyCode::Char('l'), BoardAction::NextColumn)
+        .key(KeyCode::Right, BoardAction::NextColumn)
+        .key(KeyCode::Char('t'), BoardAction::ToggleTable)
+        .key(KeyCode::Char('s'), BoardAction::CycleSort)
+        .key(KeyCode::Enter, BoardAction::OpenDetail)
+        .key(KeyCode::Char('i'), BoardAction::OpenDetail)
+        .key(KeyCode::Char('o'), BoardAction::OpenBrowser)
+        .key(KeyCode::Esc, BoardAction::Esc)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BoardMode {
+    Board,
+    Table,
+}
+
+pub struct BoardPane {
+    pane_id: usize,
+    detail_pane_id: usize,
+    projects_pane_id: usize,
+    keymap: Keymap<BoardAction>,
+    pub board: Option<Board>,
+    /// URL of the project the board belongs to (`o` on a draft opens it).
+    project_url: Option<String>,
+    columns: Vec<Column>,
+    table_cols: Vec<TableColumn>,
+    /// Table row order: indices into `board.items`.
+    sorted: Vec<usize>,
+    pub mode: BoardMode,
+    /// Board mode: selected column and card within it.
+    pub col: usize,
+    pub row: usize,
+    /// Board mode: first visible column (horizontal scroll) and how many
+    /// columns fit the pane (from the last render).
+    col_offset: usize,
+    visible_cols: usize,
+    /// Board mode: first visible card per column.
+    col_scroll: Vec<usize>,
+    /// Table mode: selected row (into `sorted`) and scroll state.
+    pub table_row: usize,
+    table_state: TableState,
+    pub sort_col: usize,
+    loading: bool,
+    error: Option<String>,
+    view_height: u16,
+}
+
+impl BoardPane {
+    pub fn new(pane_id: usize, detail_pane_id: usize, projects_pane_id: usize) -> Self {
+        Self {
+            pane_id,
+            detail_pane_id,
+            projects_pane_id,
+            keymap: default_keymap(),
+            board: None,
+            project_url: None,
+            columns: Vec::new(),
+            table_cols: Vec::new(),
+            sorted: Vec::new(),
+            mode: BoardMode::Board,
+            col: 0,
+            row: 0,
+            col_offset: 0,
+            visible_cols: 1,
+            col_scroll: Vec::new(),
+            table_row: 0,
+            table_state: TableState::default(),
+            sort_col: 0,
+            loading: false,
+            error: None,
+            view_height: 20,
+        }
+    }
+
+    pub fn set_keymap(&mut self, km: Keymap<BoardAction>) {
+        self.keymap = km;
+    }
+
+    pub fn keymap(&self) -> &Keymap<BoardAction> {
+        &self.keymap
+    }
+
+    pub fn set_loading(&mut self, loading: bool) {
+        self.loading = loading;
+    }
+
+    pub fn is_loading(&self) -> bool {
+        self.loading
+    }
+
+    pub fn set_error(&mut self, e: Option<String>) {
+        self.error = e;
+    }
+
+    pub fn set_project_url(&mut self, url: Option<String>) {
+        self.project_url = url;
+    }
+
+    /// Drop the board (no project selected).
+    pub fn clear(&mut self) {
+        self.board = None;
+        self.columns.clear();
+        self.table_cols.clear();
+        self.sorted.clear();
+        self.col_scroll.clear();
+        self.col = 0;
+        self.row = 0;
+        self.col_offset = 0;
+        self.table_row = 0;
+        self.error = None;
+    }
+
+    /// Show `board`, keeping the selection on the same item when it is
+    /// still there (a refresh may move it to another column).
+    pub fn set_board(&mut self, board: Board) {
+        let keep = self.selected_item().map(|i| i.id.clone());
+        self.columns = board.columns();
+        self.table_cols = table_columns(&board.fields);
+        self.sort_col = self.sort_col.min(self.table_cols.len().saturating_sub(1));
+        self.sorted = self
+            .table_cols
+            .get(self.sort_col)
+            .map(|c| sort_items(&board.items, c, &board))
+            .unwrap_or_default();
+        self.col_scroll = vec![0; self.columns.len()];
+        self.error = None;
+        self.board = Some(board);
+        let idx = keep.and_then(|id| self.board.as_ref()?.items.iter().position(|i| i.id == id));
+        match idx {
+            Some(idx) => self.select_item(idx),
+            None => {
+                self.col = self.col.min(self.columns.len().saturating_sub(1));
+                if self.column_len(self.col) == 0 {
+                    // Start on the first column that has a card.
+                    if let Some(c) = self.columns.iter().position(|c| !c.items.is_empty()) {
+                        self.col = c;
+                    }
+                }
+                self.row = self.row.min(self.column_len(self.col).saturating_sub(1));
+                self.table_row = self.table_row.min(self.sorted.len().saturating_sub(1));
+            }
+        }
+    }
+
+    pub fn item_count(&self) -> usize {
+        self.board.as_ref().map_or(0, |b| b.items.len())
+    }
+
+    pub fn column_count(&self) -> usize {
+        self.columns.len()
+    }
+
+    pub fn truncated(&self) -> bool {
+        self.board.as_ref().is_some_and(Board::truncated)
+    }
+
+    fn column_len(&self, col: usize) -> usize {
+        self.columns.get(col).map_or(0, |c| c.items.len())
+    }
+
+    /// Index into `board.items` of the selected card / row.
+    pub fn selected_index(&self) -> Option<usize> {
+        match self.mode {
+            BoardMode::Board => self.columns.get(self.col)?.items.get(self.row).copied(),
+            BoardMode::Table => self.sorted.get(self.table_row).copied(),
+        }
+    }
+
+    pub fn selected_item(&self) -> Option<&ProjectItem> {
+        let idx = self.selected_index()?;
+        self.board.as_ref()?.items.get(idx)
+    }
+
+    /// Point both modes' selections at item `idx`.
+    fn select_item(&mut self, idx: usize) {
+        if let Some((c, r)) = self
+            .columns
+            .iter()
+            .enumerate()
+            .find_map(|(c, col)| col.items.iter().position(|&i| i == idx).map(|r| (c, r)))
+        {
+            self.col = c;
+            self.row = r;
+        }
+        if let Some(r) = self.sorted.iter().position(|&i| i == idx) {
+            self.table_row = r;
+        }
+    }
+
+    /// The sort column's header, for the pane title.
+    pub fn sort_label(&self) -> Option<&str> {
+        self.table_cols.get(self.sort_col).map(TableColumn::header)
+    }
+
+    fn resort(&mut self) {
+        let keep = self.selected_index();
+        if let (Some(board), Some(col)) = (&self.board, self.table_cols.get(self.sort_col)) {
+            self.sorted = sort_items(&board.items, col, board);
+        }
+        if let Some(idx) = keep {
+            self.select_item(idx);
+        }
+    }
+
+    fn execute(&mut self, shared: &PaneShared, action: BoardAction) -> Vec<PaneEvent> {
+        let back = vec![PaneEvent::SetFocus(self.projects_pane_id)];
+        if let Some(events) = pane::try_dispatch_search_esc(&action, shared, self.pane_id, back) {
+            return events;
+        }
+        let before = self.selected_index();
+        match action {
+            BoardAction::Nav(nav) => match self.mode {
+                BoardMode::Board => {
+                    let len = self.column_len(self.col);
+                    pane::execute_list_nav(nav, &mut self.row, len, Some(self.view_height));
+                }
+                BoardMode::Table => {
+                    pane::execute_list_nav(
+                        nav,
+                        &mut self.table_row,
+                        self.sorted.len(),
+                        Some(self.view_height),
+                    );
+                }
+            },
+            BoardAction::PrevColumn | BoardAction::NextColumn => {
+                if self.mode == BoardMode::Table {
+                    // Left / right pick the sort column in table mode.
+                    if !self.table_cols.is_empty() {
+                        let n = self.table_cols.len();
+                        self.sort_col = if matches!(action, BoardAction::NextColumn) {
+                            (self.sort_col + 1) % n
+                        } else {
+                            (self.sort_col + n - 1) % n
+                        };
+                        self.resort();
+                    }
+                } else if !self.columns.is_empty() {
+                    let n = self.columns.len();
+                    self.col = if matches!(action, BoardAction::NextColumn) {
+                        (self.col + 1).min(n - 1)
+                    } else {
+                        self.col.saturating_sub(1)
+                    };
+                    self.row = self.row.min(self.column_len(self.col).saturating_sub(1));
+                }
+            }
+            BoardAction::ToggleTable => {
+                self.mode = match self.mode {
+                    BoardMode::Board => BoardMode::Table,
+                    BoardMode::Table => BoardMode::Board,
+                };
+                if let Some(idx) = before {
+                    self.select_item(idx);
+                }
+            }
+            BoardAction::CycleSort => {
+                if self.mode == BoardMode::Table && !self.table_cols.is_empty() {
+                    self.sort_col = (self.sort_col + 1) % self.table_cols.len();
+                    self.resort();
+                }
+            }
+            BoardAction::OpenDetail => {
+                if self.selected_item().is_some() {
+                    return vec![PaneEvent::SetFocus(self.detail_pane_id)];
+                }
+            }
+            BoardAction::OpenBrowser => {
+                let url = self
+                    .selected_item()
+                    .and_then(|i| i.url().map(str::to_string))
+                    .or_else(|| self.project_url.clone());
+                return match url {
+                    Some(u) if !u.is_empty() => vec![PaneEvent::OpenUrl(u)],
+                    _ => vec![],
+                };
+            }
+            BoardAction::Search(_) | BoardAction::Esc => {}
+        }
+        if self.selected_index() != before {
+            vec![PaneEvent::SelectionChanged]
+        } else {
+            vec![]
+        }
+    }
+
+    // === Rendering ===
+
+    fn title(&self) -> String {
+        let name = self
+            .board
+            .as_ref()
+            .map(|b| format!(" #{}", b.number))
+            .unwrap_or_default();
+        match self.mode {
+            BoardMode::Board => {
+                let n = self.columns.len();
+                let visible = self.visible_cols;
+                if n > visible {
+                    let last = (self.col_offset + visible).min(n);
+                    format!(
+                        "Board{name} (columns {}-{last} of {n})",
+                        self.col_offset + 1
+                    )
+                } else {
+                    format!("Board{name}")
+                }
+            }
+            BoardMode::Table => match self.sort_label() {
+                Some(s) => format!("Table{name} [sort: {s}]"),
+                None => format!("Table{name}"),
+            },
+        }
+    }
+
+    /// How many columns fit `inner_width`, scrolling so the selected
+    /// column stays on screen.
+    fn layout_columns(&mut self, inner_width: u16) {
+        let n = self.columns.len().max(1);
+        let visible = ((inner_width / MIN_COLUMN_WIDTH) as usize).clamp(1, n);
+        self.visible_cols = visible;
+        if self.col < self.col_offset {
+            self.col_offset = self.col;
+        } else if self.col >= self.col_offset + visible {
+            self.col_offset = self.col + 1 - visible;
+        }
+        self.col_offset = self.col_offset.min(n - visible);
+    }
+
+    fn render_board(
+        &mut self,
+        f: &mut Frame,
+        inner: Rect,
+        is_focused: bool,
+        show_selection: bool,
+        match_set: &HashSet<usize>,
+        current_match: Option<usize>,
+    ) {
+        let visible = self.visible_cols.min(self.columns.len());
+        let constraints: Vec<Constraint> = (0..visible)
+            .map(|_| Constraint::Ratio(1, visible as u32))
+            .collect();
+        let areas = Layout::horizontal(constraints).split(inner);
+        let Some(board) = &self.board else {
+            return;
+        };
+        for (slot, ci) in (self.col_offset..self.col_offset + visible).enumerate() {
+            let column = &self.columns[ci];
+            let area = areas[slot];
+            let active = ci == self.col;
+            let (border, title_style) = if active && is_focused {
+                (
+                    Style::default().fg(theme::BORDER_FOCUSED),
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                )
+            } else if active {
+                (
+                    Style::default().fg(theme::BORDER_UNFOCUSED),
+                    Style::default().add_modifier(Modifier::BOLD),
+                )
+            } else {
+                (
+                    Style::default().fg(theme::BORDER_UNFOCUSED),
+                    Style::default().fg(Color::DarkGray),
+                )
+            };
+            let block = Block::default()
+                .title(Line::from(Span::styled(
+                    format!(" {} ({}) ", column.name, column.items.len()),
+                    title_style,
+                )))
+                .borders(Borders::ALL)
+                .border_style(border);
+            let body = block.inner(area);
+            f.render_widget(block, area);
+            if body.height == 0 || body.width == 0 {
+                continue;
+            }
+            let per_page = (body.height as usize / CARD_HEIGHT).max(1);
+            if active {
+                self.view_height = per_page as u16;
+            }
+            let scroll = &mut self.col_scroll[ci];
+            if active {
+                if self.row < *scroll {
+                    *scroll = self.row;
+                } else if self.row >= *scroll + per_page {
+                    *scroll = self.row + 1 - per_page;
+                }
+            }
+            *scroll = (*scroll).min(column.items.len().saturating_sub(per_page));
+            let width = body.width as usize;
+            let mut lines: Vec<Line<'static>> = Vec::with_capacity(per_page * CARD_HEIGHT);
+            for (k, &idx) in column.items.iter().enumerate().skip(*scroll).take(per_page) {
+                let item = &board.items[idx];
+                let selected = show_selection && active && k == self.row;
+                let hl = theme::search_highlight_for(match_set, current_match, idx);
+                let bg = if hl.is_active() {
+                    hl.bg
+                } else if selected {
+                    Some(theme::LIST_SELECTION_BG)
+                } else {
+                    None
+                };
+                for line in card_lines(item, width, selected, hl.fg_override) {
+                    lines.push(match bg {
+                        Some(bg) => line.style(Style::default().bg(bg)),
+                        None => line,
+                    });
+                }
+            }
+            if column.items.is_empty() {
+                lines.push(Line::from(Span::styled(
+                    " (empty)",
+                    Style::default().fg(theme::EMPTY_TEXT_FG),
+                )));
+            }
+            f.render_widget(Paragraph::new(lines), body);
+        }
+    }
+
+    fn render_table(
+        &mut self,
+        f: &mut Frame,
+        inner: Rect,
+        show_selection: bool,
+        match_set: &HashSet<usize>,
+        current_match: Option<usize>,
+    ) {
+        let Some(board) = &self.board else {
+            return;
+        };
+        self.view_height = inner.height.saturating_sub(1);
+        let cells: Vec<Vec<String>> = self
+            .sorted
+            .iter()
+            .map(|&idx| {
+                let item = &board.items[idx];
+                self.table_cols.iter().map(|c| c.cell(item)).collect()
+            })
+            .collect();
+        let widths: Vec<Constraint> = self
+            .table_cols
+            .iter()
+            .enumerate()
+            .map(|(ci, col)| match col {
+                TableColumn::Title => Constraint::Min(20),
+                _ => {
+                    let w = cells
+                        .iter()
+                        .map(|r| r[ci].width())
+                        .max()
+                        .unwrap_or(0)
+                        .max(col.header().width() + 2)
+                        .min(MAX_CELL_WIDTH);
+                    Constraint::Length(w as u16)
+                }
+            })
+            .collect();
+        let header = Row::new(self.table_cols.iter().enumerate().map(|(ci, col)| {
+            let text = if ci == self.sort_col {
+                format!("{} ▾", col.header())
+            } else {
+                col.header().to_string()
+            };
+            Cell::from(Span::styled(
+                text,
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            ))
+        }));
+        let rows: Vec<Row> = self
+            .sorted
+            .iter()
+            .zip(&cells)
+            .map(|(&idx, cells)| {
+                let item = &board.items[idx];
+                let hl = theme::search_highlight_for(match_set, current_match, idx);
+                let mut row = Row::new(cells.iter().enumerate().map(|(ci, text)| {
+                    let mut style = match self.table_cols[ci] {
+                        TableColumn::Number => Style::default().fg(Color::Yellow),
+                        TableColumn::Assignees => Style::default().fg(Color::Gray),
+                        TableColumn::Title => Style::default(),
+                        TableColumn::Field { .. } => Style::default().fg(Color::Blue),
+                    };
+                    if let Some(fg) = hl.fg_override {
+                        style = style.fg(fg);
+                    }
+                    let text = if ci == 1 {
+                        format!("{} {}", item.kind().icon(), text)
+                    } else {
+                        truncate_to_width(text, MAX_CELL_WIDTH)
+                    };
+                    Cell::from(Span::styled(text, style))
+                }));
+                if let Some(bg) = hl.bg {
+                    row = row.style(Style::default().bg(bg));
+                }
+                row
+            })
+            .collect();
+        let selected_is_match = self
+            .selected_index()
+            .is_some_and(|i| match_set.contains(&i));
+        let table = Table::new(rows, widths)
+            .header(header)
+            .column_spacing(1)
+            .row_highlight_style(theme::list_highlight_style(selected_is_match));
+        self.table_state
+            .select(show_selection.then_some(self.table_row));
+        f.render_stateful_widget(table, inner, &mut self.table_state);
+    }
+}
+
+/// The two lines of a card: `● #12 Title…` and the assignees and labels,
+/// padded to `width`.
+fn card_lines(
+    item: &ProjectItem,
+    width: usize,
+    selected: bool,
+    fg_override: Option<Color>,
+) -> Vec<Line<'static>> {
+    let kind = item.kind();
+    let icon_color = match kind {
+        ItemKind::Issue => Color::Green,
+        ItemKind::PullRequest => Color::Magenta,
+        ItemKind::Draft | ItemKind::Other => Color::DarkGray,
+    };
+    let fg = |c: Color| fg_override.unwrap_or(c);
+    let bold = if selected {
+        Modifier::BOLD
+    } else {
+        Modifier::empty()
+    };
+    let number = item.number().map(|n| format!("#{n} ")).unwrap_or_default();
+    let head_w = 2 + number.width();
+    let title = truncate_to_width(item.title(), width.saturating_sub(head_w));
+    let title_w = head_w + title.width();
+    let mut title_style = Style::default().add_modifier(bold);
+    if let Some(fg) = fg_override {
+        title_style = title_style.fg(fg);
+    }
+    let first = vec![
+        Span::styled(
+            format!("{} ", kind.icon()),
+            Style::default().fg(fg(icon_color)).add_modifier(bold),
+        ),
+        Span::styled(
+            number,
+            Style::default().fg(fg(Color::Yellow)).add_modifier(bold),
+        ),
+        Span::styled(title, title_style),
+        Span::raw(" ".repeat(width.saturating_sub(title_w))),
+    ];
+    let mut parts: Vec<String> = item.assignees().iter().map(|a| format!("@{a}")).collect();
+    if let Some(labels) = item.field_text("labels") {
+        parts.push(labels);
+    }
+    let sub = truncate_to_width(&parts.join("  "), width.saturating_sub(2));
+    let sub_w = 2 + sub.width();
+    let second = vec![
+        Span::styled(format!("  {sub}"), Style::default().fg(fg(Color::Gray))),
+        Span::raw(" ".repeat(width.saturating_sub(sub_w))),
+    ];
+    vec![Line::from(first), Line::from(second)]
+}
+
+/// Cut `s` to at most `width` columns, ending in `…` when cut.
+pub fn truncate_to_width(s: &str, width: usize) -> String {
+    if s.width() <= width {
+        return s.to_string();
+    }
+    if width == 0 {
+        return String::new();
+    }
+    let mut out = String::new();
+    let mut w = 0;
+    for c in s.chars() {
+        let cw = c.width().unwrap_or(0);
+        if w + cw > width.saturating_sub(1) {
+            break;
+        }
+        out.push(c);
+        w += cw;
+    }
+    out.push('…');
+    out
+}
+
+impl Pane<PaneEvent> for BoardPane {
+    crate::impl_handle_key!(keymap);
+
+    fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+        let is_focused = shared.focused_pane == self.pane_id;
+        if self.mode == BoardMode::Board {
+            self.layout_columns(area.width.saturating_sub(2));
+        }
+        let title = self.title();
+        let block = theme::pane_block(&title, is_focused);
+        let empty = if let Some(e) = &self.error {
+            Some(format!("Error: {e}"))
+        } else if self.loading && self.board.is_none() {
+            Some("Loading...".to_string())
+        } else if self.board.is_none() {
+            Some("Select a project".to_string())
+        } else if self.item_count() == 0 {
+            Some("No items".to_string())
+        } else {
+            None
+        };
+        if let Some(message) = empty {
+            theme::render_empty_list(f, area, block, &message);
+            return;
+        }
+        let inner = block.inner(area);
+        f.render_widget(block, area);
+        if inner.width == 0 || inner.height == 0 {
+            return;
+        }
+        let show_selection = is_focused
+            || (shared.focused_pane == self.detail_pane_id && shared.previous_pane == self.pane_id);
+        let (match_set, current_match) = theme::list_search_highlights(shared, self.pane_id);
+        match self.mode {
+            BoardMode::Board => self.render_board(
+                f,
+                inner,
+                is_focused,
+                show_selection,
+                &match_set,
+                current_match,
+            ),
+            BoardMode::Table => {
+                self.render_table(f, inner, show_selection, &match_set, current_match)
+            }
+        }
+    }
+
+    /// Search covers titles and `#numbers`; a match is an item index.
+    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+        match &self.board {
+            Some(b) => pane::collect_list_search_matches(&b.items, query, |i| {
+                format!(
+                    "{} {}",
+                    i.number().map(|n| format!("#{n}")).unwrap_or_default(),
+                    i.title()
+                )
+            }),
+            None => vec![],
+        }
+    }
+
+    fn set_selected_idx(&mut self, idx: usize) {
+        self.select_item(idx);
+    }
+
+    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
+        if let SearchMatch::ListEntry(idx) = search_match {
+            self.select_item(*idx);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::search::SearchState;
+    use crate::projects::domain::types::tests::board;
+
+    fn pane() -> BoardPane {
+        let mut p = BoardPane::new(1, 2, 0);
+        p.set_board(board());
+        p
+    }
+
+    fn shared() -> PaneShared {
+        PaneShared {
+            focused_pane: 1,
+            previous_pane: 0,
+            search: SearchState::new(),
+        }
+    }
+
+    fn selected_id(p: &BoardPane) -> &str {
+        p.selected_item().map(|i| i.id.as_str()).unwrap_or("")
+    }
+
+    #[test]
+    fn columns_and_cards_navigate_with_hjkl() {
+        let mut p = pane();
+        let sh = shared();
+        assert_eq!(p.column_count(), 5);
+        assert_eq!(p.item_count(), 5);
+        assert!(p.truncated());
+        // Starts on the first column (Todo) and its first card.
+        assert_eq!(selected_id(&p), "I4");
+        let ev = p.execute(&sh, BoardAction::NextColumn);
+        assert!(matches!(ev.as_slice(), [PaneEvent::SelectionChanged]));
+        assert_eq!(selected_id(&p), "I2", "In Progress");
+        p.execute(&sh, BoardAction::NextColumn);
+        assert_eq!(selected_id(&p), "I1", "Done");
+        // Moving down inside a one-card column is a no-op.
+        assert!(p
+            .execute(&sh, BoardAction::Nav(NavAction::MoveDown))
+            .is_empty());
+        // Right stops at the last column.
+        p.execute(&sh, BoardAction::NextColumn);
+        p.execute(&sh, BoardAction::NextColumn);
+        assert_eq!(selected_id(&p), "I3", "No status");
+        assert!(p.execute(&sh, BoardAction::NextColumn).is_empty());
+        p.execute(&sh, BoardAction::PrevColumn);
+        assert_eq!(selected_id(&p), "I5", "Blocked");
+        // Enter focuses the detail, Esc goes back to the project list.
+        let ev = p.execute(&sh, BoardAction::OpenDetail);
+        assert!(matches!(ev.as_slice(), [PaneEvent::SetFocus(2)]));
+        let ev = p.execute(&sh, BoardAction::Esc);
+        assert!(matches!(ev.as_slice(), [PaneEvent::SetFocus(0)]));
+    }
+
+    #[test]
+    fn table_mode_keeps_the_selected_item_and_sorts() {
+        let mut p = pane();
+        let sh = shared();
+        p.execute(&sh, BoardAction::NextColumn);
+        assert_eq!(selected_id(&p), "I2");
+        assert!(p.execute(&sh, BoardAction::ToggleTable).is_empty());
+        assert_eq!(p.mode, BoardMode::Table);
+        assert_eq!(selected_id(&p), "I2", "same item after the toggle");
+        assert_eq!(p.sort_label(), Some("#"));
+        // Sorted by number: #114, #119, #124, then the items without one.
+        assert_eq!(p.sorted, [0, 3, 1, 2, 4]);
+        assert_eq!(p.table_row, 2);
+        p.execute(&sh, BoardAction::CycleSort);
+        assert_eq!(p.sort_label(), Some("Title"));
+        assert_eq!(selected_id(&p), "I2", "sort keeps the selection");
+        // `l` also advances the sort column in table mode; `h` goes back.
+        p.execute(&sh, BoardAction::NextColumn);
+        assert_eq!(p.sort_label(), Some("Assignees"));
+        p.execute(&sh, BoardAction::PrevColumn);
+        assert_eq!(p.sort_label(), Some("Title"));
+        // j / k walk the sorted rows.
+        p.execute(&sh, BoardAction::Nav(NavAction::JumpTop));
+        assert_eq!(selected_id(&p), "I1", "Config… first by title");
+        let ev = p.execute(&sh, BoardAction::Nav(NavAction::MoveDown));
+        assert!(matches!(ev.as_slice(), [PaneEvent::SelectionChanged]));
+        assert_eq!(selected_id(&p), "I2");
+        // Back to the board: the column / card of that item is selected.
+        p.execute(&sh, BoardAction::ToggleTable);
+        assert_eq!(p.mode, BoardMode::Board);
+        assert_eq!((p.col, p.row), (1, 0));
+        // `s` outside table mode is a no-op.
+        assert!(p.execute(&sh, BoardAction::CycleSort).is_empty());
+        assert_eq!(p.sort_label(), Some("Title"));
+    }
+
+    #[test]
+    fn open_browser_uses_the_item_url_or_the_project_url() {
+        let mut p = pane();
+        let sh = shared();
+        p.set_project_url(Some("https://github.com/users/td72/projects/2".into()));
+        let ev = p.execute(&sh, BoardAction::OpenBrowser);
+        assert!(matches!(ev.as_slice(), [PaneEvent::OpenUrl(u)] if u.ends_with("/issues/119")));
+        // The draft has no URL of its own: open the project.
+        p.jump_to_match(&sh, &SearchMatch::ListEntry(2));
+        assert_eq!(selected_id(&p), "I3");
+        let ev = p.execute(&sh, BoardAction::OpenBrowser);
+        assert!(matches!(ev.as_slice(), [PaneEvent::OpenUrl(u)] if u.ends_with("/projects/2")));
+    }
+
+    #[test]
+    fn search_matches_titles_and_numbers_across_columns() {
+        let p = pane();
+        let sh = shared();
+        assert_eq!(p.collect_search_matches(&sh, "projects").len(), 2);
+        let m = p.collect_search_matches(&sh, "#124");
+        assert!(matches!(m.as_slice(), [SearchMatch::ListEntry(1)]));
+        assert!(p.collect_search_matches(&sh, "nothing").is_empty());
+    }
+
+    #[test]
+    fn refresh_keeps_the_selection_by_item_id() {
+        let mut p = pane();
+        let sh = shared();
+        p.execute(&sh, BoardAction::NextColumn);
+        p.execute(&sh, BoardAction::NextColumn);
+        assert_eq!(selected_id(&p), "I1");
+        // The item moved from Done back to Todo.
+        let mut b = board();
+        b.items[0].status = Some("Todo".into());
+        p.set_board(b);
+        assert_eq!(selected_id(&p), "I1");
+        assert_eq!(p.col, 0);
+        // A board without that item clamps instead.
+        let mut b = board();
+        b.items.clear();
+        p.set_board(b);
+        assert!(p.selected_item().is_none());
+        assert_eq!(p.column_count(), 3, "status options stay as columns");
+    }
+
+    #[test]
+    fn cards_truncate_and_pad_to_the_column_width() {
+        let b = board();
+        let lines = card_lines(&b.items[0], 20, false, None);
+        let text: Vec<String> = lines
+            .iter()
+            .map(|l| l.spans.iter().map(|s| s.content.to_string()).collect())
+            .collect();
+        assert_eq!(text[0].width(), 20);
+        assert!(text[0].starts_with("● #114 Config"));
+        assert!(text[0].ends_with('…'));
+        assert_eq!(text[1].trim_end(), "  @td72  enhancement");
+        // A draft shows no number and has an empty second line.
+        let lines = card_lines(&b.items[2], 40, true, None);
+        let first: String = lines[0]
+            .spans
+            .iter()
+            .map(|s| s.content.to_string())
+            .collect();
+        assert!(first.starts_with("✎ Record the Projects demo tape"));
+        assert_eq!(lines[1].spans[0].content.trim(), "");
+        assert_eq!(truncate_to_width("日本語テキスト", 7), "日本語…");
+        assert_eq!(truncate_to_width("short", 10), "short");
+        assert_eq!(truncate_to_width("x", 0), "");
+    }
+}
