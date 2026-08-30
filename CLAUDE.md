@@ -65,7 +65,7 @@ Use gitmoji prefix: `✨` new feature, `🐛` bug fix, `🩹` minor fix, `♻️
 - `src/main.rs` — CLI, event loop; `src/pages.rs` — page registry (`build_pages` creates the pages named by the config's `pages` node, in slot order)
 - `src/core/` — Page-agnostic framework: `app.rs` (`App`, `AppContext`, `PageState` trait), `pane.rs` (`Pane`, `PaneSet`, `PaneShared`, event dispatch), `layout.rs`, `keymap.rs`, `search.rs`, `tab.rs`, `tree.rs` (`nest_by` tree layout), `config/` (KDL loader / merge), `ui/` (status bar, help overlay, confirm dialog, `tail_pane.rs` log tail component)
 - `src/git/` — Git page: `domain/` (repository, diff, watcher), `panes/` (file tree, branch list, reflog, git log, diff view), `state.rs`
-- `src/github/` — GitHub page (`gh` CLI): issue / PR lists with detail views, disk cache
+- `src/github/` — GitHub page (`gh` CLI): issue / PR / workflow-run columns with detail views, disk cache; `domain/actions/` (`gh run` client, run / job / step types, log parsing) and `panes/detail_view/{jobs,log}.rs` (a run's Jobs tree and Log tail sub-panes) — the former Actions page
 - `src/files/` — Files page: yazi-like parent / current / preview columns
 - `src/docker/` — Docker page (`docker` CLI, read-only): containers grouped by compose project, images, inspect summary, log tail
 - `src/procs/` — Procs page (`sysinfo` + `lsof` / `ss`, read-only): process tree, listening ports, process detail
