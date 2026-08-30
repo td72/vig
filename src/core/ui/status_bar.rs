@@ -31,6 +31,8 @@ fn page_tab_spans(ctx: &AppContext) -> Vec<Span<'static>> {
         } else {
             inactive_style
         };
+        // The number is the page's slot (tab position), not a key: keys are
+        // bindings *onto* slots and are listed in the help overlay instead.
         spans.push(Span::styled(format!(" {}:{} ", i + 1, label), style));
     }
     spans

@@ -500,9 +500,7 @@ impl crate::core::app::PageState for GitHubState {
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
 
-        let s = |k: &str, v: &str| (k.to_string(), v.to_string());
-        let mut entries = vec![s("1 / 2 / 3", "Switch view")];
-        entries.extend(self.view_keymap.help_entries());
+        let mut entries = self.view_keymap.help_entries();
         entries.extend(help_section("Issues"));
         entries.extend(self.panes.issue_tab.list.keymap().help_entries());
         entries.extend(help_section("Pull Requests"));

@@ -183,6 +183,14 @@ impl<A: Clone> Keymap<A> {
     pub fn lookup(&self, key: KeyEvent) -> Option<&A> {
         self.bindings.get(&KeyInput::from(key))
     }
+
+    /// All bindings in insertion order (a rebound key keeps its original
+    /// position; an unbound-then-rebound key moves to the end).
+    pub fn entries(&self) -> impl Iterator<Item = (&KeyInput, &A)> {
+        self.order
+            .iter()
+            .filter_map(|ki| self.bindings.get(ki).map(|a| (ki, a)))
+    }
 }
 
 impl<A: Clone + ActionHelp> Keymap<A> {

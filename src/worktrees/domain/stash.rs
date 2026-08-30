@@ -81,14 +81,28 @@ pub fn stash_patch(root: &Path, index: usize) -> Result<Vec<FileDiff>> {
     with_untracked.push(&selector);
     let out = match git_output(root, &with_untracked) {
         Ok(out) => out,
-        Err(_) => {
-            // `--include-untracked` needs git >= 2.32; retry without it.
+        // `--include-untracked` needs git >= 2.32; retry without it only
+        // when git rejected the option itself (`git_output` puts stderr in
+        // the error). Any other failure (bad selector, not a repo, …) would
+        // just fail again, so it is reported as is.
+        Err(e) if include_untracked_unsupported(&format!("{e:#}")) => {
             let mut plain: Vec<&str> = base.to_vec();
             plain.push(&selector);
             git_output(root, &plain)?
         }
+        Err(e) => return Err(e),
     };
     patch_to_files(&out)
+}
+
+/// Whether a `git stash show --include-untracked` failure means this git
+/// does not know the option (as opposed to any other error).
+///
+/// Old git prints ``error: unknown option `include-untracked'``; the check
+/// accepts either half so a differently worded message still matches.
+fn include_untracked_unsupported(stderr: &str) -> bool {
+    let text = stderr.to_ascii_lowercase();
+    text.contains("unknown option") || text.contains("include-untracked")
 }
 
 /// Parse a unified diff into side-by-side `FileDiff`s via libgit2.
@@ -143,6 +157,24 @@ mod tests {
             (Some("(no branch)".to_string()), "detached work".to_string())
         );
         assert_eq!(split_subject("custom"), (None, "custom".to_string()));
+    }
+
+    #[test]
+    fn falls_back_only_when_include_untracked_is_unknown() {
+        assert!(include_untracked_unsupported(
+            "git stash failed: error: unknown option `include-untracked'"
+        ));
+        assert!(include_untracked_unsupported(
+            "error: Unknown option: --include-untracked"
+        ));
+        assert!(include_untracked_unsupported("unknown option `u'"));
+        assert!(!include_untracked_unsupported(
+            "git stash failed: fatal: ambiguous argument 'stash@{9}': unknown revision"
+        ));
+        assert!(!include_untracked_unsupported(
+            "fatal: not a git repository (or any of the parent directories): .git"
+        ));
+        assert!(!include_untracked_unsupported(""));
     }
 
     #[test]

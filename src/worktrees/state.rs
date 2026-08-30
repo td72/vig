@@ -293,8 +293,7 @@ impl PageState for WorktreesState {
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
         let s = |k: &str, v: &str| (k.to_string(), v.to_string());
-        let mut entries = vec![s("1 … 7", "Switch view")];
-        entries.extend(self.view_keymap.help_entries());
+        let mut entries = self.view_keymap.help_entries();
         entries.extend(help_section("Worktrees"));
         entries.extend(self.panes.worktrees.keymap().help_entries());
         entries.extend(help_section("Stashes"));

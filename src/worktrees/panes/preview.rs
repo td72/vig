@@ -145,7 +145,7 @@ impl PreviewPane {
     pub fn clear(&mut self) {
         self.content = Content::Empty;
         self.scroll = 0;
-        self.set_diff_files(Vec::new());
+        self.set_diff_files(Rc::new(Vec::new()));
     }
 
     /// Show the HEAD commit of `wt`; `back_to` is the worktrees pane.
@@ -158,7 +158,7 @@ impl PreviewPane {
             branch: wt.ref_label(),
             summary,
         };
-        self.set_diff_files(Vec::new());
+        self.set_diff_files(Rc::new(Vec::new()));
     }
 
     /// Show the patch of `stash`; `back_to` is the stashes pane.
@@ -173,23 +173,26 @@ impl PreviewPane {
     }
 
     /// Show an already-parsed stash patch (see [`show_stash`](Self::show_stash)).
+    /// The files are shared between `content` and the diff widget through
+    /// one `Rc`, not copied.
     fn set_stash(&mut self, name: String, files: Vec<FileDiff>, error: Option<String>) {
+        let files = Rc::new(files);
         self.content = Content::Stash {
             name,
-            files: Rc::new(files.clone()),
+            files: Rc::clone(&files),
             error,
         };
         self.set_diff_files(files);
     }
 
-    fn set_diff_files(&mut self, files: Vec<FileDiff>) {
+    fn set_diff_files(&mut self, files: Rc<Vec<FileDiff>>) {
         let first = (!files.is_empty()).then_some(0);
         let file_data = files
             .iter()
             .filter(|f| !f.is_binary)
             .map(|f| f.highlight_data())
             .collect();
-        self.diff.set_files(Rc::new(files));
+        self.diff.set_files(files);
         self.diff.vim = Default::default();
         self.diff.reset_to_file(first);
         self.diff.spawn_highlight(file_data);

@@ -439,9 +439,7 @@ impl PageState for DockerState {
 
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
-        let s = |k: &str, v: &str| (k.to_string(), v.to_string());
-        let mut entries = vec![s("1 / 2 / 3 / 4", "Switch view")];
-        entries.extend(self.view_keymap.help_entries());
+        let mut entries = self.view_keymap.help_entries();
         entries.extend(help_section("Containers"));
         entries.extend(self.panes.containers.keymap().help_entries());
         entries.extend(help_section("Images"));
@@ -524,8 +522,11 @@ mod tests {
                 state.panes.ids.logs
             ]
         );
+        // The view-switch entry is prepended by `App::active_help_bindings`
+        // from the app keymap; the page starts with its own `view` keys.
         let help = state.help_bindings();
-        assert_eq!(help[0].0, "1 / 2 / 3 / 4");
+        assert_eq!(help[0], ("q".to_string(), "Quit".to_string()));
+        assert!(help.iter().all(|(_, d)| d != "Switch view"));
         assert!(help.iter().any(|(_, d)| d.contains("Logs")));
     }
 }

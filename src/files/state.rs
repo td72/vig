@@ -339,9 +339,7 @@ impl PageState for FilesState {
 
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
-        let s = |k: &str, v: &str| (k.to_string(), v.to_string());
-        let mut entries = vec![s("1 / 2 / 3", "Switch view")];
-        entries.extend(self.view_keymap.help_entries());
+        let mut entries = self.view_keymap.help_entries();
         entries.extend(help_section("Files"));
         entries.extend(self.panes.tab.list.keymap().help_entries());
         entries.extend(help_section("Preview"));

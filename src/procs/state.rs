@@ -336,9 +336,7 @@ impl PageState for ProcsState {
 
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
-        let s = |k: &str, v: &str| (k.to_string(), v.to_string());
-        let mut entries = vec![s("1 / 2 / 3 / 4 / 5", "Switch view")];
-        entries.extend(self.view_keymap.help_entries());
+        let mut entries = self.view_keymap.help_entries();
         entries.extend(help_section("Processes"));
         entries.extend(self.panes.tab.list.keymap().help_entries());
         entries.extend(help_section("Ports"));
@@ -405,6 +403,7 @@ mod tests {
             should_quit: false,
             active_page: 0,
             page_labels: vec![],
+            page_keys: vec![],
             show_help: false,
             status_message: None,
             error_dialog: None,
@@ -549,10 +548,13 @@ mod tests {
     }
 
     #[test]
-    fn help_lists_every_pane_and_the_view_switch() {
+    fn help_lists_every_pane() {
         let s = state();
+        // The view-switch entry is prepended by `App::active_help_bindings`
+        // from the app keymap; the page starts with its own `view` keys.
         let help = s.help_bindings();
-        assert_eq!(help[0].0, "1 / 2 / 3 / 4 / 5");
+        assert_eq!(help[0], ("q".to_string(), "Quit".to_string()));
+        assert!(help.iter().all(|(_, d)| d != "Switch view"));
         let text: Vec<String> = help.iter().map(|(k, v)| format!("{k} {v}")).collect();
         for needle in [
             "── Processes ──",

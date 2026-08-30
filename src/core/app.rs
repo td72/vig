@@ -15,6 +15,10 @@ pub struct AppContext {
     pub should_quit: bool,
     pub active_page: usize,
     pub page_labels: Vec<&'static str>,
+    /// Display strings of the app-keymap keys that switch to each page
+    /// (same index as `page_labels`); derived by [`App::new`] from the
+    /// `app { }` block, so a page may have several keys or none.
+    pub page_keys: Vec<Vec<String>>,
     pub show_help: bool,
     pub status_message: Option<String>,
     pub error_dialog: Option<ErrorDialogState>,
@@ -160,12 +164,27 @@ pub struct App {
     app_keymap: Keymap<AppAction>,
 }
 
+/// Display strings of the keys bound to `SwitchPage(idx)` for every page
+/// index below `page_count`, in keymap insertion order.
+fn page_keys(app_keymap: &Keymap<AppAction>, page_count: usize) -> Vec<Vec<String>> {
+    let mut keys = vec![Vec::new(); page_count];
+    for (ki, action) in app_keymap.entries() {
+        if let AppAction::SwitchPage(idx) = action {
+            if let Some(slot) = keys.get_mut(*idx) {
+                slot.push(ki.to_string());
+            }
+        }
+    }
+    keys
+}
+
 impl App {
-    pub fn new(ctx: AppContext, pages: Vec<Page>, cfg: &Config) -> Result<Self> {
+    pub fn new(mut ctx: AppContext, pages: Vec<Page>, cfg: &Config) -> Result<Self> {
         let page_names: Vec<&str> = pages.iter().map(|p| p.id()).collect();
         let entries = cfg.app_entries()?;
         let app_keymap = build_app_keymap(&entries, &page_names)
             .map_err(|e| anyhow!("invalid {}: app block: {e}", cfg.describe()))?;
+        ctx.page_keys = page_keys(&app_keymap, pages.len());
         Ok(Self {
             ctx,
             pages,
@@ -204,8 +223,23 @@ impl App {
         self.pages[idx].on_suspend_return(&mut self.ctx, status)
     }
 
+    /// Help entries of the active page, preceded by the page-switch keys of
+    /// the app keymap (`1 / 2 / … `, "Switch view") when any page has one.
     pub fn active_help_bindings(&self) -> Vec<(String, String)> {
-        self.pages[self.ctx.active_page].help_bindings()
+        let mut entries = Vec::new();
+        let switch_keys = self
+            .ctx
+            .page_keys
+            .iter()
+            .flatten()
+            .map(String::as_str)
+            .collect::<Vec<_>>()
+            .join(" / ");
+        if !switch_keys.is_empty() {
+            entries.push((switch_keys, "Switch view".to_string()));
+        }
+        entries.extend(self.pages[self.ctx.active_page].help_bindings());
+        entries
     }
 
     pub fn handle_key(&mut self, key: KeyEvent) -> Result<PageAction> {
@@ -262,18 +296,17 @@ mod tests {
     /// resolve, which previously was silently dropped (1/2 page switching did nothing)
     /// and now panics via the embedded-default `expect`. This builds the keymap the
     /// same way `App::new` does, from the real pages, so the two can't drift apart.
-    #[test]
-    fn app_keymap_resolves_page_switch_bindings() {
+    /// Every real page, created from `cfg` the way `run_tui` does.
+    fn all_pages(cfg: &Config) -> (Vec<Page>, PathBuf) {
         let cwd = std::env::current_dir().unwrap();
-        let cfg = Config::builtin();
-        let (git_page, workdir) = crate::git::page::new_page(&cwd, &cfg).expect("git page");
-        let gh_page = crate::github::page::new_page(&cfg).expect("github page");
-        let files_page = crate::files::page::new_page(&workdir, &cfg, None).expect("files page");
-        let docker_page = crate::docker::page::new_page(&cfg).expect("docker page");
-        let procs_page = crate::procs::page::new_page(&cfg).expect("procs page");
-        let actions_page = crate::actions::page::new_page(&cfg).expect("actions page");
+        let (git_page, workdir) = crate::git::page::new_page(&cwd, cfg).expect("git page");
+        let gh_page = crate::github::page::new_page(cfg).expect("github page");
+        let files_page = crate::files::page::new_page(&workdir, cfg, None).expect("files page");
+        let docker_page = crate::docker::page::new_page(cfg).expect("docker page");
+        let procs_page = crate::procs::page::new_page(cfg).expect("procs page");
+        let actions_page = crate::actions::page::new_page(cfg).expect("actions page");
         let worktrees_page =
-            crate::worktrees::page::new_page(&workdir, &cfg).expect("worktrees page");
+            crate::worktrees::page::new_page(&workdir, cfg).expect("worktrees page");
         let pages = vec![
             git_page,
             gh_page,
@@ -283,25 +316,44 @@ mod tests {
             actions_page,
             worktrees_page,
         ];
-        let procs_idx = pages.iter().position(|p| p.id() == "procs").unwrap();
-        let actions_idx = pages.iter().position(|p| p.id() == "actions").unwrap();
-        let worktrees_idx = pages.iter().position(|p| p.id() == "worktrees").unwrap();
+        (pages, workdir)
+    }
 
+    /// Build the `App` from `cfg` exactly as production does; `App::new`
+    /// fails (failing the test) if the page ids ever drift from the
+    /// `page:*` references in the config.
+    fn app_with(cfg: &Config) -> App {
+        let (pages, workdir) = all_pages(cfg);
         let ctx = AppContext {
             should_quit: false,
             active_page: 0,
             page_labels: pages.iter().map(|p| p.label()).collect(),
+            page_keys: Vec::new(),
             show_help: false,
             status_message: None,
             error_dialog: None,
             workdir,
             needs_full_redraw: false,
         };
+        App::new(ctx, pages, cfg).expect("app keymap")
+    }
 
-        // Builds the app keymap exactly as production does; `App::new` fails
-        // (failing the test) if the page ids ever drift from the `page:*`
-        // references in `default.kdl`.
-        let app = App::new(ctx, pages, &cfg).expect("app keymap");
+    fn user_config(kdl: &str) -> Config {
+        let doc: kdl::KdlDocument = kdl.parse().unwrap();
+        Config::with_user(&doc, PathBuf::from("/u/config.kdl")).expect("user config")
+    }
+
+    fn page_index(app: &App, id: &str) -> usize {
+        app.pages.iter().position(|p| p.id() == id).unwrap()
+    }
+
+    #[test]
+    fn app_keymap_resolves_page_switch_bindings() {
+        let cfg = Config::builtin();
+        let app = app_with(&cfg);
+        let procs_idx = page_index(&app, "procs");
+        let actions_idx = page_index(&app, "actions");
+        let worktrees_idx = page_index(&app, "worktrees");
 
         let look = |s: &str| {
             let ki: KeyInput = s.parse().unwrap();
@@ -317,5 +369,80 @@ mod tests {
         assert_eq!(look("6"), Some(AppAction::SwitchPage(actions_idx)));
         assert_eq!(look("7"), Some(AppAction::SwitchPage(worktrees_idx)));
         assert_eq!(look("Ctrl+c"), Some(AppAction::Quit));
+    }
+
+    /// The header tab labels and the help "Switch view" entry are derived
+    /// from the `app { }` block, so a page bound to `7` shows `7`, not its
+    /// position (`6`).
+    #[test]
+    fn page_keys_follow_the_builtin_app_block() {
+        let app = app_with(&Config::builtin());
+        let keys: Vec<Vec<&str>> = app
+            .ctx
+            .page_keys
+            .iter()
+            .map(|k| k.iter().map(String::as_str).collect())
+            .collect();
+        assert_eq!(
+            keys,
+            vec![
+                vec!["1"],
+                vec!["2"],
+                vec!["3"],
+                vec!["4"],
+                vec!["5"],
+                vec!["6"],
+                vec!["7"]
+            ]
+        );
+        let help = app.active_help_bindings();
+        assert_eq!(
+            help[0],
+            (
+                "1 / 2 / 3 / 4 / 5 / 6 / 7".to_string(),
+                "Switch view".to_string()
+            )
+        );
+        // Pages no longer add their own view-switch entry.
+        assert_eq!(help.iter().filter(|(_, v)| v == "Switch view").count(), 1);
+    }
+
+    #[test]
+    fn page_keys_follow_user_rebindings() {
+        // An extra key is appended after the built-in one.
+        let app = app_with(&user_config(r#"app { "w" "page:worktrees" }"#));
+        let idx = page_index(&app, "worktrees");
+        assert_eq!(app.ctx.page_keys[idx], vec!["7", "w"]);
+        assert_eq!(
+            app.active_help_bindings()[0].0,
+            "1 / 2 / 3 / 4 / 5 / 6 / 7 / w"
+        );
+
+        // Unbinding the built-in key leaves only the user's key, so the
+        // header shows `w:Worktrees`.
+        let app = app_with(&user_config(r#"app { "7" "None"; "w" "page:worktrees" }"#));
+        let idx = page_index(&app, "worktrees");
+        assert_eq!(app.ctx.page_keys[idx], vec!["w"]);
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / 6 / w");
+    }
+
+    #[test]
+    fn page_keys_helper_groups_by_page_in_insertion_order() {
+        let km = build_app_keymap(
+            &[
+                ("Ctrl+c".to_string(), "Quit".to_string()),
+                ("2".to_string(), "page:b".to_string()),
+                ("1".to_string(), "page:a".to_string()),
+                ("Space".to_string(), "page:b".to_string()),
+                ("9".to_string(), "SwitchPage:9".to_string()),
+            ],
+            &["a", "b", "c"],
+        )
+        .unwrap();
+        let keys = page_keys(&km, 3);
+        assert_eq!(keys[0], vec!["1"]);
+        assert_eq!(keys[1], vec!["2", "Space"]);
+        assert!(keys[2].is_empty());
+        assert_eq!(keys.len(), 3, "out-of-range page indices are ignored");
     }
 }
