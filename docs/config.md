@@ -46,7 +46,7 @@ Your file is a **partial override** of the defaults:
 | `page "<name>" { tabs ... }` | Replaces the tab order. |
 | `page "<name>" { bind ... }` | Replaces all select→detail bindings of that page. |
 
-Page names (`git`, `github`, `files`, `docker`, `procs`, `actions`, `worktrees`) and pane names are fixed — you can rearrange
+Page names (`git`, `github`, `files`, `docker`, `procs`, `worktrees`) and pane names are fixed — you can rearrange
 and rebind them, but not add new ones. Pages can be reordered or disabled
 with `pages`; panes cannot be removed, and a replaced layout must place
 every pane of the page.
@@ -103,7 +103,6 @@ page "github" { ... }
 page "files" { ... }
 page "docker" { ... }
 page "procs" { ... }
-page "actions" { ... }
 page "worktrees" { ... }
 ```
 
@@ -147,7 +146,7 @@ page's *slot* — the number shown in the header (`1:Git`, `2:GitHub`, …) and
 the page reached by `Tab` cycling. The default lists every page:
 
 ```kdl
-pages "git" "github" "files" "docker" "procs" "actions" "worktrees"
+pages "git" "github" "files" "docker" "procs" "worktrees"
 ```
 
 Your `pages` replaces this list wholesale. Pages you leave out are disabled
@@ -161,11 +160,15 @@ gives a three-tab vig with `1:Git 2:Files 3:Worktrees`. Unknown or repeated
 names are errors.
 
 Keys are bindings *onto* pages, not slots: `app { "<key>" "page:<name>" }`
-keeps addressing a page by name wherever it sits, so the built-in `1` … `7`
+keeps addressing a page by name wherever it sits, so the built-in `1` … `6`
 still switch to the same pages after reordering (the help overlay lists them
-as `1 / 3 / 7` in the example above). Built-in keys of disabled pages are
+as `1 / 3 / 6` in the example above). Built-in keys of disabled pages are
 dropped; a binding in *your* `app { }` block to a page that is not listed in
 `pages` is an error.
+
+The `actions` page of v0.7.0 was folded into the `github` page (its Workflow
+Runs column) in v0.8.0. A config that still lists `actions` in `pages` or
+binds `page:actions` is rejected with a message saying so — remove it.
 
 ### `app`
 
@@ -174,7 +177,7 @@ Global bindings that work on every page.
 | Action | Meaning |
 |---|---|
 | `"Quit"` | Quit vig |
-| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"`, `"page:actions"`, `"page:worktrees"` | Switch to that page (it must be listed in `pages`) |
+| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"`, `"page:worktrees"` | Switch to that page (it must be listed in `pages`) |
 | `"None"` | Unbind the key |
 
 ### Keys
@@ -203,6 +206,11 @@ page "git" {
   - `slot "<name>" then="<pane>" default="<pane>" { triggers "<pane>" ... }`
     — an area that shows `then` while one of the `triggers` panes has focus,
     and `default` otherwise (e.g. git log vs. diff view).
+  - `slot "<name>" default="<pane>" { when "<pane>" ... then="<pane>"; ... }`
+    — the same with several cases: the first `when` whose panes include the
+    focused pane wins, `default` shows otherwise (the GitHub detail area:
+    `pr_detail` for the PR column, `run_detail` for the runs column,
+    `issue_detail` by default). Both forms may be combined.
   - Sizes: `"30"` (cells), `"40%"`, `"min:20"`. Defaults to `"min:0"`.
 - `tabs` — the panes cycled by `Tab` / `BackTab`, in order.
 - `bind` — which detail pane a selection pane drives (e.g. selecting a file
@@ -232,8 +240,9 @@ that has the corresponding preset.
 | Pane | Actions |
 |---|---|
 | `view` (page-wide) | `Quit`, `Help`, `Refresh`, `PrevTab`, `NextTab`, `CyclePaneForward`, `CyclePaneBackward` |
-| `issue_list`, `pr_list` | `OpenDetail`, `SwitchTab`, `OpenBrowser`, `Esc` |
+| `issue_list`, `pr_list`, `run_list` | `OpenDetail`, `SwitchTab`, `OpenBrowser`, `Esc` |
 | `issue_detail`, `pr_detail` | `FocusBody`, `FocusRight`, `CycleForward`, `CycleBackward`, `ToggleWatch`, `OpenItem`, `Esc` |
+| `run_detail` | `FocusBody` (Jobs), `FocusRight` (Log), `CycleForward`, `CycleBackward`, `OpenLog`, `NextFailed`, `PrevFailed`, `OpenItem`, `Esc` (`Nav.JumpBottom` resumes following the log) |
 
 **Page `files`**
 
@@ -262,15 +271,6 @@ that has the corresponding preset.
 | `processes` | `FocusDetail`, `CycleSort`, `Esc` |
 | `ports` | `JumpToProcess`, `Esc` |
 | `detail` | `Back`, `Esc` |
-
-**Page `actions`**
-
-| Pane | Actions |
-|---|---|
-| `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward` |
-| `runs` | `OpenDetail`, `OpenBrowser`, `Esc` |
-| `jobs` | `OpenLog`, `OpenBrowser`, `Back`, `Esc` |
-| `log` | `NextFailed`, `PrevFailed`, `Back`, `Esc` (`Nav.JumpBottom` resumes following) |
 
 **Page `worktrees`**
 

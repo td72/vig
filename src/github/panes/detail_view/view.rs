@@ -1,6 +1,10 @@
 use super::GhDetailViewPane;
 use crate::core::pane::PaneShared;
 use crate::core::theme;
+use crate::github::domain::actions::time::{
+    duration_between, format_relative, now_secs, parse_iso8601,
+};
+use crate::github::domain::actions::types::{RunState, WorkflowRun};
 use crate::github::domain::types::*;
 use crate::github::state::{GhDetailContent, GhDetailPane};
 use ratatui::{
@@ -69,6 +73,10 @@ pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &PaneShared, are
                 Style::default().fg(Color::Red),
             )));
             f.render_widget(para, inner);
+            return;
+        }
+        GhDetailContent::Run(_) => {
+            render_run(f, dv, shared, inner, is_focused);
             return;
         }
         _ => {}
@@ -149,10 +157,10 @@ pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &PaneShared, are
             .split(cols[1]);
 
             dv.view_height = match active_pane {
-                GhDetailPane::Body => cols[0].height,
                 GhDetailPane::Status => right_rows[0].height,
                 GhDetailPane::Reviews => right_rows[1].height,
                 GhDetailPane::Comments => right_rows[2].height,
+                _ => cols[0].height,
             };
 
             let checks_count = detail.status_check_rollup.as_ref().map_or(0, |c| c.len());
@@ -207,6 +215,131 @@ pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &PaneShared, are
         }
         _ => unreachable!(),
     }
+}
+
+/// A workflow run: a header with its state, branch, event, duration and
+/// age, then the Jobs (job → steps tree) and Log sub-panes side by side.
+fn render_run(
+    f: &mut Frame,
+    dv: &mut GhDetailViewPane,
+    shared: &PaneShared,
+    inner: Rect,
+    is_focused: bool,
+) {
+    let active_pane = dv.active_pane;
+    let (match_set, current_match) = theme::list_search_highlights(shared, dv.pane_id);
+    let no_matches = std::collections::HashSet::new();
+    let GhDetailContent::Run(d) = &mut dv.content else {
+        return;
+    };
+
+    let header_lines = build_run_header(&d.run, now_secs());
+    let vert = Layout::vertical([
+        Constraint::Length(header_lines.len() as u16),
+        Constraint::Min(1),
+    ])
+    .split(inner);
+    f.render_widget(
+        Paragraph::new(header_lines).wrap(Wrap { trim: false }),
+        vert[0],
+    );
+
+    let cols =
+        Layout::horizontal([Constraint::Percentage(40), Constraint::Percentage(60)]).split(vert[1]);
+
+    let jobs_active = active_pane == GhDetailPane::Jobs;
+    let jobs_count = d
+        .jobs
+        .rows
+        .iter()
+        .filter(|r| matches!(r, super::jobs::JobRow::Job(_)))
+        .count();
+    let jobs_title = if d.jobs.rows.is_empty() {
+        "Jobs".to_string()
+    } else {
+        format!("Jobs ({jobs_count})")
+    };
+    let (jobs_matches, jobs_current) = if jobs_active {
+        (&match_set, current_match)
+    } else {
+        (&no_matches, None)
+    };
+    d.jobs.render(
+        f,
+        cols[0],
+        sub_block(&jobs_title, jobs_active, is_focused),
+        jobs_active && is_focused,
+        jobs_matches,
+        jobs_current,
+    );
+
+    let log_active = active_pane == GhDetailPane::Log;
+    let (log_matches, log_current) = if log_active {
+        (&match_set, current_match)
+    } else {
+        (&no_matches, None)
+    };
+    let log_title = d.log.title();
+    d.log.render(
+        f,
+        cols[1],
+        sub_block(&log_title, log_active, is_focused),
+        log_matches,
+        log_current,
+    );
+}
+
+fn build_run_header(run: &WorkflowRun, now: i64) -> Vec<Line<'static>> {
+    let state = run.state();
+    let title_line = Line::from(vec![
+        Span::raw("  "),
+        Span::styled(
+            format!("{} #{}", run.title(), run.number),
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
+        ),
+    ]);
+    let state_label = match state {
+        RunState::Queued => "queued",
+        RunState::InProgress => "in progress",
+        RunState::Success => "success",
+        RunState::Failure => "failure",
+        RunState::Cancelled => "cancelled",
+        RunState::Skipped => "skipped",
+        RunState::Other => "unknown",
+    };
+    let state_bg = match state {
+        RunState::Success => Color::Rgb(35, 134, 54),
+        RunState::Failure => Color::Rgb(218, 54, 51),
+        RunState::InProgress => Color::Rgb(187, 128, 9),
+        _ => Color::Rgb(110, 119, 129),
+    };
+    let mut spans = vec![
+        Span::raw(" "),
+        badge(&format!("{} {state_label}", state.icon()), state_bg),
+        Span::raw(" "),
+        badge(&run.head_branch, Color::Rgb(130, 80, 160)),
+        Span::raw(" "),
+        badge(&run.event, Color::Rgb(68, 71, 78)),
+    ];
+    let duration = match state {
+        RunState::Queued => String::new(),
+        RunState::InProgress => duration_between(Some(&run.created_at), None, now),
+        _ => duration_between(Some(&run.created_at), Some(&run.updated_at), now),
+    };
+    if !duration.is_empty() {
+        spans.push(Span::raw(" "));
+        spans.push(badge(&duration, Color::Rgb(31, 111, 139)));
+    }
+    if let Some(t) = parse_iso8601(&run.created_at) {
+        spans.push(Span::raw(" "));
+        spans.push(Span::styled(
+            format_relative(now - t),
+            Style::default().fg(Color::DarkGray),
+        ));
+    }
+    vec![title_line, Line::from(spans)]
 }
 
 fn render_pane(
@@ -1082,6 +1215,31 @@ mod tests {
     use super::*;
 
     const WIDE: usize = 200;
+
+    #[test]
+    fn run_header_shows_title_state_branch_event_duration_and_age() {
+        let run = WorkflowRun {
+            id: 1,
+            number: 191,
+            name: "CI".into(),
+            workflow_name: "CI".into(),
+            status: "completed".into(),
+            conclusion: "success".into(),
+            head_branch: "main".into(),
+            event: "push".into(),
+            created_at: "2026-08-28T08:17:23Z".into(),
+            updated_at: "2026-08-28T08:18:44Z".into(),
+            url: String::new(),
+        };
+        let now = parse_iso8601("2026-08-28T09:17:23Z").unwrap();
+        let lines = build_run_header(&run, now);
+        let text: Vec<String> = lines
+            .iter()
+            .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect())
+            .collect();
+        assert_eq!(text[0], "  CI #191");
+        assert_eq!(text[1], "  ✓ success   main   push   1m21s  1h ago");
+    }
 
     fn render(md: &str) -> Vec<String> {
         markdown_to_lines(md, "", WIDE)

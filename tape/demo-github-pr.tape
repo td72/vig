@@ -34,7 +34,7 @@ Sleep 300ms
 
 Show
 
-# --- Demo: GitHub View — Pull Requests ---
+# --- Demo: GitHub View — Pull Requests and Workflow Runs ---
 
 Type "vig"
 Enter
@@ -91,6 +91,56 @@ Type "h"
 Sleep 1.5s
 
 # Back to list
+Escape
+Sleep 1s
+
+# Move to the Workflow Runs column with l
+Type "l"
+Sleep 2s
+
+# Navigate runs: the detail follows the selected run
+Type "j"
+Sleep 2s
+
+# Open the run: its jobs with their steps nested underneath
+Enter
+Sleep 2s
+Type "j"
+Sleep 800ms
+Type "j"
+Sleep 1s
+
+# Show this job's log in the Log sub-pane
+Enter
+Sleep 4s
+
+# Scroll the log
+Type "j"
+Sleep 400ms
+Type "j"
+Sleep 400ms
+Ctrl+d
+Sleep 1.5s
+
+# Search the log
+Type "/cargo"
+Enter
+Sleep 2s
+Type "n"
+Sleep 1.5s
+Escape
+Sleep 800ms
+
+# Back to the jobs with h, then to the runs
+Type "h"
+Sleep 1.5s
+Escape
+Sleep 1s
+
+# Search the runs by workflow / branch
+Type "/release"
+Enter
+Sleep 2.5s
 Escape
 Sleep 1s
 

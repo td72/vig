@@ -31,15 +31,53 @@ pub enum LayoutNode {
     },
 }
 
-/// Rule for resolving a `Slot` to a concrete pane at render time.
-///
-/// If the currently focused pane is in `trigger_panes`, the slot resolves to
-/// `then_pane`; otherwise it resolves to `default_pane`.
-pub struct SlotRule {
-    pub slot_id: usize,
+/// One case of a [`SlotRule`]: show `then_pane` while the focused pane is
+/// one of `trigger_panes`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SlotCase {
     pub trigger_panes: Vec<usize>,
     pub then_pane: usize,
+}
+
+/// Rule for resolving a `Slot` to a concrete pane at render time.
+///
+/// The cases are tried in order: the first one whose `trigger_panes`
+/// contain the currently focused pane wins and the slot shows its
+/// `then_pane`; when none matches the slot shows `default_pane`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SlotRule {
+    pub slot_id: usize,
+    pub cases: Vec<SlotCase>,
     pub default_pane: usize,
+}
+
+impl SlotRule {
+    /// A single-case rule (`then_pane` while focus is in `trigger_panes`).
+    #[cfg(test)]
+    pub fn single(
+        slot_id: usize,
+        trigger_panes: Vec<usize>,
+        then_pane: usize,
+        default_pane: usize,
+    ) -> Self {
+        Self {
+            slot_id,
+            cases: vec![SlotCase {
+                trigger_panes,
+                then_pane,
+            }],
+            default_pane,
+        }
+    }
+
+    /// The pane this slot shows while `focused_pane` has focus.
+    pub fn resolve(&self, focused_pane: usize) -> usize {
+        self.cases
+            .iter()
+            .find(|c| c.trigger_panes.contains(&focused_pane))
+            .map(|c| c.then_pane)
+            .unwrap_or(self.default_pane)
+    }
 }
 
 /// Bundles a layout tree with its navigation and slot-resolution config.
@@ -57,14 +95,7 @@ impl PageLayoutConfig {
     pub fn resolve_slots(&self, focused_pane: usize) -> Vec<(usize, usize)> {
         self.slot_rules
             .iter()
-            .map(|r| {
-                let pane = if r.trigger_panes.contains(&focused_pane) {
-                    r.then_pane
-                } else {
-                    r.default_pane
-                };
-                (r.slot_id, pane)
-            })
+            .map(|r| (r.slot_id, r.resolve(focused_pane)))
             .collect()
     }
 }
@@ -217,12 +248,7 @@ mod tests {
         let config = PageLayoutConfig {
             tree: LayoutNode::Slot(0),
             tab_panes: vec![0, 1],
-            slot_rules: vec![SlotRule {
-                slot_id: 0,
-                trigger_panes: vec![1, 3],
-                then_pane: 2,
-                default_pane: 4,
-            }],
+            slot_rules: vec![SlotRule::single(0, vec![1, 3], 2, 4)],
         };
         // Focused on trigger pane → then_pane
         assert_eq!(config.resolve_slots(1), vec![(0, 2)]);
@@ -238,22 +264,36 @@ mod tests {
             tree: LayoutNode::Pane(0),
             tab_panes: vec![],
             slot_rules: vec![
-                SlotRule {
-                    slot_id: 0,
-                    trigger_panes: vec![1],
-                    then_pane: 10,
-                    default_pane: 20,
-                },
-                SlotRule {
-                    slot_id: 1,
-                    trigger_panes: vec![2],
-                    then_pane: 30,
-                    default_pane: 40,
-                },
+                SlotRule::single(0, vec![1], 10, 20),
+                SlotRule::single(1, vec![2], 30, 40),
             ],
         };
         assert_eq!(config.resolve_slots(1), vec![(0, 10), (1, 40)]);
         assert_eq!(config.resolve_slots(2), vec![(0, 20), (1, 30)]);
+    }
+
+    #[test]
+    fn multi_case_slot_rule_takes_the_first_matching_case() {
+        let rule = SlotRule {
+            slot_id: 0,
+            cases: vec![
+                SlotCase {
+                    trigger_panes: vec![1, 3],
+                    then_pane: 3,
+                },
+                SlotCase {
+                    trigger_panes: vec![4, 5, 3],
+                    then_pane: 5,
+                },
+            ],
+            default_pane: 2,
+        };
+        assert_eq!(rule.resolve(1), 3);
+        assert_eq!(rule.resolve(3), 3, "earlier case wins");
+        assert_eq!(rule.resolve(4), 5);
+        assert_eq!(rule.resolve(5), 5);
+        assert_eq!(rule.resolve(0), 2);
+        assert_eq!(rule.resolve(99), 2);
     }
 
     #[test]

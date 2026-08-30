@@ -1,4 +1,4 @@
-//! Data types for the Actions page: workflow runs, jobs and steps as
+//! Data types for the GitHub page's Workflow Runs column: workflow runs, jobs and steps as
 //! returned by `gh run list --json` / `gh run view --json jobs`.
 
 use serde::{Deserialize, Serialize};

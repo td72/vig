@@ -2,7 +2,7 @@ use crate::core::config::constraint::parse_constraint;
 use crate::core::config::keymap_builder::{build_keymap, KeymapEntry};
 use crate::core::config::merge::merge_user_config;
 use crate::core::keymap::Keymap;
-use crate::core::layout::{LayoutNode, PageLayoutConfig, SlotRule, SplitDirection};
+use crate::core::layout::{LayoutNode, PageLayoutConfig, SlotCase, SlotRule, SplitDirection};
 use anyhow::{anyhow, Context, Result};
 use kdl::{KdlDocument, KdlNode};
 use std::collections::HashMap;
@@ -132,6 +132,19 @@ fn describe_source(source: Option<&Path>) -> String {
     }
 }
 
+/// Pages that were removed by folding them into another page. Configs that
+/// still name them get told where the page went instead of "unknown page".
+fn removed_page_reason(name: &str) -> Option<String> {
+    match name {
+        "actions" => Some(
+            "page \"actions\" was folded into the \"github\" page (v0.8.0); \
+             remove it from pages / app bindings"
+                .to_string(),
+        ),
+        _ => None,
+    }
+}
+
 // ── Config ────────────────────────────────────────────────────────────────────
 
 /// The effective configuration: the built-in defaults with an optional user
@@ -185,7 +198,6 @@ impl Config {
         cfg.files_page()?;
         cfg.docker_page()?;
         cfg.procs_page()?;
-        cfg.actions_page()?;
         cfg.worktrees_page()?;
         cfg.app_entries()?;
         cfg.theme()?;
@@ -234,6 +246,9 @@ impl Config {
                 }
             };
             if !known.iter().any(|k| k == name) {
+                if let Some(reason) = removed_page_reason(name) {
+                    return Err(anyhow!("invalid {}: pages: {reason}", self.describe()));
+                }
                 return Err(anyhow!(
                     "invalid {}: pages: unknown page {name:?}; expected one of: {}",
                     self.describe(),
@@ -286,6 +301,8 @@ impl Config {
                     "page {name:?} is not listed in `pages` ({})",
                     pages.join(", ")
                 )
+            } else if let Some(reason) = removed_page_reason(name) {
+                reason
             } else {
                 format!(
                     "unknown page {name:?}; expected one of: {}",
@@ -432,10 +449,6 @@ impl Config {
 
     pub fn procs_page(&self) -> Result<LoadedPageConfig> {
         self.page("procs")
-    }
-
-    pub fn actions_page(&self) -> Result<LoadedPageConfig> {
-        self.page("actions")
     }
 
     pub fn worktrees_page(&self) -> Result<LoadedPageConfig> {
@@ -628,12 +641,25 @@ fn collect_layout_pane_names_into(node: &KdlNode, names: &mut Vec<String>) {
             }
             if let Some(children) = node.children() {
                 for child in children.nodes() {
-                    if child.name().value() == "triggers" {
-                        for entry in child.entries().iter().filter(|e| e.name().is_none()) {
-                            if let Some(name) = entry.value().as_string() {
-                                names.push(name.to_string());
+                    match child.name().value() {
+                        "triggers" => {
+                            for entry in child.entries().iter().filter(|e| e.name().is_none()) {
+                                if let Some(name) = entry.value().as_string() {
+                                    names.push(name.to_string());
+                                }
                             }
                         }
+                        "when" => {
+                            if let Some(name) = child.get("then").and_then(|v| v.as_string()) {
+                                names.push(name.to_string());
+                            }
+                            for entry in child.entries().iter().filter(|e| e.name().is_none()) {
+                                if let Some(name) = entry.value().as_string() {
+                                    names.push(name.to_string());
+                                }
+                            }
+                        }
+                        _ => {}
                     }
                 }
             }
@@ -849,56 +875,81 @@ fn parse_slot(
         id
     });
 
-    let then_name = node
-        .get("then")
-        .and_then(|v| v.as_string())
-        .ok_or_else(|| anyhow!("slot {slot_name:?} missing then="))?;
     let default_name = node
         .get("default")
         .and_then(|v| v.as_string())
         .ok_or_else(|| anyhow!("slot {slot_name:?} missing default="))?;
-
-    let then_pane = *name_map
-        .get(then_name)
-        .ok_or_else(|| anyhow!("unknown pane in slot then=: {then_name:?}"))?;
     let default_pane = *name_map
         .get(default_name)
         .ok_or_else(|| anyhow!("unknown pane in slot default=: {default_name:?}"))?;
 
-    // Parse triggers from child block
-    let trigger_panes =
-        node.children()
-            .map(|child_doc| {
-                child_doc
-                    .nodes()
-                    .iter()
-                    .find(|n| n.name().value() == "triggers")
-                    .map(|triggers_node| {
-                        triggers_node
-                            .entries()
-                            .iter()
-                            .filter(|e| e.name().is_none())
-                            .map(|e| {
-                                let pane_name = e
-                                    .value()
-                                    .as_string()
-                                    .ok_or_else(|| anyhow!("trigger entry is not a string"))?;
-                                name_map.get(pane_name).copied().ok_or_else(|| {
-                                    anyhow!("unknown pane in triggers: {pane_name:?}")
-                                })
-                            })
-                            .collect::<Result<Vec<_>>>()
-                    })
-                    .transpose()
+    let resolve_pane = |pane_name: &str, what: &str| -> Result<usize> {
+        name_map
+            .get(pane_name)
+            .copied()
+            .ok_or_else(|| anyhow!("unknown pane in {what}: {pane_name:?}"))
+    };
+    let trigger_list = |entries: &[kdl::KdlEntry], what: &str| -> Result<Vec<usize>> {
+        entries
+            .iter()
+            .filter(|e| e.name().is_none())
+            .map(|e| {
+                let pane_name = e
+                    .value()
+                    .as_string()
+                    .ok_or_else(|| anyhow!("{what} entry is not a string"))?;
+                resolve_pane(pane_name, what)
             })
+            .collect()
+    };
+
+    let children: Vec<&KdlNode> = node
+        .children()
+        .map(|d| d.nodes().iter().collect())
+        .unwrap_or_default();
+
+    // Single-case shorthand: `then=` on the slot plus a `triggers` child.
+    let mut cases = Vec::new();
+    if let Some(then_name) = node.get("then").and_then(|v| v.as_string()) {
+        let then_pane = resolve_pane(then_name, "slot then=")?;
+        let trigger_panes = children
+            .iter()
+            .find(|n| n.name().value() == "triggers")
+            .map(|n| trigger_list(n.entries(), "triggers"))
             .transpose()?
-            .flatten()
             .unwrap_or_default();
+        cases.push(SlotCase {
+            trigger_panes,
+            then_pane,
+        });
+    }
+    // Multi-case form: `when "<pane>" ... then="<pane>"` children, in order.
+    for child in children.iter().filter(|n| n.name().value() == "when") {
+        let then_name = child
+            .get("then")
+            .and_then(|v| v.as_string())
+            .ok_or_else(|| anyhow!("slot {slot_name:?}: when missing then="))?;
+        let then_pane = resolve_pane(then_name, "when then=")?;
+        let trigger_panes = trigger_list(child.entries(), "when")?;
+        if trigger_panes.is_empty() {
+            return Err(anyhow!(
+                "slot {slot_name:?}: when then={then_name:?} lists no trigger panes"
+            ));
+        }
+        cases.push(SlotCase {
+            trigger_panes,
+            then_pane,
+        });
+    }
+    if cases.is_empty() {
+        return Err(anyhow!(
+            "slot {slot_name:?} needs then= (with a triggers child) or at least one when child"
+        ));
+    }
 
     slot_rules.push(SlotRule {
         slot_id,
-        trigger_panes,
-        then_pane,
+        cases,
         default_pane,
     });
 
@@ -1018,7 +1069,15 @@ mod tests {
     #[test]
     fn github_pane_keys_present() {
         let cfg = load_github_page_config().unwrap();
-        for name in &["view", "issue_list", "pr_list", "issue_detail", "pr_detail"] {
+        for name in &[
+            "view",
+            "issue_list",
+            "pr_list",
+            "run_list",
+            "issue_detail",
+            "pr_detail",
+            "run_detail",
+        ] {
             assert!(
                 cfg.pane_keys.contains_key(*name),
                 "missing pane keys for {name}"
@@ -1157,23 +1216,66 @@ mod tests {
     }
 
     #[test]
-    fn actions_page_ids_keys_and_bindings() {
-        let cfg = Config::builtin().actions_page().unwrap();
-        assert_eq!(cfg.name, "actions");
-        assert_eq!(cfg.resolve_id("runs"), Some(0));
-        assert_eq!(cfg.resolve_id("jobs"), Some(1));
-        assert_eq!(cfg.resolve_id("log"), Some(2));
+    fn github_page_runs_column_ids_keys_and_bindings() {
+        let cfg = Config::builtin().github_page().unwrap();
+        assert_eq!(cfg.resolve_id("run_list"), Some(2));
+        assert_eq!(cfg.resolve_id("run_detail"), Some(5));
+        // The three list columns are the tab panes; detail panes are reached
+        // with Enter and left with Esc.
         assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2]);
-        assert_eq!(cfg.bindings, vec![("runs".to_string(), "jobs".to_string())]);
-        for name in ["view", "runs", "jobs", "log"] {
+        assert_eq!(
+            cfg.bindings,
+            vec![
+                ("issue_list".to_string(), "issue_detail".to_string()),
+                ("pr_list".to_string(), "pr_detail".to_string()),
+                ("run_list".to_string(), "run_detail".to_string()),
+            ]
+        );
+        // One detail slot with a case per detail pane.
+        assert_eq!(cfg.layout.slot_rules.len(), 1);
+        let rule = &cfg.layout.slot_rules[0];
+        assert_eq!(rule.default_pane, 3, "issue_detail by default");
+        assert_eq!(rule.resolve(1), 4, "pr_list focus shows pr_detail");
+        assert_eq!(rule.resolve(4), 4);
+        assert_eq!(rule.resolve(2), 5, "run_list focus shows run_detail");
+        assert_eq!(rule.resolve(5), 5);
+        assert_eq!(rule.resolve(0), 3);
+        // The Actions page is gone: no page block, no key.
+        assert!(Config::builtin()
+            .builtin_page_names()
+            .iter()
+            .all(|p| p != "actions"));
+        let entries = Config::builtin().app_entries().unwrap();
+        assert!(entries.iter().all(|(_, a)| a != "page:actions"));
+    }
+
+    #[test]
+    fn removed_actions_page_fails_fast_with_a_hint() {
+        for bad in [
+            r#"pages "git" "actions""#,
+            r#"app { "6" "page:actions" }"#,
+            r#"pages "git" "github"; app { "a" "page:actions" }"#,
+        ] {
+            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
             assert!(
-                cfg.pane_keys.contains_key(name),
-                "missing pane keys for {name}"
+                msg.contains("folded into the \"github\" page"),
+                "{bad}: {msg}"
+            );
+            assert!(msg.contains("v0.8.0"), "{bad}: {msg}");
+            assert!(
+                msg.contains("remove it from pages / app bindings"),
+                "{bad}: {msg}"
             );
         }
-        // App block switches to it with "6".
-        let entries = Config::builtin().app_entries().unwrap();
-        assert!(entries.contains(&("6".to_string(), "page:actions".to_string())));
+        // A user page block for it is a plain unknown page.
+        let msg = format!(
+            "{:#}",
+            user(r#"page "actions" { }"#)
+                .err()
+                .expect("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
     }
 
     #[test]
@@ -1201,9 +1303,9 @@ mod tests {
                 "missing pane keys for {name}"
             );
         }
-        // App block switches to it with "7".
+        // App block switches to it with "6".
         let entries = Config::builtin().app_entries().unwrap();
-        assert!(entries.contains(&("7".to_string(), "page:worktrees".to_string())));
+        assert!(entries.contains(&("6".to_string(), "page:worktrees".to_string())));
     }
 
     #[test]
@@ -1212,8 +1314,10 @@ mod tests {
         let expected = [
             ("issue_list", 0usize),
             ("pr_list", 1),
-            ("issue_detail", 2),
-            ("pr_detail", 3),
+            ("run_list", 2),
+            ("issue_detail", 3),
+            ("pr_detail", 4),
+            ("run_detail", 5),
         ];
         for (name, id) in &expected {
             assert_eq!(
@@ -1326,15 +1430,7 @@ mod tests {
 
     // ── pages ─────────────────────────────────────────────────────────────
 
-    const ALL_PAGES: [&str; 7] = [
-        "git",
-        "github",
-        "files",
-        "docker",
-        "procs",
-        "actions",
-        "worktrees",
-    ];
+    const ALL_PAGES: [&str; 6] = ["git", "github", "files", "docker", "procs", "worktrees"];
 
     #[test]
     fn builtin_pages_list_every_page_in_declaration_order() {
@@ -1473,6 +1569,82 @@ mod tests {
             }
         ));
         assert_eq!(page.layout.tab_panes, vec![1, 0, 3]);
+    }
+
+    #[test]
+    fn user_slot_accepts_single_and_multi_case_forms() {
+        // Single-case shorthand (then= + triggers) on the github page.
+        let cfg = user(
+            r#"page "github" {
+                layout {
+                    split direction="vertical" {
+                        split direction="horizontal" size="40%" {
+                            place "issue_list"; place "pr_list"; place "run_list"
+                        }
+                        slot "detail" then="pr_detail" default="issue_detail" {
+                            triggers "pr_list" "pr_detail" "run_list" "run_detail"
+                        }
+                    }
+                }
+            }"#,
+        )
+        .unwrap();
+        let rule = &cfg.github_page().unwrap().layout.slot_rules[0];
+        assert_eq!(rule.cases.len(), 1);
+        assert_eq!(rule.resolve(2), 4);
+        assert_eq!(rule.resolve(0), 3);
+
+        // Multi-case form with a different order and default.
+        let cfg = user(
+            r#"page "github" {
+                layout {
+                    split direction="vertical" {
+                        split direction="horizontal" size="40%" {
+                            place "issue_list"; place "pr_list"; place "run_list"
+                        }
+                        slot "detail" default="run_detail" {
+                            when "issue_list" "issue_detail" then="issue_detail"
+                            when "pr_list" "pr_detail" then="pr_detail"
+                        }
+                    }
+                }
+            }"#,
+        )
+        .unwrap();
+        let rule = &cfg.github_page().unwrap().layout.slot_rules[0];
+        assert_eq!(rule.cases.len(), 2);
+        assert_eq!(rule.resolve(0), 3);
+        assert_eq!(rule.resolve(1), 4);
+        assert_eq!(rule.resolve(2), 5, "default");
+
+        for (bad, expect) in [
+            (r#"slot "detail" default="issue_detail" { }"#, "needs then="),
+            (
+                r#"slot "detail" default="issue_detail" { when then="pr_detail" }"#,
+                "lists no trigger panes",
+            ),
+            (
+                r#"slot "detail" default="issue_detail" { when "pr_list" }"#,
+                "when missing then=",
+            ),
+            (
+                r#"slot "detail" default="issue_detail" { when "nope" then="pr_detail" }"#,
+                "unknown pane in when",
+            ),
+        ] {
+            let kdl = format!(
+                r#"page "github" {{ layout {{ split direction="vertical" {{
+                    split direction="horizontal" {{
+                        place "issue_list"; place "pr_list"; place "run_list"
+                        place "pr_detail"; place "run_detail"
+                    }}
+                    {bad}
+                }} }} }}"#
+            );
+            let msg = format!("{:#}", user(&kdl).err().expect("expected an error"));
+            assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
+            assert!(msg.contains(expect), "{bad}: {msg}");
+        }
     }
 
     #[test]

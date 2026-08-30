@@ -11,7 +11,7 @@
 //! the (plain `fn`) line formatter can recognise them without side tables:
 //! `\u{1}S<step name>` for a step header and `\u{1}G<title>` for a group.
 
-use crate::actions::domain::time::clock_of;
+use crate::github::domain::actions::time::clock_of;
 
 const MARK: char = '\u{1}';
 const STEP: &str = "\u{1}S";

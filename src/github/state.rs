@@ -7,26 +7,34 @@ use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::tab::Tab;
 use crate::core::ui::status_bar;
+use crate::github::domain::actions::types::{Job, WorkflowRun};
 use crate::github::domain::client;
 use crate::github::domain::types::*;
-use crate::github::panes::detail_view::{DetailAction, GhDetailViewPane};
+use crate::github::panes::detail_view::{DetailAction, GhDetailViewPane, GhRunDetail};
 use crate::github::panes::gh_list::{GhListAction, GhListItem, GhListPane};
 use crate::github::panes::issue_list::{self, GhIssueListPane};
 use crate::github::panes::pr_list::{self, GhPrListPane};
+use crate::github::panes::run_list::{self, GhRunListPane};
 use anyhow::Result;
 use crossterm::event::KeyEvent;
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use std::collections::HashMap;
 use std::sync::mpsc;
+use std::time::{Duration, Instant};
+
+/// How often the run list is re-fetched while a run is queued or running.
+pub const ACTIVE_RUNS_REFRESH_INTERVAL: Duration = Duration::from_secs(5);
 
 // === Pane ID registry ===
 
 pub struct GhPaneIds {
     pub issue_list: usize,
     pub pr_list: usize,
+    pub run_list: usize,
     pub issue_detail: usize,
     pub pr_detail: usize,
+    pub run_detail: usize,
 }
 
 impl GhPaneIds {
@@ -34,23 +42,30 @@ impl GhPaneIds {
         Self {
             issue_list: cfg.resolve_id_expect("issue_list"),
             pr_list: cfg.resolve_id_expect("pr_list"),
+            run_list: cfg.resolve_id_expect("run_list"),
             issue_detail: cfg.resolve_id_expect("issue_detail"),
             pr_detail: cfg.resolve_id_expect("pr_detail"),
+            run_detail: cfg.resolve_id_expect("run_detail"),
         }
     }
 }
 
 #[cfg(test)]
-use crate::core::layout::{LayoutNode, SlotRule, SplitDirection};
+use crate::core::layout::{LayoutNode, SlotCase, SlotRule, SplitDirection};
 #[cfg(test)]
 use ratatui::layout::Constraint;
 
 #[derive(Debug, Clone)]
 pub enum GhDetailContent {
     None,
-    Loading { kind: GhDetailKind, number: u64 },
+    Loading {
+        kind: GhDetailKind,
+        number: u64,
+    },
     Issue(Box<GhIssueDetail>),
     Pr(Box<GhPrDetail>),
+    /// A workflow run: Jobs and Log sub-panes (not cached, polled while active).
+    Run(Box<GhRunDetail>),
     Error(String),
 }
 
@@ -60,26 +75,49 @@ pub enum GhDetailKind {
     Pr,
 }
 
+/// The sub-pane of the detail area that has focus. Issues use Body and
+/// Comments, PRs Body / Status / Reviews / Comments, runs Jobs / Log.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GhDetailPane {
     Body,
     Status,
     Reviews,
     Comments,
+    Jobs,
+    Log,
 }
 
 pub enum GhBgMessage {
     AuthStatus(Result<(), String>),
     IssueList(Result<Vec<GhIssueListItem>, String>),
     PrList(Result<Vec<GhPrListItem>, String>),
+    RunList(Result<Vec<WorkflowRun>, String>),
     IssueDetail(Result<GhIssueDetail, String>),
     PrDetail(Result<GhPrDetail, String>),
+    RunJobs {
+        run_id: u64,
+        result: Result<Vec<Job>, String>,
+    },
+    RunLog {
+        request_id: u64,
+        append: bool,
+        result: Result<Vec<String>, String>,
+    },
+}
+
+/// Which of the three list → detail pairs the focus is in.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum GhTab {
+    Issue,
+    Pr,
+    Run,
 }
 
 // === Tab type aliases ===
 
 pub type IssueTab = Tab<GhIssueListPane, GhDetailViewPane>;
 pub type PrTab = Tab<GhPrListPane, GhDetailViewPane>;
+pub type RunTab = Tab<GhRunListPane, GhDetailViewPane>;
 
 /// Apply a list-fetch result to a `GhListPane` and update the arrived/error flags.
 fn apply_list_result<T: GhListItem>(
@@ -120,11 +158,21 @@ impl PrTab {
     }
 }
 
+impl RunTab {
+    /// Sync DetailView to show the selected run (its jobs and log).
+    pub fn sync_detail(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        if let Some(run) = self.list.selected_item().cloned() {
+            self.detail.load_run(&run, tx);
+        }
+    }
+}
+
 // === GhPanes (grouping struct for disjoint borrows) ===
 
 pub struct GhPanes {
     pub issue_tab: IssueTab,
     pub pr_tab: PrTab,
+    pub run_tab: RunTab,
     pub ids: GhPaneIds,
 }
 
@@ -149,16 +197,20 @@ impl pane::PageLayout for GitHubState {
 
 impl PaneSet for GhPanes {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
-        let (il, id_, pl, pd) = (
+        let (il, id_, pl, pd, rl, rd) = (
             self.ids.issue_list,
             self.ids.issue_detail,
             self.ids.pr_list,
             self.ids.pr_detail,
+            self.ids.run_list,
+            self.ids.run_detail,
         );
         if idx == il || idx == id_ {
             self.issue_tab.get_pane_mut(il, id_, idx)
         } else if idx == pl || idx == pd {
             self.pr_tab.get_pane_mut(pl, pd, idx)
+        } else if idx == rl || idx == rd {
+            self.run_tab.get_pane_mut(rl, rd, idx)
         } else {
             None
         }
@@ -180,6 +232,8 @@ pub struct GitHubState {
     select_bindings: HashMap<usize, usize>,
     /// detail_id → select_id (reverse of select_bindings).
     detail_bindings: HashMap<usize, usize>,
+    /// When the run list was last fetched (tick refresh while runs are active).
+    last_runs_refresh: Option<Instant>,
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
 }
@@ -197,8 +251,10 @@ impl GitHubState {
         // Build pane keymaps from KDL entries.
         let issue_list_km = page_cfg.keymap::<GhListAction>("issue_list")?;
         let pr_list_km = page_cfg.keymap::<GhListAction>("pr_list")?;
+        let run_list_km = page_cfg.keymap::<GhListAction>("run_list")?;
         let issue_detail_km = page_cfg.keymap::<DetailAction>("issue_detail")?;
         let pr_detail_km = page_cfg.keymap::<DetailAction>("pr_detail")?;
+        let run_detail_km = page_cfg.keymap::<DetailAction>("run_detail")?;
         let view_km = page_cfg.keymap::<ViewAction>("view")?;
 
         let mut issue_list = issue_list::new_pane(ids.issue_list, ids.issue_detail, ids.pr_list);
@@ -207,11 +263,17 @@ impl GitHubState {
         let mut pr_list = pr_list::new_pane(ids.pr_list, ids.pr_detail, ids.issue_list);
         pr_list.set_keymap(pr_list_km);
 
+        let mut run_list = run_list::new_pane(ids.run_list, ids.run_detail, ids.pr_list);
+        run_list.set_keymap(run_list_km);
+
         let mut issue_detail = GhDetailViewPane::new(ids.issue_detail);
         issue_detail.set_keymap(issue_detail_km);
 
         let mut pr_detail = GhDetailViewPane::new(ids.pr_detail);
         pr_detail.set_keymap(pr_detail_km);
+
+        let mut run_detail = GhDetailViewPane::new(ids.run_detail);
+        run_detail.set_keymap(run_detail_km);
 
         let initial_focus = ids.issue_list;
 
@@ -230,6 +292,10 @@ impl GitHubState {
                     list: pr_list,
                     detail: pr_detail,
                 },
+                run_tab: Tab {
+                    list: run_list,
+                    detail: run_detail,
+                },
                 ids,
             },
             gh_available: None,
@@ -239,6 +305,7 @@ impl GitHubState {
             initialized: false,
             select_bindings,
             detail_bindings,
+            last_runs_refresh: None,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
         })
@@ -266,9 +333,17 @@ impl GitHubState {
         // Each pane loads its disk cache + spawns background fetch
         self.panes.issue_tab.list.initialize(&tx);
         self.panes.pr_tab.list.initialize(&tx);
+        self.panes.run_tab.list.initialize(&tx);
+        self.last_runs_refresh = Some(Instant::now());
 
         // Auto-load detail for the first item from disk cache
         self.sync_active_detail();
+    }
+
+    /// Re-fetch the run list (initial load, `r`, tick refresh while active).
+    fn spawn_runs(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        self.last_runs_refresh = Some(Instant::now());
+        self.panes.run_tab.list.spawn_fetch(tx);
     }
 
     /// Drain background messages from worker threads.
@@ -280,6 +355,7 @@ impl GitHubState {
 
         let mut issue_list_arrived = false;
         let mut pr_list_arrived = false;
+        let mut run_list_arrived = false;
         for msg in messages {
             match msg {
                 GhBgMessage::AuthStatus(result) => match result {
@@ -292,6 +368,7 @@ impl GitHubState {
                         self.gh_error = Some(e);
                         self.panes.issue_tab.list.set_loading(false);
                         self.panes.pr_tab.list.set_loading(false);
+                        self.panes.run_tab.list.set_loading(false);
                     }
                 },
                 GhBgMessage::IssueList(result) => {
@@ -310,6 +387,14 @@ impl GitHubState {
                         &mut self.gh_error,
                     );
                 }
+                GhBgMessage::RunList(result) => {
+                    apply_list_result(
+                        &mut self.panes.run_tab.list,
+                        result,
+                        &mut run_list_arrived,
+                        &mut self.gh_error,
+                    );
+                }
                 GhBgMessage::IssueDetail(result) => match result {
                     Ok(detail) => self.panes.issue_tab.detail.apply_detail(detail),
                     Err(e) => self.panes.issue_tab.detail.set_error(e),
@@ -317,87 +402,133 @@ impl GitHubState {
                 GhBgMessage::PrDetail(result) => {
                     self.panes.pr_tab.detail.apply_pr_detail_result(result);
                 }
+                GhBgMessage::RunJobs { run_id, result } => {
+                    if let Some(tx) = self.bg_tx.clone() {
+                        self.panes.run_tab.detail.apply_jobs(run_id, result, &tx);
+                    }
+                }
+                GhBgMessage::RunLog {
+                    request_id,
+                    append,
+                    result,
+                } => {
+                    self.panes
+                        .run_tab
+                        .detail
+                        .apply_log(request_id, append, result);
+                }
             }
         }
 
+        // A fresh run list also carries the new state of the run on display
+        // (jobs polling stops once it completes), whichever tab is active.
+        if run_list_arrived {
+            if let Some(tx) = self.bg_tx.clone() {
+                self.panes.run_tab.sync_detail(&tx);
+            }
+        }
         // Auto-load detail when a fresh list arrives for the active tab
-        let on_pr = self.is_on_pr_tab();
-        if (on_pr && pr_list_arrived) || (!on_pr && issue_list_arrived) {
+        let arrived = match self.active_tab() {
+            GhTab::Issue => issue_list_arrived,
+            GhTab::Pr => pr_list_arrived,
+            GhTab::Run => run_list_arrived,
+        };
+        if arrived {
             self.sync_active_detail();
         }
     }
 
-    /// Is the user currently on the PR tab (list or detail)?
-    /// Uses `detail_bindings` to check whether the focused detail pane is paired with `pr_list`.
-    fn is_on_pr_tab(&self) -> bool {
+    /// The select pane of the pair the focus is in: the focused pane itself
+    /// when it is a list, else the list its detail pane is bound to.
+    fn active_select_id(&self) -> usize {
         let fp = self.pane.focused_pane;
-        let pr_list = self.panes.ids.pr_list;
-        fp == pr_list || self.detail_bindings.get(&fp).copied() == Some(pr_list)
+        if self.select_bindings.contains_key(&fp) {
+            fp
+        } else {
+            self.detail_bindings.get(&fp).copied().unwrap_or(fp)
+        }
     }
 
-    /// The detail pane of the currently active tab (issue or PR).
-    fn active_detail(&self) -> &GhDetailViewPane {
-        if self.is_on_pr_tab() {
-            &self.panes.pr_tab.detail
+    /// Which list → detail pair (issue, PR, run) the focus is in.
+    /// Routes via the KDL-resolved `select_bindings` / `detail_bindings`.
+    fn active_tab(&self) -> GhTab {
+        let select_id = self.active_select_id();
+        if select_id == self.panes.ids.pr_list {
+            GhTab::Pr
+        } else if select_id == self.panes.ids.run_list {
+            GhTab::Run
         } else {
-            &self.panes.issue_tab.detail
+            GhTab::Issue
+        }
+    }
+
+    /// The detail pane of the currently active tab.
+    fn active_detail(&self) -> &GhDetailViewPane {
+        match self.active_tab() {
+            GhTab::Issue => &self.panes.issue_tab.detail,
+            GhTab::Pr => &self.panes.pr_tab.detail,
+            GhTab::Run => &self.panes.run_tab.detail,
         }
     }
 
     fn active_detail_mut(&mut self) -> &mut GhDetailViewPane {
-        if self.is_on_pr_tab() {
-            &mut self.panes.pr_tab.detail
-        } else {
-            &mut self.panes.issue_tab.detail
+        match self.active_tab() {
+            GhTab::Issue => &mut self.panes.issue_tab.detail,
+            GhTab::Pr => &mut self.panes.pr_tab.detail,
+            GhTab::Run => &mut self.panes.run_tab.detail,
         }
     }
 
-    /// Sync the active tab's detail view.
-    /// Routes via KDL-resolved `select_bindings`/`detail_bindings`; dispatches to the
-    /// typed tab whose select pane matches the currently focused pane (or its paired select).
+    /// Sync the active tab's detail view to its list selection.
     pub fn sync_active_detail(&mut self) {
         let tx = match &self.bg_tx {
             Some(tx) => tx,
             None => return,
         };
-        let fp = self.pane.focused_pane;
-        // Resolve focused pane to its select pane: fp itself if it's a select pane,
-        // or look up the reverse map if fp is a detail pane.
-        let select_id = if self.select_bindings.contains_key(&fp) {
-            fp
-        } else {
-            self.detail_bindings.get(&fp).copied().unwrap_or(fp)
-        };
-        if select_id == self.panes.ids.pr_list {
-            self.panes.pr_tab.sync_detail(tx);
-        } else {
-            self.panes.issue_tab.sync_detail(tx);
+        match self.active_tab() {
+            GhTab::Issue => self.panes.issue_tab.sync_detail(tx),
+            GhTab::Pr => self.panes.pr_tab.sync_detail(tx),
+            GhTab::Run => self.panes.run_tab.sync_detail(tx),
         }
     }
 
-    /// Refresh only the currently displayed detail item (cache-bust + re-fetch).
+    /// Refresh only the currently displayed detail item (cache-bust + re-fetch;
+    /// a run re-fetches its jobs and log).
     pub fn refresh_detail(&mut self) {
+        let Some(tx) = self.bg_tx.clone() else {
+            return;
+        };
+        if self.active_tab() == GhTab::Run {
+            self.panes.run_tab.detail.refresh_run(&tx);
+            return;
+        }
         match self.active_detail().current_detail_info() {
             None => self.sync_active_detail(),
             Some((kind, number)) => {
-                if let Some(tx) = self.bg_tx.clone() {
-                    let dv = self.active_detail_mut();
-                    dv.invalidate(kind, number);
-                    dv.load(kind, number, &tx);
-                }
+                let dv = self.active_detail_mut();
+                dv.invalidate(kind, number);
+                dv.load(kind, number, &tx);
             }
         }
     }
 
-    /// Refresh: re-fetch issue and PR lists, clear caches.
+    /// Refresh: re-fetch the issue, PR and run lists, clear caches, and
+    /// re-fetch the shown run's jobs and log.
     pub fn refresh(&mut self) {
         self.gh_error = None;
         self.panes.issue_tab.detail.clear_caches();
         self.panes.pr_tab.detail.clear_caches();
-        if let Some(tx) = &self.bg_tx {
-            self.panes.issue_tab.list.spawn_fetch(tx);
-            self.panes.pr_tab.list.spawn_fetch(tx);
+        if let Some(tx) = self.bg_tx.clone() {
+            self.panes.issue_tab.list.spawn_fetch(&tx);
+            self.panes.pr_tab.list.spawn_fetch(&tx);
+            self.spawn_runs(&tx);
+            self.panes.run_tab.detail.refresh_run(&tx);
         }
+    }
+
+    /// Summary of the runs column for the status bar: `(runs, active)`.
+    pub fn run_counts(&self) -> (usize, usize) {
+        self.panes.run_tab.list.counts()
     }
 
     // === Dispatch ===
@@ -413,22 +544,21 @@ impl GitHubState {
         ctx: &mut AppContext,
         events: Vec<PaneEvent>,
     ) -> Result<PageAction> {
-        // Copy IDs as usize (Copy) before any mutable borrows.
-        let issue_detail_id = self.panes.ids.issue_detail;
-        let pr_detail_id = self.panes.ids.pr_detail;
-        let issue_list_id = self.panes.ids.issue_list;
-        let pr_list_id = self.panes.ids.pr_list;
-
         for event in events {
             if pane::process_common_event(&mut self.pane, ctx, &event) {
                 continue;
             }
             match event {
-                PaneEvent::SetFocus(id) if id == issue_detail_id || id == pr_detail_id => {
+                PaneEvent::SetFocus(id) if self.detail_bindings.contains_key(&id) => {
                     self.sync_active_detail();
                 }
                 PaneEvent::SelectionChanged => {
                     self.sync_active_detail();
+                }
+                PaneEvent::OpenRunLog => {
+                    if let Some(tx) = self.bg_tx.clone() {
+                        self.panes.run_tab.detail.open_selected_log(&tx);
+                    }
                 }
                 PaneEvent::OpenIssueBrowser(n) => match client::open_issue_in_browser(n) {
                     Ok(()) => {
@@ -451,7 +581,7 @@ impl GitHubState {
                         self.pane
                             .jump_to_search_match(&mut self.panes, ctx, forward)
                     {
-                        if origin == issue_list_id || origin == pr_list_id {
+                        if self.select_bindings.contains_key(&origin) {
                             self.sync_active_detail();
                         }
                     }
@@ -471,9 +601,7 @@ impl GitHubState {
                 return Ok(page_action);
             }
             if *action == ViewAction::Refresh {
-                let fp = self.pane.focused_pane;
-                let is_on_detail =
-                    fp == self.panes.ids.issue_detail || fp == self.panes.ids.pr_detail;
+                let is_on_detail = self.detail_bindings.contains_key(&self.pane.focused_pane);
                 if is_on_detail {
                     self.refresh_detail();
                 } else {
@@ -505,14 +633,23 @@ impl crate::core::app::PageState for GitHubState {
         entries.extend(self.panes.issue_tab.list.keymap().help_entries());
         entries.extend(help_section("Pull Requests"));
         entries.extend(self.panes.pr_tab.list.keymap().help_entries());
+        entries.extend(help_section("Workflow Runs"));
+        entries.extend(self.panes.run_tab.list.keymap().help_entries());
         entries.extend(help_section("Detail View"));
         entries.extend(self.panes.issue_tab.detail.keymap().help_entries());
+        entries.extend(help_section("Run Detail (Jobs / Log)"));
+        entries.extend(self.panes.run_tab.detail.keymap().help_entries());
         entries
     }
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
         // Search input mode intercepts all keys
         if self.pane.handle_search_input(&mut self.panes, ctx, key) {
+            // A confirmed search moves a list selection without an event.
+            let origin = self.pane.search.origin;
+            if !self.pane.search.active && self.select_bindings.contains_key(&origin) {
+                self.sync_active_detail();
+            }
             return Ok(PageAction::None);
         }
 
@@ -531,9 +668,22 @@ impl crate::core::app::PageState for GitHubState {
     }
 
     fn on_tick(&mut self, _ctx: &mut AppContext) {
-        if let Some(tx) = &self.bg_tx {
-            self.panes.pr_tab.detail.handle_watch_tick(tx);
+        let Some(tx) = self.bg_tx.clone() else {
+            return;
+        };
+        self.panes.pr_tab.detail.handle_watch_tick(&tx);
+        if self.gh_available != Some(true) {
+            return;
         }
+        // Runs column: refetch while anything is queued / in progress, like
+        // the PR checks watch; the shown run polls its jobs and log itself.
+        let due = self
+            .last_runs_refresh
+            .is_none_or(|t| t.elapsed() >= ACTIVE_RUNS_REFRESH_INTERVAL);
+        if self.panes.run_tab.list.has_active() && due && !self.panes.run_tab.list.is_loading() {
+            self.spawn_runs(&tx);
+        }
+        self.panes.run_tab.detail.handle_run_tick(&tx);
     }
 
     fn on_activate(&mut self, _ctx: &mut AppContext) {
@@ -559,8 +709,10 @@ mod kdl_regression {
     // Test-local pane ID constants (match default.kdl declaration order)
     const GH_PANE_ISSUE_LIST: usize = 0;
     const GH_PANE_PR_LIST: usize = 1;
-    const GH_PANE_ISSUE_DETAIL: usize = 2;
-    const GH_PANE_PR_DETAIL: usize = 3;
+    const GH_PANE_RUN_LIST: usize = 2;
+    const GH_PANE_ISSUE_DETAIL: usize = 3;
+    const GH_PANE_PR_DETAIL: usize = 4;
+    const GH_PANE_RUN_DETAIL: usize = 5;
     const GH_SLOT_DETAIL: usize = 0;
 
     fn key(s: &str) -> KeyEvent {
@@ -583,12 +735,16 @@ mod kdl_regression {
                             direction: SplitDirection::Horizontal,
                             children: vec![
                                 (
-                                    Constraint::Percentage(50),
+                                    Constraint::Percentage(33),
                                     LayoutNode::Pane(GH_PANE_ISSUE_LIST),
                                 ),
                                 (
-                                    Constraint::Percentage(50),
+                                    Constraint::Percentage(34),
                                     LayoutNode::Pane(GH_PANE_PR_LIST),
+                                ),
+                                (
+                                    Constraint::Percentage(33),
+                                    LayoutNode::Pane(GH_PANE_RUN_LIST),
                                 ),
                             ],
                         },
@@ -596,11 +752,19 @@ mod kdl_regression {
                     (Constraint::Min(3), LayoutNode::Slot(GH_SLOT_DETAIL)),
                 ],
             },
-            tab_panes: vec![GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST],
+            tab_panes: vec![GH_PANE_ISSUE_LIST, GH_PANE_PR_LIST, GH_PANE_RUN_LIST],
             slot_rules: vec![SlotRule {
                 slot_id: GH_SLOT_DETAIL,
-                trigger_panes: vec![GH_PANE_PR_LIST, GH_PANE_PR_DETAIL],
-                then_pane: GH_PANE_PR_DETAIL,
+                cases: vec![
+                    SlotCase {
+                        trigger_panes: vec![GH_PANE_PR_LIST, GH_PANE_PR_DETAIL],
+                        then_pane: GH_PANE_PR_DETAIL,
+                    },
+                    SlotCase {
+                        trigger_panes: vec![GH_PANE_RUN_LIST, GH_PANE_RUN_DETAIL],
+                        then_pane: GH_PANE_RUN_DETAIL,
+                    },
+                ],
                 default_pane: GH_PANE_ISSUE_DETAIL,
             }],
         }
@@ -635,14 +799,29 @@ mod kdl_regression {
         let hardcoded = default_gh_layout_config();
         let from_kdl = kdl_cfg().layout;
         let area = Rect::new(0, 0, 200, 60);
-        let slots_hc = hardcoded.resolve_slots(GH_PANE_ISSUE_LIST);
-        let slots_kd = from_kdl.resolve_slots(GH_PANE_ISSUE_LIST);
-        let layout_hc = resolve_layout(area, &hardcoded.tree, &slots_hc);
-        let layout_kd = resolve_layout(area, &from_kdl.tree, &slots_kd);
-        assert_eq!(
-            layout_hc, layout_kd,
-            "layout resolution differs for issue_list focus"
-        );
+        for focus in [
+            GH_PANE_ISSUE_LIST,
+            GH_PANE_PR_LIST,
+            GH_PANE_RUN_LIST,
+            GH_PANE_RUN_DETAIL,
+        ] {
+            let slots_hc = hardcoded.resolve_slots(focus);
+            let slots_kd = from_kdl.resolve_slots(focus);
+            let layout_hc = resolve_layout(area, &hardcoded.tree, &slots_hc);
+            let layout_kd = resolve_layout(area, &from_kdl.tree, &slots_kd);
+            assert_eq!(
+                layout_hc, layout_kd,
+                "layout resolution differs for focus {focus}"
+            );
+        }
+        // Three equal columns on top, the detail slot below.
+        let slots = from_kdl.resolve_slots(GH_PANE_RUN_LIST);
+        let areas = resolve_layout(area, &from_kdl.tree, &slots);
+        let width = |id: usize| areas.iter().find(|(p, _)| *p == id).unwrap().1.width;
+        assert!(width(GH_PANE_ISSUE_LIST).abs_diff(width(GH_PANE_RUN_LIST)) <= 2);
+        assert!(width(GH_PANE_PR_LIST).abs_diff(width(GH_PANE_RUN_LIST)) <= 2);
+        assert!(areas.iter().any(|(p, _)| *p == GH_PANE_RUN_DETAIL));
+        assert!(areas.iter().all(|(p, _)| *p != GH_PANE_PR_DETAIL));
     }
 
     #[test]
@@ -660,13 +839,16 @@ mod kdl_regression {
         let r_hc = &hardcoded.slot_rules[0];
         let r_kd = &from_kdl.slot_rules[0];
         assert_eq!(r_hc.slot_id, r_kd.slot_id);
-        assert_eq!(r_hc.then_pane, r_kd.then_pane);
         assert_eq!(r_hc.default_pane, r_kd.default_pane);
-        let mut tp_hc = r_hc.trigger_panes.clone();
-        tp_hc.sort();
-        let mut tp_kd = r_kd.trigger_panes.clone();
-        tp_kd.sort();
-        assert_eq!(tp_hc, tp_kd);
+        assert_eq!(r_hc.cases.len(), r_kd.cases.len());
+        for (c_hc, c_kd) in r_hc.cases.iter().zip(&r_kd.cases) {
+            assert_eq!(c_hc.then_pane, c_kd.then_pane);
+            let mut tp_hc = c_hc.trigger_panes.clone();
+            tp_hc.sort();
+            let mut tp_kd = c_kd.trigger_panes.clone();
+            tp_kd.sort();
+            assert_eq!(tp_hc, tp_kd);
+        }
     }
 
     #[test]
@@ -697,6 +879,48 @@ mod kdl_regression {
     }
 
     #[test]
+    fn run_list_keymap_matches() {
+        use crate::github::panes::gh_list::default_keymap as gh_default;
+        let hc = gh_default(KeyCode::BackTab);
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<GhListAction> =
+            build_keymap(entries["run_list"].as_slice()).unwrap();
+        let test_keys = [
+            "j", "k", "G", "g", "Ctrl+d", "Ctrl+u", "/", "n", "N", "i", "Enter", "BackTab", "o",
+            "Esc",
+        ];
+        check_keys(&hc, &kd, &test_keys);
+    }
+
+    #[test]
+    fn run_detail_keymap_has_log_keys_and_search() {
+        let entries = kdl_cfg().pane_keys;
+        let kd: crate::core::keymap::Keymap<DetailAction> =
+            build_keymap(entries["run_detail"].as_slice()).unwrap();
+        let expect = [
+            ("Enter", "OpenLog"),
+            ("i", "OpenLog"),
+            ("]", "NextFailed"),
+            ("[", "PrevFailed"),
+            ("/", "Search(Start)"),
+            ("n", "Search(Next)"),
+            ("h", "FocusBody"),
+            ("l", "FocusRight"),
+            ("Tab", "CycleForward"),
+            ("o", "OpenItem"),
+            ("Esc", "Esc"),
+        ];
+        for (k, action) in expect {
+            assert_eq!(
+                kd.lookup(key(k)).map(|a| format!("{a:?}")).as_deref(),
+                Some(action),
+                "key {k}"
+            );
+        }
+        assert!(kd.lookup(key("w")).is_none(), "watch mode is a PR thing");
+    }
+
+    #[test]
     fn detail_keymap_matches() {
         use crate::github::panes::detail_view::default_keymap as detail_default;
         let hc = detail_default();
@@ -715,8 +939,10 @@ mod kdl_regression {
         let ids = GhPaneIds::from_config(&cfg);
         assert_eq!(ids.issue_list, GH_PANE_ISSUE_LIST);
         assert_eq!(ids.pr_list, GH_PANE_PR_LIST);
+        assert_eq!(ids.run_list, GH_PANE_RUN_LIST);
         assert_eq!(ids.issue_detail, GH_PANE_ISSUE_DETAIL);
         assert_eq!(ids.pr_detail, GH_PANE_PR_DETAIL);
+        assert_eq!(ids.run_detail, GH_PANE_RUN_DETAIL);
     }
 
     #[test]
@@ -758,9 +984,14 @@ mod kdl_regression {
             "select_bindings must map pr_list→pr_detail"
         );
         assert_eq!(
+            select_bindings.get(&ids.run_list),
+            Some(&ids.run_detail),
+            "select_bindings must map run_list→run_detail"
+        );
+        assert_eq!(
             select_bindings.len(),
-            2,
-            "expected exactly 2 select bindings"
+            3,
+            "expected exactly 3 select bindings"
         );
         // Verify reverse (detail_bindings)
         let detail_bindings: HashMap<usize, usize> =
@@ -775,5 +1006,137 @@ mod kdl_regression {
             Some(&ids.pr_list),
             "detail_bindings must map pr_detail→pr_list"
         );
+        assert_eq!(
+            detail_bindings.get(&ids.run_detail),
+            Some(&ids.run_list),
+            "detail_bindings must map run_detail→run_list"
+        );
+    }
+
+    fn state() -> GitHubState {
+        let mut st = GitHubState::new(&Config::builtin()).expect("github page");
+        let (tx, _rx) = mpsc::channel();
+        // Keep the receiver alive so worker threads can send without noise.
+        std::mem::forget(_rx);
+        st.bg_tx = Some(tx);
+        st
+    }
+
+    #[test]
+    fn active_tab_follows_focus_through_the_bindings() {
+        let mut st = state();
+        let ids = &st.panes.ids;
+        let (il, pl, rl, id_, pd, rd) = (
+            ids.issue_list,
+            ids.pr_list,
+            ids.run_list,
+            ids.issue_detail,
+            ids.pr_detail,
+            ids.run_detail,
+        );
+        for (focus, tab) in [
+            (il, GhTab::Issue),
+            (id_, GhTab::Issue),
+            (pl, GhTab::Pr),
+            (pd, GhTab::Pr),
+            (rl, GhTab::Run),
+            (rd, GhTab::Run),
+        ] {
+            st.pane.focused_pane = focus;
+            assert_eq!(st.active_tab(), tab, "focus {focus}");
+        }
+    }
+
+    #[test]
+    fn selecting_a_run_loads_its_jobs_into_the_run_detail() {
+        let mut st = state();
+        let ids = &st.panes.ids;
+        let (rl, rd) = (ids.run_list, ids.run_detail);
+        let runs = vec![
+            crate::github::panes::run_list::tests::run(2, "in_progress", ""),
+            crate::github::panes::run_list::tests::run(1, "completed", "success"),
+        ];
+        st.panes.run_tab.list.set_items(runs);
+        st.pane.focused_pane = rl;
+        st.sync_active_detail();
+        let d = st.panes.run_tab.detail.run_detail().expect("run detail");
+        assert_eq!(d.run.id, 2);
+        assert!(d.jobs.run_is_active());
+        assert_eq!(st.panes.run_tab.detail.active_pane, GhDetailPane::Jobs);
+        assert!(st.panes.run_tab.list.has_active());
+        assert_eq!(st.run_counts(), (2, 1));
+        // Other detail panes are untouched.
+        assert!(matches!(
+            st.panes.issue_tab.detail.content,
+            GhDetailContent::None
+        ));
+        // Enter (OpenDetail) focuses the run detail and keeps the same run.
+        let mut ctx = crate::core::app::AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: std::path::PathBuf::new(),
+            needs_full_redraw: false,
+        };
+        let events = st.dispatch_key(key("Enter"));
+        assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == rd));
+        st.process_events(&mut ctx, events).unwrap();
+        assert_eq!(st.pane.focused_pane, rd);
+        assert_eq!(st.panes.run_tab.detail.run_detail().unwrap().run.id, 2);
+        // Esc goes back to the run list.
+        let events = st.dispatch_key(key("Esc"));
+        st.process_events(&mut ctx, events).unwrap();
+        assert_eq!(st.pane.focused_pane, rl);
+    }
+
+    #[test]
+    fn tab_in_a_detail_pane_cycles_its_sub_panes() {
+        let mut st = state();
+        let rl = st.panes.ids.run_list;
+        let rd = st.panes.ids.run_detail;
+        st.panes
+            .run_tab
+            .list
+            .set_items(vec![crate::github::panes::run_list::tests::run(
+                1,
+                "completed",
+                "success",
+            )]);
+        st.pane.focused_pane = rl;
+        st.sync_active_detail();
+        st.pane.set_focus(rd);
+        assert_eq!(st.panes.run_tab.detail.active_pane, GhDetailPane::Jobs);
+        // The view-level Tab (pane cycling) does not apply to detail panes.
+        assert!(st.dispatch_key(key("Tab")).is_empty());
+        assert_eq!(st.panes.run_tab.detail.active_pane, GhDetailPane::Log);
+        assert!(st.dispatch_key(key("BackTab")).is_empty());
+        assert_eq!(st.panes.run_tab.detail.active_pane, GhDetailPane::Jobs);
+        assert!(st.dispatch_key(key("l")).is_empty());
+        assert_eq!(st.panes.run_tab.detail.active_pane, GhDetailPane::Log);
+        assert!(st.dispatch_key(key("h")).is_empty());
+        assert_eq!(st.panes.run_tab.detail.active_pane, GhDetailPane::Jobs);
+    }
+
+    #[test]
+    fn tab_cycles_the_three_list_columns() {
+        let mut st = state();
+        let ids = &st.panes.ids;
+        let (il, pl, rl) = (ids.issue_list, ids.pr_list, ids.run_list);
+        st.pane.focused_pane = il;
+        for expected in [pl, rl, il] {
+            let events = st.dispatch_key(key("Tab"));
+            assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == expected));
+            st.pane.set_focus(expected);
+        }
+        // `l` / `h` move between neighbouring columns and stop at the ends.
+        st.pane.focused_pane = pl;
+        let events = st.dispatch_key(key("l"));
+        assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == rl));
+        st.pane.set_focus(rl);
+        assert!(st.dispatch_key(key("l")).is_empty());
     }
 }

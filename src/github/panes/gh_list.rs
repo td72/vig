@@ -153,6 +153,10 @@ impl<T: GhListItem> GhListPane<T> {
         self.items.get(self.selected_idx).map(|i| i.number())
     }
 
+    pub fn selected_item(&self) -> Option<&T> {
+        self.items.get(self.selected_idx)
+    }
+
     /// Load disk cache + spawn background fetch.
     pub fn initialize(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         if let Some(items) = T::load_disk_cache() {
@@ -177,11 +181,18 @@ impl<T: GhListItem> GhListPane<T> {
         self.set_items(items);
     }
 
-    fn set_items(&mut self, items: Vec<T>) {
+    /// Replace the list, keeping the selection on the same item when it is
+    /// still listed (a refresh prepends new items) and clamping the index
+    /// otherwise.
+    pub(crate) fn set_items(&mut self, items: Vec<T>) {
+        let keep = self.selected_number();
         let (items, positions) = nest_items(items);
         self.items = items;
         self.positions = positions;
-        self.selected_idx = self.selected_idx.min(self.items.len().saturating_sub(1));
+        self.selected_idx = keep
+            .and_then(|n| self.items.iter().position(|i| i.number() == n))
+            .unwrap_or(self.selected_idx)
+            .min(self.items.len().saturating_sub(1));
     }
 
     fn execute(&mut self, shared: &PaneShared, action: GhListAction) -> Vec<PaneEvent> {
