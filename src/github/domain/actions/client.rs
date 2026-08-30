@@ -1,8 +1,9 @@
-//! Thin wrappers around `gh run …` and `gh api` for the Actions page.
+//! Thin wrappers around `gh run …` and `gh api` for the Workflow Runs column
+//! of the GitHub page.
 //! Every command here is read-only: `run list`, `run view` and a GET of the
 //! job-log endpoint. Nothing reruns, cancels or deletes anything.
 
-use crate::actions::domain::types::{Job, JobsResponse, WorkflowRun};
+use crate::github::domain::actions::types::{Job, JobsResponse, WorkflowRun};
 use crate::github::domain::client::{run_gh, run_gh_json};
 use crate::github::domain::disk_cache;
 
@@ -84,7 +85,7 @@ pub fn save_run_list(runs: &[WorkflowRun]) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::actions::domain::types::RunState;
+    use crate::github::domain::actions::types::RunState;
 
     const RUN_LIST: &str = r#"[
 {"conclusion":"skipped","createdAt":"2026-08-28T08:17:23Z","databaseId":33154752341,"event":"pull_request","headBranch":"feat/docker-view","name":"Release","number":156,"status":"completed","updatedAt":"2026-08-28T08:17:24Z","url":"https://github.com/td72/vig/actions/runs/33154752341","workflowName":"Release"},

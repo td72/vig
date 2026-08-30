@@ -1,29 +1,26 @@
-//! Log pane: the selected job's log (`gh run view --log --job`) in the
-//! shared `TailPane`. Step boundaries and `##[group]` markers are section
-//! lines; `]` / `[` jump between failed steps. Jobs still running are
-//! polled every few seconds and the new lines appended.
+//! Log sub-pane of a run detail: the selected job's log (`gh run view
+//! --log --job`) in the shared `TailPane`. Step boundaries and `##[group]`
+//! markers are section lines; `]` / `[` jump between failed steps. Jobs
+//! still running are polled every few seconds and the new lines appended.
 
-use crate::actions::domain::client;
-use crate::actions::domain::log::{
+use super::jobs::LogTarget;
+use crate::core::keymap::NavAction;
+use crate::core::pane::PaneEvent;
+use crate::core::search::SearchMatch;
+use crate::core::ui::tail_pane::{TailPane, TailState};
+use crate::github::domain::actions::client;
+use crate::github::domain::actions::log::{
     decode, failed_step_lines, new_tail, parse_job_log, step_line, LogLine,
 };
-use crate::actions::panes::jobs::LogTarget;
-use crate::actions::state::ActionsBgMessage;
-use crate::core::app::AppContext;
-use crate::core::keymap::{
-    nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
-};
-use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
-use crate::core::search::SearchMatch;
-use crate::core::theme;
-use crate::core::ui::tail_pane::{TailPane, TailState};
-use crossterm::event::KeyCode;
+use crate::github::state::GhBgMessage;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
+    widgets::Block,
     Frame,
 };
+use std::collections::HashSet;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
@@ -32,50 +29,9 @@ pub const LOG_CAP: usize = 20_000;
 /// How often a running job's log is re-fetched.
 const POLL_INTERVAL: Duration = Duration::from_secs(5);
 
+/// State of the Log sub-pane: one job's log buffer and its fetch status.
 #[derive(Debug, Clone)]
-pub enum LogAction {
-    Nav(NavAction),
-    Search(SearchAction),
-    NextFailed,
-    PrevFailed,
-    Back,
-    Esc,
-}
-
-crate::impl_pane_action_from_str!(
-    LogAction, nav: Nav, search: Search, esc: Esc,
-    NextFailed, PrevFailed, Back
-);
-
-impl ActionHelp for LogAction {
-    fn label(&self) -> Option<&'static str> {
-        match self {
-            LogAction::Nav(NavAction::MoveDown) => Some("Scroll down (pauses follow)"),
-            LogAction::Nav(NavAction::MoveUp) => Some("Scroll up (pauses follow)"),
-            LogAction::Nav(NavAction::JumpBottom) => Some("Bottom / resume follow"),
-            LogAction::Nav(nav) => nav.label(),
-            LogAction::Search(sa) => sa.label(),
-            LogAction::NextFailed => Some("Next failed step"),
-            LogAction::PrevFailed => Some("Prev failed step"),
-            LogAction::Back => Some("Back to jobs"),
-            LogAction::Esc => Some("Clear search / back"),
-        }
-    }
-}
-
-pub fn default_keymap() -> Keymap<LogAction> {
-    Keymap::new()
-        .bindings(nav_bindings(LogAction::Nav))
-        .bindings(search_bindings(LogAction::Search))
-        .key(KeyCode::Char(']'), LogAction::NextFailed)
-        .key(KeyCode::Char('['), LogAction::PrevFailed)
-        .key(KeyCode::Char('h'), LogAction::Back)
-        .key(KeyCode::Esc, LogAction::Esc)
-}
-
-pub struct LogPane {
-    pane_id: usize,
-    keymap: Keymap<LogAction>,
+pub struct LogView {
     pub tail: TailState,
     target: Option<LogTarget>,
     /// Correlates fetch results with the current target; bumped on reload.
@@ -87,11 +43,15 @@ pub struct LogPane {
     pending_jump: Option<String>,
 }
 
-impl LogPane {
-    pub fn new(pane_id: usize) -> Self {
+impl Default for LogView {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl LogView {
+    pub fn new() -> Self {
         Self {
-            pane_id,
-            keymap: default_keymap(),
             tail: TailState::new(LOG_CAP),
             target: None,
             request_id: 0,
@@ -102,14 +62,6 @@ impl LogPane {
         }
     }
 
-    pub fn set_keymap(&mut self, km: Keymap<LogAction>) {
-        self.keymap = km;
-    }
-
-    pub fn keymap(&self) -> &Keymap<LogAction> {
-        &self.keymap
-    }
-
     pub fn target(&self) -> Option<&LogTarget> {
         self.target.as_ref()
     }
@@ -118,13 +70,24 @@ impl LogPane {
         self.in_flight && self.tail.is_empty()
     }
 
+    /// Title for the sub-pane block.
+    pub fn title(&self) -> String {
+        match &self.target {
+            Some(t) if t.in_progress => {
+                format!("Log: {} [{}]", t.job_name, self.tail.mode_label())
+            }
+            Some(t) => format!("Log: {}", t.job_name),
+            None => "Log".to_string(),
+        }
+    }
+
     /// Show `target`'s log, scrolling to `step` once loaded. Re-opening the
     /// job that is already shown keeps the buffer and only performs the jump.
     pub fn load(
         &mut self,
         target: LogTarget,
         step: Option<String>,
-        tx: &mpsc::Sender<ActionsBgMessage>,
+        tx: &mpsc::Sender<GhBgMessage>,
     ) {
         let same = self
             .target
@@ -144,19 +107,9 @@ impl LogPane {
         self.restart(tx);
     }
 
-    /// Forget the current job (its run is gone from the list).
-    pub fn clear(&mut self) {
-        self.target = None;
-        self.pending_jump = None;
-        self.error = None;
-        self.in_flight = false;
-        self.request_id += 1;
-        self.tail.clear();
-    }
-
     /// The jobs list was refreshed: pick up the job's new state. A job that
     /// just finished gets one last full fetch so the buffer is complete.
-    pub fn update_target(&mut self, latest: LogTarget, tx: &mpsc::Sender<ActionsBgMessage>) {
+    pub fn update_target(&mut self, latest: LogTarget, tx: &mpsc::Sender<GhBgMessage>) {
         let Some(current) = &self.target else {
             return;
         };
@@ -171,11 +124,11 @@ impl LogPane {
     }
 
     /// `r`: drop the buffer and fetch again.
-    pub fn refresh(&mut self, tx: &mpsc::Sender<ActionsBgMessage>) {
+    pub fn refresh(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         self.restart(tx);
     }
 
-    fn restart(&mut self, tx: &mpsc::Sender<ActionsBgMessage>) {
+    fn restart(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         self.tail.clear();
         self.error = None;
         self.in_flight = false;
@@ -186,7 +139,7 @@ impl LogPane {
     }
 
     /// Poll a running job once per [`POLL_INTERVAL`].
-    pub fn on_tick(&mut self, tx: &mpsc::Sender<ActionsBgMessage>) {
+    pub fn on_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         let running = self.target.as_ref().is_some_and(|t| t.in_progress);
         if !running || self.in_flight {
             return;
@@ -197,7 +150,7 @@ impl LogPane {
         }
     }
 
-    fn spawn(&mut self, tx: &mpsc::Sender<ActionsBgMessage>, append: bool) {
+    fn spawn(&mut self, tx: &mpsc::Sender<GhBgMessage>, append: bool) {
         let Some(target) = &self.target else {
             return;
         };
@@ -209,7 +162,7 @@ impl LogPane {
         std::thread::spawn(move || {
             let result =
                 client::fetch_job_log(run_id, job_id, in_progress).map(|raw| parse_job_log(&raw));
-            let _ = tx.send(ActionsBgMessage::Log {
+            let _ = tx.send(GhBgMessage::RunLog {
                 request_id,
                 append,
                 result,
@@ -266,7 +219,7 @@ impl LogPane {
     /// `]` / `[`: the next / previous failed step relative to the top of
     /// the view, wrapping around. `]` from the end of the buffer (the
     /// initial follow position) therefore lands on the first failed step.
-    fn jump_failed(&mut self, forward: bool) -> Vec<PaneEvent> {
+    pub fn jump_failed(&mut self, forward: bool) -> Vec<PaneEvent> {
         let lines = self.failed_lines();
         if lines.is_empty() {
             return vec![PaneEvent::StatusMessage("No failed steps".to_string())];
@@ -291,23 +244,39 @@ impl LogPane {
         ))]
     }
 
-    fn execute(&mut self, shared: &PaneShared, action: LogAction) -> Vec<PaneEvent> {
-        let esc_fallback = vec![PaneEvent::SetFocus(shared.previous_pane)];
-        if let Some(events) =
-            pane::try_dispatch_search_esc(&action, shared, self.pane_id, esc_fallback)
-        {
-            return events;
-        }
-        match action {
-            LogAction::Nav(nav) => {
-                self.tail.apply_nav(nav);
-                vec![]
-            }
-            LogAction::NextFailed => self.jump_failed(true),
-            LogAction::PrevFailed => self.jump_failed(false),
-            LogAction::Back => vec![PaneEvent::SetFocus(shared.previous_pane)],
-            LogAction::Search(_) | LogAction::Esc => vec![],
-        }
+    pub fn nav(&mut self, nav: NavAction) {
+        self.tail.apply_nav(nav);
+    }
+
+    pub fn search_matches(&self, query: &str) -> Vec<SearchMatch> {
+        self.tail.search_matches(query)
+    }
+
+    pub fn jump_to_match(&mut self, m: &SearchMatch) {
+        self.tail.jump_to_match(m);
+    }
+
+    /// Render the buffer into `block`.
+    pub fn render(
+        &mut self,
+        f: &mut Frame,
+        area: Rect,
+        block: Block<'static>,
+        match_set: &HashSet<usize>,
+        current_match: Option<usize>,
+    ) {
+        let empty = match (&self.error, &self.target) {
+            (Some(e), _) => format!("Error: {e}"),
+            (None, None) => "Select a job and press Enter to show its log".to_string(),
+            (None, Some(_)) if self.in_flight => "Loading...".to_string(),
+            (None, Some(t)) if t.in_progress => "(no output yet)".to_string(),
+            (None, Some(_)) => "(empty log)".to_string(),
+        };
+        TailPane::new(block)
+            .empty_message(&empty)
+            .highlights(match_set, current_match)
+            .formatter(log_line)
+            .render(f, area, &mut self.tail);
     }
 }
 
@@ -347,62 +316,19 @@ fn log_line(raw: &str) -> Line<'static> {
     }
 }
 
-impl Pane<PaneEvent> for LogPane {
-    crate::impl_handle_key!(keymap);
-
-    fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
-        let title = match &self.target {
-            Some(t) if t.in_progress => {
-                format!("Log: {} [{}]", t.job_name, self.tail.mode_label())
-            }
-            Some(t) => format!("Log: {}", t.job_name),
-            None => "Log".to_string(),
-        };
-        let block = theme::pane_block(&title, shared.focused_pane == self.pane_id);
-        let empty = match (&self.error, &self.target) {
-            (Some(e), _) => format!("Error: {e}"),
-            (None, None) => "Select a job and press Enter to show its log".to_string(),
-            (None, Some(_)) if self.in_flight => "Loading...".to_string(),
-            (None, Some(t)) if t.in_progress => "(no output yet)".to_string(),
-            (None, Some(_)) => "(empty log)".to_string(),
-        };
-        let (match_set, current) = theme::list_search_highlights(shared, self.pane_id);
-        TailPane::new(block)
-            .empty_message(&empty)
-            .highlights(&match_set, current)
-            .formatter(log_line)
-            .render(f, area, &mut self.tail);
-    }
-
-    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        self.tail.search_matches(query)
-    }
-
-    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
-        self.tail.jump_to_match(search_match);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::actions::domain::log::encode_step;
+    use crate::github::domain::actions::log::encode_step;
 
     fn target(job_id: u64, in_progress: bool, failed: &[&str]) -> LogTarget {
         LogTarget {
             run_id: 1,
             job_id,
             job_name: format!("job {job_id}"),
+            url: String::new(),
             in_progress,
             failed_steps: failed.iter().map(|s| s.to_string()).collect(),
-        }
-    }
-
-    fn shared() -> PaneShared {
-        PaneShared {
-            focused_pane: 2,
-            previous_pane: 1,
-            search: crate::core::search::SearchState::new(),
         }
     }
 
@@ -423,116 +349,120 @@ mod tests {
     #[test]
     fn load_apply_and_stale_requests() {
         let (tx, _rx) = mpsc::channel();
-        let mut pane = LogPane::new(2);
-        pane.load(target(10, false, &[]), None, &tx);
-        let rid = pane.request_id;
-        assert!(pane.in_flight);
-        assert!(pane.is_loading());
-        pane.apply(rid, false, Ok(lines()));
-        assert_eq!(pane.tail.len(), 9);
-        assert!(!pane.in_flight);
+        let mut view = LogView::new();
+        assert_eq!(view.title(), "Log");
+        view.load(target(10, false, &[]), None, &tx);
+        let rid = view.request_id;
+        assert!(view.in_flight);
+        assert!(view.is_loading());
+        assert_eq!(view.title(), "Log: job 10");
+        view.apply(rid, false, Ok(lines()));
+        assert_eq!(view.tail.len(), 9);
+        assert!(!view.in_flight);
         // Re-opening the same job keeps the buffer.
-        pane.load(target(10, false, &[]), None, &tx);
-        assert_eq!(pane.request_id, rid);
-        assert_eq!(pane.tail.len(), 9);
+        view.load(target(10, false, &[]), None, &tx);
+        assert_eq!(view.request_id, rid);
+        assert_eq!(view.tail.len(), 9);
         // Another job starts over; the old result is dropped.
-        pane.load(target(11, false, &[]), None, &tx);
-        assert!(pane.tail.is_empty());
-        pane.apply(rid, false, Ok(lines()));
-        assert!(pane.tail.is_empty());
-        pane.apply(pane.request_id, false, Err("boom".into()));
-        assert_eq!(pane.error.as_deref(), Some("boom"));
-        pane.clear();
-        assert!(pane.target().is_none());
+        view.load(target(11, false, &[]), None, &tx);
+        assert!(view.tail.is_empty());
+        view.apply(rid, false, Ok(lines()));
+        assert!(view.tail.is_empty());
+        view.apply(view.request_id, false, Err("boom".into()));
+        assert_eq!(view.error.as_deref(), Some("boom"));
     }
 
     #[test]
     fn step_jump_waits_for_the_log() {
         let (tx, _rx) = mpsc::channel();
-        let mut pane = LogPane::new(2);
-        pane.tail.set_view_height(3);
-        pane.load(
+        let mut view = LogView::new();
+        view.tail.set_view_height(3);
+        view.load(
             target(10, false, &["cargo test"]),
             Some("cargo build".into()),
             &tx,
         );
-        assert_eq!(pane.pending_jump.as_deref(), Some("cargo build"));
-        pane.apply(pane.request_id, false, Ok(lines()));
-        assert!(pane.pending_jump.is_none());
-        assert_eq!(pane.tail.top(), 5);
-        assert!(!pane.tail.is_following());
+        assert_eq!(view.pending_jump.as_deref(), Some("cargo build"));
+        view.apply(view.request_id, false, Ok(lines()));
+        assert!(view.pending_jump.is_none());
+        assert_eq!(view.tail.top(), 5);
+        assert!(!view.tail.is_following());
         // Same job, another step: immediate jump.
-        pane.load(
+        view.load(
             target(10, false, &["cargo test"]),
             Some("Set up job".into()),
             &tx,
         );
-        assert_eq!(pane.tail.top(), 0);
+        assert_eq!(view.tail.top(), 0);
     }
 
     #[test]
     fn failed_step_jumps_wrap_around() {
         let (tx, _rx) = mpsc::channel();
-        let mut pane = LogPane::new(2);
-        pane.tail.set_view_height(3);
-        pane.load(target(10, false, &["cargo test", "cargo build"]), None, &tx);
-        pane.apply(pane.request_id, false, Ok(lines()));
+        let mut view = LogView::new();
+        view.tail.set_view_height(3);
+        view.load(target(10, false, &["cargo test", "cargo build"]), None, &tx);
+        view.apply(view.request_id, false, Ok(lines()));
         // Following the end: `]` lands on the first failed step.
-        assert!(pane.tail.is_following());
-        let ev = pane.execute(&shared(), LogAction::NextFailed);
+        assert!(view.tail.is_following());
+        let ev = view.jump_failed(true);
         assert!(matches!(ev.as_slice(), [PaneEvent::StatusMessage(m)] if m == "Failed step [1/2]"));
-        assert_eq!(pane.tail.top(), 2);
-        pane.execute(&shared(), LogAction::NextFailed);
-        assert_eq!(pane.tail.top(), 5);
+        assert_eq!(view.tail.top(), 2);
+        view.jump_failed(true);
+        assert_eq!(view.tail.top(), 5);
         // Past the last one: wraps to the first.
-        pane.execute(&shared(), LogAction::NextFailed);
-        assert_eq!(pane.tail.top(), 2);
-        pane.execute(&shared(), LogAction::PrevFailed);
-        assert_eq!(pane.tail.top(), 5);
+        view.jump_failed(true);
+        assert_eq!(view.tail.top(), 2);
+        view.jump_failed(false);
+        assert_eq!(view.tail.top(), 5);
         // No failures: a status message, no scroll.
-        pane.load(target(11, false, &[]), None, &tx);
-        pane.apply(pane.request_id, false, Ok(lines()));
-        let ev = pane.execute(&shared(), LogAction::NextFailed);
+        view.load(target(11, false, &[]), None, &tx);
+        view.apply(view.request_id, false, Ok(lines()));
+        let ev = view.jump_failed(true);
         assert!(matches!(ev.as_slice(), [PaneEvent::StatusMessage(m)] if m == "No failed steps"));
     }
 
     #[test]
     fn running_jobs_append_and_finish_with_a_final_fetch() {
         let (tx, rx) = mpsc::channel();
-        let mut pane = LogPane::new(2);
-        pane.load(target(10, true, &[]), None, &tx);
-        let rid = pane.request_id;
+        let mut view = LogView::new();
+        view.load(target(10, true, &[]), None, &tx);
+        let rid = view.request_id;
+        assert_eq!(view.title(), "Log: job 10 [follow]");
         // Nothing written yet is not an error while the job runs.
-        pane.apply(rid, false, Err("HTTP 404".into()));
-        assert!(pane.error.is_none());
-        pane.apply(rid, true, Ok(lines()[..2].to_vec()));
-        assert_eq!(pane.tail.len(), 2);
-        pane.apply(rid, true, Ok(lines()[..4].to_vec()));
-        assert_eq!(pane.tail.len(), 4);
+        view.apply(rid, false, Err("HTTP 404".into()));
+        assert!(view.error.is_none());
+        view.apply(rid, true, Ok(lines()[..2].to_vec()));
+        assert_eq!(view.tail.len(), 2);
+        view.apply(rid, true, Ok(lines()[..4].to_vec()));
+        assert_eq!(view.tail.len(), 4);
         // A rewritten log replaces the buffer.
-        pane.apply(rid, true, Ok(vec!["x".into(), "y".into()]));
-        assert_eq!(pane.tail.len(), 2);
+        view.apply(rid, true, Ok(vec!["x".into(), "y".into()]));
+        assert_eq!(view.tail.len(), 2);
+        // Scrolling pauses following; the title says so.
+        view.nav(NavAction::MoveUp);
+        assert_eq!(view.title(), "Log: job 10 [paused]");
         // The jobs list reports completion: one more fetch is queued.
         drop(rx);
-        pane.in_flight = false;
-        pane.update_target(target(10, false, &["cargo test"]), &tx);
-        assert!(pane.in_flight);
-        assert_eq!(pane.target().unwrap().failed_steps, ["cargo test"]);
+        view.in_flight = false;
+        view.update_target(target(10, false, &["cargo test"]), &tx);
+        assert!(view.in_flight);
+        assert_eq!(view.target().unwrap().failed_steps, ["cargo test"]);
         // Updates for other jobs are ignored.
-        pane.update_target(target(99, false, &[]), &tx);
-        assert_eq!(pane.target().unwrap().job_id, 10);
+        view.update_target(target(99, false, &[]), &tx);
+        assert_eq!(view.target().unwrap().job_id, 10);
     }
 
     #[test]
-    fn back_and_esc_return_to_the_previous_pane() {
-        let mut pane = LogPane::new(2);
-        assert!(matches!(
-            pane.execute(&shared(), LogAction::Back).as_slice(),
-            [PaneEvent::SetFocus(1)]
-        ));
-        assert!(matches!(
-            pane.execute(&shared(), LogAction::Esc).as_slice(),
-            [PaneEvent::SetFocus(1)]
-        ));
+    fn search_matches_are_line_entries() {
+        let (tx, _rx) = mpsc::channel();
+        let mut view = LogView::new();
+        view.tail.set_view_height(3);
+        view.load(target(10, false, &[]), None, &tx);
+        view.apply(view.request_id, false, Ok(lines()));
+        let m = view.search_matches("cargo");
+        assert_eq!(m.len(), 2);
+        view.jump_to_match(&m[1]);
+        assert_eq!(view.tail.top(), 5);
     }
 }

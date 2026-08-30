@@ -144,6 +144,8 @@ pub enum PaneEvent {
     // GitHub-specific
     OpenIssueBrowser(u64),
     OpenPrBrowser(u64),
+    /// Run detail: load the log of the job selected in the Jobs sub-pane.
+    OpenRunLog,
     // Files-specific
     /// The directory list changed directory (enter / parent).
     DirChanged,
@@ -206,10 +208,14 @@ impl PaneShared {
                     Some(vec![])
                 }
             }
+            // Panes outside the tab cycle (the GitHub detail panes) keep
+            // Tab / BackTab for their own sub-panes.
             ViewAction::CyclePaneForward => {
+                self.tab_index(tab_panes)?;
                 Some(vec![PaneEvent::SetFocus(self.next_tab_id(tab_panes))])
             }
             ViewAction::CyclePaneBackward => {
+                self.tab_index(tab_panes)?;
                 Some(vec![PaneEvent::SetFocus(self.prev_tab_id(tab_panes))])
             }
             _ => None,

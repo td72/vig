@@ -1,68 +1,30 @@
-//! Jobs pane: the jobs of the selected run with their steps nested
-//! underneath (`gh run view <id> --json jobs`). Failed steps are
-//! highlighted; `Enter` opens the job's log.
+//! Jobs sub-pane of a run detail: the jobs of the run with their steps
+//! nested underneath (`gh run view <id> --json jobs`). Failed steps are
+//! highlighted; `Enter` opens the job's log in the Log sub-pane.
 
-use crate::actions::domain::client;
-use crate::actions::domain::time::{duration_between, now_secs};
-use crate::actions::domain::types::{Job, RunState, Step, WorkflowRun};
-use crate::actions::panes::runs::state_color;
-use crate::actions::state::ActionsBgMessage;
-use crate::core::app::AppContext;
-use crate::core::keymap::{
-    nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
-};
-use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
+use crate::core::keymap::{execute_nav, NavAction};
+use crate::core::pane;
 use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::core::tree::{nest_by, TreePos};
-use crossterm::event::KeyCode;
+use crate::github::domain::actions::client;
+use crate::github::domain::actions::time::{duration_between, now_secs};
+use crate::github::domain::actions::types::{Job, RunState, Step, WorkflowRun};
+use crate::github::panes::run_list::state_color;
+use crate::github::state::GhBgMessage;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::ListItem,
+    widgets::{Block, ListItem},
     Frame,
 };
+use std::collections::HashSet;
 use std::sync::mpsc;
+use std::time::{Duration, Instant};
 
-#[derive(Debug, Clone)]
-pub enum JobsAction {
-    Nav(NavAction),
-    Search(SearchAction),
-    OpenLog,
-    OpenBrowser,
-    Back,
-    Esc,
-}
-
-crate::impl_pane_action_from_str!(
-    JobsAction, nav: Nav, search: Search, esc: Esc,
-    OpenLog, OpenBrowser, Back
-);
-
-impl ActionHelp for JobsAction {
-    fn label(&self) -> Option<&'static str> {
-        match self {
-            JobsAction::Nav(nav) => nav.label(),
-            JobsAction::Search(sa) => sa.label(),
-            JobsAction::OpenLog => Some("Open job log"),
-            JobsAction::OpenBrowser => Some("Open job in browser"),
-            JobsAction::Back => Some("Back to runs"),
-            JobsAction::Esc => Some("Clear search / back"),
-        }
-    }
-}
-
-pub fn default_keymap() -> Keymap<JobsAction> {
-    Keymap::new()
-        .bindings(nav_bindings(JobsAction::Nav))
-        .bindings(search_bindings(JobsAction::Search))
-        .key(KeyCode::Char('i'), JobsAction::OpenLog)
-        .key(KeyCode::Enter, JobsAction::OpenLog)
-        .key(KeyCode::Char('o'), JobsAction::OpenBrowser)
-        .key(KeyCode::Char('h'), JobsAction::Back)
-        .key(KeyCode::Esc, JobsAction::Esc)
-}
+/// How often the jobs of a queued / running run are re-fetched.
+pub const JOBS_POLL_INTERVAL: Duration = Duration::from_secs(5);
 
 /// One list row: a job or one of its steps.
 #[derive(Debug, Clone)]
@@ -114,12 +76,13 @@ pub fn build_rows(jobs: Vec<Job>) -> (Vec<JobRow>, Vec<TreePos>) {
     (rows, positions)
 }
 
-/// What the log pane needs to know about the job the user picked.
+/// What the log sub-pane needs to know about the job the user picked.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LogTarget {
     pub run_id: u64,
     pub job_id: u64,
     pub job_name: String,
+    pub url: String,
     pub in_progress: bool,
     /// Names of the job's failed steps, for the `]` / `[` jumps.
     pub failed_steps: Vec<String>,
@@ -131,6 +94,7 @@ impl LogTarget {
             run_id,
             job_id: job.id,
             job_name: job.name.clone(),
+            url: job.url.clone(),
             in_progress: job.state().is_active(),
             failed_steps: job
                 .steps
@@ -142,57 +106,53 @@ impl LogTarget {
     }
 }
 
-pub struct JobsPane {
+/// State of the Jobs sub-pane: the rows of one run and their fetch status.
+#[derive(Debug, Clone)]
+pub struct JobsView {
     pub rows: Vec<JobRow>,
     positions: Vec<TreePos>,
     pub selected_idx: usize,
-    /// `(id, title)` of the run whose jobs are shown.
-    run: Option<(u64, String)>,
+    run_id: u64,
     run_active: bool,
     loading: bool,
+    last_fetch: Option<Instant>,
     error: Option<String>,
-    keymap: Keymap<JobsAction>,
-    pane_id: usize,
-    log_pane_id: usize,
     view_height: u16,
 }
 
-impl JobsPane {
-    pub fn new(pane_id: usize, log_pane_id: usize) -> Self {
-        Self {
+impl JobsView {
+    /// Start following `run` and fetch its jobs.
+    pub fn new(run: &WorkflowRun, tx: &mpsc::Sender<GhBgMessage>) -> Self {
+        let mut view = Self {
             rows: Vec::new(),
             positions: Vec::new(),
             selected_idx: 0,
-            run: None,
-            run_active: false,
+            run_id: run.id,
+            run_active: run.state().is_active(),
             loading: false,
+            last_fetch: None,
             error: None,
-            keymap: default_keymap(),
-            pane_id,
-            log_pane_id,
             view_height: 20,
-        }
-    }
-
-    pub fn set_keymap(&mut self, km: Keymap<JobsAction>) {
-        self.keymap = km;
-    }
-
-    pub fn keymap(&self) -> &Keymap<JobsAction> {
-        &self.keymap
+        };
+        view.spawn_fetch(tx);
+        view
     }
 
     pub fn is_loading(&self) -> bool {
         self.loading
     }
 
-    pub fn run_id(&self) -> Option<u64> {
-        self.run.as_ref().map(|(id, _)| *id)
-    }
-
     /// The run is still queued or running, so its jobs are worth polling.
+    #[cfg(test)]
     pub fn run_is_active(&self) -> bool {
         self.run_active
+    }
+
+    /// The run list was refreshed: pick up the run's new state.
+    pub fn update_run(&mut self, run: &WorkflowRun) {
+        if run.id == self.run_id {
+            self.run_active = run.state().is_active();
+        }
     }
 
     pub fn selected(&self) -> Option<&JobRow> {
@@ -202,7 +162,7 @@ impl JobsPane {
     /// The job under the cursor (a step row resolves to its job) and, for
     /// a step row, the step's name.
     pub fn selected_target(&self) -> Option<(LogTarget, Option<String>)> {
-        let run_id = self.run_id()?;
+        let run_id = self.run_id;
         match self.selected()? {
             JobRow::Job(j) => Some((LogTarget::from_job(run_id, j), None)),
             JobRow::Step { job_idx, step } => match &self.rows[*job_idx] {
@@ -212,60 +172,52 @@ impl JobsPane {
         }
     }
 
+    /// URL of the job under the cursor (a step row resolves to its job).
+    pub fn selected_url(&self) -> Option<String> {
+        self.selected_target()
+            .map(|(t, _)| t.url)
+            .filter(|u| !u.is_empty())
+    }
+
     /// Current state of job `job_id` after a refresh, if it is listed.
     pub fn target_for(&self, job_id: u64) -> Option<LogTarget> {
-        let run_id = self.run_id()?;
+        let run_id = self.run_id;
         self.rows.iter().find_map(|r| match r {
             JobRow::Job(j) if j.id == job_id => Some(LogTarget::from_job(run_id, j)),
             _ => None,
         })
     }
 
-    /// Follow `run` (or nothing). Re-selecting the same run keeps the rows.
-    pub fn load(&mut self, run: Option<&WorkflowRun>, tx: &mpsc::Sender<ActionsBgMessage>) {
-        match run {
-            Some(run) if self.run_id() == Some(run.id) => {
-                self.run_active = run.state().is_active();
-            }
-            Some(run) => {
-                self.run = Some((run.id, format!("{} #{}", run.title(), run.number)));
-                self.run_active = run.state().is_active();
-                self.rows.clear();
-                self.positions.clear();
-                self.selected_idx = 0;
-                self.error = None;
-                self.spawn_fetch(tx);
-            }
-            None => {
-                self.run = None;
-                self.run_active = false;
-                self.rows.clear();
-                self.positions.clear();
-                self.selected_idx = 0;
-                self.error = None;
-                self.loading = false;
-            }
-        }
-    }
-
-    /// Re-fetch the current run's jobs (poll / `r`).
-    pub fn spawn_fetch(&mut self, tx: &mpsc::Sender<ActionsBgMessage>) {
-        let Some(run_id) = self.run_id() else {
-            return;
-        };
+    /// Re-fetch the run's jobs (poll / `r`).
+    pub fn spawn_fetch(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        let run_id = self.run_id;
         self.loading = true;
+        self.last_fetch = Some(Instant::now());
         let tx = tx.clone();
         std::thread::spawn(move || {
-            let _ = tx.send(ActionsBgMessage::Jobs {
+            let _ = tx.send(GhBgMessage::RunJobs {
                 run_id,
                 result: client::list_jobs(run_id),
             });
         });
     }
 
+    /// Poll a queued / running run once per [`JOBS_POLL_INTERVAL`].
+    pub fn on_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        if !self.run_active || self.loading {
+            return;
+        }
+        let due = self
+            .last_fetch
+            .is_none_or(|t| t.elapsed() >= JOBS_POLL_INTERVAL);
+        if due {
+            self.spawn_fetch(tx);
+        }
+    }
+
     /// Apply a fetch result; results for another run are dropped.
     pub fn apply(&mut self, run_id: u64, result: Result<Vec<Job>, String>) {
-        if self.run_id() != Some(run_id) {
+        if self.run_id != run_id {
             return;
         }
         self.loading = false;
@@ -290,40 +242,18 @@ impl JobsPane {
             .min(self.rows.len().saturating_sub(1));
     }
 
-    fn execute(&mut self, shared: &PaneShared, action: JobsAction) -> Vec<PaneEvent> {
-        let esc_fallback = vec![PaneEvent::SetFocus(shared.previous_pane)];
-        if let Some(events) =
-            pane::try_dispatch_search_esc(&action, shared, self.pane_id, esc_fallback)
-        {
-            return events;
-        }
-        match action {
-            JobsAction::Nav(nav) => pane::execute_list_nav(
-                nav,
-                &mut self.selected_idx,
-                self.rows.len(),
-                Some(self.view_height),
-            ),
-            JobsAction::OpenLog if self.selected_target().is_some() => {
-                vec![PaneEvent::SetFocus(self.log_pane_id)]
-            }
-            JobsAction::OpenBrowser => {
-                let url = match self.selected() {
-                    Some(JobRow::Job(j)) => Some(&j.url),
-                    Some(JobRow::Step { job_idx, .. }) => match &self.rows[*job_idx] {
-                        JobRow::Job(j) => Some(&j.url),
-                        JobRow::Step { .. } => None,
-                    },
-                    None => None,
-                };
-                match url {
-                    Some(u) if !u.is_empty() => vec![PaneEvent::OpenUrl(u.clone())],
-                    _ => vec![],
-                }
-            }
-            JobsAction::Back => vec![PaneEvent::SetFocus(shared.previous_pane)],
-            _ => vec![],
-        }
+    /// Move the selection; `true` if it changed.
+    pub fn nav(&mut self, nav: NavAction) -> bool {
+        execute_nav(
+            nav,
+            &mut self.selected_idx,
+            self.rows.len(),
+            Some(self.view_height),
+        )
+    }
+
+    pub fn search_matches(&self, query: &str) -> Vec<SearchMatch> {
+        pane::collect_list_search_matches(&self.rows, query, JobRow::search_text)
     }
 
     fn render_row(row: &JobRow, tree: &TreePos, now: i64) -> ListItem<'static> {
@@ -372,67 +302,54 @@ impl JobsPane {
         }
         ListItem::new(Line::from(spans))
     }
-}
 
-impl Pane<PaneEvent> for JobsPane {
-    crate::impl_handle_key!(keymap);
-
-    fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
+    /// Render into `block`. The selection is highlighted while this is the
+    /// active sub-pane of a focused detail pane.
+    pub fn render(
+        &mut self,
+        f: &mut Frame,
+        area: Rect,
+        block: Block<'static>,
+        highlight_selection: bool,
+        match_set: &HashSet<usize>,
+        current_match: Option<usize>,
+    ) {
         self.view_height = area.height.saturating_sub(2);
-        let title = match &self.run {
-            Some((_, title)) => format!("Jobs: {title}"),
-            None => "Jobs".to_string(),
+        let empty = match &self.error {
+            Some(e) => Some(format!("Error: {e}")),
+            None if self.rows.is_empty() && self.loading => Some("Loading...".to_string()),
+            None if self.rows.is_empty() => Some("No jobs yet".to_string()),
+            None => None,
         };
-        let error = self.error.as_ref().map(|e| format!("Error: {e}"));
-        let empty = match (&error, &self.run) {
-            (Some(e), _) => Some(e.as_str()),
-            (None, None) => Some("Select a run to list its jobs"),
-            (None, Some(_)) if self.rows.is_empty() && self.loading => Some("Loading..."),
-            (None, Some(_)) if self.rows.is_empty() => Some("No jobs yet"),
-            _ => None,
-        };
-        let is_focused = shared.focused_pane == self.pane_id;
-        let show_selection = is_focused || shared.focused_pane == self.log_pane_id;
-        let selected = show_selection.then_some(self.selected_idx);
+        if let Some(message) = empty {
+            theme::render_empty_list(f, area, block, &message);
+            return;
+        }
         let now = now_secs();
-        theme::render_list_pane(
-            f,
-            area,
-            shared,
-            self.pane_id,
-            &title,
-            selected,
-            empty,
-            |match_set, current_match_idx| {
-                self.rows
-                    .iter()
-                    .enumerate()
-                    .map(|(idx, row)| {
-                        let tree = self.positions.get(idx).cloned().unwrap_or_default();
-                        let mut li = Self::render_row(row, &tree, now);
-                        let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
-                        if hl.is_active() {
-                            li = li.style(hl.apply(Style::default()));
-                        }
-                        li
-                    })
-                    .collect()
-            },
-        );
+        let items: Vec<ListItem<'static>> = self
+            .rows
+            .iter()
+            .enumerate()
+            .map(|(idx, row)| {
+                let tree = self.positions.get(idx).cloned().unwrap_or_default();
+                let mut li = Self::render_row(row, &tree, now);
+                let hl = theme::search_highlight_for(match_set, current_match, idx);
+                if hl.is_active() {
+                    li = li.style(hl.apply(Style::default()));
+                }
+                li
+            })
+            .collect();
+        let selected = highlight_selection.then_some(self.selected_idx);
+        theme::render_search_list(f, area, items, block, selected, match_set);
     }
-
-    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        pane::collect_list_search_matches(&self.rows, query, JobRow::search_text)
-    }
-
-    crate::impl_list_pane_selection!();
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn step(number: u64, name: &str, conclusion: &str) -> Step {
+    pub(crate) fn step(number: u64, name: &str, conclusion: &str) -> Step {
         Step {
             number,
             name: name.into(),
@@ -443,7 +360,7 @@ mod tests {
         }
     }
 
-    fn job(id: u64, name: &str, conclusion: &str, steps: Vec<Step>) -> Job {
+    pub(crate) fn job(id: u64, name: &str, conclusion: &str, steps: Vec<Step>) -> Job {
         Job {
             id,
             name: name.into(),
@@ -521,10 +438,10 @@ mod tests {
     #[test]
     fn selected_target_resolves_steps_to_their_job() {
         let (tx, _rx) = mpsc::channel();
-        let mut pane = JobsPane::new(1, 2);
-        pane.load(Some(&run()), &tx);
-        assert!(pane.is_loading());
-        pane.apply(
+        let mut view = JobsView::new(&run(), &tx);
+        assert!(view.is_loading());
+        assert!(!view.run_is_active());
+        view.apply(
             1,
             Ok(vec![job(
                 10,
@@ -536,22 +453,24 @@ mod tests {
                 ],
             )]),
         );
-        assert!(!pane.is_loading());
-        let (target, step_name) = pane.selected_target().unwrap();
+        assert!(!view.is_loading());
+        let (target, step_name) = view.selected_target().unwrap();
         assert_eq!(target.job_id, 10);
         assert_eq!(target.job_name, "test");
+        assert!(target.url.ends_with("/job/10"));
         assert!(!target.in_progress);
         assert_eq!(target.failed_steps, ["cargo test"]);
         assert_eq!(step_name, None);
-        pane.selected_idx = 2;
-        let (target, step_name) = pane.selected_target().unwrap();
+        view.selected_idx = 2;
+        let (target, step_name) = view.selected_target().unwrap();
         assert_eq!(target.job_id, 10);
         assert_eq!(step_name.as_deref(), Some("cargo test"));
+        assert!(view.selected_url().unwrap().ends_with("/job/10"));
         // Results for another run are ignored.
-        pane.apply(99, Ok(vec![]));
-        assert_eq!(pane.rows.len(), 3);
+        view.apply(99, Ok(vec![]));
+        assert_eq!(view.rows.len(), 3);
         // A refresh keeps the selection on the same step.
-        pane.apply(
+        view.apply(
             1,
             Ok(vec![
                 job(9, "new first", "success", vec![]),
@@ -566,44 +485,61 @@ mod tests {
                 ),
             ]),
         );
-        assert_eq!(pane.selected_idx, 3);
-        assert_eq!(pane.target_for(9).unwrap().job_name, "new first");
-        assert!(pane.target_for(1234).is_none());
+        assert_eq!(view.selected_idx, 3);
+        assert_eq!(view.target_for(9).unwrap().job_name, "new first");
+        assert!(view.target_for(1234).is_none());
+        // Errors are kept for display.
+        view.apply(1, Err("boom".into()));
+        assert_eq!(view.error.as_deref(), Some("boom"));
     }
 
     #[test]
-    fn open_log_and_browser_events() {
+    fn polls_only_while_the_run_is_active() {
+        let (tx, rx) = mpsc::channel();
+        let mut active = run();
+        active.status = "in_progress".into();
+        let mut view = JobsView::new(&active, &tx);
+        assert!(view.run_is_active());
+        view.apply(1, Ok(vec![]));
+        // Not due yet: the fetch just happened.
+        view.on_tick(&tx);
+        assert!(!view.is_loading());
+        view.last_fetch = None;
+        view.on_tick(&tx);
+        assert!(view.is_loading(), "a due tick re-fetches");
+        // The run finished: no more polling.
+        view.apply(1, Ok(vec![]));
+        view.update_run(&run());
+        assert!(!view.run_is_active());
+        view.last_fetch = None;
+        view.on_tick(&tx);
+        assert!(!view.is_loading());
+        drop(rx);
+    }
+
+    #[test]
+    fn nav_and_search_over_rows() {
         let (tx, _rx) = mpsc::channel();
-        let mut pane = JobsPane::new(1, 2);
-        let shared = PaneShared {
-            focused_pane: 1,
-            previous_pane: 0,
-            search: crate::core::search::SearchState::new(),
-        };
-        // Nothing loaded: Enter does nothing, h goes back.
-        assert!(pane.execute(&shared, JobsAction::OpenLog).is_empty());
-        assert!(matches!(
-            pane.execute(&shared, JobsAction::Back).as_slice(),
-            [PaneEvent::SetFocus(0)]
-        ));
-        pane.load(Some(&run()), &tx);
-        pane.apply(
+        let mut view = JobsView::new(&run(), &tx);
+        view.apply(
             1,
             Ok(vec![job(
                 10,
                 "test",
                 "success",
-                vec![step(1, "a", "success")],
+                vec![
+                    step(1, "cargo build", "success"),
+                    step(2, "cargo test", "success"),
+                ],
             )]),
         );
-        assert!(matches!(
-            pane.execute(&shared, JobsAction::OpenLog).as_slice(),
-            [PaneEvent::SetFocus(2)]
-        ));
-        pane.selected_idx = 1;
-        assert!(matches!(
-            pane.execute(&shared, JobsAction::OpenBrowser).as_slice(),
-            [PaneEvent::OpenUrl(u)] if u.ends_with("/job/10")
-        ));
+        assert!(view.nav(NavAction::MoveDown));
+        assert_eq!(view.selected_idx, 1);
+        assert!(view.nav(NavAction::JumpBottom));
+        assert_eq!(view.selected_idx, 2);
+        assert!(!view.nav(NavAction::MoveDown));
+        assert_eq!(view.search_matches("cargo").len(), 2);
+        assert_eq!(view.search_matches("test").len(), 2);
+        assert!(view.search_matches("nope").is_empty());
     }
 }

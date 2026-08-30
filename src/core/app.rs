@@ -341,19 +341,10 @@ mod tests {
         let app = app_with(&cfg);
         assert_eq!(
             labels(&app),
-            [
-                "Git",
-                "GitHub",
-                "Files",
-                "Docker",
-                "Procs",
-                "Actions",
-                "Worktrees"
-            ],
+            ["Git", "GitHub", "Files", "Docker", "Procs", "Worktrees"],
             "builtin `pages` order defines the slots"
         );
         let procs_idx = page_index(&app, "procs");
-        let actions_idx = page_index(&app, "actions");
         let worktrees_idx = page_index(&app, "worktrees");
 
         let look = |s: &str| {
@@ -367,14 +358,18 @@ mod tests {
         assert_eq!(look("3"), Some(AppAction::SwitchPage(2)));
         assert_eq!(look("4"), Some(AppAction::SwitchPage(3)));
         assert_eq!(look("5"), Some(AppAction::SwitchPage(procs_idx)));
-        assert_eq!(look("6"), Some(AppAction::SwitchPage(actions_idx)));
-        assert_eq!(look("7"), Some(AppAction::SwitchPage(worktrees_idx)));
+        assert_eq!(look("6"), Some(AppAction::SwitchPage(worktrees_idx)));
+        assert_eq!(
+            look("7"),
+            None,
+            "the Actions page is gone (folded into GitHub)"
+        );
         assert_eq!(look("Ctrl+c"), Some(AppAction::Quit));
     }
 
     /// The header tab labels and the help "Switch view" entry are derived
-    /// from the `app { }` block, so a page bound to `7` shows `7`, not its
-    /// position (`6`).
+    /// from the `app { }` block, so a page bound to `6` shows `6`, not its
+    /// position (`5`).
     #[test]
     fn page_keys_follow_the_builtin_app_block() {
         let app = app_with(&Config::builtin());
@@ -392,15 +387,14 @@ mod tests {
                 vec!["3"],
                 vec!["4"],
                 vec!["5"],
-                vec!["6"],
-                vec!["7"]
+                vec!["6"]
             ]
         );
         let help = app.active_help_bindings();
         assert_eq!(
             help[0],
             (
-                "1 / 2 / 3 / 4 / 5 / 6 / 7".to_string(),
+                "1 / 2 / 3 / 4 / 5 / 6".to_string(),
                 "Switch view".to_string()
             )
         );
@@ -413,18 +407,15 @@ mod tests {
         // An extra key is appended after the built-in one.
         let app = app_with(&user_config(r#"app { "w" "page:worktrees" }"#));
         let idx = page_index(&app, "worktrees");
-        assert_eq!(app.ctx.page_keys[idx], vec!["7", "w"]);
-        assert_eq!(
-            app.active_help_bindings()[0].0,
-            "1 / 2 / 3 / 4 / 5 / 6 / 7 / w"
-        );
+        assert_eq!(app.ctx.page_keys[idx], vec!["6", "w"]);
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / 6 / w");
 
         // Unbinding the built-in key leaves only the user's key, so the
         // header shows `w:Worktrees`.
-        let app = app_with(&user_config(r#"app { "7" "None"; "w" "page:worktrees" }"#));
+        let app = app_with(&user_config(r#"app { "6" "None"; "w" "page:worktrees" }"#));
         let idx = page_index(&app, "worktrees");
         assert_eq!(app.ctx.page_keys[idx], vec!["w"]);
-        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / 6 / w");
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / w");
     }
 
     /// `pages` reorders the slots: the header (`page_labels`) follows the
@@ -439,7 +430,7 @@ mod tests {
 
         let mut app = app_with(&user_config(r#"pages "worktrees" "git""#));
         assert_eq!(labels(&app), ["Worktrees", "Git"]);
-        assert_eq!(app.active_help_bindings()[0].0, "7 / 1");
+        assert_eq!(app.active_help_bindings()[0].0, "6 / 1");
         // Keys still switch to the page they name, wherever its slot is.
         let ki: KeyInput = "1".parse().unwrap();
         app.handle_key(KeyEvent::new(ki.code, ki.modifiers))
@@ -454,8 +445,8 @@ mod tests {
         let mut app = app_with(&user_config(r#"pages "git" "files" "worktrees""#));
         assert_eq!(labels(&app), ["Git", "Files", "Worktrees"]);
         assert_eq!(app.pages.len(), 3);
-        assert_eq!(app.ctx.page_keys, vec![vec!["1"], vec!["3"], vec!["7"]]);
-        assert_eq!(app.active_help_bindings()[0].0, "1 / 3 / 7");
+        assert_eq!(app.ctx.page_keys, vec![vec!["1"], vec!["3"], vec!["6"]]);
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 3 / 6");
         let ki: KeyInput = "2".parse().unwrap();
         assert!(app
             .app_keymap

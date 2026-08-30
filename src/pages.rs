@@ -28,7 +28,6 @@ pub fn build_pages(
             "files" => crate::files::page::new_page(&workdir, cfg, picker.take())?,
             "docker" => crate::docker::page::new_page(cfg)?,
             "procs" => crate::procs::page::new_page(cfg)?,
-            "actions" => crate::actions::page::new_page(cfg)?,
             "worktrees" => crate::worktrees::page::new_page(&workdir, cfg)?,
             other => {
                 // `Config::pages` validates against the built-in `page` blocks,

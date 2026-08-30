@@ -558,12 +558,12 @@ mod kdl_regression {
                 ],
             },
             tab_panes: vec![PANE_FILE_TREE, PANE_BRANCH_LIST, PANE_REFLOG],
-            slot_rules: vec![SlotRule {
-                slot_id: SLOT_MAIN,
-                trigger_panes: vec![PANE_BRANCH_LIST, PANE_REFLOG, PANE_GIT_LOG],
-                then_pane: PANE_GIT_LOG,
-                default_pane: PANE_DIFF_VIEW,
-            }],
+            slot_rules: vec![SlotRule::single(
+                SLOT_MAIN,
+                vec![PANE_BRANCH_LIST, PANE_REFLOG, PANE_GIT_LOG],
+                PANE_GIT_LOG,
+                PANE_DIFF_VIEW,
+            )],
         }
     }
 
@@ -620,11 +620,12 @@ mod kdl_regression {
         let r_hc = &hardcoded.slot_rules[0];
         let r_kd = &from_kdl.slot_rules[0];
         assert_eq!(r_hc.slot_id, r_kd.slot_id);
-        assert_eq!(r_hc.then_pane, r_kd.then_pane);
         assert_eq!(r_hc.default_pane, r_kd.default_pane);
-        let mut tp_hc = r_hc.trigger_panes.clone();
+        assert_eq!(r_hc.cases.len(), r_kd.cases.len());
+        assert_eq!(r_hc.cases[0].then_pane, r_kd.cases[0].then_pane);
+        let mut tp_hc = r_hc.cases[0].trigger_panes.clone();
         tp_hc.sort();
-        let mut tp_kd = r_kd.trigger_panes.clone();
+        let mut tp_kd = r_kd.cases[0].trigger_panes.clone();
         tp_kd.sort();
         assert_eq!(tp_hc, tp_kd);
     }

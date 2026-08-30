@@ -18,7 +18,7 @@ procs-refresh-interval "2s"
 // Pages in tab order: the position here is the slot shown in the header
 // (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
 // wholesale; pages left out are disabled. `app` bindings address pages by name.
-pages "git" "github" "files" "docker" "procs" "actions" "worktrees"
+pages "git" "github" "files" "docker" "procs" "worktrees"
 
 app {
     "Ctrl+c" "Quit"
@@ -27,8 +27,7 @@ app {
     "3" "page:files"
     "4" "page:docker"
     "5" "page:procs"
-    "6" "page:actions"
-    "7" "page:worktrees"
+    "6" "page:worktrees"
 }
 
 page "git" {
@@ -122,17 +121,20 @@ page "github" {
     layout {
         split direction="vertical" {
             split direction="horizontal" size="40%" {
-                place "issue_list" size="50%"
-                place "pr_list" size="50%"
+                place "issue_list" size="33%"
+                place "pr_list" size="34%"
+                place "run_list" size="33%"
             }
-            slot "detail" size="min:3" then="pr_detail" default="issue_detail" {
-                triggers "pr_list" "pr_detail"
+            slot "detail" size="min:3" default="issue_detail" {
+                when "pr_list" "pr_detail" then="pr_detail"
+                when "run_list" "run_detail" then="run_detail"
             }
         }
     }
-    tabs "issue_list" "pr_list"
+    tabs "issue_list" "pr_list" "run_list"
     bind select="issue_list" detail="issue_detail"
     bind select="pr_list"    detail="pr_detail"
+    bind select="run_list"   detail="run_detail"
 
     pane "view" {
         keys {
@@ -170,6 +172,18 @@ page "github" {
         }
     }
 
+    pane "run_list" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "OpenDetail"
+            "Enter" "OpenDetail"
+            "BackTab" "SwitchTab"
+            "o" "OpenBrowser"
+            "Esc" "Esc"
+        }
+    }
+
     pane "issue_detail" {
         keys {
             preset "nav"
@@ -191,6 +205,23 @@ page "github" {
             "Tab" "CycleForward"
             "BackTab" "CycleBackward"
             "w" "ToggleWatch"
+            "o" "OpenItem"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "run_detail" {
+        keys {
+            preset "nav"
+            preset "search"
+            "h" "FocusBody"
+            "l" "FocusRight"
+            "Tab" "CycleForward"
+            "BackTab" "CycleBackward"
+            "i" "OpenLog"
+            "Enter" "OpenLog"
+            "]" "NextFailed"
+            "[" "PrevFailed"
             "o" "OpenItem"
             "Esc" "Esc"
         }
@@ -365,64 +396,6 @@ page "procs" {
             preset "nav"
             "h" "Back"
             "Left" "Back"
-            "Esc" "Esc"
-        }
-    }
-}
-
-page "actions" {
-    layout {
-        split direction="horizontal" {
-            place "runs" size="45%"
-            split direction="vertical" size="min:30" {
-                place "jobs" size="40%"
-                place "log" size="min:5"
-            }
-        }
-    }
-    tabs "runs" "jobs" "log"
-    bind select="runs" detail="jobs"
-
-    pane "view" {
-        keys {
-            "q" "Quit"
-            "?" "Help"
-            "r" "Refresh"
-            "Tab" "CyclePaneForward"
-            "BackTab" "CyclePaneBackward"
-        }
-    }
-
-    pane "runs" {
-        keys {
-            preset "nav"
-            preset "search"
-            "i" "OpenDetail"
-            "Enter" "OpenDetail"
-            "o" "OpenBrowser"
-            "Esc" "Esc"
-        }
-    }
-
-    pane "jobs" {
-        keys {
-            preset "nav"
-            preset "search"
-            "i" "OpenLog"
-            "Enter" "OpenLog"
-            "o" "OpenBrowser"
-            "h" "Back"
-            "Esc" "Esc"
-        }
-    }
-
-    pane "log" {
-        keys {
-            preset "nav"
-            preset "search"
-            "]" "NextFailed"
-            "[" "PrevFailed"
-            "h" "Back"
             "Esc" "Esc"
         }
     }

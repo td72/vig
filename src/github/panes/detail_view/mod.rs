@@ -1,16 +1,34 @@
+pub(crate) mod jobs;
+pub(crate) mod log;
 pub(crate) mod view;
 
 use crate::core::app::AppContext;
-use crate::core::keymap::{half_page_step, nav_bindings, ActionHelp, Keymap, NavAction};
-use crate::core::pane::{Pane, PaneEvent, PaneShared, SubPaneScroll};
+use crate::core::keymap::{
+    half_page_step, nav_bindings, ActionHelp, Keymap, NavAction, SearchAction,
+};
+use crate::core::pane::{self, Pane, PaneEvent, PaneShared, SubPaneScroll};
+use crate::core::search::SearchMatch;
+use crate::github::domain::actions::types::{Job, WorkflowRun};
 use crate::github::domain::types::*;
 use crate::github::domain::{client, disk_cache};
 use crate::github::state::{GhBgMessage, GhDetailContent, GhDetailKind, GhDetailPane};
 use crossterm::event::{KeyCode, KeyEvent};
+use jobs::JobsView;
+use log::LogView;
 use ratatui::{layout::Rect, Frame};
 use std::collections::HashMap;
 use std::sync::mpsc;
 use std::time::{Instant, SystemTime};
+
+/// A workflow run shown in the detail area: the run itself (from the list)
+/// plus the Jobs and Log sub-panes. Unlike issues and PRs it is not cached;
+/// the jobs are fetched when the run is selected and polled while it runs.
+#[derive(Debug, Clone)]
+pub struct GhRunDetail {
+    pub run: WorkflowRun,
+    pub jobs: JobsView,
+    pub log: LogView,
+}
 
 /// Abstraction over the two detail payload types (issue, PR) so that load/apply
 /// logic can be written once over `D: DetailType`.
@@ -84,30 +102,41 @@ pub struct WatchStatus {
 #[derive(Debug, Clone)]
 pub enum DetailAction {
     Nav(NavAction),
+    Search(SearchAction),
     FocusBody,
     FocusRight,
     CycleForward,
     CycleBackward,
     ToggleWatch,
     OpenItem,
+    /// Run detail: show the selected job's log (a step row scrolls to it).
+    OpenLog,
+    /// Run detail: jump to the next / previous failed step in the log.
+    NextFailed,
+    PrevFailed,
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
-    DetailAction, nav: Nav,
-    FocusBody, FocusRight, CycleForward, CycleBackward, ToggleWatch, OpenItem, Esc
+    DetailAction, nav: Nav, search: Search, esc: Esc,
+    FocusBody, FocusRight, CycleForward, CycleBackward, ToggleWatch, OpenItem,
+    OpenLog, NextFailed, PrevFailed
 );
 
 impl ActionHelp for DetailAction {
     fn label(&self) -> Option<&'static str> {
         match self {
             DetailAction::Nav(nav) => nav.label(),
-            DetailAction::FocusBody => Some("Body pane"),
-            DetailAction::FocusRight => Some("Right pane"),
+            DetailAction::Search(sa) => sa.label(),
+            DetailAction::FocusBody => Some("Body / Jobs pane"),
+            DetailAction::FocusRight => Some("Right / Log pane"),
             DetailAction::CycleForward => Some("Next right pane"),
             DetailAction::CycleBackward => Some("Prev right pane"),
             DetailAction::ToggleWatch => Some("Toggle watch mode"),
             DetailAction::OpenItem => Some("Open in browser"),
+            DetailAction::OpenLog => Some("Open job log"),
+            DetailAction::NextFailed => Some("Next failed step"),
+            DetailAction::PrevFailed => Some("Prev failed step"),
             DetailAction::Esc => Some("Back to list"),
         }
     }
@@ -180,13 +209,14 @@ impl GhDetailViewPane {
         self.content = GhDetailContent::Error(msg);
     }
 
-    /// Return the kind and number of the currently displayed or loading item, if any.
+    /// Return the kind and number of the currently displayed or loading
+    /// issue / PR, if any. Runs are not cached and report `None`.
     pub fn current_detail_info(&self) -> Option<(GhDetailKind, u64)> {
         match &self.content {
             GhDetailContent::Issue(detail) => Some((GhDetailKind::Issue, detail.number)),
             GhDetailContent::Pr(detail) => Some((GhDetailKind::Pr, detail.number)),
             GhDetailContent::Loading { kind, number } => Some((*kind, *number)),
-            GhDetailContent::Error(_) | GhDetailContent::None => None,
+            GhDetailContent::Run(_) | GhDetailContent::Error(_) | GhDetailContent::None => None,
         }
     }
 
@@ -194,13 +224,165 @@ impl GhDetailViewPane {
         matches!(&self.content, GhDetailContent::Pr(_))
     }
 
+    pub fn run_detail(&self) -> Option<&GhRunDetail> {
+        match &self.content {
+            GhDetailContent::Run(d) => Some(d),
+            _ => None,
+        }
+    }
+
+    pub fn run_detail_mut(&mut self) -> Option<&mut GhRunDetail> {
+        match &mut self.content {
+            GhDetailContent::Run(d) => Some(d),
+            _ => None,
+        }
+    }
+
     pub fn active_scroll_mut(&mut self) -> &mut SubPaneScroll {
         match self.active_pane {
-            GhDetailPane::Body => &mut self.body,
+            GhDetailPane::Body | GhDetailPane::Jobs => &mut self.body,
             GhDetailPane::Status => &mut self.status,
             GhDetailPane::Reviews => &mut self.reviews,
-            GhDetailPane::Comments => &mut self.comments,
+            GhDetailPane::Comments | GhDetailPane::Log => &mut self.comments,
         }
+    }
+
+    // === Workflow runs ===
+
+    /// Show `run`: a run already on display only picks up its new state
+    /// (the list was refreshed), anything else starts a fresh Jobs / Log
+    /// pair and fetches the jobs.
+    pub fn load_run(&mut self, run: &WorkflowRun, tx: &mpsc::Sender<GhBgMessage>) {
+        if let Some(d) = self.run_detail_mut() {
+            if d.run.id == run.id {
+                d.run = run.clone();
+                d.jobs.update_run(run);
+                return;
+            }
+        }
+        self.content = GhDetailContent::Run(Box::new(GhRunDetail {
+            run: run.clone(),
+            jobs: JobsView::new(run, tx),
+            log: LogView::new(),
+        }));
+        self.reset_sub_panes();
+        self.active_pane = GhDetailPane::Jobs;
+    }
+
+    /// A jobs fetch answered: update the rows and tell the log whether its
+    /// job finished (results for another run are dropped).
+    pub fn apply_jobs(
+        &mut self,
+        run_id: u64,
+        result: Result<Vec<Job>, String>,
+        tx: &mpsc::Sender<GhBgMessage>,
+    ) {
+        let Some(d) = self.run_detail_mut() else {
+            return;
+        };
+        d.jobs.apply(run_id, result);
+        if let Some(job_id) = d.log.target().map(|t| t.job_id) {
+            if let Some(latest) = d.jobs.target_for(job_id) {
+                d.log.update_target(latest, tx);
+            }
+        }
+    }
+
+    /// A log fetch answered.
+    pub fn apply_log(
+        &mut self,
+        request_id: u64,
+        append: bool,
+        result: Result<Vec<String>, String>,
+    ) {
+        if let Some(d) = self.run_detail_mut() {
+            d.log.apply(request_id, append, result);
+        }
+    }
+
+    /// `Enter` on a job or step: load its log and focus the Log sub-pane.
+    pub fn open_selected_log(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        let Some(d) = self.run_detail_mut() else {
+            return;
+        };
+        if let Some((target, step)) = d.jobs.selected_target() {
+            d.log.load(target, step, tx);
+            self.active_pane = GhDetailPane::Log;
+        }
+    }
+
+    /// Tick: poll the jobs of a queued / running run and a running job's log.
+    pub fn handle_run_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        if let Some(d) = self.run_detail_mut() {
+            d.jobs.on_tick(tx);
+            d.log.on_tick(tx);
+        }
+    }
+
+    /// `r`: re-fetch the jobs and the log.
+    pub fn refresh_run(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        if let Some(d) = self.run_detail_mut() {
+            d.jobs.spawn_fetch(tx);
+            d.log.refresh(tx);
+        }
+    }
+
+    /// Whether a jobs or log fetch is outstanding for the shown run.
+    pub fn is_run_loading(&self) -> bool {
+        self.run_detail()
+            .is_some_and(|d| d.jobs.is_loading() || d.log.is_loading())
+    }
+
+    /// Run detail: handle the actions that behave differently there. `None`
+    /// hands the action to the common issue / PR path.
+    fn execute_run(&mut self, action: &DetailAction) -> Option<Vec<PaneEvent>> {
+        let active = self.active_pane;
+        let d = self.run_detail_mut()?;
+        let events = match action {
+            DetailAction::Nav(nav) => {
+                match active {
+                    GhDetailPane::Log => d.log.nav(*nav),
+                    _ => {
+                        d.jobs.nav(*nav);
+                    }
+                }
+                vec![]
+            }
+            DetailAction::FocusBody => {
+                self.active_pane = GhDetailPane::Jobs;
+                vec![]
+            }
+            DetailAction::FocusRight => {
+                self.active_pane = GhDetailPane::Log;
+                vec![]
+            }
+            DetailAction::CycleForward | DetailAction::CycleBackward => {
+                self.active_pane = match active {
+                    GhDetailPane::Log => GhDetailPane::Jobs,
+                    _ => GhDetailPane::Log,
+                };
+                vec![]
+            }
+            DetailAction::OpenLog => vec![PaneEvent::OpenRunLog],
+            DetailAction::NextFailed => d.log.jump_failed(true),
+            DetailAction::PrevFailed => d.log.jump_failed(false),
+            DetailAction::OpenItem => {
+                let url = match active {
+                    GhDetailPane::Log => d.log.target().map(|t| t.url.clone()),
+                    _ => d.jobs.selected_url(),
+                }
+                .filter(|u| !u.is_empty())
+                .unwrap_or_else(|| d.run.url.clone());
+                if url.is_empty() {
+                    vec![]
+                } else {
+                    vec![PaneEvent::OpenUrl(url)]
+                }
+            }
+            DetailAction::ToggleWatch => vec![],
+            DetailAction::Search(_) | DetailAction::Esc => return None,
+        };
+        Some(events)
     }
 
     /// Cycle right-side panes forward (Status → Reviews → Comments → Status).
@@ -421,6 +603,14 @@ impl GhDetailViewPane {
     }
 
     fn execute(&mut self, shared: &PaneShared, action: DetailAction) -> Vec<PaneEvent> {
+        // Search and Esc (clear search, else back to the list) are shared.
+        let back = vec![PaneEvent::SetFocus(shared.previous_pane)];
+        if let Some(events) = pane::try_dispatch_search_esc(&action, shared, self.pane_id, back) {
+            return events;
+        }
+        if let Some(events) = self.execute_run(&action) {
+            return events;
+        }
         // Determine item count for selection-based panes
         let pane = self.active_pane;
         let item_count = self.active_item_count();
@@ -501,9 +691,12 @@ impl GhDetailViewPane {
             DetailAction::OpenItem => {
                 return self.open_detail_item();
             }
-            DetailAction::Esc => {
-                return vec![PaneEvent::SetFocus(shared.previous_pane)];
-            }
+            // Handled above (search / esc) or only meaningful for runs.
+            DetailAction::Search(_)
+            | DetailAction::Esc
+            | DetailAction::OpenLog
+            | DetailAction::NextFailed
+            | DetailAction::PrevFailed => {}
         }
         vec![]
     }
@@ -529,7 +722,7 @@ impl GhDetailViewPane {
                 GhDetailContent::Pr(detail) => detail.comments.len(),
                 _ => 0,
             },
-            GhDetailPane::Body => 0,
+            GhDetailPane::Body | GhDetailPane::Jobs | GhDetailPane::Log => 0,
         }
     }
 
@@ -573,7 +766,7 @@ impl GhDetailViewPane {
                     .and_then(|c| c.url.clone()),
                 _ => None,
             },
-            GhDetailPane::Body => match &self.content {
+            GhDetailPane::Body | GhDetailPane::Jobs | GhDetailPane::Log => match &self.content {
                 GhDetailContent::Issue(issue) => {
                     return vec![PaneEvent::OpenIssueBrowser(issue.number)];
                 }
@@ -599,6 +792,29 @@ impl Pane<PaneEvent> for GhDetailViewPane {
     fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         view::render(f, self, shared, area);
     }
+
+    /// Search covers the active sub-pane of a run detail: job / step names
+    /// or log lines.
+    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+        let active = self.active_pane;
+        match self.run_detail() {
+            Some(d) if active == GhDetailPane::Log => d.log.search_matches(query),
+            Some(d) => d.jobs.search_matches(query),
+            None => vec![],
+        }
+    }
+
+    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
+        let active = self.active_pane;
+        let Some(d) = self.run_detail_mut() else {
+            return;
+        };
+        match (active, search_match) {
+            (GhDetailPane::Log, m) => d.log.jump_to_match(m),
+            (_, SearchMatch::ListEntry(idx)) => d.jobs.selected_idx = *idx,
+            _ => {}
+        }
+    }
 }
 
 /// Get local UTC offset in seconds, cached after first call.
@@ -622,4 +838,193 @@ fn local_utc_offset_secs() -> i64 {
             })
             .unwrap_or(0)
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::github::domain::actions::types::Step;
+
+    fn run(id: u64, status: &str) -> WorkflowRun {
+        WorkflowRun {
+            id,
+            number: id,
+            name: "CI".into(),
+            workflow_name: "CI".into(),
+            status: status.into(),
+            conclusion: if status == "completed" { "failure" } else { "" }.into(),
+            head_branch: "main".into(),
+            event: "push".into(),
+            created_at: "2026-08-28T08:17:23Z".into(),
+            updated_at: "2026-08-28T08:18:44Z".into(),
+            url: format!("https://github.com/td72/vig/actions/runs/{id}"),
+        }
+    }
+
+    fn job(id: u64, name: &str, steps: Vec<Step>) -> Job {
+        Job {
+            id,
+            name: name.into(),
+            status: "completed".into(),
+            conclusion: Some("failure".into()),
+            started_at: None,
+            completed_at: None,
+            url: format!("https://github.com/td72/vig/actions/runs/1/job/{id}"),
+            steps,
+        }
+    }
+
+    fn step(number: u64, name: &str, conclusion: &str) -> Step {
+        Step {
+            number,
+            name: name.into(),
+            status: "completed".into(),
+            conclusion: Some(conclusion.into()),
+            started_at: None,
+            completed_at: None,
+        }
+    }
+
+    fn shared() -> PaneShared {
+        PaneShared {
+            focused_pane: 5,
+            previous_pane: 2,
+            search: crate::core::search::SearchState::new(),
+        }
+    }
+
+    fn run_pane() -> (
+        GhDetailViewPane,
+        mpsc::Sender<GhBgMessage>,
+        mpsc::Receiver<GhBgMessage>,
+    ) {
+        let (tx, rx) = mpsc::channel();
+        let mut dv = GhDetailViewPane::new(5);
+        dv.load_run(&run(1, "in_progress"), &tx);
+        (dv, tx, rx)
+    }
+
+    #[test]
+    fn loading_a_run_shows_jobs_first_and_keeps_the_same_run() {
+        let (mut dv, tx, _rx) = run_pane();
+        assert_eq!(dv.active_pane, GhDetailPane::Jobs);
+        assert!(dv.current_detail_info().is_none());
+        assert!(dv.run_detail().unwrap().jobs.run_is_active());
+        assert!(dv.is_run_loading());
+        // The same run again (list refresh) only updates its state.
+        dv.active_pane = GhDetailPane::Log;
+        dv.load_run(&run(1, "completed"), &tx);
+        assert_eq!(dv.active_pane, GhDetailPane::Log, "sub-pane focus kept");
+        assert!(!dv.run_detail().unwrap().jobs.run_is_active());
+        // Another run starts over.
+        dv.load_run(&run(2, "completed"), &tx);
+        assert_eq!(dv.active_pane, GhDetailPane::Jobs);
+        assert_eq!(dv.run_detail().unwrap().run.id, 2);
+    }
+
+    #[test]
+    fn run_sub_panes_switch_with_h_l_and_tab() {
+        let (mut dv, _tx, _rx) = run_pane();
+        let sh = shared();
+        assert!(dv.execute(&sh, DetailAction::FocusRight).is_empty());
+        assert_eq!(dv.active_pane, GhDetailPane::Log);
+        dv.execute(&sh, DetailAction::FocusBody);
+        assert_eq!(dv.active_pane, GhDetailPane::Jobs);
+        dv.execute(&sh, DetailAction::CycleForward);
+        assert_eq!(dv.active_pane, GhDetailPane::Log);
+        dv.execute(&sh, DetailAction::CycleForward);
+        assert_eq!(dv.active_pane, GhDetailPane::Jobs);
+        dv.execute(&sh, DetailAction::CycleBackward);
+        assert_eq!(dv.active_pane, GhDetailPane::Log);
+        // Esc goes back to the list the detail was opened from.
+        let ev = dv.execute(&sh, DetailAction::Esc);
+        assert!(matches!(ev.as_slice(), [PaneEvent::SetFocus(2)]));
+        // Watch mode is a PR thing.
+        dv.execute(&sh, DetailAction::ToggleWatch);
+        assert!(!dv.watch_mode);
+    }
+
+    #[test]
+    fn enter_loads_the_selected_jobs_log_and_focuses_it() {
+        let (mut dv, tx, _rx) = run_pane();
+        dv.apply_jobs(
+            1,
+            Ok(vec![job(
+                10,
+                "test",
+                vec![
+                    step(1, "Set up job", "success"),
+                    step(2, "cargo test", "failure"),
+                ],
+            )]),
+            &tx,
+        );
+        // Nav moves the jobs selection while Jobs is active.
+        dv.execute(&shared(), DetailAction::Nav(NavAction::MoveDown));
+        dv.execute(&shared(), DetailAction::Nav(NavAction::MoveDown));
+        assert_eq!(dv.run_detail().unwrap().jobs.selected_idx, 2);
+        // Enter is turned into an event; the page answers with open_selected_log.
+        let ev = dv.execute(&shared(), DetailAction::OpenLog);
+        assert!(matches!(ev.as_slice(), [PaneEvent::OpenRunLog]));
+        dv.open_selected_log(&tx);
+        assert_eq!(dv.active_pane, GhDetailPane::Log);
+        let d = dv.run_detail().unwrap();
+        assert_eq!(d.log.target().unwrap().job_id, 10);
+        assert_eq!(d.log.target().unwrap().failed_steps, ["cargo test"]);
+        // `o` on the log opens the job; on the jobs list, the selected job.
+        let ev = dv.execute(&shared(), DetailAction::OpenItem);
+        assert!(matches!(ev.as_slice(), [PaneEvent::OpenUrl(u)] if u.ends_with("/job/10")));
+        // A jobs result for another run is ignored.
+        dv.apply_jobs(99, Ok(vec![]), &tx);
+        assert_eq!(dv.run_detail().unwrap().jobs.rows.len(), 3);
+    }
+
+    #[test]
+    fn open_item_falls_back_to_the_run_url() {
+        let (mut dv, _tx, _rx) = run_pane();
+        let ev = dv.execute(&shared(), DetailAction::OpenItem);
+        assert!(matches!(ev.as_slice(), [PaneEvent::OpenUrl(u)] if u.ends_with("/runs/1")));
+    }
+
+    #[test]
+    fn failed_step_jumps_report_when_there_is_no_log() {
+        let (mut dv, _tx, _rx) = run_pane();
+        let ev = dv.execute(&shared(), DetailAction::NextFailed);
+        assert!(matches!(ev.as_slice(), [PaneEvent::StatusMessage(m)] if m == "No failed steps"));
+    }
+
+    #[test]
+    fn search_targets_the_active_sub_pane() {
+        let (mut dv, tx, _rx) = run_pane();
+        dv.apply_jobs(
+            1,
+            Ok(vec![job(
+                10,
+                "test (macos)",
+                vec![step(1, "cargo test", "failure")],
+            )]),
+            &tx,
+        );
+        let sh = shared();
+        assert_eq!(dv.collect_search_matches(&sh, "macos").len(), 1);
+        assert_eq!(dv.collect_search_matches(&sh, "cargo").len(), 1);
+        dv.jump_to_match(&sh, &SearchMatch::ListEntry(1));
+        assert_eq!(dv.run_detail().unwrap().jobs.selected_idx, 1);
+        // The log has nothing yet.
+        dv.active_pane = GhDetailPane::Log;
+        assert!(dv.collect_search_matches(&sh, "cargo").is_empty());
+        // Issues have no searchable sub-panes.
+        let plain = GhDetailViewPane::new(3);
+        assert!(plain.collect_search_matches(&sh, "x").is_empty());
+    }
+
+    #[test]
+    fn run_actions_are_no_ops_for_issue_and_pr_content() {
+        let mut dv = GhDetailViewPane::new(3);
+        let sh = shared();
+        assert!(dv.execute(&sh, DetailAction::OpenLog).is_empty());
+        assert!(dv.execute(&sh, DetailAction::NextFailed).is_empty());
+        assert!(dv.execute(&sh, DetailAction::PrevFailed).is_empty());
+        assert_eq!(dv.active_pane, GhDetailPane::Body);
+    }
 }
