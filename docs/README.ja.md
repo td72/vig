@@ -22,6 +22,7 @@ Git の差分をサイドバイサイドで表示する TUI ビューア。vim �
 - **Files View** — yazi 風の 3 カラムファイルブラウザ（親 / 現在 / プレビュー）。シンタックスハイライト付きプレビュー
 - **Docker View** — compose プロジェクトごとにまとめたコンテナ一覧、イメージ一覧、inspect サマリ、ログのライブ tail。`docker` CLI 使用（読み取り専用）
 - **Procs View** — 読み取り専用のプロセスツリー（CPU / メモリ）、LISTEN 中のポートとその所有プロセス、プロセス詳細
+- **Actions View** — GitHub Actions のワークフロー実行一覧、ジョブとステップ、ジョブログ。`gh run` 使用（読み取り専用、再実行・キャンセルなし）
 - **Worktrees View** — git worktree と stash を一覧し、HEAD コミットや stash の差分（サイドバイサイド）をプレビュー
 - `~/.config/vig/config.kdl` でレイアウト・キーバインド・ハイライトテーマをカスタマイズ可能
 
@@ -112,6 +113,7 @@ vig config themes   # 利用可能なハイライトテーマを一覧表示
 | `3` | Files View に切り替え |
 | `4` | Docker View に切り替え |
 | `5` | Procs View に切り替え |
+| `6` | Actions View に切り替え |
 | `7` | Worktrees View に切り替え |
 
 ### ペイン操作
@@ -285,6 +287,33 @@ follow 中は毎秒 `--since` で追記) が表示されます。一覧は 5 秒
 | `h` / `Esc`（詳細） | プロセス一覧に戻る |
 | `r` | 今すぐ再読込 |
 
+### Actions View
+
+![actions demo](../assets/demo-actions.gif)
+
+リポジトリの GitHub Actions を読み取り専用で閲覧するビューです。`gh` CLI
+(`gh run list` / `gh run view --json jobs` / `gh run view --log --job`) だけを使います。`gh` が
+インストールされていない、または認証されていない場合はペインの代わりに通知を表示します。
+Runs ペインには最新 50 件のワークフロー実行がステータス・ワークフロー名・実行番号・ブランチ・
+イベント・所要時間（実行中は経過時間）・経過日時とともに並び、queued / in progress の実行がある間は
+5 秒ごとに更新されます。Jobs ペインには選択中の実行のジョブがステップをぶら下げたツリーで表示され
+（失敗したステップは赤）、Log ペインにはジョブのログがステップ境界と `##[group]` をセクション行として
+表示されます。実行中ジョブのログは 5 秒ごとにポーリングして tail のように追記されます。
+このビューが実行を再実行・キャンセル・削除することはありません。
+
+| キー | 操作 |
+|------|------|
+| `j` / `k` | 選択移動（Jobs は選択中の実行に追従） |
+| `i` / `Enter`（Runs） | Jobs ペインにフォーカス |
+| `i` / `Enter`（Jobs） | ジョブのログを表示（ステップ行ならそのステップへスクロール） |
+| `o` | 実行 / ジョブをブラウザで開く |
+| `Tab` / `Shift+Tab` | ペイン切り替え: Runs → Jobs → Log |
+| `j` / `k` / `Ctrl+d` / `Ctrl+u`（Log） | スクロール（実行中ジョブの follow は一時停止） |
+| `G`（Log） | 末尾へ移動して follow を再開 |
+| `]` / `[`（Log） | 次 / 前の失敗ステップへ |
+| `/` `n` `N` | ワークフロー / ブランチ / イベント、ジョブ・ステップ名、ログ行を検索 |
+| `h` / `Esc`（Jobs・Log） | 前のペインに戻る |
+| `r` | 実行一覧・ジョブ・ログを再取得 |
 ### Worktrees View
 
 ![worktrees demo](../assets/demo-worktrees.gif)

@@ -183,6 +183,7 @@ impl Config {
         cfg.files_page()?;
         cfg.docker_page()?;
         cfg.procs_page()?;
+        cfg.actions_page()?;
         cfg.worktrees_page()?;
         cfg.app_entries()?;
         cfg.theme()?;
@@ -324,6 +325,10 @@ impl Config {
 
     pub fn procs_page(&self) -> Result<LoadedPageConfig> {
         self.page("procs")
+    }
+
+    pub fn actions_page(&self) -> Result<LoadedPageConfig> {
+        self.page("actions")
     }
 
     pub fn worktrees_page(&self) -> Result<LoadedPageConfig> {
@@ -1033,6 +1038,26 @@ mod tests {
     }
 
     #[test]
+    fn actions_page_ids_keys_and_bindings() {
+        let cfg = Config::builtin().actions_page().unwrap();
+        assert_eq!(cfg.name, "actions");
+        assert_eq!(cfg.resolve_id("runs"), Some(0));
+        assert_eq!(cfg.resolve_id("jobs"), Some(1));
+        assert_eq!(cfg.resolve_id("log"), Some(2));
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2]);
+        assert_eq!(cfg.bindings, vec![("runs".to_string(), "jobs".to_string())]);
+        for name in ["view", "runs", "jobs", "log"] {
+            assert!(
+                cfg.pane_keys.contains_key(name),
+                "missing pane keys for {name}"
+            );
+        }
+        // App block switches to it with "6".
+        let entries = Config::builtin().app_entries().unwrap();
+        assert!(entries.contains(&("6".to_string(), "page:actions".to_string())));
+    }
+
+    #[test]
     fn worktrees_page_ids_keys_and_bindings() {
         let cfg = Config::builtin().worktrees_page().unwrap();
         assert_eq!(cfg.name, "worktrees");
@@ -1164,7 +1189,15 @@ mod tests {
         let entries = cfg.app_entries().unwrap();
         let km = crate::core::keymap::build_app_keymap(
             &entries,
-            &["git", "github", "files", "docker", "procs", "worktrees"],
+            &[
+                "git",
+                "github",
+                "files",
+                "docker",
+                "procs",
+                "actions",
+                "worktrees",
+            ],
         )
         .unwrap();
         assert!(km.lookup(key("1")).is_none());

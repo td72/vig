@@ -37,18 +37,18 @@ fn parse_github_nwo(url: &str) -> Option<String> {
 }
 
 /// Build the cache directory path: `<cache_dir>/vig/<version>/<owner>/<repo>/`
-fn cache_dir() -> Option<PathBuf> {
+pub(crate) fn cache_dir() -> Option<PathBuf> {
     let base = dirs::cache_dir()?;
     let nwo = repo_nwo()?;
     Some(base.join("vig").join(CACHE_VERSION).join(nwo))
 }
 
-fn load_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Option<T> {
+pub(crate) fn load_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Option<T> {
     let data = fs::read(path).ok()?;
     serde_json::from_slice(&data).ok()
 }
 
-fn save_json<T: serde::Serialize>(path: &PathBuf, value: &T) {
+pub(crate) fn save_json<T: serde::Serialize>(path: &PathBuf, value: &T) {
     let Some(parent) = path.parent() else {
         return;
     };

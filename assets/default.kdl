@@ -22,6 +22,7 @@ app {
     "3" "page:files"
     "4" "page:docker"
     "5" "page:procs"
+    "6" "page:actions"
     "7" "page:worktrees"
 }
 
@@ -359,6 +360,64 @@ page "procs" {
             preset "nav"
             "h" "Back"
             "Left" "Back"
+            "Esc" "Esc"
+        }
+    }
+}
+
+page "actions" {
+    layout {
+        split direction="horizontal" {
+            place "runs" size="45%"
+            split direction="vertical" size="min:30" {
+                place "jobs" size="40%"
+                place "log" size="min:5"
+            }
+        }
+    }
+    tabs "runs" "jobs" "log"
+    bind select="runs" detail="jobs"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+        }
+    }
+
+    pane "runs" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "OpenDetail"
+            "Enter" "OpenDetail"
+            "o" "OpenBrowser"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "jobs" {
+        keys {
+            preset "nav"
+            preset "search"
+            "i" "OpenLog"
+            "Enter" "OpenLog"
+            "o" "OpenBrowser"
+            "h" "Back"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "log" {
+        keys {
+            preset "nav"
+            preset "search"
+            "]" "NextFailed"
+            "[" "PrevFailed"
+            "h" "Back"
             "Esc" "Esc"
         }
     }
