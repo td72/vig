@@ -93,8 +93,8 @@ Type "vig"
 Enter
 Sleep 2s
 
-# Switch to the Worktrees view (7)
-Type "7"
+# Switch to the Worktrees view (6)
+Type "6"
 Sleep 2.5s
 
 # Select the feature worktree; the preview shows its HEAD commit
