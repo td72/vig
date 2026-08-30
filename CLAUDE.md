@@ -69,6 +69,7 @@ Use gitmoji prefix: `✨` new feature, `🐛` bug fix, `🩹` minor fix, `♻️
 - `src/files/` — Files page: yazi-like parent / current / preview columns
 - `src/docker/` — Docker page (`docker` CLI, read-only): containers grouped by compose project, images, inspect summary, log tail
 - `src/procs/` — Procs page (`sysinfo` + `lsof` / `ss`, read-only): process tree, listening ports, process detail
+- `src/projects/` — Projects page (`gh project`, read-only): the owner's Projects (v2), a kanban board by `Status` with a sortable table mode, and an item detail listing every project field (issue / PR bodies reuse the GitHub page's markdown renderer)
 - `assets/default.kdl` — Built-in config: every page's layout, tabs, bindings and keys live here
 
 Each page follows the same shape: `page.rs` (`new_page(...) -> Result<Page>`), `state.rs` (the `PageState` impl owning a `PaneShared` and a `PaneSet` of panes), `panes/` (one `Pane` impl per pane), `domain/` (data fetching / parsing, no UI).

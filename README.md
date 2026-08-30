@@ -23,6 +23,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - **Docker View** — Containers grouped by compose project, images, inspect summary and a live log tail via the `docker` CLI (read-only)
 - **Procs View** — read-only process tree with CPU / memory, listening ports and their owners, and a per-process detail
 - **Worktrees View** — git worktrees and stashes at a glance, with the HEAD commit or the stash diff (side-by-side) in a preview pane
+- **Projects View** — GitHub Projects (v2) boards: kanban columns by `Status`, a sortable table mode and an item detail with every project field, via `gh project` (read-only)
 - Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
 
 ## Installation
@@ -116,6 +117,7 @@ back to defaults. See [docs/config.md](docs/config.md) for the full schema.
 | `4` | Switch to Docker View |
 | `5` | Switch to Procs View |
 | `6` | Switch to Worktrees View |
+| `7` | Switch to Projects View |
 
 ### Pane Navigation
 
@@ -352,6 +354,45 @@ dropped, added or removed from this view.
 | `Esc` / `Backspace` (preview) | Back to the list |
 | `/` `n` `N` | Search paths / branches (worktrees), messages / branches (stashes), or the diff |
 | `r` | Re-read worktrees and stashes |
+
+### Projects View
+
+![projects demo](assets/demo-projects.gif)
+
+A read-only board for GitHub Projects (v2), built on `gh project list`,
+`gh project field-list` and `gh project item-list --format json`. The left
+pane lists the open projects of the repository owner (user or organization);
+projects linked to the current repository come first, marked with `▸`.
+Selecting a project loads its board: one column per `Status` option in
+GitHub's order, plus a `No status` column for items without one. Cards show
+the item type (`●` issue, `⇅` pull request, `✎` draft), number, title and
+assignees. `t` switches to a table with one row per item and the project's
+fields (Status, Priority, Estimate, Iteration, dates, custom text / number
+fields) as sortable columns. The detail pane lists every field value of the
+selected item, then the issue / PR body and comments as in the GitHub view
+(drafts show their body). Boards are fetched with `--limit 500`; the status
+bar says `(truncated)` when a project has more items.
+
+`gh project` needs the `project` token scope. When it is missing the view
+shows a notice instead of the panes: run `gh auth refresh -s project`, then
+press `r`. Nothing in this view adds, moves, edits or deletes anything.
+
+| Key | Action |
+|-----|--------|
+| `j` / `k` (projects) | Move selection (board follows) |
+| `Enter` / `i` / `l` (projects) | Focus the board |
+| `h` / `l`, `←` / `→` (board) | Previous / next column (table mode: sort column) |
+| `j` / `k` (board) | Move between cards in a column (table mode: rows) |
+| `t` (board) | Toggle table mode |
+| `s` (board, table mode) | Cycle the sort column |
+| `Enter` / `i` (board) | Focus the detail |
+| `o` | Open the project / item in the browser |
+| `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |
+| `h` / `Esc` (detail) | Back to the board |
+| `Esc` (board) | Back to the project list |
+| `Tab` / `Shift+Tab` | Cycle panes: Projects → Board → Detail |
+| `/` `n` `N` | Search project titles, or item titles / numbers across columns |
+| `r` | Re-fetch the projects, the board and the shown item |
 
 ### Other
 
