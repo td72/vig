@@ -352,6 +352,7 @@ mod tests {
         let cfg = Config::builtin();
         let app = app_with(&cfg);
         let procs_idx = page_index(&app, "procs");
+        let actions_idx = page_index(&app, "actions");
         let worktrees_idx = page_index(&app, "worktrees");
 
         let look = |s: &str| {
@@ -390,6 +391,7 @@ mod tests {
                 vec!["3"],
                 vec!["4"],
                 vec!["5"],
+                vec!["6"],
                 vec!["7"]
             ]
         );
@@ -397,7 +399,7 @@ mod tests {
         assert_eq!(
             help[0],
             (
-                "1 / 2 / 3 / 4 / 5 / 7".to_string(),
+                "1 / 2 / 3 / 4 / 5 / 6 / 7".to_string(),
                 "Switch view".to_string()
             )
         );
@@ -411,14 +413,17 @@ mod tests {
         let app = app_with(&user_config(r#"app { "w" "page:worktrees" }"#));
         let idx = page_index(&app, "worktrees");
         assert_eq!(app.ctx.page_keys[idx], vec!["7", "w"]);
-        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / 7 / w");
+        assert_eq!(
+            app.active_help_bindings()[0].0,
+            "1 / 2 / 3 / 4 / 5 / 6 / 7 / w"
+        );
 
         // Unbinding the built-in key leaves only the user's key, so the
         // header shows `w:Worktrees`.
         let app = app_with(&user_config(r#"app { "7" "None"; "w" "page:worktrees" }"#));
         let idx = page_index(&app, "worktrees");
         assert_eq!(app.ctx.page_keys[idx], vec!["w"]);
-        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / w");
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / 6 / w");
     }
 
     #[test]
