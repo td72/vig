@@ -76,12 +76,14 @@ vig
 設定なしでそのまま使えます。レイアウト・キーバインド・ハイライトテーマを変えたい場合は
 `~/.config/vig/config.kdl`（または `--config <path>` / `$VIG_CONFIG`）に
 KDL ファイルを置きます。書いた部分だけが上書きされ、それ以外はデフォルトのままです。
+`pages` 行で表示するビューとタブの順番を選べます。書かなかったページは無効になります。
 
 ![config demo](../assets/demo-config.gif)
 
 ```kdl
 // ~/.config/vig/config.kdl
 theme "Solarized (dark)"
+pages "git" "files" "worktrees"   // この 3 タブだけを、この順で表示
 page "git" {
     pane "file_tree" {
         keys {

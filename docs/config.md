@@ -38,6 +38,7 @@ Your file is a **partial override** of the defaults:
 | `theme "<name>"` | Replaces the syntax highlighting theme. |
 | `icons "<mode>"` | Replaces the Files view icon mode. |
 | `procs-refresh-interval "<duration>"` | Replaces how often the Procs view re-reads processes and ports. |
+| `pages "<name>" ...` | Replaces the whole list of enabled pages and their tab order. |
 | `app { }` | Merged per key. A key you set replaces the default binding for that key. |
 | `page "<name>" { pane "<pane>" { keys { } } }` | Merged per key, on top of the default keys (including expanded presets). |
 | `"<key>" "None"` | Removes the binding for that key. |
@@ -46,7 +47,8 @@ Your file is a **partial override** of the defaults:
 | `page "<name>" { bind ... }` | Replaces all select→detail bindings of that page. |
 
 Page names (`git`, `github`, `files`, `docker`, `procs`, `actions`, `worktrees`) and pane names are fixed — you can rearrange
-and rebind them, but not add or remove them. A replaced layout must place
+and rebind them, but not add new ones. Pages can be reordered or disabled
+with `pages`; panes cannot be removed, and a replaced layout must place
 every pane of the page.
 
 ## Example
@@ -55,6 +57,8 @@ every pane of the page.
 // ~/.config/vig/config.kdl
 
 theme "Solarized (dark)"   // `vig config themes` lists the choices
+
+pages "git" "files" "worktrees"   // three tabs, in this order
 
 app {
     "q" "Quit"          // quit from anywhere, not only from a pane
@@ -92,6 +96,7 @@ page "git" {
 theme "<name>"
 icons "<mode>"
 procs-refresh-interval "<duration>"
+pages "<name>" "<name>" ...
 app { <key> <action> ... }
 page "git" { ... }
 page "github" { ... }
@@ -135,6 +140,33 @@ while it is shown. A number with `s` or `ms` (`"2s"` by default, `"1.5s"`,
 procs-refresh-interval "5s"
 ```
 
+### `pages`
+
+Which pages are enabled, in tab order. The position in the list is the
+page's *slot* — the number shown in the header (`1:Git`, `2:GitHub`, …) and
+the page reached by `Tab` cycling. The default lists every page:
+
+```kdl
+pages "git" "github" "files" "docker" "procs" "actions" "worktrees"
+```
+
+Your `pages` replaces this list wholesale. Pages you leave out are disabled
+(not started, no tab), so
+
+```kdl
+pages "git" "files" "worktrees"
+```
+
+gives a three-tab vig with `1:Git 2:Files 3:Worktrees`. Unknown or repeated
+names are errors.
+
+Keys are bindings *onto* pages, not slots: `app { "<key>" "page:<name>" }`
+keeps addressing a page by name wherever it sits, so the built-in `1` … `7`
+still switch to the same pages after reordering (the help overlay lists them
+as `1 / 3 / 7` in the example above). Built-in keys of disabled pages are
+dropped; a binding in *your* `app { }` block to a page that is not listed in
+`pages` is an error.
+
 ### `app`
 
 Global bindings that work on every page.
@@ -142,7 +174,7 @@ Global bindings that work on every page.
 | Action | Meaning |
 |---|---|
 | `"Quit"` | Quit vig |
-| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"`, `"page:actions"`, `"page:worktrees"` | Switch to that page |
+| `"page:git"`, `"page:github"`, `"page:files"`, `"page:docker"`, `"page:procs"`, `"page:actions"`, `"page:worktrees"` | Switch to that page (it must be listed in `pages`) |
 | `"None"` | Unbind the key |
 
 ### Keys

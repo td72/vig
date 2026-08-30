@@ -76,13 +76,15 @@ vig
 vig works out of the box. To change the layout, key bindings, or highlighting theme, drop a KDL
 file at `~/.config/vig/config.kdl` (or pass `--config <path>` / set
 `$VIG_CONFIG`). Only the parts you write are overridden; everything else
-keeps its default.
+keeps its default. A `pages` line picks which views are shown and their tab
+order — pages you leave out are disabled.
 
 ![config demo](assets/demo-config.gif)
 
 ```kdl
 // ~/.config/vig/config.kdl
 theme "Solarized (dark)"
+pages "git" "files" "worktrees"   // only these three tabs, in this order
 page "git" {
     pane "file_tree" {
         keys {
