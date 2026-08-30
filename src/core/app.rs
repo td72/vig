@@ -296,27 +296,11 @@ mod tests {
     /// resolve, which previously was silently dropped (1/2 page switching did nothing)
     /// and now panics via the embedded-default `expect`. This builds the keymap the
     /// same way `App::new` does, from the real pages, so the two can't drift apart.
-    /// Every real page, created from `cfg` the way `run_tui` does.
+    /// Every enabled page, created from `cfg` the way `run_tui` does
+    /// (through the shared `pages::build_pages` registry, in slot order).
     fn all_pages(cfg: &Config) -> (Vec<Page>, PathBuf) {
         let cwd = std::env::current_dir().unwrap();
-        let (git_page, workdir) = crate::git::page::new_page(&cwd, cfg).expect("git page");
-        let gh_page = crate::github::page::new_page(cfg).expect("github page");
-        let files_page = crate::files::page::new_page(&workdir, cfg, None).expect("files page");
-        let docker_page = crate::docker::page::new_page(cfg).expect("docker page");
-        let procs_page = crate::procs::page::new_page(cfg).expect("procs page");
-        let actions_page = crate::actions::page::new_page(cfg).expect("actions page");
-        let worktrees_page =
-            crate::worktrees::page::new_page(&workdir, cfg).expect("worktrees page");
-        let pages = vec![
-            git_page,
-            gh_page,
-            files_page,
-            docker_page,
-            procs_page,
-            actions_page,
-            worktrees_page,
-        ];
-        (pages, workdir)
+        crate::pages::build_pages(cfg, &cwd, None).expect("pages")
     }
 
     /// Build the `App` from `cfg` exactly as production does; `App::new`
@@ -347,10 +331,27 @@ mod tests {
         app.pages.iter().position(|p| p.id() == id).unwrap()
     }
 
+    fn labels(app: &App) -> Vec<&'static str> {
+        app.ctx.page_labels.clone()
+    }
+
     #[test]
     fn app_keymap_resolves_page_switch_bindings() {
         let cfg = Config::builtin();
         let app = app_with(&cfg);
+        assert_eq!(
+            labels(&app),
+            [
+                "Git",
+                "GitHub",
+                "Files",
+                "Docker",
+                "Procs",
+                "Actions",
+                "Worktrees"
+            ],
+            "builtin `pages` order defines the slots"
+        );
         let procs_idx = page_index(&app, "procs");
         let actions_idx = page_index(&app, "actions");
         let worktrees_idx = page_index(&app, "worktrees");
@@ -424,6 +425,45 @@ mod tests {
         let idx = page_index(&app, "worktrees");
         assert_eq!(app.ctx.page_keys[idx], vec!["w"]);
         assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / 6 / w");
+    }
+
+    /// `pages` reorders the slots: the header (`page_labels`) follows the
+    /// listed order while keys keep addressing pages by name.
+    #[test]
+    fn user_pages_reorder_slots_and_keep_keys_by_name() {
+        let app = app_with(&user_config(r#"pages "files" "git""#));
+        assert_eq!(labels(&app), ["Files", "Git"]);
+        assert_eq!(page_index(&app, "files"), 0, "slot 1 is Files");
+        assert_eq!(app.ctx.page_keys, vec![vec!["3"], vec!["1"]]);
+        assert_eq!(app.active_help_bindings()[0].0, "3 / 1");
+
+        let mut app = app_with(&user_config(r#"pages "worktrees" "git""#));
+        assert_eq!(labels(&app), ["Worktrees", "Git"]);
+        assert_eq!(app.active_help_bindings()[0].0, "7 / 1");
+        // Keys still switch to the page they name, wherever its slot is.
+        let ki: KeyInput = "1".parse().unwrap();
+        app.handle_key(KeyEvent::new(ki.code, ki.modifiers))
+            .unwrap();
+        assert_eq!(app.ctx.active_page, page_index(&app, "git"));
+    }
+
+    /// Disabled pages are not constructed; their built-in keys are dropped
+    /// (so `2` does nothing) rather than being an error.
+    #[test]
+    fn user_pages_disable_pages() {
+        let mut app = app_with(&user_config(r#"pages "git" "files" "worktrees""#));
+        assert_eq!(labels(&app), ["Git", "Files", "Worktrees"]);
+        assert_eq!(app.pages.len(), 3);
+        assert_eq!(app.ctx.page_keys, vec![vec!["1"], vec!["3"], vec!["7"]]);
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 3 / 7");
+        let ki: KeyInput = "2".parse().unwrap();
+        assert!(app
+            .app_keymap
+            .lookup(KeyEvent::new(ki.code, ki.modifiers))
+            .is_none());
+        app.handle_key(KeyEvent::new(ki.code, ki.modifiers))
+            .unwrap();
+        assert_eq!(app.ctx.active_page, 0);
     }
 
     #[test]

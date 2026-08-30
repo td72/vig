@@ -15,6 +15,11 @@ image-preview "auto"
 // ("2s", "500ms", ...; at least 250ms). Sampling pauses while another view is shown.
 procs-refresh-interval "2s"
 
+// Pages in tab order: the position here is the slot shown in the header
+// (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
+// wholesale; pages left out are disabled. `app` bindings address pages by name.
+pages "git" "github" "files" "docker" "procs" "actions" "worktrees"
+
 app {
     "Ctrl+c" "Quit"
     "1" "page:git"

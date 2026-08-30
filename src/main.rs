@@ -4,6 +4,7 @@ mod docker;
 mod files;
 mod git;
 mod github;
+mod pages;
 mod procs;
 mod update;
 mod worktrees;
@@ -116,28 +117,16 @@ fn run_tui(cfg: Config) -> Result<()> {
     }));
 
     let cwd = std::env::current_dir()?;
-    let (git_page, workdir) = crate::git::page::new_page(&cwd, &cfg)?;
-    let gh_page = crate::github::page::new_page(&cfg)?;
     // Terminal graphics detection talks to the terminal directly, so it has
-    // to happen before the TUI takes over stdin/stdout.
-    let picker = crate::files::domain::image::make_picker(cfg.image_preview()?);
-    let files_page = crate::files::page::new_page(&workdir, &cfg, picker)?;
-    let docker_page = crate::docker::page::new_page(&cfg)?;
-    let worktrees_page = crate::worktrees::page::new_page(&workdir, &cfg)?;
-
-    let procs_page = crate::procs::page::new_page(&cfg)?;
-
-    let actions_page = crate::actions::page::new_page(&cfg)?;
-
-    let pages = vec![
-        git_page,
-        gh_page,
-        files_page,
-        docker_page,
-        procs_page,
-        actions_page,
-        worktrees_page,
-    ];
+    // to happen before the TUI takes over stdin/stdout — and only when the
+    // Files page (the sole consumer) is enabled.
+    let picker = if cfg.pages()?.iter().any(|p| p == "files") {
+        crate::files::domain::image::make_picker(cfg.image_preview()?)
+    } else {
+        None
+    };
+    // Pages come back in the slot order of `pages "git" "github" ...`.
+    let (pages, workdir) = crate::pages::build_pages(&cfg, &cwd, picker)?;
     let page_labels = pages.iter().map(|p| p.label()).collect();
     let ctx = AppContext {
         should_quit: false,
