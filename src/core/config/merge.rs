@@ -2,7 +2,7 @@
 //!
 //! Merge rules (see `docs/config.md`):
 //! - `theme "<name>"`, `icons "<mode>"`, `image-preview "<mode>"`,
-//!   `procs-refresh-interval "<duration>"` — replaced.
+//!   `procs-refresh-interval "<duration>"`, `pages "<name>" ...` — replaced.
 //! - `app { }` — merged per key; a user entry replaces the default entry with the same key.
 //! - `page "x"` — must exist in the defaults.
 //!   - `layout { }`, `tabs`, `bind` — replaced wholesale when present in the user page.
@@ -25,7 +25,7 @@ fn find_mut(doc: &mut KdlDocument, pred: impl Fn(&KdlNode) -> bool) -> Option<&m
 pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Result<()> {
     for unode in user.nodes() {
         match unode.name().value() {
-            "theme" | "icons" | "image-preview" | "procs-refresh-interval" => {
+            "theme" | "icons" | "image-preview" | "procs-refresh-interval" | "pages" => {
                 replace_single(default, unode)
             }
             "app" => merge_app(default, unode)?,
@@ -33,7 +33,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
-                 `procs-refresh-interval`, `app`, or `page`)"
+                 `procs-refresh-interval`, `pages`, `app`, or `page`)"
             ))
             }
         }
@@ -171,6 +171,7 @@ mod tests {
 
     const DEFAULT: &str = r#"
 theme "dark"
+pages "git" "github"
 app {
     "Ctrl+c" "Quit"
     "1" "page:git"
@@ -332,6 +333,23 @@ page "git" {
             .filter_map(arg0)
             .collect();
         assert_eq!(themes, vec!["light"]);
+    }
+
+    #[test]
+    fn pages_replaced_wholesale() {
+        let d = merged(r#"pages "github""#).unwrap();
+        let pages: Vec<Vec<&str>> = d
+            .nodes()
+            .iter()
+            .filter(|n| n.name().value() == "pages")
+            .map(|n| {
+                n.entries()
+                    .iter()
+                    .filter_map(|e| e.value().as_string())
+                    .collect()
+            })
+            .collect();
+        assert_eq!(pages, vec![vec!["github"]]);
     }
 
     #[test]

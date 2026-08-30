@@ -178,6 +178,8 @@ impl Config {
             doc,
             source: Some(source),
         };
+        let pages = cfg.pages()?;
+        cfg.validate_user_app_bindings(user, &pages)?;
         cfg.git_page()?;
         cfg.github_page()?;
         cfg.files_page()?;
@@ -191,6 +193,111 @@ impl Config {
         cfg.image_preview()?;
         cfg.procs_refresh_interval()?;
         Ok(cfg)
+    }
+
+    /// Every page the built-in config defines, in `page "<name>"` declaration
+    /// order. This is the set of names `pages` may list.
+    pub fn builtin_page_names(&self) -> Vec<String> {
+        self.default_doc
+            .nodes()
+            .iter()
+            .filter(|n| n.name().value() == "page")
+            .filter_map(|n| n.get(0usize).and_then(|v| v.as_string()))
+            .map(str::to_string)
+            .collect()
+    }
+
+    /// The enabled pages in slot order (`pages "git" "files" ...`): the
+    /// position in this list is the tab position shown in the header.
+    /// Pages not listed are disabled. Falls back to every built-in page in
+    /// declaration order when the node is absent.
+    pub fn pages(&self) -> Result<Vec<String>> {
+        let known = self.builtin_page_names();
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "pages")
+        else {
+            return Ok(known);
+        };
+        let mut pages: Vec<String> = Vec::new();
+        for entry in node.entries() {
+            let name = match (entry.name(), entry.value().as_string()) {
+                (None, Some(s)) => s,
+                _ => {
+                    return Err(anyhow!(
+                        "invalid {}: pages: expected page names as string arguments \
+                         (e.g. `pages \"git\" \"files\"`)",
+                        self.describe()
+                    ))
+                }
+            };
+            if !known.iter().any(|k| k == name) {
+                return Err(anyhow!(
+                    "invalid {}: pages: unknown page {name:?}; expected one of: {}",
+                    self.describe(),
+                    known.join(", ")
+                ));
+            }
+            if pages.iter().any(|p| p == name) {
+                return Err(anyhow!(
+                    "invalid {}: pages: page {name:?} listed twice",
+                    self.describe()
+                ));
+            }
+            pages.push(name.to_string());
+        }
+        if pages.is_empty() {
+            return Err(anyhow!(
+                "invalid {}: pages must list at least one page; expected some of: {}",
+                self.describe(),
+                known.join(", ")
+            ));
+        }
+        Ok(pages)
+    }
+
+    /// A `page:<name>` binding written by the user must address an enabled
+    /// page. (Built-in bindings to pages the user disabled are dropped by
+    /// [`app_entries`](Self::app_entries) instead, so disabling a page does
+    /// not require unbinding its default key.)
+    fn validate_user_app_bindings(&self, user: &KdlDocument, pages: &[String]) -> Result<()> {
+        let Some(app) = user
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "app")
+            .and_then(|n| n.children())
+        else {
+            return Ok(());
+        };
+        let known = self.builtin_page_names();
+        for (key, action) in parse_app_block(app)
+            .with_context(|| format!("invalid {}: app block", self.describe()))?
+        {
+            let Some(name) = action.strip_prefix("page:") else {
+                continue;
+            };
+            if pages.iter().any(|p| p == name) {
+                continue;
+            }
+            let reason = if known.iter().any(|k| k == name) {
+                format!(
+                    "page {name:?} is not listed in `pages` ({})",
+                    pages.join(", ")
+                )
+            } else {
+                format!(
+                    "unknown page {name:?}; expected one of: {}",
+                    known.join(", ")
+                )
+            };
+            return Err(anyhow!(
+                "invalid {}: app block: {key:?} {action:?}: {reason}",
+                self.describe()
+            ));
+        }
+        Ok(())
     }
 
     /// How often the Procs view re-reads processes and ports
@@ -344,16 +451,28 @@ impl Config {
             .with_context(|| format!("invalid {}", self.describe()))
     }
 
-    /// App-level `(key_str, action_str)` pairs.
+    /// App-level `(key_str, action_str)` pairs. `page:<name>` entries whose
+    /// page exists but is not enabled by [`pages`](Self::pages) are dropped,
+    /// so the built-in slot keys of disabled pages simply do nothing.
     pub fn app_entries(&self) -> Result<Vec<(String, String)>> {
-        self.doc
+        let entries = self
+            .doc
             .nodes()
             .iter()
             .find(|n| n.name().value() == "app")
             .and_then(|n| n.children())
             .map(parse_app_block)
             .unwrap_or_else(|| Ok(Vec::new()))
-            .with_context(|| format!("invalid {}: app block", self.describe()))
+            .with_context(|| format!("invalid {}: app block", self.describe()))?;
+        let pages = self.pages()?;
+        let known = self.builtin_page_names();
+        Ok(entries
+            .into_iter()
+            .filter(|(_, action)| match action.strip_prefix("page:") {
+                Some(name) => pages.iter().any(|p| p == name) || !known.iter().any(|k| k == name),
+                None => true,
+            })
+            .collect())
     }
 }
 
@@ -1187,19 +1306,9 @@ mod tests {
     fn user_app_keys_merge() {
         let cfg = user(r#"app { "3" "page:github"; "1" "None" }"#).unwrap();
         let entries = cfg.app_entries().unwrap();
-        let km = crate::core::keymap::build_app_keymap(
-            &entries,
-            &[
-                "git",
-                "github",
-                "files",
-                "docker",
-                "procs",
-                "actions",
-                "worktrees",
-            ],
-        )
-        .unwrap();
+        let pages = cfg.pages().unwrap();
+        let names: Vec<&str> = pages.iter().map(String::as_str).collect();
+        let km = crate::core::keymap::build_app_keymap(&entries, &names).unwrap();
         assert!(km.lookup(key("1")).is_none());
         assert!(matches!(
             km.lookup(key("2")),
@@ -1213,6 +1322,123 @@ mod tests {
             km.lookup(key("Ctrl+c")),
             Some(crate::core::keymap::AppAction::Quit)
         ));
+    }
+
+    // ── pages ─────────────────────────────────────────────────────────────
+
+    const ALL_PAGES: [&str; 7] = [
+        "git",
+        "github",
+        "files",
+        "docker",
+        "procs",
+        "actions",
+        "worktrees",
+    ];
+
+    #[test]
+    fn builtin_pages_list_every_page_in_declaration_order() {
+        let cfg = Config::builtin();
+        assert_eq!(cfg.pages().unwrap(), ALL_PAGES);
+        assert_eq!(
+            cfg.builtin_page_names(),
+            ALL_PAGES,
+            "the `pages` node must list every `page` block, in order"
+        );
+        // A config without the node falls back to the same list.
+        assert_eq!(
+            user("theme \"base16-eighties.dark\"")
+                .unwrap()
+                .pages()
+                .unwrap(),
+            ALL_PAGES
+        );
+    }
+
+    #[test]
+    fn user_pages_reorder_and_disable() {
+        let cfg = user(r#"pages "files" "git""#).unwrap();
+        assert_eq!(cfg.pages().unwrap(), ["files", "git"]);
+        // Built-in bindings to disabled pages are dropped; the rest keep
+        // addressing their page by name.
+        let entries = cfg.app_entries().unwrap();
+        let page_actions: Vec<&str> = entries
+            .iter()
+            .filter_map(|(_, a)| a.strip_prefix("page:"))
+            .collect();
+        assert_eq!(page_actions, ["git", "files"]);
+        let pages = cfg.pages().unwrap();
+        let names: Vec<&str> = pages.iter().map(String::as_str).collect();
+        let km = crate::core::keymap::build_app_keymap(&entries, &names).unwrap();
+        assert!(matches!(
+            km.lookup(key("1")),
+            Some(crate::core::keymap::AppAction::SwitchPage(1))
+        ));
+        assert!(matches!(
+            km.lookup(key("3")),
+            Some(crate::core::keymap::AppAction::SwitchPage(0))
+        ));
+        assert!(km.lookup(key("2")).is_none(), "github is disabled");
+    }
+
+    #[test]
+    fn user_pages_errors_mention_file_and_page() {
+        let msg = format!(
+            "{:#}",
+            user(r#"pages "git" "nope""#)
+                .err()
+                .expect("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("unknown page \"nope\""), "{msg}");
+        assert!(
+            msg.contains("worktrees"),
+            "{msg} should list the known pages"
+        );
+
+        let msg = format!(
+            "{:#}",
+            user(r#"pages "git" "files" "git""#)
+                .err()
+                .expect("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("\"git\" listed twice"), "{msg}");
+
+        let msg = format!("{:#}", user(r#"pages"#).err().expect("expected an error"));
+        assert!(msg.contains("at least one page"), "{msg}");
+
+        let msg = format!(
+            "{:#}",
+            user(r#"pages git=1"#).err().expect("expected an error")
+        );
+        assert!(msg.contains("string arguments"), "{msg}");
+    }
+
+    #[test]
+    fn user_binding_to_disabled_or_unknown_page_fails() {
+        let msg = format!(
+            "{:#}",
+            user(r#"pages "git" "files"; app { "w" "page:worktrees" }"#)
+                .err()
+                .expect("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("\"w\" \"page:worktrees\""), "{msg}");
+        assert!(msg.contains("not listed in `pages`"), "{msg}");
+
+        let msg = format!(
+            "{:#}",
+            user(r#"app { "x" "page:nope" }"#)
+                .err()
+                .expect("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("unknown page \"nope\""), "{msg}");
+
+        // Rebinding an enabled page is fine even when others are disabled.
+        let cfg = user(r#"pages "git" "worktrees"; app { "w" "page:worktrees" }"#).unwrap();
+        assert_eq!(cfg.pages().unwrap(), ["git", "worktrees"]);
     }
 
     #[test]

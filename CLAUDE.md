@@ -62,7 +62,7 @@ Use gitmoji prefix: `✨` new feature, `🐛` bug fix, `🩹` minor fix, `♻️
 
 ### Key Architecture
 
-- `src/main.rs` — CLI, event loop, page registration (`pages = vec![git, github, files, docker, procs]`)
+- `src/main.rs` — CLI, event loop; `src/pages.rs` — page registry (`build_pages` creates the pages named by the config's `pages` node, in slot order)
 - `src/core/` — Page-agnostic framework: `app.rs` (`App`, `AppContext`, `PageState` trait), `pane.rs` (`Pane`, `PaneSet`, `PaneShared`, event dispatch), `layout.rs`, `keymap.rs`, `search.rs`, `tab.rs`, `tree.rs` (`nest_by` tree layout), `config/` (KDL loader / merge), `ui/` (status bar, help overlay, confirm dialog, `tail_pane.rs` log tail component)
 - `src/git/` — Git page: `domain/` (repository, diff, watcher), `panes/` (file tree, branch list, reflog, git log, diff view), `state.rs`
 - `src/github/` — GitHub page (`gh` CLI): issue / PR lists with detail views, disk cache
@@ -78,8 +78,8 @@ Each page follows the same shape: `page.rs` (`new_page(...) -> Result<Page>`), `
 Use the Docker page (`src/docker/`) as the template. Checklist:
 
 1. **Module layout** — `src/<page>/{mod.rs, page.rs, state.rs, domain/{mod.rs, client.rs, types.rs}, panes/{mod.rs, <pane>.rs…}}`. `state.rs` implements `PageState` (`id()` is the KDL page name, `label()` the tab text) and `pane::PageLayout`; each pane implements `Pane<PaneEvent>` with its own action enum built via `impl_pane_action_from_str!` and `ActionHelp`.
-2. **Register it** — `mod <page>;` in `src/main.rs`, create it in `run_tui` and append it to `pages`. Add it to the `app_keymap_resolves_page_switch_bindings` test in `src/core/app.rs` (and any test that lists page names, e.g. `user_app_keys_merge` in `loader.rs`).
-3. **KDL** — add `page "<page>" { layout { … } tabs … bind … pane "view" { keys { … } } pane "<pane>" { keys { … } } }` to `assets/default.kdl` (every pane placed exactly once; `tabs` / `bind` only reference placed panes; `"q" "Quit"`, `"?" "Help"`, `"r" "Refresh"`, `Tab` / `BackTab` in `view`) and `"<n>" "page:<page>"` to the `app { }` block.
+2. **Register it** — `mod <page>;` in `src/main.rs` and a `"<page>" => crate::<page>::page::new_page(…)` arm in `build_pages` (`src/pages.rs`). Add it to the `app_keymap_resolves_page_switch_bindings` test in `src/core/app.rs` (and any test that lists page names, e.g. `ALL_PAGES` in `loader.rs`).
+3. **KDL** — add `page "<page>" { layout { … } tabs … bind … pane "view" { keys { … } } pane "<pane>" { keys { … } } }` to `assets/default.kdl` (every pane placed exactly once; `tabs` / `bind` only reference placed panes; `"q" "Quit"`, `"?" "Help"`, `"r" "Refresh"`, `Tab` / `BackTab` in `view`), append the name to the top-level `pages "git" … "<page>"` list (its position is the header slot), and add `"<n>" "page:<page>"` to the `app { }` block.
 4. **Loader** — `pub fn <page>_page(&self) -> Result<LoadedPageConfig>` in `src/core/config/loader.rs`, call it from `Config::with_user` validation, and add a `<page>_page_ids_keys_and_bindings` test next to the existing ones.
 5. **Header / status bar** — `render_<page>_header` and `render_<page>_status_bar` in `src/core/ui/status_bar.rs`.
 6. **Background work** — an `mpsc` channel of a `<Page>BgMessage` enum, fetched on worker threads and drained in `drain_background()`; lazy-initialize on the first `on_activate`. External CLIs are detected on first use and a "not available" notice replaces the panes when missing.
