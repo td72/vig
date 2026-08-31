@@ -1,103 +1,21 @@
-//! Thin wrappers around `gh project …` and the `gh api` reads the page
-//! needs. Every command here only reads: `gh repo view`, `gh project list /
-//! item-list / field-list` and a GraphQL query for `updatedAt`. Nothing in
-//! this module (or the page) adds, edits or deletes items or fields.
+//! Thin wrappers around the `gh` reads the page needs. Every command here
+//! only reads: `gh repo view` (the linked projects) and `gh project
+//! item-list / field-list` (a board). Nothing in this module (or the page)
+//! adds, edits or deletes items or fields.
 
 use crate::github::domain::client::run_gh_json;
 use crate::projects::domain::types::*;
-use serde::Deserialize;
-use std::collections::HashMap;
 
 /// `gh project item-list --limit`: a board larger than this is shown
 /// truncated (the status bar says so).
 pub const ITEM_LIMIT: usize = 500;
 
-/// `gh project list --limit`.
-pub const PROJECT_LIMIT: usize = 100;
-
-/// Repository owner and the projects linked to the repository vig runs in.
+/// The repository vig runs in, its owner and the projects linked to it.
 pub fn repo_info() -> Result<RepoInfo, String> {
     run_gh_json(
-        &["repo", "view", "--json", "owner,projectsV2"],
+        &["repo", "view", "--json", "nameWithOwner,owner,projectsV2"],
         "gh repo view failed",
     )
-}
-
-/// `gh project list --owner <owner>` (open projects only), with
-/// `updatedAt` merged in from GraphQL when that query succeeds.
-pub fn list_projects(owner: &str) -> Result<Vec<Project>, String> {
-    let list: ProjectList = run_gh_json(
-        &[
-            "project",
-            "list",
-            "--owner",
-            owner,
-            "--format",
-            "json",
-            "--limit",
-            &PROJECT_LIMIT.to_string(),
-        ],
-        "gh project list failed",
-    )?;
-    let mut projects: Vec<Project> = list.projects.into_iter().filter(|p| !p.closed).collect();
-    if let Ok(updated) = project_updated_at(owner) {
-        for p in &mut projects {
-            p.updated_at = updated.get(&p.number).cloned();
-        }
-    }
-    Ok(projects)
-}
-
-/// `updatedAt` per project number of `owner` (user or organization).
-fn project_updated_at(owner: &str) -> Result<HashMap<u64, String>, String> {
-    #[derive(Deserialize)]
-    struct Resp {
-        data: Data,
-    }
-    #[derive(Deserialize)]
-    struct Data {
-        #[serde(rename = "repositoryOwner")]
-        repository_owner: Option<Owner>,
-    }
-    #[derive(Deserialize)]
-    struct Owner {
-        #[serde(rename = "projectsV2")]
-        projects_v2: Option<Conn>,
-    }
-    #[derive(Deserialize)]
-    struct Conn {
-        nodes: Vec<Node>,
-    }
-    #[derive(Deserialize)]
-    struct Node {
-        number: u64,
-        #[serde(rename = "updatedAt")]
-        updated_at: String,
-    }
-    const QUERY: &str = "query($owner: String!) { repositoryOwner(login: $owner) { \
-        ... on ProjectV2Owner { projectsV2(first: 100) { nodes { number updatedAt } } } } }";
-    let resp: Resp = run_gh_json(
-        &[
-            "api",
-            "graphql",
-            "-f",
-            &format!("query={QUERY}"),
-            "-F",
-            &format!("owner={owner}"),
-        ],
-        "gh api graphql (projects) failed",
-    )?;
-    Ok(resp
-        .data
-        .repository_owner
-        .and_then(|o| o.projects_v2)
-        .map(|c| {
-            c.nodes
-                .into_iter()
-                .map(|n| (n.number, n.updated_at))
-                .collect()
-        })
-        .unwrap_or_default())
 }
 
 pub fn list_fields(owner: &str, number: u64) -> Result<Vec<ProjectField>, String> {

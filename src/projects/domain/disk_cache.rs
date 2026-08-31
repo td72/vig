@@ -9,8 +9,10 @@ fn dir() -> Option<PathBuf> {
     Some(cache_dir()?.join("projects"))
 }
 
+/// The cached linked projects. A file without `repo` predates the
+/// repository-scoped list (it held the owner's projects) and is ignored.
 pub fn load_project_list() -> Option<ProjectListCache> {
-    load_json(&dir()?.join("list.json"))
+    load_json::<ProjectListCache>(&dir()?.join("list.json")).filter(|c| !c.repo.is_empty())
 }
 
 pub fn save_project_list(list: &ProjectListCache) {

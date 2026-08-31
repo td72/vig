@@ -347,18 +347,29 @@ pub fn render_worktrees_status_bar(
     f.render_widget(Paragraph::new(line), area);
 }
 
-pub fn render_projects_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
-    render_header_common(
-        f,
-        ctx,
-        vec![Span::styled(
-            " Projects ",
-            Style::default()
-                .fg(Color::White)
-                .bg(Color::Rgb(130, 80, 160)),
-        )],
-        area,
-    );
+pub fn render_projects_header(f: &mut Frame, ctx: &AppContext, pj: &ProjectsState, area: Rect) {
+    let mut spans = vec![Span::styled(
+        " Projects ",
+        Style::default()
+            .fg(Color::White)
+            .bg(Color::Rgb(130, 80, 160)),
+    )];
+    // `Board: <title>`, with `(i/n)` when several projects are linked.
+    if let Some((title, pos, total)) = pj.board_label() {
+        spans.push(Span::raw(" "));
+        spans.push(Span::styled(
+            format!("Board: {title}"),
+            Style::default().fg(Color::White),
+        ));
+        if total > 1 {
+            spans.push(Span::styled(
+                format!(" ({pos}/{total})"),
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
+        spans.push(Span::raw(" "));
+    }
+    render_header_common(f, ctx, spans, area);
 }
 
 pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &ProjectsState, area: Rect) {
@@ -392,7 +403,7 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
     } else {
         spans.push(Span::styled(
             format!(
-                " {projects} project{}",
+                " {projects} linked project{}",
                 if projects == 1 { "" } else { "s" }
             ),
             Style::default().fg(Color::White),

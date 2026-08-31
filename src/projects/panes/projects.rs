@@ -1,5 +1,7 @@
-//! Project list pane: the owner's open projects, the ones linked to the
-//! current repository first.
+//! Project list pane: the projects linked to the current repository. The
+//! built-in layout does not place it (the board fills the page and `p` /
+//! `P` switch projects); a user layout that places it gets a selectable
+//! list whose selection drives the board.
 
 use crate::core::app::AppContext;
 use crate::core::keymap::{
@@ -8,12 +10,11 @@ use crate::core::keymap::{
 use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
-use crate::github::domain::actions::time::{format_relative, now_secs, parse_iso8601};
 use crate::projects::domain::types::Project;
 use crossterm::event::KeyCode;
 use ratatui::{
     layout::Rect,
-    style::{Color, Modifier, Style},
+    style::{Color, Style},
     text::{Line, Span},
     widgets::ListItem,
     Frame,
@@ -57,7 +58,9 @@ pub fn default_keymap() -> Keymap<ProjectsAction> {
 }
 
 pub struct ProjectsPane {
+    /// The linked projects, in GitHub's order.
     pub items: Vec<Project>,
+    /// The current project: the one the board shows.
     pub selected_idx: usize,
     loading: bool,
     keymap: Keymap<ProjectsAction>,
@@ -113,6 +116,13 @@ impl ProjectsPane {
             .min(self.items.len().saturating_sub(1));
     }
 
+    /// A fetched board tells how many items project `number` has.
+    pub fn set_item_count(&mut self, number: u64, count: u64) {
+        if let Some(p) = self.items.iter_mut().find(|p| p.number == number) {
+            p.items.total_count = count;
+        }
+    }
+
     fn execute(&mut self, shared: &PaneShared, action: ProjectsAction) -> Vec<PaneEvent> {
         if let Some(events) = pane::try_dispatch_search_esc(&action, shared, self.pane_id, vec![]) {
             return events;
@@ -135,41 +145,28 @@ impl ProjectsPane {
         }
     }
 
-    /// Two lines per project: `▸ #2 vig demo board` (linked projects are
-    /// marked and bold) and `8 items · 3d ago`.
-    pub fn row_lines(p: &Project, now: i64) -> Vec<Line<'static>> {
+    /// Two lines per project: `#2 vig demo board` and `td72 · 8 items`
+    /// (the count shows once its board has been fetched).
+    pub fn row_lines(p: &Project) -> Vec<Line<'static>> {
         let dim = Style::default().fg(Color::Gray);
-        let marker = if p.linked {
-            Span::styled("▸ ", Style::default().fg(Color::Cyan))
-        } else {
-            Span::raw("  ")
-        };
-        let title_style = if p.linked {
-            Style::default().add_modifier(Modifier::BOLD)
-        } else {
-            Style::default()
-        };
         let n = p.items.total_count;
-        let updated = p
-            .updated_at
-            .as_deref()
-            .and_then(parse_iso8601)
-            .map(|t| format_relative(now - t))
-            .unwrap_or_else(|| "-".to_string());
+        let mut sub = p.owner.login.clone();
+        if n > 0 {
+            if !sub.is_empty() {
+                sub.push_str(" · ");
+            }
+            sub.push_str(&format!("{n} item{}", if n == 1 { "" } else { "s" }));
+        }
         vec![
             Line::from(vec![
                 Span::raw(" "),
-                marker,
                 Span::styled(
                     format!("#{} ", p.number),
                     Style::default().fg(Color::Yellow),
                 ),
-                Span::styled(p.title.clone(), title_style),
+                Span::raw(p.title.clone()),
             ]),
-            Line::from(Span::styled(
-                format!("     {n} item{} · {updated}", if n == 1 { "" } else { "s" }),
-                dim,
-            )),
+            Line::from(Span::styled(format!("   {sub}"), dim)),
         ]
     }
 }
@@ -183,13 +180,12 @@ impl Pane<PaneEvent> for ProjectsPane {
         let empty = if self.loading && self.items.is_empty() {
             Some("Loading...")
         } else if self.items.is_empty() {
-            Some("No projects")
+            Some("No linked projects")
         } else {
             None
         };
         // The selection is always shown: it is the project the board follows.
         let selected = (!self.items.is_empty()).then_some(self.selected_idx);
-        let now = now_secs();
         theme::render_list_pane(
             f,
             area,
@@ -203,7 +199,7 @@ impl Pane<PaneEvent> for ProjectsPane {
                     .iter()
                     .enumerate()
                     .map(|(idx, p)| {
-                        let mut li = ListItem::new(Self::row_lines(p, now));
+                        let mut li = ListItem::new(Self::row_lines(p));
                         let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
                         if hl.is_active() {
                             li = li.style(hl.apply(Style::default()));
@@ -228,17 +224,10 @@ impl Pane<PaneEvent> for ProjectsPane {
 mod tests {
     use super::*;
     use crate::core::search::SearchState;
-    use crate::projects::domain::types::{order_projects, ProjectList};
+    use crate::projects::domain::types::tests::repo_info;
 
     fn projects() -> Vec<Project> {
-        let list: ProjectList = serde_json::from_str(
-            r#"{"projects":[
-              {"number":1,"title":"life","items":{"totalCount":6},"url":"https://github.com/users/td72/projects/1"},
-              {"number":2,"title":"vig demo board","items":{"totalCount":8},"url":"https://github.com/users/td72/projects/2","updatedAt":"2026-08-30T08:58:09Z"}
-            ],"totalCount":2}"#,
-        )
-        .unwrap();
-        order_projects(list.projects, &[2])
+        repo_info().linked_projects()
     }
 
     fn shared(focus: usize) -> PaneShared {
@@ -250,33 +239,33 @@ mod tests {
     }
 
     #[test]
-    fn linked_projects_come_first_and_selection_survives_refresh() {
+    fn selection_survives_refresh_and_counts_come_from_boards() {
         let mut pane = ProjectsPane::new(0, 1);
         pane.set_projects(projects());
-        assert_eq!(pane.selected_number(), Some(2), "linked project first");
+        assert_eq!(pane.selected_number(), Some(2), "GitHub's order");
         pane.selected_idx = 1;
         pane.set_projects(projects());
-        assert_eq!(pane.selected_number(), Some(1));
+        assert_eq!(pane.selected_number(), Some(7));
+        pane.set_item_count(7, 12);
+        assert_eq!(pane.items[1].items.total_count, 12);
+        pane.set_item_count(99, 1);
         pane.set_projects(vec![]);
         assert!(pane.selected().is_none());
         assert_eq!(pane.selected_idx, 0);
     }
 
     #[test]
-    fn rows_show_number_title_count_and_relative_update() {
-        let ps = projects();
-        let now = parse_iso8601("2026-08-30T10:58:09Z").unwrap();
+    fn rows_show_number_title_owner_and_count() {
+        let mut ps = projects();
+        ps[0].items.total_count = 8;
         let text = |p: &Project| -> Vec<String> {
-            ProjectsPane::row_lines(p, now)
+            ProjectsPane::row_lines(p)
                 .iter()
                 .map(|l| l.spans.iter().map(|s| s.content.to_string()).collect())
                 .collect()
         };
-        assert_eq!(
-            text(&ps[0]),
-            [" ▸ #2 vig demo board", "     8 items · 2h ago"]
-        );
-        assert_eq!(text(&ps[1]), ["   #1 life", "     6 items · -"]);
+        assert_eq!(text(&ps[0]), [" #2 vig demo board", "   td72 · 8 items"]);
+        assert_eq!(text(&ps[1]), [" #7 Roadmap", "   acme"]);
     }
 
     #[test]
@@ -292,6 +281,6 @@ mod tests {
         let ev = pane.execute(&sh, ProjectsAction::Nav(NavAction::MoveDown));
         assert!(matches!(ev.as_slice(), [PaneEvent::SelectionChanged]));
         assert_eq!(pane.collect_search_matches(&sh, "demo").len(), 1);
-        assert_eq!(pane.collect_search_matches(&sh, "#1").len(), 1);
+        assert_eq!(pane.collect_search_matches(&sh, "#7").len(), 1);
     }
 }

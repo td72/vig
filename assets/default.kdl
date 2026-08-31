@@ -467,17 +467,31 @@ page "worktrees" {
     }
 }
 
+// The board of the projects linked to the current repository takes the
+// full width; `p` / `P` switch between several linked projects. The
+// `projects` list pane is defined but not placed (inactive). To get the
+// list back, place it in your own layout (its `bind` below then applies):
+//
+//   page "projects" {
+//       layout {
+//           split direction="horizontal" {
+//               place "projects" size="22%"
+//               split direction="vertical" size="min:30" {
+//                   place "board" size="60%"
+//                   place "detail" size="min:5"
+//               }
+//           }
+//       }
+//       tabs "projects" "board" "detail"
+//   }
 page "projects" {
     layout {
-        split direction="horizontal" {
-            place "projects" size="22%"
-            split direction="vertical" size="min:30" {
-                place "board" size="60%"
-                place "detail" size="min:5"
-            }
+        split direction="vertical" {
+            place "board" size="60%"
+            place "detail" size="min:5"
         }
     }
-    tabs "projects" "board" "detail"
+    tabs "board" "detail"
     bind select="projects" detail="board"
     bind select="board"    detail="detail"
 
@@ -486,11 +500,14 @@ page "projects" {
             "q" "Quit"
             "?" "Help"
             "r" "Refresh"
+            "p" "NextProject"
+            "P" "PrevProject"
             "Tab" "CyclePaneForward"
             "BackTab" "CyclePaneBackward"
         }
     }
 
+    // Optional list of the linked projects (not placed by default).
     pane "projects" {
         keys {
             preset "nav"
