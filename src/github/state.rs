@@ -568,10 +568,12 @@ impl GitHubState {
             }
         }
 
-        if rate_limited {
-            self.on_rate_limited();
-        } else if fetch_ok {
+        // A success drained in the same batch wins: the API is evidently
+        // usable again, so clear instead of (re-)engaging the backoff.
+        if fetch_ok {
             self.rate_limit = None;
+        } else if rate_limited {
+            self.on_rate_limited();
         }
 
         // A fresh run list also carries the new state of the run on display
