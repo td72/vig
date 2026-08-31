@@ -1,4 +1,6 @@
 pub mod constraint;
+#[cfg(test)]
+mod guide_examples;
 pub mod keymap_builder;
 pub mod loader;
 pub mod merge;
