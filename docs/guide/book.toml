@@ -1,0 +1,25 @@
+# vig User Guide — English book.
+# Build with `mise run docs:build` (builds this book and the Japanese one under ja/).
+#
+# How images work (dual rendering: github.com blob view AND GitHub Pages):
+# - The checked-in Markdown references the demo GIFs by relative path into the
+#   repository tree (e.g. `../../../assets/demo.gif`), so they resolve — and
+#   render, via LFS media — when a chapter is viewed on github.com.
+# - At build time the `assets` preprocessor below rewrites those paths to
+#   `assets/<name>.gif`, and the build step (mise docs:build / the docs.yml
+#   workflow) copies `assets/*.gif` into the built book's `assets/` directory,
+#   so the same images render on Pages. All chapters live flat in `src/` so the
+#   rewritten relative path is valid from every page.
+
+[book]
+title = "vig User Guide"
+language = "en"
+src = "src"
+
+[preprocessor.assets]
+command = "python3 rewrite_assets.py"
+
+[output.html]
+site-url = "/vig/"
+git-repository-url = "https://github.com/td72/vig"
+edit-url-template = "https://github.com/td72/vig/edit/main/docs/guide/src/{path}"

@@ -1,6 +1,7 @@
 [tools]
 prek = "latest"
 vhs = "latest"
+mdbook = "0.5.4"
 
 [tasks."demo:build"]
 run = "cargo build --release"
@@ -85,3 +86,17 @@ description = "Record repo-local config demo GIF"
 [tasks."demo:all"]
 depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr", "demo:commit-log", "demo:config", "demo:repo-config", "demo:files", "demo:docker", "demo:procs", "demo:worktrees", "demo:projects"]
 description = "Record all demo GIFs"
+
+[tasks."docs:build"]
+run = [
+  "mdbook build docs/guide",
+  "mdbook build docs/guide/ja",
+  "mkdir -p docs/guide/book/assets docs/guide/ja/book/assets",
+  "cp assets/*.gif docs/guide/book/assets/",
+  "cp assets/*.gif docs/guide/ja/book/assets/",
+]
+description = "Build the user guide (English + Japanese) with mdBook"
+
+[tasks."docs:serve"]
+run = "mdbook serve docs/guide"
+description = "Serve the English user guide locally (demo GIFs only appear in docs:build output)"

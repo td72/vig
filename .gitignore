@@ -1,3 +1,7 @@
 /target
 *.key
 tmp/
+
+# mdBook build output (mise run docs:build)
+docs/guide/book/
+docs/guide/ja/book/

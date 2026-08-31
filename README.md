@@ -4,6 +4,8 @@
 
 A Git TUI side-by-side diff viewer with vim-style keybindings.
 
+📖 **[User Guide](https://td72.github.io/vig/)** — installation, a tour of every view, and (soon) the full configuration guide *(also readable in-repo under [docs/guide/](docs/guide/src/SUMMARY.md))*
+
 > **Safe by design** — vig only performs read operations and safe git commands (`git switch`, `git branch -d`). Destructive operations like merge, rebase, or force delete are intentionally excluded.
 
 ![demo](assets/demo.gif)
