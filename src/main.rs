@@ -170,13 +170,20 @@ fn run_config_trust(forget: Option<PathBuf>) -> Result<()> {
     let mut store = TrustStore::load_from(&store_path);
     match forget {
         Some(target) => {
-            let key = target
-                .canonicalize()
-                .unwrap_or(target)
-                .to_string_lossy()
-                .into_owned();
+            // Normalize the argument exactly the way store keys are built,
+            // so a path copied verbatim from the listing always matches.
+            // Only when nothing is remembered under that key, retry with
+            // the canonicalized path (resolves a relative one or a symlink).
+            let mut key = trust::normalize_key(&target);
             if !store.forget(&key) {
-                anyhow::bail!("no remembered decision for {key}");
+                let canonical = target
+                    .canonicalize()
+                    .map(|c| trust::normalize_key(&c))
+                    .unwrap_or_else(|_| key.clone());
+                if canonical == key || !store.forget(&canonical) {
+                    anyhow::bail!("no remembered decision for {key}");
+                }
+                key = canonical;
             }
             store.save_to(&store_path)?;
             println!("forgot {key}");

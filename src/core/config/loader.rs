@@ -263,6 +263,18 @@ impl Config {
     /// so a failing repo layer degrades gracefully: the caller keeps `self`
     /// and reports the error instead of aborting.
     pub fn with_repo_layer(&self, repo: &KdlDocument, source: PathBuf) -> Result<Self> {
+        // The kill switch is the user's only; a `.vig.kdl` must not be able
+        // to (re)state it, not even as a no-op.
+        if repo
+            .nodes()
+            .iter()
+            .any(|n| n.name().value() == "repo-config")
+        {
+            return Err(anyhow!(
+                "invalid config file {}: repo-config can only be set in the user config, not in .vig.kdl",
+                source.display()
+            ));
+        }
         let mut doc = self.doc.clone();
         merge_user_config(&mut doc, repo)
             .with_context(|| format!("invalid config file {}", source.display()))?;
@@ -1782,6 +1794,20 @@ mod tests {
         assert!(err.contains("/w/.vig.kdl"), "{err}");
         // The user-layer config is untouched: startup degrades to it.
         assert_eq!(base.theme().unwrap(), "Solarized (dark)");
+    }
+
+    #[test]
+    fn repo_layer_rejects_repo_config_node() {
+        // The kill switch belongs to the user config alone; a `.vig.kdl`
+        // stating it (even as "on") fails that layer's validation.
+        for repo_kdl in [r#"repo-config "off""#, r#"repo-config "on""#] {
+            let (base, merged) = repo_over(r#"theme "Solarized (dark)""#, repo_kdl);
+            let err = format!("{:#}", merged.unwrap_err());
+            assert!(err.contains("only be set in the user config"), "{err}");
+            assert!(err.contains("/w/.vig.kdl"), "{err}");
+            // The layer degrades: the base config is untouched.
+            assert_eq!(base.theme().unwrap(), "Solarized (dark)");
+        }
     }
 
     #[test]

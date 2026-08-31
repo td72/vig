@@ -95,7 +95,7 @@ impl TrustStore {
     /// The remembered decision for this worktree, only when it was made for
     /// exactly this content hash — a changed file needs a fresh decision.
     pub fn decision(&self, worktree: &Path, hash: &str) -> Option<TrustDecision> {
-        let key = key_of(worktree);
+        let key = normalize_key(worktree);
         self.entries
             .iter()
             .find(|e| e.path == key && e.hash == hash)
@@ -105,7 +105,7 @@ impl TrustStore {
     /// Remember `decision` for `(worktree, hash)`, replacing any earlier
     /// entry for the same worktree.
     pub fn remember(&mut self, worktree: &Path, hash: &str, decision: TrustDecision) {
-        let key = key_of(worktree);
+        let key = normalize_key(worktree);
         self.entries.retain(|e| e.path != key);
         self.entries.push(TrustEntry {
             path: key,
@@ -125,8 +125,11 @@ impl TrustStore {
 }
 
 /// The store key for a worktree path. `components()` drops a trailing slash
-/// (git2 workdirs end in one), so lookup, remember and `--forget` agree.
-fn key_of(worktree: &Path) -> String {
+/// (git2 workdirs end in one) and collapses `.` segments, so lookup,
+/// remember and `--forget` agree. Idempotent: normalizing a key the store
+/// already holds (e.g. one copied from the `vig config trust` listing)
+/// yields that same key.
+pub fn normalize_key(worktree: &Path) -> String {
     worktree
         .components()
         .as_path()
@@ -234,6 +237,22 @@ mod tests {
         );
         assert_eq!(store.entries[0].path, "/w/a");
         assert!(store.forget("/w/a"));
+    }
+
+    #[test]
+    fn forget_by_normalized_listing_output_always_matches() {
+        let mut store = TrustStore::default();
+        // git2 hands us a trailing slash; the listing prints the stored key.
+        store.remember(Path::new("/w/a/"), "h1", TrustDecision::Load);
+        let listed = store.entries[0].path.clone();
+        // Normalizing a verbatim copy of the listing is a no-op...
+        assert_eq!(normalize_key(Path::new(&listed)), listed);
+        // ...so forgetting by it always matches, canonicalize() not needed.
+        assert!(store.forget(&normalize_key(Path::new(&listed))));
+        // A trailing slash typed by hand normalizes to the same key too.
+        store.remember(Path::new("/w/a"), "h1", TrustDecision::Load);
+        assert!(store.forget(&normalize_key(Path::new("/w/a/"))));
+        assert!(store.entries.is_empty());
     }
 
     #[test]

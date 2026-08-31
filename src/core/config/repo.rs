@@ -29,17 +29,41 @@ pub fn content_hash(text: &str) -> String {
     hex
 }
 
-/// Whether git tracks `.vig.kdl` in `workdir` (tracked = repo-provided).
-pub fn is_tracked(workdir: &Path) -> bool {
-    std::process::Command::new("git")
+/// Whether git tracks the repo-local `.vig.kdl`. `Unknown` — git could not
+/// run or died abnormally, so the question has no answer — **fails closed**:
+/// it is handled like a tracked file, so an undeterminable `.vig.kdl` goes
+/// through the trust dialog instead of loading silently.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Tracked {
+    Yes,
+    No,
+    Unknown,
+}
+
+/// Whether git tracks `.vig.kdl` in `workdir` (tracked = repo-provided),
+/// asked via `git ls-files --error-unmatch`. See [`Tracked`] for how an
+/// unclear answer is handled.
+pub fn is_tracked(workdir: &Path) -> Tracked {
+    let status = std::process::Command::new("git")
         .arg("-C")
         .arg(workdir)
         .args(["ls-files", "--error-unmatch", REPO_CONFIG_FILE])
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
+        .status();
+    interpret_ls_files(status)
+}
+
+/// `git ls-files --error-unmatch` exits 0 for a tracked file and 1 for an
+/// untracked one (`error: pathspec ... did not match`); real failures exit
+/// differently (`fatal:` is 128) or never spawn at all. Only the definitive
+/// exit codes answer the question — everything else is [`Tracked::Unknown`].
+fn interpret_ls_files(status: std::io::Result<std::process::ExitStatus>) -> Tracked {
+    match status {
+        Ok(s) if s.success() => Tracked::Yes,
+        Ok(s) if s.code() == Some(1) => Tracked::No,
+        _ => Tracked::Unknown,
+    }
 }
 
 /// What startup (and `vig config path`) should do about the repo layer.
@@ -62,12 +86,14 @@ pub enum RepoLayer {
 }
 
 /// Classify the repo layer for `workdir`. `tracked` answers "does git track
-/// `.vig.kdl` here?" and is injected so tests need no real repository.
+/// `.vig.kdl` here?" and is injected so tests need no real repository. Only
+/// a definitive [`Tracked::No`] loads silently — [`Tracked::Unknown`] fails
+/// closed onto the tracked (dialog) path.
 pub fn classify(
     workdir: &Path,
     repo_config_enabled: bool,
     store: &TrustStore,
-    tracked: impl FnOnce(&Path) -> bool,
+    tracked: impl FnOnce(&Path) -> Tracked,
 ) -> RepoLayer {
     let path = workdir.join(REPO_CONFIG_FILE);
     if !repo_config_enabled {
@@ -76,7 +102,7 @@ pub fn classify(
     let Ok(text) = std::fs::read_to_string(&path) else {
         return RepoLayer::Absent { path };
     };
-    if !tracked(workdir) {
+    if tracked(workdir) == Tracked::No {
         return RepoLayer::Load { path, text };
     }
     let hash = content_hash(&text);
@@ -143,17 +169,17 @@ mod tests {
         let dir = tmp_worktree("classify");
         let store = TrustStore::default();
         assert!(matches!(
-            classify(&dir, true, &store, |_| false),
+            classify(&dir, true, &store, |_| Tracked::No),
             RepoLayer::Absent { .. }
         ));
         std::fs::write(dir.join(REPO_CONFIG_FILE), "theme \"InspiredGitHub\"\n").unwrap();
         // Kill switch wins over everything, dialog included.
         assert!(matches!(
-            classify(&dir, false, &store, |_| true),
+            classify(&dir, false, &store, |_| Tracked::Yes),
             RepoLayer::Disabled { .. }
         ));
         // Untracked file: the user's own, loaded silently.
-        match classify(&dir, true, &store, |_| false) {
+        match classify(&dir, true, &store, |_| Tracked::No) {
             RepoLayer::Load { text, .. } => assert!(text.contains("InspiredGitHub")),
             other => panic!("expected Load, got {other:?}"),
         }
@@ -169,29 +195,67 @@ mod tests {
 
         let mut store = TrustStore::default();
         assert!(matches!(
-            classify(&dir, true, &store, |_| true),
+            classify(&dir, true, &store, |_| Tracked::Yes),
             RepoLayer::Undecided { .. }
         ));
 
         store.remember(&dir, &hash, TrustDecision::Load);
         assert!(matches!(
-            classify(&dir, true, &store, |_| true),
+            classify(&dir, true, &store, |_| Tracked::Yes),
             RepoLayer::Load { .. }
         ));
 
         store.remember(&dir, &hash, TrustDecision::Ignore);
         assert!(matches!(
-            classify(&dir, true, &store, |_| true),
+            classify(&dir, true, &store, |_| Tracked::Yes),
             RepoLayer::Declined { .. }
         ));
 
         // Content changed since the decision: ask again.
         std::fs::write(dir.join(REPO_CONFIG_FILE), "theme \"Solarized (dark)\"\n").unwrap();
         assert!(matches!(
-            classify(&dir, true, &store, |_| true),
+            classify(&dir, true, &store, |_| Tracked::Yes),
             RepoLayer::Undecided { .. }
         ));
         std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn undeterminable_tracking_fails_closed() {
+        let dir = tmp_worktree("unknown");
+        let text = "theme \"InspiredGitHub\"\n";
+        std::fs::write(dir.join(REPO_CONFIG_FILE), text).unwrap();
+        let store = TrustStore::default();
+        // Unknown is handled like tracked: dialog path, never a silent load.
+        assert!(matches!(
+            classify(&dir, true, &store, |_| Tracked::Unknown),
+            RepoLayer::Undecided { .. }
+        ));
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn spawn_failure_is_undeterminable() {
+        assert_eq!(
+            interpret_ls_files(Err(std::io::Error::other("git missing"))),
+            Tracked::Unknown
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn interpret_ls_files_distinguishes_untracked_from_failure() {
+        use std::os::unix::process::ExitStatusExt;
+        let exit = |code: i32| Ok(std::process::ExitStatus::from_raw(code << 8));
+        assert_eq!(interpret_ls_files(exit(0)), Tracked::Yes);
+        // Exit 1 is git's definitive "untracked".
+        assert_eq!(interpret_ls_files(exit(1)), Tracked::No);
+        // `fatal:` (128) or death by signal: undeterminable, fail closed.
+        assert_eq!(interpret_ls_files(exit(128)), Tracked::Unknown);
+        assert_eq!(
+            interpret_ls_files(Ok(std::process::ExitStatus::from_raw(9))),
+            Tracked::Unknown
+        );
     }
 
     #[test]
