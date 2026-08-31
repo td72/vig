@@ -428,6 +428,10 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
                     Style::default().fg(Color::Yellow),
                 ));
             }
+            if let Some(age) = pj.board_age() {
+                spans.push(Span::raw("  "));
+                spans.push(Span::styled(age, Style::default().fg(Color::DarkGray)));
+            }
         }
         if pj.is_loading() {
             spans.push(Span::raw("  "));

@@ -427,6 +427,12 @@ page "projects" {
 }
 ```
 
+Coming back to the page after 5 minutes away re-reads the linked projects
+and re-fetches the shown board — the old board stays visible until the new
+one arrives, and the status bar shows the board's age (e.g. `board 12m
+ago`). `r` refreshes everything immediately; there is no polling while the
+page stays shown.
+
 | Pane | Actions |
 |---|---|
 | `view` (page-wide) | `Quit`, `Help`, `Refresh`, `NextProject` (`p`), `PrevProject` (`P`), `CyclePaneForward`, `CyclePaneBackward` |
