@@ -20,6 +20,7 @@ concurrency:
 
 env:
   MDBOOK_VERSION: 0.5.4
+  MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
 
 jobs:
   build:
@@ -32,8 +33,9 @@ jobs:
       - name: Install mdBook
         run: |
           mkdir -p "$HOME/.local/bin"
-          curl -sSL "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
-            | tar xz -C "$HOME/.local/bin"
+          curl -fL -o /tmp/mdbook.tar.gz "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          echo "${MDBOOK_SHA256}  /tmp/mdbook.tar.gz" | sha256sum -c -
+          tar xz -f /tmp/mdbook.tar.gz -C "$HOME/.local/bin"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Build books

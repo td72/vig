@@ -44,7 +44,7 @@ following.
 | Key | Action |
 |-----|--------|
 | `h` / `l` | Switch between the Issues, Pull Requests and Workflow Runs columns |
-| `Tab` / `Shift+Tab` | Cycle the columns (in a detail view: its sub-panes) |
+| `Tab` / `Shift+Tab` | Cycle through the page's panes — the three columns and the detail (inside a detail view: its sub-panes) |
 | `j` / `k` | Navigate list (the detail follows the selection) |
 | `i` / `Enter` | Open detail view |
 | `o` | Open in browser (issue, PR, run or the selected job) |

@@ -55,8 +55,9 @@ rebase、force delete、push）は「設定の奥に隠されている」ので�
 - `r` で再読込、`?` でヘルプ、`q` / `Ctrl+c` で終了。
 
 > 各章のキーテーブルは **デフォルト** のバインドで、
-> [README](https://github.com/td72/vig/blob/main/docs/README.ja.md) と
-> 対応しています。どちらも組み込み設定
+> 組み込み設定
 > ([assets/default.kdl](https://github.com/td72/vig/blob/main/assets/default.kdl))
-> と同期して保守されており、これが正となります。すべてのキーは
+> に基づいており、これが正となります。
+> [README](https://github.com/td72/vig/blob/main/docs/README.ja.md) は
+> 要約版で、細かいキーは載っていないことがあります。すべてのキーは
 > リバインド・アンバインドできます。詳しくは設定の章を参照してください。

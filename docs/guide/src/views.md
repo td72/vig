@@ -55,9 +55,10 @@ The views deliberately feel the same:
   (case-insensitive).
 - `r` refreshes, `?` shows help, `q` / `Ctrl+c` quits.
 
-> The key tables in these chapters show the **default** bindings and mirror
-> the [README](https://github.com/td72/vig/blob/main/README.md) — both are
-> kept in sync with the built-in configuration
+> The key tables in these chapters show the **default** bindings, taken from
+> the built-in configuration
 > ([assets/default.kdl](https://github.com/td72/vig/blob/main/assets/default.kdl)),
-> which is the source of truth. Every key can be rebound or unbound; see the
+> which is the source of truth. The
+> [README](https://github.com/td72/vig/blob/main/README.md) carries a
+> condensed summary and may omit minor keys. Every key can be rebound or unbound; see the
 > configuration chapters.
