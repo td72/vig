@@ -15,7 +15,8 @@ pub(crate) fn parse_github_nwo(url: &str) -> Option<String> {
         .or_else(|| url.strip_prefix("http://github.com/"))
     {
         r
-    } else if let Some(r) = url.strip_prefix("ssh://git@github.com") {
+    } else {
+        let r = url.strip_prefix("ssh://git@github.com")?;
         // `/owner/repo` or `:<port>/owner/repo`
         match r.strip_prefix('/') {
             Some(r) => r,
@@ -28,8 +29,6 @@ pub(crate) fn parse_github_nwo(url: &str) -> Option<String> {
                 rest
             }
         }
-    } else {
-        return None;
     };
     // Trim the trailing slash first so `owner/repo.git/` parses too.
     let rest = rest.trim_end_matches('/');
