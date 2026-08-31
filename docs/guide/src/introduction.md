@@ -20,10 +20,14 @@ ones where AI agents do the work.
   tour of the seven views, and what vig needs from your environment.
 - **[Views](views.md)** — one chapter per view: what it shows, every key
   binding, and each view's constraints.
-- **Configuration Basics / Config Recipes / Config Reference /
-  Troubleshooting** — coming in later PRs (vig is fully configurable through a
-  single KDL file; until those chapters land, see
-  [docs/config.md](https://github.com/td72/vig/blob/main/docs/config.md)).
+- **[Configuration Basics](configuration-basics.md)** — where config files
+  live, the three layers (builtin → user → repo-local), the `vig config`
+  subcommands, just enough KDL, and the merge rules.
+- **[Config Recipes](config-recipes.md)** — worked, copy-pasteable examples:
+  themes, keybindings, tabs, layouts, slots, board pinning, per-repository
+  config, polling. Every example is CI-verified.
+- **Config Reference / Troubleshooting** — coming in a later PR; until then,
+  see [docs/config.md](https://github.com/td72/vig/blob/main/docs/config.md).
 
 ## 日本語版
 
