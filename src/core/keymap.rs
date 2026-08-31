@@ -445,6 +445,9 @@ pub enum ViewAction {
     NextTab,
     CyclePaneForward,
     CyclePaneBackward,
+    /// Projects page: show the next / previous linked project's board.
+    NextProject,
+    PrevProject,
 }
 
 impl_action_from_str!(
@@ -458,7 +461,9 @@ impl_action_from_str!(
     PrevTab,
     NextTab,
     CyclePaneForward,
-    CyclePaneBackward
+    CyclePaneBackward,
+    NextProject,
+    PrevProject
 );
 
 impl ActionHelp for ViewAction {
@@ -474,6 +479,8 @@ impl ActionHelp for ViewAction {
             ViewAction::NextTab => "Next tab",
             ViewAction::CyclePaneForward => "Next pane",
             ViewAction::CyclePaneBackward => "Prev pane",
+            ViewAction::NextProject => "Next linked project",
+            ViewAction::PrevProject => "Prev linked project",
         })
     }
 }

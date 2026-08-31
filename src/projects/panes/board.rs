@@ -91,11 +91,16 @@ pub enum BoardMode {
 pub struct BoardPane {
     pane_id: usize,
     detail_pane_id: usize,
-    projects_pane_id: usize,
+    /// The project list pane, when the layout places it (Esc goes there).
+    projects_pane_id: Option<usize>,
     keymap: Keymap<BoardAction>,
     pub board: Option<Board>,
     /// URL of the project the board belongs to (`o` on a draft opens it).
     project_url: Option<String>,
+    /// `owner/repo` vig runs in: cards from other repositories say so.
+    repo: Option<String>,
+    /// Shown instead of a board (loading, nothing linked).
+    notice: Option<String>,
     columns: Vec<Column>,
     table_cols: Vec<TableColumn>,
     /// Table row order: indices into `board.items`.
@@ -120,7 +125,7 @@ pub struct BoardPane {
 }
 
 impl BoardPane {
-    pub fn new(pane_id: usize, detail_pane_id: usize, projects_pane_id: usize) -> Self {
+    pub fn new(pane_id: usize, detail_pane_id: usize, projects_pane_id: Option<usize>) -> Self {
         Self {
             pane_id,
             detail_pane_id,
@@ -128,6 +133,8 @@ impl BoardPane {
             keymap: default_keymap(),
             board: None,
             project_url: None,
+            repo: None,
+            notice: None,
             columns: Vec::new(),
             table_cols: Vec::new(),
             sorted: Vec::new(),
@@ -168,6 +175,19 @@ impl BoardPane {
 
     pub fn set_project_url(&mut self, url: Option<String>) {
         self.project_url = url;
+    }
+
+    pub fn set_repo(&mut self, repo: Option<String>) {
+        self.repo = repo;
+    }
+
+    pub fn set_notice(&mut self, notice: Option<String>) {
+        self.notice = notice;
+    }
+
+    #[cfg(test)]
+    pub fn notice(&self) -> Option<&String> {
+        self.notice.as_ref()
     }
 
     /// Drop the board (no project selected).
@@ -277,7 +297,10 @@ impl BoardPane {
     }
 
     fn execute(&mut self, shared: &PaneShared, action: BoardAction) -> Vec<PaneEvent> {
-        let back = vec![PaneEvent::SetFocus(self.projects_pane_id)];
+        let back = self
+            .projects_pane_id
+            .map(|id| vec![PaneEvent::SetFocus(id)])
+            .unwrap_or_default();
         if let Some(events) = pane::try_dispatch_search_esc(&action, shared, self.pane_id, back) {
             return events;
         }
@@ -478,7 +501,8 @@ impl BoardPane {
                 } else {
                     None
                 };
-                for line in card_lines(item, width, selected, hl.fg_override) {
+                for line in card_lines(item, self.repo.as_deref(), width, selected, hl.fg_override)
+                {
                     lines.push(match bg {
                         Some(bg) => line.style(Style::default().bg(bg)),
                         None => line,
@@ -589,10 +613,21 @@ impl BoardPane {
     }
 }
 
-/// The two lines of a card: `● #12 Title…` and the assignees and labels,
-/// padded to `width`.
+/// The `owner/repo` prefix of a card whose content lives in another
+/// repository than `repo` (the one vig runs in); `None` for local items,
+/// drafts and when the repository is unknown.
+fn cross_repo_prefix<'a>(item: &'a ProjectItem, repo: Option<&str>) -> Option<&'a str> {
+    let theirs = item.repository()?;
+    let mine = repo?;
+    (!theirs.eq_ignore_ascii_case(mine)).then_some(theirs)
+}
+
+/// The two lines of a card: `● #12 Title…` (`● owner/repo#12 Title…` for
+/// an item of another repository) and the assignees and labels, padded to
+/// `width`.
 fn card_lines(
     item: &ProjectItem,
+    repo: Option<&str>,
     width: usize,
     selected: bool,
     fg_override: Option<Color>,
@@ -610,7 +645,11 @@ fn card_lines(
         Modifier::empty()
     };
     let number = item.number().map(|n| format!("#{n} ")).unwrap_or_default();
-    let head_w = 2 + number.width();
+    let prefix = cross_repo_prefix(item, repo)
+        .filter(|_| !number.is_empty())
+        .map(str::to_string)
+        .unwrap_or_default();
+    let head_w = 2 + prefix.width() + number.width();
     let title = truncate_to_width(item.title(), width.saturating_sub(head_w));
     let title_w = head_w + title.width();
     let mut title_style = Style::default().add_modifier(bold);
@@ -621,6 +660,10 @@ fn card_lines(
         Span::styled(
             format!("{} ", kind.icon()),
             Style::default().fg(fg(icon_color)).add_modifier(bold),
+        ),
+        Span::styled(
+            prefix,
+            Style::default().fg(fg(Color::DarkGray)).add_modifier(bold),
         ),
         Span::styled(
             number,
@@ -676,6 +719,8 @@ impl Pane<PaneEvent> for BoardPane {
         let block = theme::pane_block(&title, is_focused);
         let empty = if let Some(e) = &self.error {
             Some(format!("Error: {e}"))
+        } else if self.board.is_none() && self.notice.is_some() {
+            self.notice.clone()
         } else if self.loading && self.board.is_none() {
             Some("Loading...".to_string())
         } else if self.board.is_none() {
@@ -744,7 +789,7 @@ mod tests {
     use crate::projects::domain::types::tests::board;
 
     fn pane() -> BoardPane {
-        let mut p = BoardPane::new(1, 2, 0);
+        let mut p = BoardPane::new(1, 2, Some(0));
         p.set_board(board());
         p
     }
@@ -791,6 +836,14 @@ mod tests {
         assert!(matches!(ev.as_slice(), [PaneEvent::SetFocus(2)]));
         let ev = p.execute(&sh, BoardAction::Esc);
         assert!(matches!(ev.as_slice(), [PaneEvent::SetFocus(0)]));
+        // Without a placed list pane Esc does nothing (search still clears).
+        let mut p = BoardPane::new(1, 2, None);
+        p.set_board(board());
+        assert!(p.execute(&sh, BoardAction::Esc).is_empty());
+        let mut searching = shared();
+        searching.search.query = Some("x".into());
+        let ev = p.execute(&searching, BoardAction::Esc);
+        assert!(matches!(ev.as_slice(), [PaneEvent::ClearSearch]));
     }
 
     #[test]
@@ -874,29 +927,71 @@ mod tests {
         assert_eq!(p.column_count(), 3, "status options stay as columns");
     }
 
+    fn text_of(lines: &[Line<'static>]) -> Vec<String> {
+        lines
+            .iter()
+            .map(|l| l.spans.iter().map(|s| s.content.to_string()).collect())
+            .collect()
+    }
+
     #[test]
     fn cards_truncate_and_pad_to_the_column_width() {
         let b = board();
-        let lines = card_lines(&b.items[0], 20, false, None);
-        let text: Vec<String> = lines
-            .iter()
-            .map(|l| l.spans.iter().map(|s| s.content.to_string()).collect())
-            .collect();
+        let lines = card_lines(&b.items[0], Some("td72/vig"), 20, false, None);
+        let text = text_of(&lines);
         assert_eq!(text[0].width(), 20);
         assert!(text[0].starts_with("● #114 Config"));
         assert!(text[0].ends_with('…'));
         assert_eq!(text[1].trim_end(), "  @td72  enhancement");
         // A draft shows no number and has an empty second line.
-        let lines = card_lines(&b.items[2], 40, true, None);
-        let first: String = lines[0]
-            .spans
-            .iter()
-            .map(|s| s.content.to_string())
-            .collect();
+        let lines = card_lines(&b.items[2], Some("td72/vig"), 40, true, None);
+        let first = &text_of(&lines)[0];
         assert!(first.starts_with("✎ Record the Projects demo tape"));
         assert_eq!(lines[1].spans[0].content.trim(), "");
         assert_eq!(truncate_to_width("日本語テキスト", 7), "日本語…");
         assert_eq!(truncate_to_width("short", 10), "short");
         assert_eq!(truncate_to_width("x", 0), "");
+    }
+
+    #[test]
+    fn cards_of_other_repositories_carry_a_dimmed_prefix() {
+        let b = board();
+        // Same repository (any case): the bare number.
+        let lines = card_lines(&b.items[0], Some("TD72/Vig"), 40, false, None);
+        assert!(text_of(&lines)[0].starts_with("● #114 Config"));
+        assert_eq!(lines[0].spans[1].content, "");
+        // Another repository: `owner/repo#n`, the prefix dimmed.
+        let lines = card_lines(&b.items[0], Some("td72/other"), 40, false, None);
+        let text = text_of(&lines);
+        assert!(text[0].starts_with("● td72/vig#114 Config"), "{}", text[0]);
+        assert_eq!(text[0].width(), 40);
+        assert_eq!(lines[0].spans[1].content, "td72/vig");
+        assert_eq!(lines[0].spans[1].style.fg, Some(Color::DarkGray));
+        assert_eq!(lines[0].spans[2].content, "#114 ");
+        // Unknown current repository or a draft: no prefix.
+        let lines = card_lines(&b.items[0], None, 40, false, None);
+        assert!(text_of(&lines)[0].starts_with("● #114 Config"));
+        let lines = card_lines(&b.items[2], Some("td72/other"), 40, false, None);
+        assert!(text_of(&lines)[0].starts_with("✎ Record"));
+        assert_eq!(
+            cross_repo_prefix(&b.items[0], Some("acme/x")),
+            Some("td72/vig")
+        );
+        assert_eq!(cross_repo_prefix(&b.items[0], Some("td72/vig")), None);
+        assert_eq!(cross_repo_prefix(&b.items[2], Some("acme/x")), None);
+    }
+
+    #[test]
+    fn a_notice_replaces_the_missing_board() {
+        let mut p = BoardPane::new(1, 2, None);
+        assert!(p.notice().is_none());
+        p.set_notice(Some("nothing linked".into()));
+        assert_eq!(p.notice().map(String::as_str), Some("nothing linked"));
+        // A board wins over the notice once it is there.
+        p.set_board(board());
+        assert_eq!(p.item_count(), 5);
+        p.clear();
+        assert!(p.board.is_none());
+        assert!(p.notice().is_some(), "clear() keeps the notice");
     }
 }

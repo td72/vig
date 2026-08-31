@@ -1,7 +1,12 @@
-//! The Projects page: the repository owner's GitHub Projects (v2) as a
-//! kanban board with an item detail. Read-only: only `gh repo view`,
-//! `gh project list / field-list / item-list`, `gh issue view`, `gh pr view`
-//! and a GraphQL read are ever run.
+//! The Projects page: the GitHub Projects (v2) linked to the repository vig
+//! runs in, as a kanban board with an item detail. Read-only: only
+//! `gh repo view`, `gh project field-list / item-list`, `gh issue view` and
+//! `gh pr view` are ever run.
+//!
+//! The board fills the page; with several linked projects `p` / `P` switch
+//! between them. The `projects` list pane exists but is not placed by the
+//! built-in layout — a user layout that places it gets the list back and
+//! the list's selection drives the board.
 
 use crate::core::app::{AppContext, PageState};
 use crate::core::config::{Config, LoadedPageConfig};
@@ -11,7 +16,7 @@ use crate::core::page::PageAction;
 use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::ui::status_bar;
-use crate::projects::domain::types::{order_projects, Board, Project, ProjectListCache, RepoInfo};
+use crate::projects::domain::types::{Board, ProjectListCache, RepoInfo};
 use crate::projects::domain::{client, disk_cache};
 use crate::projects::panes::board::{BoardAction, BoardPane};
 use crate::projects::panes::detail::{DetailAction, DetailPane, ItemDetail};
@@ -29,11 +34,15 @@ use std::collections::{HashMap, HashSet};
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
-/// Coming back to the page after this long re-fetches the project list.
+/// Coming back to the page after this long re-reads the linked projects.
 pub const LIST_REFRESH_AFTER: Duration = Duration::from_secs(300);
 
 /// Notice shown instead of the panes when the token lacks the scope.
 pub const SCOPE_NOTICE: &str = "gh needs the project scope: run `gh auth refresh -s project`";
+
+/// Notice shown in the board pane when the repository has no linked project.
+pub const NO_LINKED_NOTICE: &str = "No projects are linked to this repository \
+    (link one from the repository's Projects tab or `gh project link`)";
 
 /// Pane IDs resolved from the KDL config at construction time.
 #[derive(Debug, Clone, Copy)]
@@ -54,13 +63,8 @@ impl ProjectsPaneIds {
 }
 
 pub enum ProjectsBgMessage {
-    /// `gh repo view`: the owner to list and the linked project numbers.
+    /// `gh repo view`: the repository and its linked projects.
     Repo(Result<RepoInfo, String>),
-    ProjectList {
-        owner: String,
-        linked: Vec<u64>,
-        result: Result<Vec<Project>, String>,
-    },
     Board {
         number: u64,
         result: Result<Board, String>,
@@ -94,14 +98,22 @@ impl PaneSet for ProjectsPanes {
 
 pub struct ProjectsState {
     pub pane: PaneShared,
+    /// The list pane holds the linked projects and the current one, whether
+    /// or not the layout places it.
     pub panes: ProjectsPanes,
     /// `None` until `gh repo view` has answered.
     pub gh_available: Option<bool>,
     pub gh_error: Option<String>,
     /// The token lacks the `project` scope: the panes are replaced by a notice.
     pub scope_missing: bool,
-    owner: Option<String>,
-    linked: Vec<u64>,
+    /// `owner/repo` of the repository vig runs in (cards of other
+    /// repositories are prefixed with theirs).
+    repo: Option<String>,
+    /// The layout places the `projects` list pane (it can take focus then).
+    list_placed: bool,
+    /// The linked projects have been read (from `gh repo view` or the disk
+    /// cache): an empty list then really means nothing is linked.
+    links_known: bool,
     bg_rx: Option<mpsc::Receiver<ProjectsBgMessage>>,
     bg_tx: Option<mpsc::Sender<ProjectsBgMessage>>,
     initialized: bool,
@@ -139,7 +151,9 @@ impl ProjectsState {
     pub fn new(cfg: &Config) -> Result<Self> {
         let page_cfg = cfg.projects_page()?;
         let ids = ProjectsPaneIds::from_config(&page_cfg);
-        // Validates the bind declarations (projects → board, board → detail).
+        let list_placed = page_cfg.is_placed("projects");
+        // Validates the bind declarations (projects → board while the list
+        // is placed, board → detail).
         let _ = page_cfg.resolve_select_bindings();
 
         let projects_km = page_cfg.keymap::<ProjectsAction>("projects")?;
@@ -149,15 +163,17 @@ impl ProjectsState {
 
         let mut projects = ProjectsPane::new(ids.projects, ids.board);
         projects.set_keymap(projects_km);
-        let mut board = BoardPane::new(ids.board, ids.detail, ids.projects);
+        // Esc on the board goes back to the list only when there is one.
+        let mut board = BoardPane::new(ids.board, ids.detail, list_placed.then_some(ids.projects));
         board.set_keymap(board_km);
         let mut detail = DetailPane::new(ids.detail);
         detail.set_keymap(detail_km);
 
+        let first = if list_placed { ids.projects } else { ids.board };
         Ok(Self {
             pane: PaneShared {
-                focused_pane: ids.projects,
-                previous_pane: ids.projects,
+                focused_pane: first,
+                previous_pane: first,
                 search: SearchState::new(),
             },
             panes: ProjectsPanes {
@@ -169,8 +185,9 @@ impl ProjectsState {
             gh_available: None,
             gh_error: None,
             scope_missing: false,
-            owner: None,
-            linked: Vec::new(),
+            repo: None,
+            list_placed,
+            links_known: false,
             bg_rx: None,
             bg_tx: None,
             initialized: false,
@@ -183,8 +200,8 @@ impl ProjectsState {
         })
     }
 
-    /// First switch to the page: show the cached list, then resolve the
-    /// owner and fetch the projects.
+    /// First switch to the page: show the cached projects, then read the
+    /// linked projects of the repository.
     fn initialize(&mut self) {
         if self.initialized {
             return;
@@ -199,43 +216,44 @@ impl ProjectsState {
             None
         };
         if let Some(cache) = cached {
-            self.owner = Some(cache.owner);
-            self.linked = cache.linked.clone();
-            self.panes
-                .projects
-                .set_projects(order_projects(cache.projects, &cache.linked));
+            self.links_known = true;
+            self.set_repo(Some(cache.repo));
+            self.panes.projects.set_projects(cache.projects);
             self.sync_board();
         }
         self.spawn_list();
     }
 
-    /// `gh repo view` then `gh project list`, on one worker thread.
+    fn set_repo(&mut self, repo: Option<String>) {
+        self.repo = repo.filter(|r| !r.is_empty());
+        self.panes.board.set_repo(self.repo.clone());
+    }
+
+    /// `gh repo view` on a worker thread.
     fn spawn_list(&mut self) {
         let Some(tx) = self.bg_tx.clone() else {
             return;
         };
         self.last_list_refresh = Some(Instant::now());
         self.panes.projects.set_loading(true);
+        self.update_notice();
         std::thread::spawn(move || {
-            let info = client::repo_info();
-            let ok = info
-                .as_ref()
-                .ok()
-                .map(|i| (i.owner.login.clone(), i.linked_numbers()));
-            let _ = tx.send(ProjectsBgMessage::Repo(info));
-            if let Some((owner, linked)) = ok {
-                let result = client::list_projects(&owner);
-                let _ = tx.send(ProjectsBgMessage::ProjectList {
-                    owner,
-                    linked,
-                    result,
-                });
-            }
+            let _ = tx.send(ProjectsBgMessage::Repo(client::repo_info()));
         });
     }
 
     fn spawn_board(&mut self, number: u64) {
-        let (Some(tx), Some(owner)) = (self.bg_tx.clone(), self.owner.clone()) else {
+        let Some(tx) = self.bg_tx.clone() else {
+            return;
+        };
+        let Some(owner) = self
+            .panes
+            .projects
+            .items
+            .iter()
+            .find(|p| p.number == number)
+            .map(|p| p.owner.login.clone())
+        else {
             return;
         };
         if !self.board_inflight.insert(number) {
@@ -254,7 +272,7 @@ impl ProjectsState {
             || self.panes.detail.is_loading()
     }
 
-    /// `r`: re-fetch the list, the shown board and the shown item.
+    /// `r`: re-read the linked projects, the shown board and the shown item.
     fn refresh(&mut self) {
         self.gh_error = None;
         self.scope_missing = false;
@@ -272,9 +290,40 @@ impl ProjectsState {
         }
     }
 
-    /// Point the board at the selected project: from memory, else from
+    /// `p` / `P`: show the next / previous linked project's board.
+    fn cycle_project(&mut self, forward: bool) {
+        let n = self.panes.projects.items.len();
+        if n < 2 {
+            return;
+        }
+        let idx = self.panes.projects.selected_idx;
+        self.panes.projects.selected_idx = if forward {
+            (idx + 1) % n
+        } else {
+            (idx + n - 1) % n
+        };
+        self.sync_board();
+    }
+
+    /// What the board pane says while it has no board: loading, or that
+    /// nothing is linked.
+    fn update_notice(&mut self) {
+        let notice = if !self.panes.projects.items.is_empty() {
+            None
+        } else if self.panes.projects.is_loading() {
+            Some("Loading...".to_string())
+        } else if self.links_known {
+            Some(NO_LINKED_NOTICE.to_string())
+        } else {
+            None
+        };
+        self.panes.board.set_notice(notice);
+    }
+
+    /// Point the board at the current project: from memory, else from
     /// disk while a fetch runs.
     fn sync_board(&mut self) {
+        self.update_notice();
         let Some(project) = self.panes.projects.selected().cloned() else {
             self.panes.board.clear();
             self.panes.detail.show_none();
@@ -343,45 +392,45 @@ impl ProjectsState {
         };
         for msg in messages {
             match msg {
-                ProjectsBgMessage::Repo(result) => match result {
-                    Ok(info) => {
-                        self.gh_available = Some(true);
-                        self.owner = Some(info.owner.login.clone());
-                        self.linked = info.linked_numbers();
-                    }
-                    Err(e) => {
-                        self.panes.projects.set_loading(false);
-                        if client::is_gh_missing(&e) {
-                            self.gh_available = Some(false);
-                            self.gh_error = Some(e);
-                        } else {
-                            self.gh_available = Some(true);
-                            self.note_error(e);
-                        }
-                    }
-                },
-                ProjectsBgMessage::ProjectList {
-                    owner,
-                    linked,
-                    result,
-                } => {
+                ProjectsBgMessage::Repo(result) => {
                     self.panes.projects.set_loading(false);
                     match result {
-                        Ok(projects) => {
+                        Ok(info) => {
+                            self.gh_available = Some(true);
+                            self.links_known = true;
+                            self.set_repo(Some(info.name_with_owner.clone()));
+                            let mut projects = info.linked_projects();
+                            // Keep the item counts the boards have taught us.
+                            for p in &mut projects {
+                                if let Some(known) = self
+                                    .panes
+                                    .projects
+                                    .items
+                                    .iter()
+                                    .find(|k| k.number == p.number)
+                                {
+                                    p.items = known.items.clone();
+                                }
+                            }
                             if self.use_disk_cache {
                                 disk_cache::save_project_list(&ProjectListCache {
-                                    owner: owner.clone(),
-                                    linked: linked.clone(),
+                                    repo: self.repo.clone().unwrap_or_default(),
                                     projects: projects.clone(),
                                 });
                             }
-                            self.owner = Some(owner);
-                            self.linked = linked;
-                            let ordered = order_projects(projects, &self.linked);
-                            self.panes.projects.set_projects(ordered);
+                            self.panes.projects.set_projects(projects);
                             self.sync_board();
                         }
-                        Err(e) => self.note_error(e),
+                        Err(e) => {
+                            if client::is_gh_missing(&e) {
+                                self.gh_available = Some(false);
+                                self.gh_error = Some(e);
+                            } else {
+                                self.gh_available = Some(true);
+                                self.note_error(e);
+                            }
+                            self.update_notice();
+                        }
                     }
                 }
                 ProjectsBgMessage::Board { number, result } => {
@@ -393,6 +442,9 @@ impl ProjectsState {
                             if self.use_disk_cache {
                                 disk_cache::save_board(&board);
                             }
+                            self.panes
+                                .projects
+                                .set_item_count(number, board.total_count);
                             self.board_cache.insert(number, board.clone());
                             if current {
                                 self.panes.board.set_board(board);
@@ -424,6 +476,10 @@ impl ProjectsState {
     ) -> Result<PageAction> {
         let ids = self.panes.ids;
         for event in events {
+            // An unplaced list pane has no area: it cannot take focus.
+            if matches!(event, PaneEvent::SetFocus(id) if id == ids.projects && !self.list_placed) {
+                continue;
+            }
             if pane::process_common_event(&mut self.pane, ctx, &event) {
                 continue;
             }
@@ -455,16 +511,23 @@ impl ProjectsState {
             if let Some(page_action) = pane::execute_common_view_action(ctx, *action) {
                 return Ok(page_action);
             }
-            if *action == ViewAction::Refresh {
-                self.refresh();
-                return Ok(PageAction::None);
+            match action {
+                ViewAction::Refresh => {
+                    self.refresh();
+                    return Ok(PageAction::None);
+                }
+                ViewAction::NextProject | ViewAction::PrevProject => {
+                    self.cycle_project(*action == ViewAction::NextProject);
+                    return Ok(PageAction::None);
+                }
+                _ => {}
             }
         }
         let events = pane::dispatch_page_key(self, key);
         self.process_events(ctx, events)
     }
 
-    /// Summary for the status bar: `(projects, items, columns, truncated)`.
+    /// Summary for the status bar: `(linked projects, items, columns, truncated)`.
     pub fn counts(&self) -> (usize, usize, usize, bool) {
         (
             self.panes.projects.items.len(),
@@ -472,6 +535,16 @@ impl ProjectsState {
             self.panes.board.column_count(),
             self.panes.board.truncated(),
         )
+    }
+
+    /// The shown project for the header: `(title, position, linked count)`.
+    pub fn board_label(&self) -> Option<(&str, usize, usize)> {
+        let project = self.panes.projects.selected()?;
+        Some((
+            project.title.as_str(),
+            self.panes.projects.selected_idx + 1,
+            self.panes.projects.items.len(),
+        ))
     }
 
     fn render_notice(&self, f: &mut Frame, area: Rect, lines: Vec<String>) {
@@ -499,8 +572,10 @@ impl PageState for ProjectsState {
     fn help_bindings(&self) -> Vec<(String, String)> {
         use crate::core::keymap::help_section;
         let mut entries = self.view_keymap.help_entries();
-        entries.extend(help_section("Projects"));
-        entries.extend(self.panes.projects.keymap().help_entries());
+        if self.list_placed {
+            entries.extend(help_section("Projects"));
+            entries.extend(self.panes.projects.keymap().help_entries());
+        }
         entries.extend(help_section("Board"));
         entries.extend(self.panes.board.keymap().help_entries());
         entries.extend(help_section("Detail"));
@@ -522,7 +597,7 @@ impl PageState for ProjectsState {
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let frame = split_page_frame(area);
-        status_bar::render_projects_header(f, ctx, frame.header);
+        status_bar::render_projects_header(f, ctx, self, frame.header);
         if self.gh_available == Some(false) {
             let err = self.gh_error.as_deref().unwrap_or("gh not found");
             self.render_notice(
@@ -571,8 +646,7 @@ impl PageState for ProjectsState {
 mod tests {
     use super::*;
     use crate::core::keymap::KeyInput;
-    use crate::projects::domain::types::tests::board;
-    use crate::projects::domain::types::ProjectList;
+    use crate::projects::domain::types::tests::{board, repo_info};
 
     fn key(s: &str) -> KeyEvent {
         let ki: KeyInput = s.parse().unwrap();
@@ -594,8 +668,8 @@ mod tests {
     }
 
     /// A state with a live channel but no worker threads (no `gh` calls).
-    fn state() -> ProjectsState {
-        let mut st = ProjectsState::new(&Config::builtin()).expect("projects page");
+    fn state_with(cfg: &Config) -> ProjectsState {
+        let mut st = ProjectsState::new(cfg).expect("projects page");
         let (tx, rx) = mpsc::channel();
         st.bg_tx = Some(tx);
         st.bg_rx = Some(rx);
@@ -604,12 +678,31 @@ mod tests {
         st
     }
 
-    fn projects() -> Vec<Project> {
-        let list: ProjectList = serde_json::from_str(
-            r#"{"projects":[{"number":1,"title":"life","items":{"totalCount":6}},{"number":2,"title":"vig demo board","items":{"totalCount":8},"url":"https://github.com/users/td72/projects/2"}],"totalCount":2}"#,
-        )
+    fn state() -> ProjectsState {
+        state_with(&Config::builtin())
+    }
+
+    /// A user config that places the list pane on the left.
+    fn list_config() -> Config {
+        let doc: kdl::KdlDocument = r#"page "projects" {
+            layout {
+                split direction="horizontal" {
+                    place "projects" size="22%"
+                    split direction="vertical" size="min:30" {
+                        place "board" size="60%"
+                        place "detail" size="min:5"
+                    }
+                }
+            }
+            tabs "projects" "board" "detail"
+        }"#
+        .parse()
         .unwrap();
-        list.projects
+        Config::with_user(&doc, std::path::PathBuf::from("/u/config.kdl")).unwrap()
+    }
+
+    fn press(st: &mut ProjectsState, c: &mut AppContext, k: &str) {
+        st.handle_key(c, key(k)).unwrap();
     }
 
     #[test]
@@ -618,48 +711,53 @@ mod tests {
         let state = ProjectsState::new(&cfg).expect("projects page");
         assert_eq!(state.id(), "projects");
         assert_eq!(state.label(), "Projects");
-        assert_eq!(state.pane.focused_pane, state.panes.ids.projects);
+        // The list pane is not placed: the board has focus and Tab cycles
+        // between the board and the detail only.
+        assert!(!state.list_placed);
+        assert_eq!(state.pane.focused_pane, state.panes.ids.board);
         assert_eq!(
             state.layout_config.tab_panes,
-            vec![
-                state.panes.ids.projects,
-                state.panes.ids.board,
-                state.panes.ids.detail
-            ]
+            vec![state.panes.ids.board, state.panes.ids.detail]
         );
         let help = state.help_bindings();
         assert_eq!(help[0], ("q".to_string(), "Quit".to_string()));
         assert!(help.iter().all(|(_, d)| d != "Switch view"));
         assert!(help
             .iter()
+            .any(|(k, d)| k == "p" && d == "Next linked project"));
+        assert!(help
+            .iter()
+            .any(|(k, d)| k == "P" && d == "Prev linked project"));
+        assert!(help
+            .iter()
             .any(|(k, d)| k == "t" && d == "Toggle table mode"));
         assert!(help.iter().any(|(_, d)| d.contains("Board")));
+        assert!(
+            !help.iter().any(|(_, d)| d.contains("── Projects ──")),
+            "no help section for the unplaced list pane"
+        );
     }
 
     #[test]
-    fn list_and_board_results_flow_into_the_panes() {
+    fn linked_projects_drive_the_board_and_p_cycles_them() {
         let mut st = state();
         let tx = st.bg_tx.clone().unwrap();
-        tx.send(ProjectsBgMessage::Repo(Ok(RepoInfo::default())))
-            .unwrap();
-        tx.send(ProjectsBgMessage::ProjectList {
-            owner: "td72".into(),
-            linked: vec![2],
-            result: Ok(projects()),
-        })
-        .unwrap();
+        assert!(st.board_label().is_none());
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
         st.drain_bg_messages();
         assert_eq!(st.gh_available, Some(true));
-        assert_eq!(st.owner.as_deref(), Some("td72"));
-        // The linked project is first and selected; its board is requested.
+        assert_eq!(st.repo.as_deref(), Some("td72/vig"));
+        // The first linked project is current; its board is requested.
         assert_eq!(st.panes.projects.selected_number(), Some(2));
+        assert_eq!(st.board_label(), Some(("vig demo board", 1, 2)));
         assert!(st.board_inflight.contains(&2));
         assert!(st.panes.board.is_loading());
-        // A board for another project only warms the cache.
+        assert!(st.panes.board.notice().is_none());
+        // A board for the other project only warms the cache.
         let mut other = board();
-        other.number = 1;
+        other.number = 7;
         tx.send(ProjectsBgMessage::Board {
-            number: 1,
+            number: 7,
             result: Ok(other),
         })
         .unwrap();
@@ -673,28 +771,69 @@ mod tests {
         st.drain_bg_messages();
         assert_eq!(st.panes.board.item_count(), 5);
         assert_eq!(st.counts(), (2, 5, 5, true));
+        // The board taught the list its item count.
+        assert_eq!(st.panes.projects.items[0].items.total_count, 7);
         // The detail follows the board's first card (an issue: fetch starts).
         assert_eq!(st.panes.detail.item().map(|i| i.id.as_str()), Some("I4"));
         assert!(st.panes.detail.is_loading());
-        // Moving to the other project shows its cached board without a fetch.
+        // `p` shows the next project's cached board without a fetch; `P` goes back.
         let mut c = ctx();
-        st.pane.focused_pane = st.panes.ids.projects;
-        let events = pane::dispatch_page_key(&mut st, key("j"));
-        st.process_events(&mut c, events).unwrap();
-        assert_eq!(st.panes.projects.selected_number(), Some(1));
-        assert_eq!(st.panes.board.board.as_ref().map(|b| b.number), Some(1));
-        assert!(!st.board_inflight.contains(&1));
+        press(&mut st, &mut c, "p");
+        assert_eq!(st.panes.projects.selected_number(), Some(7));
+        assert_eq!(st.board_label(), Some(("Roadmap", 2, 2)));
+        assert_eq!(st.panes.board.board.as_ref().map(|b| b.number), Some(7));
+        assert!(!st.board_inflight.contains(&7));
+        press(&mut st, &mut c, "p");
+        assert_eq!(st.board_label(), Some(("vig demo board", 1, 2)));
+        press(&mut st, &mut c, "P");
+        assert_eq!(st.board_label(), Some(("Roadmap", 2, 2)));
+        // A refresh keeps the current project and the known item counts.
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        st.drain_bg_messages();
+        assert_eq!(st.panes.projects.selected_number(), Some(7));
+        assert_eq!(st.panes.projects.items[0].items.total_count, 7);
+    }
+
+    #[test]
+    fn a_repository_without_linked_projects_shows_the_notice() {
+        let mut st = state();
+        let tx = st.bg_tx.clone().unwrap();
+        st.spawn_list();
+        assert_eq!(
+            st.panes.board.notice().map(String::as_str),
+            Some("Loading...")
+        );
+        let info: RepoInfo = serde_json::from_str(
+            r#"{"nameWithOwner":"td72/empty","owner":{"login":"td72"},"projectsV2":{"Nodes":[]}}"#,
+        )
+        .unwrap();
+        tx.send(ProjectsBgMessage::Repo(Ok(info))).unwrap();
+        st.drain_bg_messages();
+        assert_eq!(st.gh_available, Some(true));
+        assert_eq!(st.counts(), (0, 0, 0, false));
+        assert!(st.board_label().is_none());
+        assert_eq!(
+            st.panes.board.notice().map(String::as_str),
+            Some(NO_LINKED_NOTICE)
+        );
+        assert!(st.gh_error.is_none());
+        // `p` has nothing to cycle.
+        let mut c = ctx();
+        press(&mut st, &mut c, "p");
+        assert!(st.board_label().is_none());
+        // Once a project shows up the notice goes away.
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        st.drain_bg_messages();
+        assert!(st.panes.board.notice().is_none());
     }
 
     #[test]
     fn scope_errors_replace_the_panes_with_the_notice() {
         let mut st = state();
         let tx = st.bg_tx.clone().unwrap();
-        tx.send(ProjectsBgMessage::Repo(Ok(RepoInfo::default())))
-            .unwrap();
-        tx.send(ProjectsBgMessage::ProjectList {
-            owner: "td72".into(),
-            linked: vec![],
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
             result: Err(
                 "error: your authentication token is missing required scopes [project]".into(),
             ),
@@ -722,40 +861,90 @@ mod tests {
         st.drain_bg_messages();
         assert_eq!(st.gh_available, Some(true));
         assert_eq!(st.gh_error.as_deref(), Some("HTTP 502"));
+        assert!(st.panes.board.notice().is_none(), "not the no-links notice");
     }
 
     #[test]
-    fn enter_and_esc_walk_projects_board_and_detail() {
+    fn enter_and_esc_walk_board_and_detail_without_the_list() {
         let mut st = state();
         let ids = st.panes.ids;
-        st.owner = Some("td72".into());
-        st.panes.projects.set_projects(projects());
-        st.board_cache.insert(1, {
-            let mut b = board();
-            b.number = 1;
-            b
-        });
+        st.panes
+            .projects
+            .set_projects(repo_info().linked_projects());
+        st.board_cache.insert(2, board());
         st.sync_board();
         let mut c = ctx();
-        let events = pane::dispatch_page_key(&mut st, key("Enter"));
-        assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == ids.board));
-        st.process_events(&mut c, events).unwrap();
         assert_eq!(st.pane.focused_pane, ids.board);
         // `l` moves to the next column and the detail follows.
         let events = pane::dispatch_page_key(&mut st, key("l"));
         st.process_events(&mut c, events).unwrap();
         assert_eq!(st.panes.detail.item().map(|i| i.id.as_str()), Some("I2"));
         let events = pane::dispatch_page_key(&mut st, key("Enter"));
+        assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == ids.detail));
         st.process_events(&mut c, events).unwrap();
         assert_eq!(st.pane.focused_pane, ids.detail);
         let events = pane::dispatch_page_key(&mut st, key("Esc"));
         st.process_events(&mut c, events).unwrap();
         assert_eq!(st.pane.focused_pane, ids.board);
+        // Esc on the board has no list to go back to.
+        let events = pane::dispatch_page_key(&mut st, key("Esc"));
+        assert!(events.is_empty());
+        assert_eq!(st.pane.focused_pane, ids.board);
+        // Tab cycles Board → Detail → Board.
+        let events = pane::dispatch_page_key(&mut st, key("Tab"));
+        assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == ids.detail));
+        st.process_events(&mut c, events).unwrap();
+        let events = pane::dispatch_page_key(&mut st, key("Tab"));
+        assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == ids.board));
+        st.process_events(&mut c, events).unwrap();
+        assert_eq!(st.pane.focused_pane, ids.board);
+        // A stray focus request for the unplaced list is dropped.
+        st.process_events(&mut c, vec![PaneEvent::SetFocus(ids.projects)])
+            .unwrap();
+        assert_eq!(st.pane.focused_pane, ids.board);
+    }
+
+    #[test]
+    fn a_placed_list_pane_takes_focus_and_drives_the_board() {
+        let cfg = list_config();
+        let mut st = state_with(&cfg);
+        let ids = st.panes.ids;
+        assert!(st.list_placed);
+        assert_eq!(st.pane.focused_pane, ids.projects);
+        assert_eq!(
+            st.layout_config.tab_panes,
+            vec![ids.projects, ids.board, ids.detail]
+        );
+        assert!(st
+            .help_bindings()
+            .iter()
+            .any(|(_, d)| d.contains("── Projects ──")));
+        st.panes
+            .projects
+            .set_projects(repo_info().linked_projects());
+        st.board_cache.insert(2, board());
+        st.board_cache.insert(7, {
+            let mut b = board();
+            b.number = 7;
+            b
+        });
+        st.sync_board();
+        let mut c = ctx();
+        // `j` in the list moves to the other project's board.
+        let events = pane::dispatch_page_key(&mut st, key("j"));
+        st.process_events(&mut c, events).unwrap();
+        assert_eq!(st.panes.board.board.as_ref().map(|b| b.number), Some(7));
+        assert_eq!(st.board_label(), Some(("Roadmap", 2, 2)));
+        // Enter focuses the board, Esc comes back to the list.
+        let events = pane::dispatch_page_key(&mut st, key("Enter"));
+        st.process_events(&mut c, events).unwrap();
+        assert_eq!(st.pane.focused_pane, ids.board);
         let events = pane::dispatch_page_key(&mut st, key("Esc"));
         st.process_events(&mut c, events).unwrap();
         assert_eq!(st.pane.focused_pane, ids.projects);
-        // Tab cycles Projects → Board → Detail.
-        let events = pane::dispatch_page_key(&mut st, key("Tab"));
-        assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == ids.board));
+        // `p` still cycles and the list follows.
+        press(&mut st, &mut c, "p");
+        assert_eq!(st.panes.projects.selected_number(), Some(2));
+        assert_eq!(st.panes.board.board.as_ref().map(|b| b.number), Some(2));
     }
 }

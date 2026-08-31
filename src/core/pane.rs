@@ -461,9 +461,29 @@ pub fn render_page_content<S: PageLayout>(
     area: Rect,
 ) {
     let (shared, panes, _, layout) = state.page_parts_mut();
-    let slots = layout.resolve_slots(shared.focused_pane);
-    let areas = crate::core::layout::resolve_layout(area, &layout.tree, &slots);
+    let mut slots = layout.resolve_slots(shared.focused_pane);
+    let mut areas = crate::core::layout::resolve_layout(area, &layout.tree, &slots);
+    // A user layout may leave the pane a page focuses by default unplaced;
+    // fall back to the first tab pane so keys are never routed into a pane
+    // that has no area (and no way back via Tab).
+    if let Some(fallback) = focus_fallback(&areas, shared.focused_pane, &layout.tab_panes) {
+        shared.set_focus(fallback);
+        slots = layout.resolve_slots(shared.focused_pane);
+        areas = crate::core::layout::resolve_layout(area, &layout.tree, &slots);
+    }
     shared.render_panes(panes, f, ctx, &areas);
+}
+
+/// The pane focus should move to when `focused` has no rendered area:
+/// the first tab pane, or `None` when focus is fine (or nothing is placed).
+fn focus_fallback(areas: &[(usize, Rect)], focused: usize, tab_panes: &[usize]) -> Option<usize> {
+    if areas.iter().any(|(id, _)| *id == focused) {
+        return None;
+    }
+    tab_panes
+        .iter()
+        .copied()
+        .find(|id| areas.iter().any(|(a, _)| a == id))
 }
 
 // Note: #[allow(dead_code)] needed because rustc doesn't track usage through dyn dispatch.
@@ -494,5 +514,28 @@ impl SubPaneScroll {
     pub fn reset(&mut self) {
         self.scroll_y = 0;
         self.selected_idx = 0;
+    }
+}
+
+#[cfg(test)]
+mod focus_tests {
+    use super::focus_fallback;
+    use ratatui::layout::Rect;
+
+    fn r() -> Rect {
+        Rect::new(0, 0, 10, 10)
+    }
+
+    #[test]
+    fn unplaced_focus_falls_back_to_the_first_placed_tab_pane() {
+        let areas = vec![(1, r()), (2, r())];
+        // Pane 0 (e.g. an unplaced list pane) has no area → first tab pane.
+        assert_eq!(focus_fallback(&areas, 0, &[1, 2]), Some(1));
+        // Tab panes that are themselves unplaced are skipped.
+        assert_eq!(focus_fallback(&areas, 0, &[0, 2]), Some(2));
+        // Placed focus is left alone.
+        assert_eq!(focus_fallback(&areas, 2, &[1, 2]), None);
+        // Nothing placed from the tab list → no change (nothing to do).
+        assert_eq!(focus_fallback(&areas, 0, &[]), None);
     }
 }

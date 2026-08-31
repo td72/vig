@@ -15,10 +15,14 @@ pub const NO_STATUS: &str = "No status";
 
 // === gh repo view ===
 
-/// `gh repo view --json owner,projectsV2`: the owner whose projects are
-/// listed and the projects linked to the current repository.
+/// `gh repo view --json nameWithOwner,owner,projectsV2`: the repository
+/// vig runs in, its owner and the projects linked to it. The linked
+/// projects are the page's only data source.
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct RepoInfo {
+    /// `owner/repo`, to tell cards of other repositories apart.
+    #[serde(rename = "nameWithOwner", default)]
+    pub name_with_owner: String,
     pub owner: RepoOwner,
     #[serde(rename = "projectsV2", default)]
     pub projects_v2: LinkedProjects,
@@ -36,29 +40,77 @@ pub struct LinkedProjects {
     pub nodes: Vec<LinkedProject>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+/// One node of `projectsV2`: `gh` emits `id`, `title`, `number`,
+/// `resourcePath`, `closed` and `url`.
+#[derive(Debug, Clone, Default, Deserialize)]
 pub struct LinkedProject {
     pub number: u64,
+    #[serde(default)]
+    pub id: String,
+    #[serde(default)]
+    pub title: String,
+    #[serde(default)]
+    pub url: String,
+    #[serde(rename = "resourcePath", default)]
+    pub resource_path: String,
+    #[serde(default)]
+    pub closed: bool,
 }
 
-impl RepoInfo {
-    pub fn linked_numbers(&self) -> Vec<u64> {
-        self.projects_v2.nodes.iter().map(|p| p.number).collect()
+impl LinkedProject {
+    /// The login owning the project, read off `resourcePath`
+    /// (`/users/<login>/projects/<n>` or `/orgs/<login>/projects/<n>`):
+    /// `gh project` commands take it as `--owner`.
+    pub fn owner_login(&self) -> Option<(&str, &str)> {
+        let mut parts = self.resource_path.trim_start_matches('/').split('/');
+        let kind = match parts.next()? {
+            "users" => "User",
+            "orgs" => "Organization",
+            _ => return None,
+        };
+        let login = parts.next().filter(|l| !l.is_empty())?;
+        Some((login, kind))
+    }
+
+    /// The [`Project`] the page works with; `repo_owner` is the fallback
+    /// owner when `resourcePath` is missing.
+    pub fn to_project(&self, repo_owner: &str) -> Project {
+        let (login, kind) = self
+            .owner_login()
+            .map(|(l, k)| (l.to_string(), k.to_string()))
+            .unwrap_or_else(|| (repo_owner.to_string(), String::new()));
+        Project {
+            number: self.number,
+            title: self.title.clone(),
+            id: self.id.clone(),
+            url: self.url.clone(),
+            closed: self.closed,
+            items: Count::default(),
+            owner: ProjectOwner { login, kind },
+            linked: true,
+        }
     }
 }
 
-// === gh project list ===
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct ProjectList {
-    #[serde(default)]
-    pub projects: Vec<Project>,
+impl RepoInfo {
+    /// The open projects linked to the repository, in GitHub's order.
+    pub fn linked_projects(&self) -> Vec<Project> {
+        self.projects_v2
+            .nodes
+            .iter()
+            .filter(|p| !p.closed)
+            .map(|p| p.to_project(&self.owner.login))
+            .collect()
+    }
 }
 
-/// One project of `gh project list --format json`.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+// === Projects ===
+
+/// A project the page can show: one of the repository's linked projects.
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Project {
     pub number: u64,
+    #[serde(default)]
     pub title: String,
     #[serde(default)]
     pub id: String,
@@ -66,21 +118,12 @@ pub struct Project {
     pub url: String,
     #[serde(default)]
     pub closed: bool,
-    #[serde(default)]
-    pub public: bool,
-    #[serde(rename = "shortDescription", default)]
-    pub short_description: String,
+    /// Item count, known once the board has been fetched (0 until then).
     #[serde(default)]
     pub items: Count,
     #[serde(default)]
-    pub fields: Count,
-    #[serde(default)]
     pub owner: ProjectOwner,
-    /// `updatedAt` (ISO 8601), filled in from a GraphQL query: the
-    /// `gh project list` JSON does not carry it.
-    #[serde(rename = "updatedAt", default)]
-    pub updated_at: Option<String>,
-    /// Linked to the repository vig runs in (listed first, marked).
+    /// Linked to the repository vig runs in (marked in the list pane).
     #[serde(default)]
     pub linked: bool,
 }
@@ -99,21 +142,13 @@ pub struct ProjectOwner {
     pub kind: String,
 }
 
-/// Linked projects first (keeping their relative order), then the rest.
-pub fn order_projects(mut projects: Vec<Project>, linked: &[u64]) -> Vec<Project> {
-    for p in &mut projects {
-        p.linked = linked.contains(&p.number);
-    }
-    projects.sort_by_key(|p| !p.linked);
-    projects
-}
-
-/// What the project list pane keeps on disk between runs.
+/// What the page keeps on disk between runs: the linked projects, so a
+/// board can show up before `gh repo view` answers.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct ProjectListCache {
-    pub owner: String,
+    /// `owner/repo` the list belongs to.
     #[serde(default)]
-    pub linked: Vec<u64>,
+    pub repo: String,
     #[serde(default)]
     pub projects: Vec<Project>,
 }
@@ -611,31 +646,55 @@ pub(crate) mod tests {
         }
     }
 
-    #[test]
-    fn parses_project_list_json() {
-        let json = r#"{"projects":[{"closed":false,"fields":{"totalCount":13},"id":"PVT_1","items":{"totalCount":8},"number":2,"owner":{"login":"td72","type":"User"},"public":false,"readme":"","shortDescription":"","title":"vig demo board","url":"https://github.com/users/td72/projects/2"},{"closed":false,"fields":{"totalCount":13},"id":"PVT_2","items":{"totalCount":6},"number":1,"owner":{"login":"td72","type":"User"},"public":false,"readme":"","shortDescription":"","title":"life","url":"https://github.com/users/td72/projects/1"}],"totalCount":2}"#;
-        let list: ProjectList = serde_json::from_str(json).unwrap();
-        assert_eq!(list.projects.len(), 2);
-        assert_eq!(list.projects[0].number, 2);
-        assert_eq!(list.projects[0].title, "vig demo board");
-        assert_eq!(list.projects[0].items.total_count, 8);
-        assert_eq!(list.projects[0].owner.login, "td72");
-        assert!(list.projects[0].updated_at.is_none());
-        // Linked projects float to the top and are flagged.
-        let ordered = order_projects(list.projects, &[1]);
-        assert_eq!(ordered[0].number, 1);
-        assert!(ordered[0].linked);
-        assert!(!ordered[1].linked);
+    /// `gh repo view --json nameWithOwner,owner,projectsV2` for a repository
+    /// with a user project, an organization project and a closed one linked.
+    pub(crate) const REPO_JSON: &str = r#"{"nameWithOwner":"td72/vig","owner":{"id":"X","login":"td72"},"projectsV2":{"Nodes":[
+      {"id":"PVT_1","title":"vig demo board","number":2,"resourcePath":"/users/td72/projects/2","closed":false,"url":"https://github.com/users/td72/projects/2"},
+      {"id":"PVT_2","title":"Roadmap","number":7,"resourcePath":"/orgs/acme/projects/7","closed":false,"url":"https://github.com/orgs/acme/projects/7"},
+      {"id":"PVT_3","title":"Old","number":1,"resourcePath":"/users/td72/projects/1","closed":true,"url":"https://github.com/users/td72/projects/1"}
+    ]}}"#;
+
+    pub(crate) fn repo_info() -> RepoInfo {
+        serde_json::from_str(REPO_JSON).unwrap()
     }
 
     #[test]
-    fn parses_repo_info_with_and_without_linked_projects() {
-        let json = r#"{"name":"vig","owner":{"id":"X","login":"td72"},"projectsV2":{"Nodes":[{"id":"PVT_1","title":"vig demo board","number":2,"closed":false}]}}"#;
-        let info: RepoInfo = serde_json::from_str(json).unwrap();
+    fn parses_repo_info_into_the_linked_projects() {
+        let info = repo_info();
+        assert_eq!(info.name_with_owner, "td72/vig");
         assert_eq!(info.owner.login, "td72");
-        assert_eq!(info.linked_numbers(), [2]);
+        let numbers: Vec<u64> = info.projects_v2.nodes.iter().map(|p| p.number).collect();
+        assert_eq!(numbers, [2, 7, 1]);
+        // Closed projects are dropped; the owner comes from resourcePath.
+        let linked = info.linked_projects();
+        assert_eq!(linked.len(), 2);
+        assert_eq!(linked[0].number, 2);
+        assert_eq!(linked[0].title, "vig demo board");
+        assert_eq!(linked[0].url, "https://github.com/users/td72/projects/2");
+        assert_eq!(linked[0].owner.login, "td72");
+        assert_eq!(linked[0].owner.kind, "User");
+        assert!(linked[0].linked);
+        assert_eq!(
+            linked[0].items.total_count, 0,
+            "unknown until the board loads"
+        );
+        assert_eq!(linked[1].number, 7);
+        assert_eq!(linked[1].owner.login, "acme");
+        assert_eq!(linked[1].owner.kind, "Organization");
+        // No resourcePath: fall back to the repository owner.
+        let bare = LinkedProject {
+            number: 3,
+            ..Default::default()
+        };
+        assert_eq!(bare.owner_login(), None);
+        assert_eq!(bare.to_project("td72").owner.login, "td72");
+        // Older gh output without the field, and a repository without links.
         let info: RepoInfo = serde_json::from_str(r#"{"owner":{"login":"o"}}"#).unwrap();
-        assert!(info.linked_numbers().is_empty());
+        assert!(info.projects_v2.nodes.is_empty());
+        assert!(info.linked_projects().is_empty());
+        let info: RepoInfo =
+            serde_json::from_str(r#"{"owner":{"login":"o"},"projectsV2":{"Nodes":[]}}"#).unwrap();
+        assert!(info.linked_projects().is_empty());
     }
 
     #[test]

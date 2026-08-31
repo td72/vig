@@ -12,6 +12,9 @@ use std::time::Duration;
 
 static DEFAULT_KDL: &str = include_str!("../../../assets/default.kdl");
 
+/// The pseudo-pane holding a page's page-wide keys; it is never placed.
+const VIEW_PANE: &str = "view";
+
 /// Used when the config has no `procs-refresh-interval` node.
 const DEFAULT_PROCS_REFRESH_INTERVAL: &str = "2s";
 /// Ticks fire every 250 ms, so a shorter interval cannot be honoured.
@@ -42,9 +45,16 @@ pub struct LoadedPageConfig {
     pub layout: PageLayoutConfig,
     /// Pane keymaps keyed by pane name (e.g. `"file_tree"`, `"view"`, …).
     pub pane_keys: HashMap<String, Vec<KeymapEntry>>,
-    /// Pane names and their auto-assigned IDs (declaration order, layout panes only).
+    /// Pane names and their auto-assigned IDs: every `pane` block of the
+    /// page except `view`, in declaration order (placed or not).
     pub pane_ids: Vec<(String, usize)>,
-    /// select→detail instance bindings declared in the KDL.
+    /// IDs of the panes the layout places. A pane that is defined but not
+    /// placed is *inactive*: it gets no area, is skipped by `tabs` and its
+    /// `bind` entries are ignored.
+    pub placed_ids: Vec<usize>,
+    /// select→detail instance bindings declared in the KDL (including the
+    /// ones that name an unplaced pane; see
+    /// [`resolve_select_bindings`](Self::resolve_select_bindings)).
     pub bindings: Vec<(String, String)>,
     /// Path of the user config file this page came from, if any (for error messages).
     pub source: Option<PathBuf>,
@@ -91,8 +101,15 @@ impl LoadedPageConfig {
             .unwrap_or_else(|| panic!("pane {name:?} not found in {:?} page config", self.name))
     }
 
+    /// Whether the layout places pane `name` (an unknown name is `false`).
+    pub fn is_placed(&self, name: &str) -> bool {
+        self.resolve_id(name)
+            .is_some_and(|id| self.placed_ids.contains(&id))
+    }
+
     /// Build a `select_id → detail_id` map from the KDL `bind` declarations.
-    /// Panics if any pane name in the bindings does not exist in this config.
+    /// Bindings that name an unplaced pane are left out (the pane is
+    /// inactive). Panics if a pane name does not exist in this config.
     pub fn resolve_select_bindings(&self) -> HashMap<usize, usize> {
         self.bindings
             .iter()
@@ -105,6 +122,7 @@ impl LoadedPageConfig {
                     .unwrap_or_else(|| panic!("bind detail={det:?}: pane not found in config"));
                 (s, d)
             })
+            .filter(|(s, d)| self.placed_ids.contains(s) && self.placed_ids.contains(d))
             .collect()
     }
 }
@@ -552,36 +570,17 @@ fn load_page_from_doc(
     let children = page_children(doc, page_name)?;
     let (layout_doc, layout_root) = layout_block(children, page_name)?;
 
-    // Pane IDs come from the *default* layout's pane set, in `pane` block
-    // declaration order, so a user layout can rearrange panes without
+    // Pane IDs come from the *default* page's `pane` blocks, in declaration
+    // order, so a user layout can rearrange (or leave out) panes without
     // renumbering them.
     let default_children = page_children(default_doc, page_name)?;
-    let (_, default_layout_root) = layout_block(default_children, page_name)?;
-    let default_layout_names = collect_layout_pane_names(default_layout_root);
-    let pane_ids = build_pane_ids(children, &default_layout_names);
-
-    // Panes are compile-time fixed, so a layout may rearrange them but not
-    // drop them: every pane of the page must be placed somewhere.
-    let placed = collect_layout_pane_names(layout_root);
-    let missing: Vec<&str> = default_layout_names
-        .iter()
-        .filter(|n| !placed.contains(n))
-        .map(String::as_str)
-        .collect();
-    if !missing.is_empty() {
-        return Err(anyhow!(
-            "page {page_name:?}: layout must place every pane of the page; missing: {missing:?}"
-        ));
-    }
+    let pane_ids = build_pane_ids(default_children);
 
     // Build name_map from pane_ids for layout / tab / slot parsing.
     let name_map: HashMap<&str, usize> = pane_ids
         .iter()
         .map(|(name, id)| (name.as_str(), *id))
         .collect();
-
-    // Tab panes
-    let tab_panes = parse_tabs(children, &name_map, page_name)?;
 
     // Parse layout tree + slot rules together
     let mut slot_id_counter: usize = 0;
@@ -596,6 +595,28 @@ fn load_page_from_doc(
         &mut slot_rules,
         page_name,
     )?;
+
+    // A layout may place each pane at most once. Panes it leaves out are
+    // inactive (no area, no focus); at least one pane must be placed.
+    // (Unknown pane names errored while parsing the tree above.)
+    let mut placed_ids = Vec::new();
+    for (name, count) in placement_counts(layout_root) {
+        let id = *name_map
+            .get(name.as_str())
+            .ok_or_else(|| anyhow!("page {page_name:?}: unknown pane in layout: {name:?}"))?;
+        if count > 1 {
+            return Err(anyhow!(
+                "page {page_name:?}: layout places pane {name:?} more than once"
+            ));
+        }
+        placed_ids.push(id);
+    }
+    if placed_ids.is_empty() {
+        return Err(anyhow!("page {page_name:?}: layout places no pane"));
+    }
+
+    // Tab panes (unplaced panes are skipped)
+    let tab_panes = parse_tabs(children, &name_map, &placed_ids, page_name)?;
 
     // Pane keymaps
     let pane_keys = parse_all_pane_keys(children, page_name)?;
@@ -612,6 +633,7 @@ fn load_page_from_doc(
         },
         pane_keys,
         pane_ids,
+        placed_ids,
         bindings,
         source: None,
     })
@@ -619,76 +641,67 @@ fn load_page_from_doc(
 
 // ── Pane ID builder ───────────────────────────────────────────────────────────
 
-/// Collect all pane names referenced in a layout node
-/// (from `place`, `slot then=`/`default=`, and `triggers` children),
-/// deduplicated while preserving first-occurrence order.
-fn collect_layout_pane_names(node: &KdlNode) -> Vec<String> {
-    let mut names = Vec::new();
-    collect_layout_pane_names_into(node, &mut names);
-    let mut seen = std::collections::HashSet::new();
-    names.retain(|n| seen.insert(n.clone()));
-    names
-}
-
-fn collect_layout_pane_names_into(node: &KdlNode, names: &mut Vec<String>) {
-    match node.name().value() {
-        "place" => {
-            if let Some(name) = node.get(0usize).and_then(|v| v.as_string()) {
-                names.push(name.to_string());
-            }
+/// How many times the layout places each pane: once per `place`, once per
+/// slot that shows it (as `then=`, `default=` or a `when … then=`). Trigger
+/// lists do not place anything. First-occurrence order.
+fn placement_counts(root: &KdlNode) -> Vec<(String, usize)> {
+    fn bump(out: &mut Vec<(String, usize)>, name: &str) {
+        match out.iter_mut().find(|(n, _)| n == name) {
+            Some((_, c)) => *c += 1,
+            None => out.push((name.to_string(), 1)),
         }
-        "slot" => {
-            if let Some(name) = node.get("then").and_then(|v| v.as_string()) {
-                names.push(name.to_string());
+    }
+    fn walk(node: &KdlNode, out: &mut Vec<(String, usize)>) {
+        match node.name().value() {
+            "place" => {
+                if let Some(name) = node.get(0usize).and_then(|v| v.as_string()) {
+                    bump(out, name);
+                }
             }
-            if let Some(name) = node.get("default").and_then(|v| v.as_string()) {
-                names.push(name.to_string());
-            }
-            if let Some(children) = node.children() {
-                for child in children.nodes() {
-                    match child.name().value() {
-                        "triggers" => {
-                            for entry in child.entries().iter().filter(|e| e.name().is_none()) {
-                                if let Some(name) = entry.value().as_string() {
-                                    names.push(name.to_string());
-                                }
-                            }
+            "slot" => {
+                let mut shown: Vec<&str> = Vec::new();
+                shown.extend(node.get("then").and_then(|v| v.as_string()));
+                shown.extend(node.get("default").and_then(|v| v.as_string()));
+                if let Some(children) = node.children() {
+                    for child in children.nodes() {
+                        if child.name().value() == "when" {
+                            shown.extend(child.get("then").and_then(|v| v.as_string()));
                         }
-                        "when" => {
-                            if let Some(name) = child.get("then").and_then(|v| v.as_string()) {
-                                names.push(name.to_string());
-                            }
-                            for entry in child.entries().iter().filter(|e| e.name().is_none()) {
-                                if let Some(name) = entry.value().as_string() {
-                                    names.push(name.to_string());
-                                }
-                            }
-                        }
-                        _ => {}
+                    }
+                }
+                // One slot shows one pane at a time: count each name once.
+                let mut seen: Vec<&str> = Vec::new();
+                for name in shown {
+                    if !seen.contains(&name) {
+                        seen.push(name);
+                        bump(out, name);
                     }
                 }
             }
-        }
-        "split" => {
-            if let Some(children) = node.children() {
-                for child in children.nodes() {
-                    collect_layout_pane_names_into(child, names);
+            "split" => {
+                if let Some(children) = node.children() {
+                    for child in children.nodes() {
+                        walk(child, out);
+                    }
                 }
             }
+            _ => {}
         }
-        _ => {}
     }
+    let mut out = Vec::new();
+    walk(root, &mut out);
+    out
 }
 
-/// Assign sequential IDs to panes that appear in the layout,
-/// in the order they appear as `pane "<name>"` blocks in the page.
-fn build_pane_ids(page_children: &KdlDocument, layout_names: &[String]) -> Vec<(String, usize)> {
+/// Assign sequential IDs to the page's panes in the order of their
+/// `pane "<name>"` blocks. `view` holds the page-wide keys and is not a pane.
+fn build_pane_ids(page_children: &KdlDocument) -> Vec<(String, usize)> {
     let mut result = Vec::new();
     let mut id = 0usize;
     for node in page_children.nodes() {
         if node.name().value() == "pane" {
             if let Some(name) = node.get(0usize).and_then(|v| v.as_string()) {
-                if layout_names.iter().any(|n| n == name) {
+                if name != VIEW_PANE {
                     result.push((name.to_string(), id));
                     id += 1;
                 }
@@ -737,9 +750,13 @@ fn parse_bindings(
 
 // ── Tab parser ─────────────────────────────────────────────────────────────────
 
+/// The `tabs` panes in order. Names must be panes of the page; the ones
+/// the layout does not place are skipped (an inactive pane cannot take
+/// focus), so a default `tabs` stays valid under a user layout.
 fn parse_tabs(
     doc: &KdlDocument,
     name_map: &HashMap<&str, usize>,
+    placed_ids: &[usize],
     page: &str,
 ) -> Result<Vec<usize>> {
     let tabs_node = doc
@@ -748,7 +765,7 @@ fn parse_tabs(
         .find(|n| n.name().value() == "tabs")
         .ok_or_else(|| anyhow!("page {page:?} missing tabs node"))?;
 
-    tabs_node
+    let ids: Vec<usize> = tabs_node
         .entries()
         .iter()
         .filter(|e| e.name().is_none()) // positional args only
@@ -762,7 +779,11 @@ fn parse_tabs(
                 .copied()
                 .ok_or_else(|| anyhow!("unknown pane in tabs: {pane_name:?}"))
         })
-        .collect()
+        .collect::<Result<_>>()?;
+    Ok(ids
+        .into_iter()
+        .filter(|id| placed_ids.contains(id))
+        .collect())
 }
 
 // ── Layout parser ─────────────────────────────────────────────────────────────
@@ -1166,10 +1187,16 @@ mod tests {
     fn projects_page_ids_keys_and_bindings() {
         let cfg = Config::builtin().projects_page().unwrap();
         assert_eq!(cfg.name, "projects");
+        // Three pane blocks, IDs in declaration order; only the board and
+        // the detail are placed, the project list is an inactive pane.
         assert_eq!(cfg.resolve_id("projects"), Some(0));
         assert_eq!(cfg.resolve_id("board"), Some(1));
         assert_eq!(cfg.resolve_id("detail"), Some(2));
-        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2]);
+        assert_eq!(cfg.placed_ids, vec![1, 2]);
+        assert!(!cfg.is_placed("projects"));
+        assert!(cfg.is_placed("board"));
+        assert!(!cfg.is_placed("nope"));
+        assert_eq!(cfg.layout.tab_panes, vec![1, 2]);
         assert_eq!(
             cfg.bindings,
             vec![
@@ -1177,6 +1204,10 @@ mod tests {
                 ("board".to_string(), "detail".to_string()),
             ]
         );
+        // The bind of the unplaced list pane is ignored.
+        let select = cfg.resolve_select_bindings();
+        assert_eq!(select.len(), 1);
+        assert_eq!(select.get(&1), Some(&2));
         for name in ["view", "projects", "board", "detail"] {
             assert!(
                 cfg.pane_keys.contains_key(name),
@@ -1194,9 +1225,45 @@ mod tests {
                 "board pane binds {k} to {a}: {board}"
             );
         }
+        let view = format!("{:?}", cfg.pane_keys["view"]);
+        for (k, a) in [("p", "NextProject"), ("P", "PrevProject")] {
+            assert!(
+                view.contains(&format!("key: {k:?}, action: {a:?}")),
+                "view binds {k} to {a}: {view}"
+            );
+        }
         // App block switches to it with "7".
         let entries = Config::builtin().app_entries().unwrap();
         assert!(entries.contains(&("7".to_string(), "page:projects".to_string())));
+    }
+
+    #[test]
+    fn user_layout_can_place_the_projects_list_pane() {
+        let cfg = user(
+            r#"page "projects" {
+                layout {
+                    split direction="horizontal" {
+                        place "projects" size="22%"
+                        split direction="vertical" size="min:30" {
+                            place "board" size="60%"
+                            place "detail" size="min:5"
+                        }
+                    }
+                }
+                tabs "projects" "board" "detail"
+            }"#,
+        )
+        .unwrap();
+        let page = cfg.projects_page().unwrap();
+        let default = Config::builtin().projects_page().unwrap();
+        assert_eq!(page.pane_ids, default.pane_ids, "IDs must not change");
+        assert_eq!(page.placed_ids, vec![0, 1, 2]);
+        assert!(page.is_placed("projects"));
+        assert_eq!(page.layout.tab_panes, vec![0, 1, 2]);
+        // The default `bind select="projects" detail="board"` now applies.
+        let select = page.resolve_select_bindings();
+        assert_eq!(select.get(&0), Some(&1));
+        assert_eq!(select.get(&1), Some(&2));
     }
 
     #[test]
@@ -1698,20 +1765,96 @@ mod tests {
     }
 
     #[test]
-    fn user_layout_must_place_every_pane() {
-        let err = user(
+    fn user_layout_may_leave_panes_unplaced() {
+        // The default tabs / bind still name the unplaced panes: they are
+        // skipped (tabs) and ignored (bind), not errors.
+        let cfg = user(
             r#"page "git" {
                 layout { split direction="vertical" { place "file_tree"; place "diff_view" } }
             }"#,
         )
-        .err()
-        .expect("expected an error");
-        let msg = format!("{err:#}");
-        assert!(msg.contains("/u/config.kdl"), "{msg}");
-        assert!(msg.contains("missing"), "{msg}");
-        for pane in ["branch_list", "git_log", "reflog"] {
-            assert!(msg.contains(pane), "{msg} should mention {pane}");
+        .unwrap();
+        let page = cfg.git_page().unwrap();
+        let default = Config::builtin().git_page().unwrap();
+        assert_eq!(page.pane_ids, default.pane_ids, "IDs must not change");
+        assert_eq!(page.placed_ids, vec![0, 4]);
+        assert!(page.is_placed("file_tree"));
+        assert!(!page.is_placed("branch_list"));
+        assert_eq!(
+            page.layout.tab_panes,
+            vec![0],
+            "unplaced panes leave the tab cycle"
+        );
+        assert_eq!(page.bindings, default.bindings, "raw bind list is kept");
+        let select = page.resolve_select_bindings();
+        assert_eq!(select.get(&0), Some(&4), "file_tree → diff_view stays");
+        assert!(
+            !select.contains_key(&1),
+            "branch_list → git_log is ignored while unplaced"
+        );
+        // A user `bind` to an unplaced pane is ignored too.
+        let cfg = user(
+            r#"page "git" {
+                layout { place "diff_view" }
+                bind select="branch_list" detail="git_log"
+            }"#,
+        )
+        .unwrap();
+        let page = cfg.git_page().unwrap();
+        assert_eq!(page.placed_ids, vec![4]);
+        assert!(page.layout.tab_panes.is_empty());
+        assert!(page.resolve_select_bindings().is_empty());
+    }
+
+    #[test]
+    fn user_layout_rejects_unknown_repeated_or_no_panes() {
+        for (bad, expect) in [
+            (
+                r#"page "git" { layout { split direction="vertical" { place "file_tree"; place "nope" } } }"#,
+                "unknown pane in place: \"nope\"",
+            ),
+            (
+                r#"page "git" { layout { split direction="vertical" { place "file_tree"; place "file_tree" } } }"#,
+                "places pane \"file_tree\" more than once",
+            ),
+            (
+                r#"page "git" { layout { split direction="vertical" {
+                    place "git_log"
+                    slot "main" then="git_log" default="diff_view" { triggers "branch_list" }
+                } } }"#,
+                "places pane \"git_log\" more than once",
+            ),
+            (
+                r#"page "git" { tabs "nope" }"#,
+                "unknown pane in tabs: \"nope\"",
+            ),
+            (
+                r#"page "git" { bind select="nope" detail="diff_view" }"#,
+                "bind select=\"nope\"",
+            ),
+            (
+                r#"page "git" { layout { split direction="vertical" { } } }"#,
+                "places no pane",
+            ),
+        ] {
+            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
+            assert!(msg.contains(expect), "{bad}: {msg}");
         }
+        // A slot may name the same pane as `default` and in a `when`.
+        let cfg = user(
+            r#"page "github" { layout { split direction="vertical" {
+                split direction="horizontal" { place "issue_list"; place "pr_list"; place "run_list" }
+                slot "detail" default="issue_detail" {
+                    when "issue_list" then="issue_detail"
+                    when "pr_list" "pr_detail" then="pr_detail"
+                }
+            } } }"#,
+        )
+        .unwrap();
+        let page = cfg.github_page().unwrap();
+        assert_eq!(page.placed_ids, vec![0, 1, 2, 3, 4]);
+        assert!(!page.is_placed("run_detail"));
     }
 
     #[test]
