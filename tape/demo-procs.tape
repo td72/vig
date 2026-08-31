@@ -1,7 +1,8 @@
 # Recorded with VIG_PROCS_ROOT_PID set to the tape's own shell so the GIF only
 # shows the synthetic processes started below (plus the shell and vig), never
 # the recording machine's real processes, ports or paths. The hostname is not
-# rendered by the Procs header at all.
+# rendered by the Procs header at all. The System graphs pane shows machine
+# totals (CPU% / memory) by design — numbers only, nothing identifying.
 
 Output assets/demo-procs.gif
 
@@ -39,6 +40,10 @@ Type@1ms "sleep 600 & sleep 600 &"
 Enter
 Sleep 200ms
 Type@1ms "sh -c 'sleep 600; true' &"
+Enter
+Sleep 200ms
+# A busy worker so the CPU graphs and the detail sparklines have movement.
+Type@1ms "sh -c 'while :; do :; done' &"
 Enter
 Sleep 200ms
 Type@1ms "python3 -m http.server 8765 >/dev/null 2>&1 &"
@@ -88,7 +93,7 @@ Sleep 2s
 Enter
 Sleep 2.5s
 
-# Focus the detail pane and scroll it, then back to the list
+# Focus the detail pane: CPU% / RSS history sparklines under CPU and MEM
 Type "i"
 Sleep 1.5s
 Type "j"
@@ -97,6 +102,16 @@ Type "j"
 Sleep 1.2s
 Escape
 Sleep 1s
+
+# The System pane on top graphs the machine totals; let a few more samples
+# accumulate so the CPU / MEM sparklines grow from the right
+Sleep 8s
+
+# `c` toggles the CPU graph to one bar per core (works from the list too)
+Type "c"
+Sleep 2.5s
+Type "c"
+Sleep 2s
 
 # Help overlay
 Type "?"
