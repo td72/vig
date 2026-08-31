@@ -7,6 +7,8 @@ use std::sync::OnceLock;
 const CACHE_VERSION: &str = "v1";
 
 /// Extract "owner/repo" from the git remote URL (local operation, no network).
+use crate::github::domain::remote::parse_github_nwo;
+
 fn repo_nwo() -> Option<&'static str> {
     static NWO: OnceLock<Option<String>> = OnceLock::new();
     NWO.get_or_init(|| {
@@ -16,24 +18,6 @@ fn repo_nwo() -> Option<&'static str> {
         parse_github_nwo(url)
     })
     .as_deref()
-}
-
-/// Parse "owner/repo" from a GitHub remote URL.
-/// Supports HTTPS (`https://github.com/owner/repo.git`) and SSH (`git@github.com:owner/repo.git`).
-fn parse_github_nwo(url: &str) -> Option<String> {
-    let path = if let Some(rest) = url.strip_prefix("git@github.com:") {
-        rest
-    } else {
-        url.split("://github.com/").nth(1)?
-    };
-    let path = path.strip_suffix(".git").unwrap_or(path);
-    // Validate it looks like "owner/repo"
-    let parts: Vec<&str> = path.splitn(3, '/').collect();
-    if parts.len() == 2 && !parts[0].is_empty() && !parts[1].is_empty() {
-        Some(format!("{}/{}", parts[0], parts[1]))
-    } else {
-        None
-    }
 }
 
 /// Build the cache directory path: `<cache_dir>/vig/<version>/<owner>/<repo>/`
