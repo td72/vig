@@ -37,7 +37,7 @@ pub enum TrustChoice {
 pub fn run(terminal: &mut Tui, path: &Path, text: &str) -> Result<TrustChoice> {
     let mut viewing = false;
     let mut scroll: u16 = 0;
-    let line_count = text.lines().count() as u16;
+    let line_count: u16 = text.lines().count().try_into().unwrap_or(u16::MAX);
     loop {
         terminal.draw(|f| {
             let area = f.area();
@@ -89,7 +89,9 @@ fn render_dialog(f: &mut Frame, area: Rect, path: &Path) {
     let dialog_width = 58u16.min(area.width.saturating_sub(4));
     let inner_w = dialog_width.saturating_sub(2) as usize;
     let total_lines = 2 + message.len(); // title + blank + message
-    let dialog_height = (total_lines as u16 + 2).min(area.height.saturating_sub(2));
+    let dialog_height = u16::try_from(total_lines + 2)
+        .unwrap_or(u16::MAX)
+        .min(area.height.saturating_sub(2));
     let x = (area.width.saturating_sub(dialog_width)) / 2;
     let y = (area.height.saturating_sub(dialog_height)) / 2;
     let dialog_area = Rect::new(x, y, dialog_width, dialog_height);
@@ -134,14 +136,24 @@ fn render_dialog(f: &mut Frame, area: Rect, path: &Path) {
 }
 
 fn render_viewer(f: &mut Frame, area: Rect, path: &Path, text: &str, scroll: u16) {
+    // Use most of the screen, but never leave `area`: on a tiny terminal
+    // the 20x6 minimum is clamped to what actually exists (and the origin
+    // shifted back in) instead of overflowing the buffer.
     let margin_x = area.width / 10;
     let margin_y = area.height / 10;
-    let view_area = Rect::new(
-        margin_x,
-        margin_y,
-        area.width.saturating_sub(margin_x * 2).max(20),
-        area.height.saturating_sub(margin_y * 2).max(6),
-    );
+    let width = area
+        .width
+        .saturating_sub(margin_x * 2)
+        .max(20)
+        .min(area.width);
+    let height = area
+        .height
+        .saturating_sub(margin_y * 2)
+        .max(6)
+        .min(area.height);
+    let x = area.x + margin_x.min(area.width.saturating_sub(width));
+    let y = area.y + margin_y.min(area.height.saturating_sub(height));
+    let view_area = Rect::new(x, y, width, height);
 
     f.render_widget(Clear, view_area);
 

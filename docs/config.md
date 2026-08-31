@@ -41,7 +41,10 @@ decided by git tracking:
   the file first, `Esc` ignore this time only. The decision is stored in
   `$XDG_STATE_HOME/vig/trust.json` (`~/.local/state/vig/trust.json`), keyed
   by the worktree path **and a hash of the file content**, so a changed file
-  (e.g. after a pull) asks again.
+  (e.g. after a pull) asks again. Only the latest decision per worktree is
+  kept — an intentional safety choice: reverting the file to
+  previously-seen content asks again instead of silently reusing an old
+  answer.
 
 ```bash
 vig config trust                   # list remembered decisions
