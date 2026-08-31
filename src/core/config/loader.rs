@@ -42,6 +42,37 @@ pub fn parse_interval(s: &str) -> Option<Duration> {
     (ms >= MIN_PROCS_REFRESH_MS).then(|| Duration::from_millis(ms))
 }
 
+/// The `projects-board` pin: the one linked project the Projects page shows.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ProjectsBoard {
+    /// `projects-board "Roadmap"`: matched against the linked projects'
+    /// titles, case-insensitively.
+    ByTitle(String),
+    /// `projects-board 2`: matched against the project numbers.
+    ByNumber(u64),
+}
+
+impl ProjectsBoard {
+    /// Whether the linked project `number` / `title` is the pinned one.
+    pub fn matches(&self, number: u64, title: &str) -> bool {
+        match self {
+            ProjectsBoard::ByTitle(t) => t.to_lowercase() == title.to_lowercase(),
+            ProjectsBoard::ByNumber(n) => *n == number,
+        }
+    }
+}
+
+/// The pin as written in the config — `"Roadmap"` or `2` — for messages
+/// naming it.
+impl std::fmt::Display for ProjectsBoard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ProjectsBoard::ByTitle(t) => write!(f, "{t:?}"),
+            ProjectsBoard::ByNumber(n) => write!(f, "{n}"),
+        }
+    }
+}
+
 // ── Public output types ───────────────────────────────────────────────────────
 
 /// Parsed config for a single page.
@@ -230,6 +261,7 @@ impl Config {
         cfg.image_preview()?;
         cfg.procs_refresh_interval()?;
         cfg.procs_history()?;
+        cfg.projects_board()?;
         Ok(cfg)
     }
 
@@ -399,6 +431,47 @@ impl Config {
                 self.describe()
             )),
         }
+    }
+
+    /// Which board the Projects page is pinned to (`projects-board "Roadmap"`
+    /// by title, case-insensitive, or `projects-board 2` by project number).
+    /// `None` (show every linked project) when the node is absent.
+    pub fn projects_board(&self) -> Result<Option<ProjectsBoard>> {
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "projects-board")
+        else {
+            return Ok(None);
+        };
+        let invalid = |what: &str| {
+            anyhow!(
+                "invalid {}: bad projects-board ({what}); expected exactly one argument, \
+                 a board title (`projects-board \"Roadmap\"`) or a project number \
+                 (`projects-board 2`)",
+                self.describe()
+            )
+        };
+        let [entry] = node.entries() else {
+            return Err(invalid("one argument required"));
+        };
+        if entry.name().is_some() {
+            return Err(invalid("a property is not an argument"));
+        }
+        if let Some(title) = entry.value().as_string() {
+            if title.trim().is_empty() {
+                return Err(invalid("empty title"));
+            }
+            return Ok(Some(ProjectsBoard::ByTitle(title.to_string())));
+        }
+        if let Some(n) = entry.value().as_integer() {
+            return match u64::try_from(n) {
+                Ok(n) if n > 0 => Ok(Some(ProjectsBoard::ByNumber(n))),
+                _ => Err(invalid("a project number is positive")),
+            };
+        }
+        Err(invalid("not a string or integer"))
     }
 
     /// How the Files view previews images (`image-preview "auto"` / `"halfblocks"` / `"none"`).
@@ -2006,6 +2079,36 @@ mod tests {
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown icons mode \"emoji\""), "{msg}");
         assert!(msg.contains("nerd, none"), "{msg}");
+    }
+
+    #[test]
+    fn projects_board_default_override_and_validation() {
+        assert_eq!(Config::builtin().projects_board().unwrap(), None);
+        assert_eq!(
+            user(r#"projects-board "vig demo board""#)
+                .unwrap()
+                .projects_board()
+                .unwrap(),
+            Some(ProjectsBoard::ByTitle("vig demo board".into()))
+        );
+        assert_eq!(
+            user("projects-board 2").unwrap().projects_board().unwrap(),
+            Some(ProjectsBoard::ByNumber(2))
+        );
+        for bad in [
+            "projects-board",
+            r#"projects-board "a" "b""#,
+            r#"projects-board title="a""#,
+            r#"projects-board """#,
+            "projects-board -1",
+            "projects-board 0",
+            "projects-board 1.5",
+            "projects-board #true",
+        ] {
+            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            assert!(msg.contains("bad projects-board"), "{bad}: {msg}");
+            assert!(msg.contains("config file /u/config.kdl"), "{bad}: {msg}");
+        }
     }
 
     #[test]
