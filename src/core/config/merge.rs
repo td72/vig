@@ -4,7 +4,7 @@
 //! - `theme "<name>"`, `icons "<mode>"`, `image-preview "<mode>"`,
 //!   `procs-refresh-interval "<duration>"`, `procs-history "<n>"`,
 //!   `github-poll-interval "<duration>"`, `projects-board <title-or-number>`,
-//!   `pages "<name>" ...` — replaced.
+//!   `pages "<name>" ...`, `repo-config "<on|off>"` — replaced.
 //! - `app { }` — merged per key; a user entry replaces the default entry with the same key.
 //! - `page "x"` — must exist in the defaults.
 //!   - `layout { }`, `tabs`, `bind` — replaced wholesale when present in the user page.
@@ -34,14 +34,15 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "procs-history"
             | "github-poll-interval"
             | "projects-board"
-            | "pages" => replace_single(default, unode),
+            | "pages"
+            | "repo-config" => replace_single(default, unode),
             "app" => merge_app(default, unode)?,
             "page" => merge_page(default, unode)?,
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
                  `procs-refresh-interval`, `procs-history`, `github-poll-interval`, \
-                 `projects-board`, `pages`, `app`, or `page`)"
+                 `projects-board`, `pages`, `repo-config`, `app`, or `page`)"
             ))
             }
         }

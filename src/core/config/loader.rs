@@ -211,6 +211,7 @@ fn removed_page_reason(name: &str) -> Option<String> {
 
 /// The effective configuration: the built-in defaults with an optional user
 /// document merged on top (see `merge.rs` for the rules).
+#[derive(Debug)]
 pub struct Config {
     /// Pristine built-in defaults. Pane IDs are always derived from this
     /// document so a user layout can never renumber panes.
@@ -253,24 +254,73 @@ impl Config {
             doc,
             source: Some(source),
         };
-        let pages = cfg.pages()?;
-        cfg.validate_user_app_bindings(user, &pages)?;
-        cfg.git_page()?;
-        cfg.github_page()?;
-        cfg.files_page()?;
-        cfg.docker_page()?;
-        cfg.procs_page()?;
-        cfg.worktrees_page()?;
-        cfg.projects_page()?;
-        cfg.app_entries()?;
-        cfg.theme()?;
-        cfg.icons()?;
-        cfg.image_preview()?;
-        cfg.procs_refresh_interval()?;
-        cfg.procs_history()?;
-        cfg.github_poll_interval()?;
-        cfg.projects_board()?;
+        cfg.validate(user)?;
         Ok(cfg)
+    }
+
+    /// This config with the repository-local `.vig.kdl` layer merged on top
+    /// (merge order: builtin → user → repo-local). `self` is left untouched,
+    /// so a failing repo layer degrades gracefully: the caller keeps `self`
+    /// and reports the error instead of aborting.
+    pub fn with_repo_layer(&self, repo: &KdlDocument, source: PathBuf) -> Result<Self> {
+        let mut doc = self.doc.clone();
+        merge_user_config(&mut doc, repo)
+            .with_context(|| format!("invalid config file {}", source.display()))?;
+        let cfg = Self {
+            default_doc: self.default_doc.clone(),
+            doc,
+            source: Some(source),
+        };
+        cfg.validate(repo)?;
+        Ok(cfg)
+    }
+
+    /// Run every getter the app relies on, so a bad value in `layer` (the
+    /// user or repo-local document just merged into `self.doc`) fails at
+    /// startup with the right file named, not at first use.
+    fn validate(&self, layer: &KdlDocument) -> Result<()> {
+        let pages = self.pages()?;
+        self.validate_user_app_bindings(layer, &pages)?;
+        self.git_page()?;
+        self.github_page()?;
+        self.files_page()?;
+        self.docker_page()?;
+        self.procs_page()?;
+        self.worktrees_page()?;
+        self.projects_page()?;
+        self.app_entries()?;
+        self.theme()?;
+        self.icons()?;
+        self.image_preview()?;
+        self.procs_refresh_interval()?;
+        self.procs_history()?;
+        self.github_poll_interval()?;
+        self.projects_board()?;
+        self.repo_config()?;
+        Ok(())
+    }
+
+    /// Whether the repository-local `.vig.kdl` layer is enabled
+    /// (`repo-config "on"` / `"off"`, default on). The kill switch is read
+    /// from the user config *before* the repo layer is merged, so only the
+    /// user's own value ever counts.
+    pub fn repo_config(&self) -> Result<bool> {
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "repo-config")
+        else {
+            return Ok(true);
+        };
+        match node.get(0usize).and_then(|v| v.as_string()) {
+            Some("on") => Ok(true),
+            Some("off") => Ok(false),
+            _ => Err(anyhow!(
+                "invalid {}: repo-config expects \"on\" or \"off\"",
+                self.describe()
+            )),
+        }
     }
 
     /// Every page the built-in config defines, in `page "<name>"` declaration
@@ -1469,7 +1519,7 @@ mod tests {
             r#"procs-refresh-interval "fast""#,
             r#"procs-refresh-interval "100ms""#,
         ] {
-            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
             assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
             assert!(msg.contains("procs-refresh-interval"), "{bad}: {msg}");
         }
@@ -1506,7 +1556,7 @@ mod tests {
             r#"github-poll-interval "1999ms""#,
             r#"github-poll-interval "5""#,
         ] {
-            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
             assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
             assert!(msg.contains("github-poll-interval"), "{bad}: {msg}");
         }
@@ -1544,7 +1594,7 @@ mod tests {
             r#"procs-history "-5""#,
             r#"procs-history "0""#,
         ] {
-            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
             assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
             assert!(msg.contains("procs-history"), "{bad}: {msg}");
         }
@@ -1591,7 +1641,7 @@ mod tests {
             r#"app { "6" "page:actions" }"#,
             r#"pages "git" "github"; app { "a" "page:actions" }"#,
         ] {
-            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
             assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
             assert!(
                 msg.contains("folded into the \"github\" page"),
@@ -1606,9 +1656,7 @@ mod tests {
         // A user page block for it is a plain unknown page.
         let msg = format!(
             "{:#}",
-            user(r#"page "actions" { }"#)
-                .err()
-                .expect("expected an error")
+            user(r#"page "actions" { }"#).expect_err("expected an error")
         );
         assert!(msg.contains("/u/config.kdl"), "{msg}");
     }
@@ -1698,6 +1746,54 @@ mod tests {
     fn user(kdl: &str) -> Result<Config> {
         let doc: KdlDocument = kdl.parse().unwrap();
         Config::with_user(&doc, PathBuf::from("/u/config.kdl"))
+    }
+
+    // ── Repo-local layer ──────────────────────────────────────────────────
+
+    /// The base user config and the result of merging `repo_kdl` over it.
+    fn repo_over(user_kdl: &str, repo_kdl: &str) -> (Config, Result<Config>) {
+        let cfg = user(user_kdl).unwrap();
+        let doc: KdlDocument = repo_kdl.parse().unwrap();
+        let merged = cfg.with_repo_layer(&doc, PathBuf::from("/w/.vig.kdl"));
+        (cfg, merged)
+    }
+
+    #[test]
+    fn repo_layer_overrides_user() {
+        let (_, merged) = repo_over(
+            "theme \"Solarized (dark)\"\npages \"git\" \"files\"",
+            "theme \"InspiredGitHub\"\npages \"git\"",
+        );
+        let merged = merged.unwrap();
+        assert_eq!(merged.theme().unwrap(), "InspiredGitHub");
+        assert_eq!(merged.pages().unwrap(), vec!["git".to_string()]);
+    }
+
+    #[test]
+    fn user_layer_survives_where_repo_is_silent() {
+        let (_, merged) = repo_over(r#"theme "Solarized (dark)""#, r#"pages "git""#);
+        assert_eq!(merged.unwrap().theme().unwrap(), "Solarized (dark)");
+    }
+
+    #[test]
+    fn repo_layer_error_names_the_repo_file_and_leaves_base_usable() {
+        let (base, merged) = repo_over(r#"theme "Solarized (dark)""#, r#"theme "nope""#);
+        let err = format!("{:#}", merged.unwrap_err());
+        assert!(err.contains("/w/.vig.kdl"), "{err}");
+        // The user-layer config is untouched: startup degrades to it.
+        assert_eq!(base.theme().unwrap(), "Solarized (dark)");
+    }
+
+    #[test]
+    fn repo_config_kill_switch_parses_and_validates() {
+        assert!(user(r#"theme "InspiredGitHub""#)
+            .unwrap()
+            .repo_config()
+            .unwrap());
+        assert!(user(r#"repo-config "on""#).unwrap().repo_config().unwrap());
+        assert!(!user(r#"repo-config "off""#).unwrap().repo_config().unwrap());
+        let err = user(r#"repo-config "sometimes""#).unwrap_err().to_string();
+        assert!(err.contains("repo-config"), "{err}");
     }
 
     fn key(s: &str) -> crossterm::event::KeyEvent {
@@ -1824,9 +1920,7 @@ mod tests {
     fn user_pages_errors_mention_file_and_page() {
         let msg = format!(
             "{:#}",
-            user(r#"pages "git" "nope""#)
-                .err()
-                .expect("expected an error")
+            user(r#"pages "git" "nope""#).expect_err("expected an error")
         );
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown page \"nope\""), "{msg}");
@@ -1837,19 +1931,17 @@ mod tests {
 
         let msg = format!(
             "{:#}",
-            user(r#"pages "git" "files" "git""#)
-                .err()
-                .expect("expected an error")
+            user(r#"pages "git" "files" "git""#).expect_err("expected an error")
         );
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("\"git\" listed twice"), "{msg}");
 
-        let msg = format!("{:#}", user(r#"pages"#).err().expect("expected an error"));
+        let msg = format!("{:#}", user(r#"pages"#).expect_err("expected an error"));
         assert!(msg.contains("at least one page"), "{msg}");
 
         let msg = format!(
             "{:#}",
-            user(r#"pages git=1"#).err().expect("expected an error")
+            user(r#"pages git=1"#).expect_err("expected an error")
         );
         assert!(msg.contains("string arguments"), "{msg}");
     }
@@ -1859,8 +1951,7 @@ mod tests {
         let msg = format!(
             "{:#}",
             user(r#"pages "git" "files"; app { "w" "page:worktrees" }"#)
-                .err()
-                .expect("expected an error")
+                .expect_err("expected an error")
         );
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("\"w\" \"page:worktrees\""), "{msg}");
@@ -1868,9 +1959,7 @@ mod tests {
 
         let msg = format!(
             "{:#}",
-            user(r#"app { "x" "page:nope" }"#)
-                .err()
-                .expect("expected an error")
+            user(r#"app { "x" "page:nope" }"#).expect_err("expected an error")
         );
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown page \"nope\""), "{msg}");
@@ -1984,7 +2073,7 @@ mod tests {
                     {bad}
                 }} }} }}"#
             );
-            let msg = format!("{:#}", user(&kdl).err().expect("expected an error"));
+            let msg = format!("{:#}", user(&kdl).expect_err("expected an error"));
             assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
             assert!(msg.contains(expect), "{bad}: {msg}");
         }
@@ -2063,7 +2152,7 @@ mod tests {
                 "places no pane",
             ),
         ] {
-            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
             assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
             assert!(msg.contains(expect), "{bad}: {msg}");
         }
@@ -2093,7 +2182,7 @@ mod tests {
             r#"page "git" { bind select="file_tree" detail="nope" }"#,
             r#"colors { }"#,
         ] {
-            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
             assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
         }
     }
@@ -2128,13 +2217,13 @@ mod tests {
 
         let msg = format!(
             "{:#}",
-            user(r#"theme "nope""#).err().expect("expected an error")
+            user(r#"theme "nope""#).expect_err("expected an error")
         );
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown theme \"nope\""), "{msg}");
         assert!(msg.contains("base16-eighties.dark"), "{msg}");
 
-        let msg = format!("{:#}", user(r#"theme"#).err().expect("expected an error"));
+        let msg = format!("{:#}", user(r#"theme"#).expect_err("expected an error"));
         assert!(msg.contains("missing name"), "{msg}");
     }
 
@@ -2144,7 +2233,7 @@ mod tests {
         assert!(!user(r#"icons "none""#).unwrap().icons().unwrap());
         let msg = format!(
             "{:#}",
-            user(r#"icons "emoji""#).err().expect("expected an error")
+            user(r#"icons "emoji""#).expect_err("expected an error")
         );
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown icons mode \"emoji\""), "{msg}");
@@ -2175,7 +2264,7 @@ mod tests {
             "projects-board 1.5",
             "projects-board #true",
         ] {
-            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
             assert!(msg.contains("bad projects-board"), "{bad}: {msg}");
             assert!(msg.contains("config file /u/config.kdl"), "{bad}: {msg}");
         }
@@ -2197,9 +2286,7 @@ mod tests {
         );
         let msg = format!(
             "{:#}",
-            user(r#"image-preview "sixel""#)
-                .err()
-                .expect("expected an error")
+            user(r#"image-preview "sixel""#).expect_err("expected an error")
         );
         assert!(
             msg.contains("unknown image-preview mode \"sixel\""),
