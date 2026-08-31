@@ -35,8 +35,9 @@ use std::collections::{HashMap, HashSet};
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
-/// Coming back to the page after this long re-reads the linked projects.
-pub const LIST_REFRESH_AFTER: Duration = Duration::from_secs(300);
+/// Coming back to the page after this long re-reads the linked projects
+/// and re-fetches the shown board.
+pub const STALE_AFTER: Duration = Duration::from_secs(300);
 
 /// Notice shown instead of the panes when the token lacks the scope.
 pub const SCOPE_NOTICE: &str = "gh needs the project scope: run `gh auth refresh -s project`";
@@ -100,6 +101,14 @@ impl PaneSet for ProjectsPanes {
     }
 }
 
+/// A board in memory together with when it was fetched. `None` means the
+/// fetch time is unknown (a disk cache file older than the clock can
+/// express): such a board is always considered stale.
+struct CachedBoard {
+    board: Board,
+    fetched_at: Option<Instant>,
+}
+
 pub struct ProjectsState {
     pub pane: PaneShared,
     /// The list pane holds the linked projects and the current one, whether
@@ -125,8 +134,9 @@ pub struct ProjectsState {
     bg_tx: Option<mpsc::Sender<ProjectsBgMessage>>,
     initialized: bool,
     last_list_refresh: Option<Instant>,
-    /// Boards by project number, filled from disk and fetches.
-    board_cache: HashMap<u64, Board>,
+    /// Boards by project number with their fetch time, filled from the
+    /// disk cache (as old as its file) and from fetches.
+    board_cache: HashMap<u64, CachedBoard>,
     /// Project numbers with a board fetch in flight.
     board_inflight: HashSet<u64>,
     /// Read / write the disk cache (tests turn it off).
@@ -244,7 +254,6 @@ impl ProjectsState {
         let Some(tx) = self.bg_tx.clone() else {
             return;
         };
-        self.last_list_refresh = Some(Instant::now());
         self.panes.projects.set_loading(true);
         self.update_notice();
         std::thread::spawn(move || {
@@ -274,6 +283,13 @@ impl ProjectsState {
             let result = client::fetch_board(&owner, number);
             let _ = tx.send(ProjectsBgMessage::Board { number, result });
         });
+    }
+
+    /// The cached board for `number` is missing or older than [`STALE_AFTER`].
+    fn board_stale(&self, number: u64) -> bool {
+        self.board_cache
+            .get(&number)
+            .is_none_or(|c| c.fetched_at.is_none_or(|t| t.elapsed() >= STALE_AFTER))
     }
 
     pub fn is_loading(&self) -> bool {
@@ -356,19 +372,27 @@ impl ProjectsState {
         };
         let number = project.number;
         self.panes.board.set_project_url(Some(project.url.clone()));
+        if !self.board_cache.contains_key(&number) && self.use_disk_cache {
+            if let Some((board, age)) = disk_cache::load_board_with_age(number) {
+                // A board loaded from disk is as old as its file (the
+                // last fetch wrote it).
+                self.board_cache.insert(
+                    number,
+                    CachedBoard {
+                        board,
+                        fetched_at: Instant::now().checked_sub(age),
+                    },
+                );
+            }
+        }
         let shown = self.panes.board.board.as_ref().map(|b| b.number);
         if shown != Some(number) {
-            let cached = self.board_cache.get(&number).cloned().or_else(|| {
-                self.use_disk_cache
-                    .then(|| disk_cache::load_board(number))
-                    .flatten()
-            });
-            match cached {
-                Some(board) => self.panes.board.set_board(board),
+            match self.board_cache.get(&number) {
+                Some(c) => self.panes.board.set_board(c.board.clone()),
                 None => self.panes.board.clear(),
             }
         }
-        if !self.board_cache.contains_key(&number) {
+        if self.board_stale(number) {
             self.spawn_board(number);
         }
         self.sync_detail();
@@ -421,6 +445,7 @@ impl ProjectsState {
                     self.panes.projects.set_loading(false);
                     match result {
                         Ok(info) => {
+                            self.last_list_refresh = Some(Instant::now());
                             self.gh_available = Some(true);
                             self.links_known = true;
                             self.set_repo(Some(info.name_with_owner.clone()));
@@ -461,7 +486,13 @@ impl ProjectsState {
                 }
                 ProjectsBgMessage::Board { number, result } => {
                     self.board_inflight.remove(&number);
-                    self.panes.board.set_loading(false);
+                    // Only the selected project's fetch may clear the pane's
+                    // loading state: another board finishing (p/P cycling)
+                    // must not hide the indicator while ours is in flight.
+                    let selected = self.panes.projects.selected_number();
+                    if selected.is_none_or(|n| !self.board_inflight.contains(&n)) {
+                        self.panes.board.set_loading(false);
+                    }
                     let current = self.panes.projects.selected_number() == Some(number);
                     match result {
                         Ok(board) => {
@@ -471,7 +502,13 @@ impl ProjectsState {
                             self.panes
                                 .projects
                                 .set_item_count(number, board.total_count);
-                            self.board_cache.insert(number, board.clone());
+                            self.board_cache.insert(
+                                number,
+                                CachedBoard {
+                                    board: board.clone(),
+                                    fetched_at: Some(Instant::now()),
+                                },
+                            );
                             if current {
                                 self.panes.board.set_board(board);
                                 self.sync_detail();
@@ -567,6 +604,17 @@ impl ProjectsState {
         )
     }
 
+    /// The shown board's age for the status bar, e.g. `board 12m ago`.
+    pub fn board_age(&self) -> Option<String> {
+        let number = self.panes.board.board.as_ref()?.number;
+        let fetched = self.board_cache.get(&number)?.fetched_at?;
+        let secs = fetched.elapsed().as_secs() as i64;
+        Some(format!(
+            "board {}",
+            crate::github::domain::actions::time::format_relative(secs)
+        ))
+    }
+
     /// The shown project for the header: `(title, position, linked count)`.
     pub fn board_label(&self) -> Option<(&str, usize, usize)> {
         let project = self.panes.projects.selected()?;
@@ -659,11 +707,19 @@ impl PageState for ProjectsState {
             self.initialize();
             return;
         }
-        let stale = self
+        if self.gh_available == Some(false) || self.scope_missing {
+            return;
+        }
+        let list_stale = self
             .last_list_refresh
-            .is_none_or(|t| t.elapsed() >= LIST_REFRESH_AFTER);
-        if stale && self.gh_available != Some(false) && !self.scope_missing {
+            .is_none_or(|t| t.elapsed() >= STALE_AFTER);
+        if list_stale && !self.panes.projects.is_loading() {
             self.spawn_list();
+        }
+        if let Some(number) = self.panes.projects.selected_number() {
+            if self.board_stale(number) {
+                self.spawn_board(number);
+            }
         }
     }
 
@@ -710,6 +766,14 @@ mod tests {
 
     fn state() -> ProjectsState {
         state_with(&Config::builtin())
+    }
+
+    /// A freshly-fetched cache entry.
+    fn cached(board: Board) -> CachedBoard {
+        CachedBoard {
+            board,
+            fetched_at: Some(Instant::now()),
+        }
     }
 
     /// A user config that places the list pane on the left.
@@ -901,7 +965,7 @@ mod tests {
         st.panes
             .projects
             .set_projects(repo_info().linked_projects());
-        st.board_cache.insert(2, board());
+        st.board_cache.insert(2, cached(board()));
         st.sync_board();
         let mut c = ctx();
         assert_eq!(st.pane.focused_pane, ids.board);
@@ -952,11 +1016,11 @@ mod tests {
         st.panes
             .projects
             .set_projects(repo_info().linked_projects());
-        st.board_cache.insert(2, board());
+        st.board_cache.insert(2, cached(board()));
         st.board_cache.insert(7, {
             let mut b = board();
             b.number = 7;
-            b
+            cached(b)
         });
         st.sync_board();
         let mut c = ctx();
@@ -1033,5 +1097,93 @@ mod tests {
         );
         // No stray error: the pin simply does not match.
         assert!(st.gh_error.is_none());
+    }
+
+    #[test]
+    fn a_stale_board_is_refetched_on_activation_and_a_fresh_one_is_not() {
+        let mut st = state();
+        let tx = st.bg_tx.clone().unwrap();
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(board()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(!st.board_inflight.contains(&2));
+        let mut c = ctx();
+        // Fresh (< 5 min): activation fetches nothing.
+        st.on_activate(&mut c);
+        assert!(!st.board_inflight.contains(&2));
+        assert!(!st.panes.projects.is_loading());
+        // Stale: activation re-fetches while the old board stays shown.
+        st.board_cache.get_mut(&2).unwrap().fetched_at = Instant::now().checked_sub(STALE_AFTER);
+        st.on_activate(&mut c);
+        assert!(st.board_inflight.contains(&2));
+        assert_eq!(st.panes.board.board.as_ref().map(|b| b.number), Some(2));
+    }
+
+    #[test]
+    fn a_failed_fetch_does_not_suppress_the_retry() {
+        let mut st = state();
+        let tx = st.bg_tx.clone().unwrap();
+        st.spawn_list();
+        assert!(
+            st.last_list_refresh.is_none(),
+            "spawning alone records no refresh"
+        );
+        tx.send(ProjectsBgMessage::Repo(Err("HTTP 502".into())))
+            .unwrap();
+        st.drain_bg_messages();
+        assert!(
+            st.last_list_refresh.is_none(),
+            "a failed list read does not push the next retry out"
+        );
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        st.drain_bg_messages();
+        assert!(
+            st.last_list_refresh.is_some(),
+            "success records the refresh"
+        );
+        // A failed board fetch leaves no cache entry: still stale, so the
+        // next activation retries it.
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Err("HTTP 502".into()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(!st.board_inflight.contains(&2));
+        assert!(st.board_stale(2));
+        st.gh_error = None;
+        let mut c = ctx();
+        st.on_activate(&mut c);
+        assert!(st.board_inflight.contains(&2), "the board is retried");
+    }
+
+    #[test]
+    fn the_status_bar_shows_the_board_age() {
+        let mut st = state();
+        let tx = st.bg_tx.clone().unwrap();
+        assert!(st.board_age().is_none());
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(board()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert_eq!(st.board_age().as_deref(), Some("board just now"));
+        let earlier = Instant::now().checked_sub(Duration::from_secs(12 * 60));
+        st.board_cache.get_mut(&2).unwrap().fetched_at = earlier;
+        if earlier.is_some() {
+            // (`None` only on a machine up for less than 12 minutes.)
+            assert_eq!(st.board_age().as_deref(), Some("board 12m ago"));
+        }
+        // An unknown fetch time (a very old disk file) shows no age and
+        // counts as stale.
+        st.board_cache.get_mut(&2).unwrap().fetched_at = None;
+        assert!(st.board_age().is_none());
+        assert!(st.board_stale(2));
     }
 }
