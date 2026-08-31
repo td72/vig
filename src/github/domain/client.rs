@@ -49,8 +49,32 @@ pub fn fetch_rate_limit_reset() -> Option<i64> {
     String::from_utf8_lossy(&out).trim().parse().ok()
 }
 
+/// `owner/repo` derived locally from the `origin` remote URL — no API
+/// request. `None` for non-github.com remotes (or no remote).
+fn origin_github_nwo() -> Option<String> {
+    static NWO: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+    NWO.get_or_init(|| {
+        let out = Command::new("git")
+            .args(["remote", "get-url", "origin"])
+            .output()
+            .ok()
+            .filter(|o| o.status.success())?;
+        crate::github::domain::remote::parse_github_nwo(String::from_utf8_lossy(&out.stdout).trim())
+    })
+    .clone()
+}
+
 /// Open a GitHub issue or PR in the browser.
+///
+/// The URL is built locally from the origin remote — pressing `o` must not
+/// spend an API request. Non-github.com remotes fall back to `gh … --web`.
 fn open_in_browser(entity: &str, number: u64) -> Result<(), String> {
+    if let Some(nwo) = origin_github_nwo() {
+        let path = if entity == "pr" { "pull" } else { "issues" };
+        return crate::core::browser::open_url(&format!(
+            "https://github.com/{nwo}/{path}/{number}"
+        ));
+    }
     Command::new("gh")
         .args([entity, "view", &number.to_string(), "--web"])
         .stdin(std::process::Stdio::null())
