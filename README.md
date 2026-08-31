@@ -91,7 +91,7 @@ theme "Solarized (dark)"
 page "git" {
     pane "file_tree" {
         keys {
-            "o" "ExpandOrOpen"   // rebind a key
+            "o" "ExpandOrOpen"   // add a binding
         }
     }
 }
