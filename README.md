@@ -2,7 +2,11 @@
 
 [日本語](docs/README.ja.md)
 
-A Git TUI side-by-side diff viewer with vim-style keybindings.
+A **read-only TUI cockpit** for busy repositories — git, GitHub issues / PRs /
+CI runs / project boards, containers, processes and worktrees at a glance,
+with vim-style keybindings. Built for keeping an eye on repos where the work
+is happening — including ones where AI agents do it. (The name comes from
+*vim* + *git*; everything stays rooted at the current repository.)
 
 📖 **[User Guide](https://td72.github.io/vig/)** — installation, a tour of every view, and (soon) the full configuration guide *(also readable in-repo under [docs/guide/](docs/guide/src/SUMMARY.md))*
 

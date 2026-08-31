@@ -1,10 +1,11 @@
 # vig User Guide
 
-vig is a Git TUI with a side-by-side diff view, vim-style keybindings, and a
-set of read-only companion views for the things you look at next to your
-repository: GitHub issues / PRs / Actions runs, the working tree as a file
-browser, Docker containers, running processes, worktrees and stashes, and
-GitHub Projects boards.
+vig is a **read-only TUI cockpit** for a repository and everything working
+around it: git (side-by-side diffs, log, reflog), GitHub issues / pull
+requests / Actions runs / Projects boards, a file browser, Docker containers,
+running processes, and worktrees / stashes — with vim-style keybindings
+throughout. It is built for keeping an eye on busy repositories, including
+ones where AI agents do the work.
 
 > **Safe by design** — vig only performs read operations and safe git commands
 > (`git switch`, `git branch -d`). Destructive operations like merge, rebase,

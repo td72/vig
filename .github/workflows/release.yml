@@ -106,7 +106,7 @@ jobs:
 
           cat > homebrew-tap/Formula/vig.rb <<FORMULA
           class Vig < Formula
-            desc "Git TUI side-by-side diff viewer with vim-style keybindings"
+            desc "Read-only TUI cockpit for busy repositories - git, GitHub PRs/CI/projects, containers and processes at a glance"
             homepage "https://github.com/td72/vig"
             license "MIT"
             version "${VERSION}"

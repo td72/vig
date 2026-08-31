@@ -2,11 +2,17 @@
 
 ## Concept
 
-vig is a **read-only / safe-operations-only** Git TUI viewer:
+vig is a **read-only / safe-operations-only TUI cockpit** for observing a
+repository and everything working around it: git, GitHub issues / PRs / CI
+runs / Projects boards, containers, processes, worktrees. It began as a Git
+diff viewer (the name comes from *vim* + *git*) and every page stays rooted
+at the current repository.
+
 - Allowed: `git switch`, `git branch -d` (safe delete), read operations
 - **Not** allowed: merge, rebase, force delete (`-D`), push, or any destructive operation
 
-This is a deliberate design choice — vig helps you *inspect*, not *mutate* your repository in dangerous ways.
+This is a deliberate design choice — vig helps you *inspect*, not *mutate*. New
+pages must never display environment variables or mutate anything.
 
 ## Build & Test
 

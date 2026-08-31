@@ -1,10 +1,6 @@
 # vig ユーザーガイド
 
-vig は、サイドバイサイド diff ビューと vim スタイルのキーバインドを備えた
-Git TUI です。リポジトリの周辺で普段見るもの — GitHub の Issue / PR /
-Actions 実行、ファイルブラウザとしてのワーキングツリー、Docker コンテナ、
-実行中のプロセス、worktree と stash、GitHub Projects のボード — を
-読み取り専用のビューとしてまとめて眺められます。
+vig はリポジトリと、その周りで動いているものを見張るための**閲覧専用 TUI コックピット**です: git (サイドバイサイドの差分・ログ・reflog)、GitHub の issue / PR / Actions 実行 / Projects ボード、ファイルブラウザ、Docker コンテナ、プロセス、worktree / stash。全体を vim スタイルのキーで操作できます。AI エージェントが作業するリポジトリを含め、busy なリポジトリの監視を想定して作られています。
 
 > **安全設計** — vig は読み取り操作と安全な git コマンド（`git switch`、
 > `git branch -d`）のみを実行します。merge、rebase、force delete、push
