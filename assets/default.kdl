@@ -15,6 +15,10 @@ image-preview "auto"
 // ("2s", "500ms", ...; at least 250ms). Sampling pauses while another view is shown.
 procs-refresh-interval "2s"
 
+// How many samples the Procs history graphs keep (one per refresh interval;
+// "10" to "10000"). The default 120 is 4 minutes of history at "2s".
+procs-history "120"
+
 // Pages in tab order: the position here is the slot shown in the header
 // (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
 // wholesale; pages left out are disabled. `app` bindings address pages by name.
@@ -350,15 +354,18 @@ page "docker" {
 
 page "procs" {
     layout {
-        split direction="horizontal" {
-            place "processes" size="55%"
-            split direction="vertical" size="min:30" {
-                place "ports" size="45%"
-                place "detail" size="min:5"
+        split direction="vertical" {
+            place "graphs" size="8"
+            split direction="horizontal" size="min:10" {
+                place "processes" size="55%"
+                split direction="vertical" size="min:30" {
+                    place "ports" size="45%"
+                    place "detail" size="min:5"
+                }
             }
         }
     }
-    tabs "processes" "ports" "detail"
+    tabs "processes" "ports" "detail" "graphs"
     bind select="processes" detail="detail"
 
     pane "view" {
@@ -379,6 +386,7 @@ page "procs" {
             "i" "FocusDetail"
             "l" "FocusDetail"
             "s" "CycleSort"
+            "c" "TogglePerCore"
             "Esc" "Esc"
         }
     }
@@ -397,6 +405,13 @@ page "procs" {
             preset "nav"
             "h" "Back"
             "Left" "Back"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "graphs" {
+        keys {
+            "c" "TogglePerCore"
             "Esc" "Esc"
         }
     }

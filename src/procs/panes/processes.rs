@@ -23,13 +23,15 @@ pub enum ProcessesAction {
     FocusDetail,
     /// CPU → MEM → PID.
     CycleSort,
+    /// Toggle the graphs pane between CPU history and per-core bars.
+    TogglePerCore,
     Search(SearchAction),
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     ProcessesAction, nav: Nav, search: Search, esc: Esc,
-    FocusDetail, CycleSort
+    FocusDetail, CycleSort, TogglePerCore
 );
 
 impl ActionHelp for ProcessesAction {
@@ -38,6 +40,7 @@ impl ActionHelp for ProcessesAction {
             ProcessesAction::Nav(nav) => nav.label(),
             ProcessesAction::FocusDetail => Some("Focus detail"),
             ProcessesAction::CycleSort => Some("Cycle sort (CPU / MEM / PID)"),
+            ProcessesAction::TogglePerCore => Some("Toggle per-core CPU bars"),
             ProcessesAction::Search(sa) => sa.label(),
             ProcessesAction::Esc => Some("Clear search"),
         }
@@ -52,6 +55,7 @@ pub fn default_keymap() -> Keymap<ProcessesAction> {
         .key(KeyCode::Char('i'), ProcessesAction::FocusDetail)
         .key(KeyCode::Char('l'), ProcessesAction::FocusDetail)
         .key(KeyCode::Char('s'), ProcessesAction::CycleSort)
+        .key(KeyCode::Char('c'), ProcessesAction::TogglePerCore)
         .key(KeyCode::Esc, ProcessesAction::Esc)
 }
 
@@ -196,6 +200,7 @@ impl ProcessesPane {
                 self.cycle_sort();
                 vec![PaneEvent::SelectionChanged]
             }
+            ProcessesAction::TogglePerCore => vec![PaneEvent::ToggleCpuCores],
             _ => vec![],
         }
     }

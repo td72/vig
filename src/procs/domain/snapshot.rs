@@ -5,11 +5,23 @@
 //! Environment variables are deliberately never requested (`with_environ`
 //! is not part of the refresh kind) — the page shows command lines only.
 
+use crate::procs::domain::history::SystemSample;
 use crate::procs::domain::types::ProcessInfo;
 use std::collections::HashSet;
 use std::sync::mpsc;
 use std::time::Duration;
-use sysinfo::{ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind, Users};
+use sysinfo::{
+    CpuRefreshKind, MemoryRefreshKind, ProcessRefreshKind, ProcessesToUpdate, System, UpdateKind,
+    Users,
+};
+
+/// One sampling pass: every visible process plus the machine totals the
+/// graphs draw. The `VIG_PROCS_ROOT_PID` filter applies to `procs` only —
+/// `system` is machine-wide by design (numbers only, nothing to leak).
+pub struct Snapshot {
+    pub procs: Vec<ProcessInfo>,
+    pub system: SystemSample,
+}
 
 pub struct Sampler {
     sys: System,
@@ -34,17 +46,33 @@ impl Sampler {
     pub fn new() -> Self {
         let mut sys = System::new();
         sys.refresh_processes_specifics(ProcessesToUpdate::All, true, refresh_kind());
+        // Baseline for the global / per-core CPU deltas.
+        sys.refresh_cpu_specifics(CpuRefreshKind::nothing().with_cpu_usage());
         Self {
             sys,
             users: Users::new_with_refreshed_list(),
         }
     }
 
-    /// Refresh and copy every visible process out of `sysinfo`.
-    pub fn take(&mut self) -> Vec<ProcessInfo> {
+    /// Refresh and copy every visible process out of `sysinfo`, together
+    /// with the system-wide CPU / memory totals of this pass.
+    pub fn take(&mut self) -> Snapshot {
         self.sys
             .refresh_processes_specifics(ProcessesToUpdate::All, true, refresh_kind());
         self.sys
+            .refresh_cpu_specifics(CpuRefreshKind::nothing().with_cpu_usage());
+        self.sys
+            .refresh_memory_specifics(MemoryRefreshKind::nothing().with_ram().with_swap());
+        let system = SystemSample {
+            cpu: self.sys.global_cpu_usage(),
+            per_core: self.sys.cpus().iter().map(|c| c.cpu_usage()).collect(),
+            mem_used: self.sys.used_memory(),
+            mem_total: self.sys.total_memory(),
+            swap_used: self.sys.used_swap(),
+            swap_total: self.sys.total_swap(),
+        };
+        let procs = self
+            .sys
             .processes()
             .values()
             .map(|p| {
@@ -81,7 +109,8 @@ impl Sampler {
                     status: p.status().to_string(),
                 }
             })
-            .collect()
+            .collect();
+        Snapshot { procs, system }
     }
 }
 
@@ -121,7 +150,7 @@ pub fn retain_subtree(procs: &mut Vec<ProcessInfo>, root: u32) {
 /// dropped. The first request waits for the CPU baseline to settle.
 pub fn spawn_worker<M: Send + 'static>(
     out: mpsc::Sender<M>,
-    wrap: impl Fn(Vec<ProcessInfo>) -> M + Send + 'static,
+    wrap: impl Fn(Snapshot) -> M + Send + 'static,
 ) -> mpsc::Sender<()> {
     let (req_tx, req_rx) = mpsc::channel::<()>();
     std::thread::spawn(move || {
@@ -198,7 +227,16 @@ mod tests {
     #[test]
     fn snapshot_contains_this_process_with_its_parent() {
         let mut s = Sampler::new();
-        let procs = s.take();
+        let snap = s.take();
+        // The machine totals are always readable: memory sizes are real,
+        // the CPU list is not empty, and the percentages are in range.
+        assert!(snap.system.mem_total > 0);
+        assert!(snap.system.mem_used <= snap.system.mem_total);
+        assert!(snap.system.swap_used <= snap.system.swap_total.max(snap.system.swap_used));
+        assert!(!snap.system.per_core.is_empty());
+        assert!(snap.system.cpu >= 0.0);
+        assert!(snap.system.per_core.iter().all(|&c| c >= 0.0));
+        let procs = snap.procs;
         let me = std::process::id();
         let mine = procs
             .iter()

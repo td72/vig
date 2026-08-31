@@ -21,7 +21,7 @@ A Git TUI side-by-side diff viewer with vim-style keybindings.
 - **GitHub View** — Browse Issues, Pull Requests (body, comments, reviews, CI status) and Actions workflow runs (jobs / steps, job logs) via `gh` CLI, read-only
 - **Files View** — yazi-like three-column file browser (parent / current / preview) with syntax-highlighted previews
 - **Docker View** — Containers grouped by compose project, images, inspect summary and a live log tail via the `docker` CLI (read-only)
-- **Procs View** — read-only process tree with CPU / memory, listening ports and their owners, and a per-process detail
+- **Procs View** — read-only process tree with CPU / memory, listening ports and their owners, system CPU / memory history graphs and a per-process detail with CPU / RSS sparklines
 - **Worktrees View** — git worktrees and stashes at a glance, with the HEAD commit or the stash diff (side-by-side) in a preview pane
 - **Projects View** — the GitHub Projects (v2) boards linked to the repository: kanban columns by `Status`, a sortable table mode and an item detail with every project field, via the `gh` CLI (read-only)
 - Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
@@ -312,13 +312,23 @@ Processes come from [sysinfo](https://crates.io/crates/sysinfo); ports from
 `lsof` on macOS and `ss` on Linux. Both are re-read every 2 seconds while the
 view is shown (`procs-refresh-interval` in the config) and on `r`.
 
+The System pane on top graphs the machine totals: the global CPU % (with the
+recent peak) and the used memory as sparklines over the last `procs-history`
+samples (120 by default — 4 minutes at the 2 s interval), plus a swap line
+when swap is present. `c` swaps the CPU history for one bar per core. The
+graphs fill from the right until the buffer is full, sample while the view
+is shown, and always cover the whole machine — they draw numbers only. The
+detail pane adds the same history for the selected process: a CPU % and a
+resident-memory sparkline under the CPU / MEM fields.
+
 | Key | Action |
 |-----|--------|
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` / `g` / `G` | Move in the process tree (detail follows) |
 | `s` | Cycle the sort: CPU → MEM → PID (shown in the pane title) |
+| `c` | Toggle the CPU graph: history ⇄ one bar per core |
 | `Enter` / `i` / `l` | Focus the detail pane |
 | `/` `n` `N` | Search command lines (processes) or address / port / name (ports) |
-| `Tab` / `Shift+Tab` | Cycle panes: Processes → Ports → Detail |
+| `Tab` / `Shift+Tab` | Cycle panes: Processes → Ports → Detail → System |
 | `Enter` (ports) | Jump to the process that owns the port |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |
 | `h` / `Esc` (detail) | Back to the process list |

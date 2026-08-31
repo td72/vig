@@ -38,6 +38,7 @@ Your file is a **partial override** of the defaults:
 | `theme "<name>"` | Replaces the syntax highlighting theme. |
 | `icons "<mode>"` | Replaces the Files view icon mode. |
 | `procs-refresh-interval "<duration>"` | Replaces how often the Procs view re-reads processes and ports. |
+| `procs-history "<n>"` | Replaces how many samples the Procs history graphs keep. |
 | `pages "<name>" ...` | Replaces the whole list of enabled pages and their tab order. |
 | `app { }` | Merged per key. A key you set replaces the default binding for that key. |
 | `page "<name>" { pane "<pane>" { keys { } } }` | Merged per key, on top of the default keys (including expanded presets). |
@@ -99,6 +100,7 @@ page "git" {
 theme "<name>"
 icons "<mode>"
 procs-refresh-interval "<duration>"
+procs-history "<n>"
 pages "<name>" "<name>" ...
 app { <key> <action> ... }
 page "git" { ... }
@@ -141,6 +143,18 @@ while it is shown. A number with `s` or `ms` (`"2s"` by default, `"1.5s"`,
 
 ```kdl
 procs-refresh-interval "5s"
+```
+
+### `procs-history`
+
+How many samples the Procs view's history graphs keep — the system CPU /
+memory graphs in the `graphs` pane and the per-process sparklines in the
+detail pane. One sample is taken per refresh interval; between `"10"` and
+`"10000"`. The default `"120"` is 4 minutes of history at the default
+`"2s"` interval.
+
+```kdl
+procs-history "300"
 ```
 
 ### `pages`
@@ -277,9 +291,10 @@ that has the corresponding preset.
 | Pane | Actions |
 |---|---|
 | `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward` |
-| `processes` | `FocusDetail`, `CycleSort`, `Esc` |
+| `processes` | `FocusDetail`, `CycleSort`, `TogglePerCore`, `Esc` |
 | `ports` | `JumpToProcess`, `Esc` |
 | `detail` | `Back`, `Esc` |
+| `graphs` | `TogglePerCore`, `Esc` |
 
 **Page `worktrees`**
 

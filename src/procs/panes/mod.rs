@@ -1,4 +1,5 @@
 pub mod detail;
+pub mod graphs;
 pub mod ports;
 pub mod processes;
 
@@ -16,6 +17,25 @@ pub const NO_ACCESS: &str = "(no access)";
 /// Dim style for secondary text (guides, headers, unavailable values).
 pub fn dim() -> Style {
     Style::default().fg(Color::DarkGray)
+}
+
+/// One-line text sparkline, right-aligned: the latest value sits at the
+/// right edge, older values extend leftward, and a series shorter than
+/// `width` is padded with spaces on the left. Values are scaled to `max`.
+pub fn spark_string(values: &[f64], max: f64, width: usize) -> String {
+    const LEVELS: [char; 8] = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+    if width == 0 {
+        return String::new();
+    }
+    let take = values.len().min(width);
+    let slice = &values[values.len() - take..];
+    let max = if max > 0.0 { max } else { 1.0 };
+    let mut out = " ".repeat(width - take);
+    for &v in slice {
+        let idx = ((v / max) * 7.0).round().clamp(0.0, 7.0) as usize;
+        out.push(LEVELS[idx]);
+    }
+    out
 }
 
 /// Keep at most `max` characters of `s`, marking the cut with `…`.
@@ -90,6 +110,17 @@ pub fn render_table_pane(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn spark_string_scales_and_right_aligns() {
+        // 3 values in a width of 5 → two leading pad spaces, newest last.
+        assert_eq!(spark_string(&[0.0, 50.0, 100.0], 100.0, 5), "  ▁▅█");
+        // A longer series keeps only the newest `width` values.
+        assert_eq!(spark_string(&[100.0, 0.0, 100.0], 100.0, 2), "▁█");
+        assert_eq!(spark_string(&[], 100.0, 3), "   ");
+        assert_eq!(spark_string(&[1.0], 0.0, 1), "█");
+        assert_eq!(spark_string(&[1.0], 1.0, 0), "");
+    }
 
     #[test]
     fn truncate_marks_the_cut() {

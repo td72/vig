@@ -7,7 +7,7 @@ use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::core::theme;
 use crate::files::domain::fs::human_size;
 use crate::procs::domain::types::{format_elapsed, PortEntry, ProcessInfo};
-use crate::procs::panes::{dim, NO_ACCESS};
+use crate::procs::panes::{dim, spark_string, NO_ACCESS};
 use crossterm::event::KeyCode;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -52,9 +52,15 @@ pub struct DetailData {
     pub parent_name: Option<String>,
     pub children: Vec<(u32, String)>,
     pub ports: Vec<PortEntry>,
+    /// CPU% samples of this pid, oldest first (may be empty).
+    pub cpu_history: Vec<f32>,
+    /// RSS samples of this pid in bytes, oldest first (may be empty).
+    pub rss_history: Vec<u64>,
 }
 
 const LABEL_W: usize = 9;
+/// Widest history sparkline drawn under the CPU / MEM fields.
+const SPARK_W: usize = 48;
 
 pub struct DetailPane {
     pane_id: usize,
@@ -107,6 +113,14 @@ impl DetailPane {
         self.data.as_ref().map(|d| d.info.pid)
     }
 
+    /// Sample counts of the loaded CPU / RSS histories (tests only).
+    #[cfg(test)]
+    pub fn history_lens(&self) -> Option<(usize, usize)> {
+        self.data
+            .as_ref()
+            .map(|d| (d.cpu_history.len(), d.rss_history.len()))
+    }
+
     /// Build the text for `width` columns. Public for tests.
     pub fn lines(data: &DetailData, width: usize) -> Vec<Line<'static>> {
         let info = &data.info;
@@ -149,7 +163,28 @@ impl DetailPane {
             },
         );
         field(&mut out, "CPU", plain(format!("{:.1}%", info.cpu)));
+        if data.cpu_history.len() >= 2 {
+            let vals: Vec<f64> = data.cpu_history.iter().map(|&v| f64::from(v)).collect();
+            continuation(
+                &mut out,
+                vec![Span::styled(
+                    spark_string(&vals, 100.0, value_w.min(SPARK_W)),
+                    Style::default().fg(Color::Green),
+                )],
+            );
+        }
         field(&mut out, "MEM", plain(human_size(info.rss)));
+        if data.rss_history.len() >= 2 {
+            let max = data.rss_history.iter().copied().max().unwrap_or(1) as f64;
+            let vals: Vec<f64> = data.rss_history.iter().map(|&v| v as f64).collect();
+            continuation(
+                &mut out,
+                vec![Span::styled(
+                    spark_string(&vals, max, value_w.min(SPARK_W)),
+                    Style::default().fg(Color::Cyan),
+                )],
+            );
+        }
         let bold = Style::default().add_modifier(Modifier::BOLD);
         for (i, chunk) in wrap_chars(&info.cmd, value_w).into_iter().enumerate() {
             let spans = vec![Span::styled(chunk, bold)];
@@ -300,6 +335,8 @@ mod tests {
                 pid: Some(42),
                 name: Some("server".into()),
             }],
+            cpu_history: vec![],
+            rss_history: vec![],
         };
         let t = text(&DetailPane::lines(&data, 40));
         assert_eq!(t[0], "PID       42");
@@ -324,6 +361,35 @@ mod tests {
     }
 
     #[test]
+    fn history_sparklines_sit_under_cpu_and_mem() {
+        let data = DetailData {
+            info: proc(42, None, 50.0, 1024),
+            parent_name: None,
+            children: vec![],
+            ports: vec![],
+            cpu_history: vec![0.0, 50.0, 100.0],
+            rss_history: vec![512, 1024],
+        };
+        let t = text(&DetailPane::lines(&data, 40));
+        // CPU row, then its sparkline; MEM row, then its sparkline. Both
+        // right-aligned: latest sample at the right edge.
+        assert_eq!(t[5], "CPU       50.0%");
+        assert!(t[6].ends_with("▁▅█"), "{:?}", t[6]);
+        assert!(t[6].starts_with(&" ".repeat(LABEL_W + 1)), "{:?}", t[6]);
+        assert_eq!(t[7], "MEM       1.0K");
+        assert!(t[8].ends_with("▅█"), "{:?}", t[8]);
+
+        // A single sample draws no sparkline (a one-column graph is noise).
+        let one = DetailData {
+            cpu_history: vec![1.0],
+            rss_history: vec![],
+            ..data
+        };
+        let t = text(&DetailPane::lines(&one, 40));
+        assert_eq!(t[6], "MEM       1.0K");
+    }
+
+    #[test]
     fn load_resets_scroll_only_on_a_different_pid() {
         let mut pane = DetailPane::new(1, 0);
         let d = |pid| DetailData {
@@ -331,6 +397,8 @@ mod tests {
             parent_name: None,
             children: vec![],
             ports: vec![],
+            cpu_history: vec![],
+            rss_history: vec![],
         };
         pane.load(Some(d(1)));
         pane.scroll = 5;
