@@ -96,14 +96,20 @@ page "git" {
 ```
 
 ```bash
-vig config path     # show which file would be used
+vig config path     # list the config layers (builtin / user / repo-local)
 vig config dump     # print the built-in defaults as a starting point
 vig config themes   # list the available highlighting themes
 ```
 
 Layouts can be rearranged too (e.g. sidebar on the right). A broken config
 fails fast with the file path and line number rather than silently falling
-back to defaults. See [docs/config.md](docs/config.md) for the full schema.
+back to defaults.
+
+A repository can also carry a personal, gitignored `.vig.kdl` at the
+worktree root: it is merged on top of your config for that repository only.
+A *tracked* `.vig.kdl` (shipped by the repo) asks for confirmation in a
+trust dialog before it is loaded. See [docs/config.md](docs/config.md) for
+the full schema and the trust model.
 
 ## Key Bindings
 

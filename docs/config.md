@@ -16,10 +16,48 @@ If the file at the default location does not exist, the built-in defaults are
 used. A path given via `--config` or `$VIG_CONFIG` must exist.
 
 ```bash
-vig config path          # print the path that would be used
+vig config path          # list the config layers and their status
 vig config dump          # print the built-in defaults (a good starting point)
 vig config dump > ~/.config/vig/config.kdl
 ```
+
+## Repository-local config (`.vig.kdl`)
+
+vig also reads a personal `.vig.kdl` from the root of the current worktree
+and merges it on top of the user config, so one repository can get its own
+theme, pages, or keybindings. The merge order is **builtin → user →
+repo-local** (repo-local wins); `--config` / `$VIG_CONFIG` replace the user
+layer only. The file uses the full config schema described below and is
+meant to be **gitignored** — it is your file, not the project's.
+
+Because a cloned repository may *ship* a committed `.vig.kdl`, trust is
+decided by git tracking:
+
+- An **untracked** `.vig.kdl` is your own file: it is loaded silently and
+  the status bar shows `loaded .vig.kdl` once at startup.
+- A **tracked** `.vig.kdl` is repo-provided: a **trust dialog** appears
+  before the app is built (the answer decides which pages and keybindings
+  exist) — `[y]` load and remember, `[n]` ignore and remember, `[v]` view
+  the file first, `Esc` ignore this time only. The decision is stored in
+  `$XDG_STATE_HOME/vig/trust.json` (`~/.local/state/vig/trust.json`), keyed
+  by the worktree path **and a hash of the file content**, so a changed file
+  (e.g. after a pull) asks again. Only the latest decision per worktree is
+  kept — an intentional safety choice: reverting the file to
+  previously-seen content asks again instead of silently reusing an old
+  answer.
+
+```bash
+vig config trust                   # list remembered decisions
+vig config trust --forget <path>   # forget the decision for one worktree
+```
+
+Unlike the user config, errors in `.vig.kdl` never prevent vig from
+starting: it starts with builtin + user and shows
+`ignored .vig.kdl: <reason>` in the status bar (plus one line on stderr).
+`vig config path` lists all three layers with their paths and status.
+
+To disable the repo-local layer entirely — no loading and no dialog — put
+[`repo-config "off"`](#repo-config) in your **user** config.
 
 ## Errors
 
@@ -28,6 +66,9 @@ action name, a layout that places a pane twice or places nothing — stops vig
 from starting and prints a message with the file path (and line:column for
 syntax errors). vig never silently falls back to the defaults when a config
 file is present, so a typo cannot go unnoticed.
+
+This fail-fast rule applies to the user config. The repository-local
+`.vig.kdl` layer degrades instead of aborting (see above).
 
 ## Merge rules
 
@@ -42,6 +83,7 @@ Your file is a **partial override** of the defaults:
 | `github-poll-interval "<duration>"` | Replaces how often the GitHub page polls runs, checks and logs. |
 | `projects-board <title-or-number>` | Replaces which board the Projects page is pinned to. |
 | `pages "<name>" ...` | Replaces the whole list of enabled pages and their tab order. |
+| `repo-config "<on\|off>"` | Replaces the repo-local layer switch (only the user config's value counts). |
 | `app { }` | Merged per key. A key you set replaces the default binding for that key. |
 | `page "<name>" { pane "<pane>" { keys { } } }` | Merged per key, on top of the default keys (including expanded presets). |
 | `"<key>" "None"` | Removes the binding for that key. |
@@ -106,6 +148,7 @@ procs-history "<n>"
 github-poll-interval "<duration>"
 projects-board "<title>"      // or: projects-board <number>
 pages "<name>" "<name>" ...
+repo-config "on"              // "off" disables the repo-local .vig.kdl layer
 app { <key> <action> ... }
 page "git" { ... }
 page "github" { ... }
@@ -231,6 +274,18 @@ dropped; a binding in *your* `app { }` block to a page that is not listed in
 The `actions` page of v0.7.0 was folded into the `github` page (its Workflow
 Runs column) in v0.8.0. A config that still lists `actions` in `pages` or
 binds `page:actions` is rejected with a message saying so — remove it.
+
+### `repo-config`
+
+Whether the [repository-local `.vig.kdl` layer](#repository-local-config-vigkdl)
+is read at all: `"on"` (default) or `"off"`. With `"off"` the file is never
+loaded and the trust dialog never appears. Only the value in your *user*
+config counts — the switch is read before the repo layer is merged, so a
+`.vig.kdl` cannot turn itself on or off.
+
+```kdl
+repo-config "off"
+```
 
 ### `app`
 

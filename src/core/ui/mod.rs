@@ -1,6 +1,7 @@
 pub mod confirm_dialog;
 pub mod status_bar;
 pub mod tail_pane;
+pub mod trust_dialog;
 
 use ratatui::{
     style::{Color, Style},
