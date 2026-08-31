@@ -24,10 +24,10 @@ vig config dump > ~/.config/vig/config.kdl
 ## Errors
 
 Any problem in the config file — a syntax error, an unknown page / pane /
-action name, a layout that does not place every pane — stops vig from
-starting and prints a message with the file path (and line:column for syntax
-errors). vig never silently falls back to the defaults when a config file is
-present, so a typo cannot go unnoticed.
+action name, a layout that places a pane twice or places nothing — stops vig
+from starting and prints a message with the file path (and line:column for
+syntax errors). vig never silently falls back to the defaults when a config
+file is present, so a typo cannot go unnoticed.
 
 ## Merge rules
 
@@ -48,8 +48,11 @@ Your file is a **partial override** of the defaults:
 
 Page names (`git`, `github`, `files`, `docker`, `procs`, `worktrees`, `projects`) and pane names are fixed — you can rearrange
 and rebind them, but not add new ones. Pages can be reordered or disabled
-with `pages`; panes cannot be removed, and a replaced layout must place
-every pane of the page.
+with `pages`. A replaced layout may place each pane **at most once**; a pane
+it leaves out is *inactive* — it gets no area, is skipped by `tabs` cycling
+and focus, and `bind` lines naming it are ignored (the Projects page ships
+this way: its `projects` list pane is defined but not placed). At least one
+pane must be placed.
 
 ## Example
 
@@ -213,9 +216,14 @@ page "git" {
     `pr_detail` for the PR column, `run_detail` for the runs column,
     `issue_detail` by default). Both forms may be combined.
   - Sizes: `"30"` (cells), `"40%"`, `"min:20"`. Defaults to `"min:0"`.
-- `tabs` — the panes cycled by `Tab` / `BackTab`, in order.
+  - Each pane may be placed at most once; a pane the layout leaves out is
+    inactive (no area, no focus).
+- `tabs` — the panes cycled by `Tab` / `BackTab`, in order. Panes the layout
+  does not place are skipped, so the default `tabs` stays valid under your
+  layout.
 - `bind` — which detail pane a selection pane drives (e.g. selecting a file
-  in `file_tree` loads it into `diff_view`).
+  in `file_tree` loads it into `diff_view`). A `bind` naming an unplaced
+  pane is ignored, and starts applying once your layout places the pane.
 - `pane "<name>" { keys { } }` — key bindings for that pane. `preset "nav"`
   and `preset "search"` expand to the standard navigation / search keys.
 
@@ -283,11 +291,31 @@ that has the corresponding preset.
 
 **Page `projects`**
 
+The built-in layout places only the board and the detail; the `projects`
+list pane is defined but **not placed** (`p` / `P` switch between the
+linked projects instead). To get the list back, place it — the built-in
+`bind select="projects" detail="board"` then applies on its own:
+
+```kdl
+page "projects" {
+    layout {
+        split direction="horizontal" {
+            place "projects" size="22%"
+            split direction="vertical" size="min:30" {
+                place "board" size="60%"
+                place "detail" size="min:5"
+            }
+        }
+    }
+    tabs "projects" "board" "detail"
+}
+```
+
 | Pane | Actions |
 |---|---|
-| `view` (page-wide) | `Quit`, `Help`, `Refresh`, `CyclePaneForward`, `CyclePaneBackward` |
-| `projects` | `OpenBoard`, `OpenBrowser`, `Esc` |
-| `board` | `PrevColumn`, `NextColumn` (table mode: sort column), `ToggleTable`, `CycleSort`, `OpenDetail`, `OpenBrowser`, `Esc` (back to the project list) |
+| `view` (page-wide) | `Quit`, `Help`, `Refresh`, `NextProject` (`p`), `PrevProject` (`P`), `CyclePaneForward`, `CyclePaneBackward` |
+| `projects` (optional) | `OpenBoard`, `OpenBrowser`, `Esc` |
+| `board` | `PrevColumn`, `NextColumn` (table mode: sort column), `ToggleTable`, `CycleSort`, `OpenDetail`, `OpenBrowser`, `Esc` (back to the project list when it is placed) |
 | `detail` | `Back`, `OpenBrowser`, `Esc` |
 
 **Presets**
