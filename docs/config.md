@@ -174,7 +174,7 @@ projects-board 2
 ```
 
 When set, the page shows only that board: `p` / `P` no longer cycle
-(pressing them shows `board pinned by config` in the status bar) and the
+(pressing them shows `board pinned by config (projects-board)` in the status bar) and the
 header shows the title without the `(i/n)` counter. When no linked project
 matches the pin, the board pane shows a notice naming it. Without the node
 (the default) every linked project is available and `p` / `P` cycle

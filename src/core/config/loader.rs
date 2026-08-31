@@ -56,7 +56,10 @@ impl ProjectsBoard {
     /// Whether the linked project `number` / `title` is the pinned one.
     pub fn matches(&self, number: u64, title: &str) -> bool {
         match self {
-            ProjectsBoard::ByTitle(t) => t.to_lowercase() == title.to_lowercase(),
+            ProjectsBoard::ByTitle(t) => t
+                .chars()
+                .flat_map(char::to_lowercase)
+                .eq(title.chars().flat_map(char::to_lowercase)),
             ProjectsBoard::ByNumber(n) => *n == number,
         }
     }
