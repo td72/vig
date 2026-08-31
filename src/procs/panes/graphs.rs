@@ -217,10 +217,15 @@ fn core_grid_lines(cores: &[f32], rows: usize, width: usize) -> Vec<Line<'static
     if cores.is_empty() || rows == 0 || width == 0 {
         return vec![];
     }
-    let cols = cores.len().div_ceil(rows);
+    let mut cols = cores.len().div_ceil(rows);
+    // Never let the fixed per-cell overhead push a row wider than the pane:
+    // cap the column count to what fits and let the grid use more rows.
+    let idx_w_est = (cores.len().saturating_sub(1)).to_string().len().max(2);
+    let max_cols = (width / (idx_w_est + 1 + 6 + 3)).max(1);
+    cols = cols.min(max_cols);
     let rows_used = cores.len().div_ceil(cols);
     // index + space + " 100% " — the index column grows with the core count.
-    let idx_w = (cores.len().saturating_sub(1)).to_string().len().max(2);
+    let idx_w = idx_w_est;
     let fixed = idx_w + 1 + 6;
     let cell_w = (width / cols).max(fixed + 3);
     let bar_w = cell_w.saturating_sub(fixed).max(3);
