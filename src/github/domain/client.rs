@@ -49,8 +49,50 @@ pub fn fetch_rate_limit_reset() -> Option<i64> {
     String::from_utf8_lossy(&out).trim().parse().ok()
 }
 
+/// `owner/repo` derived locally from the `origin` remote URL — no API
+/// request. `None` for non-github.com remotes (or no remote).
+fn origin_github_nwo() -> Option<String> {
+    static NWO: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+    NWO.get_or_init(|| {
+        let out = Command::new("git")
+            .args(["remote", "get-url", "origin"])
+            .output()
+            .ok()?;
+        parse_github_nwo(String::from_utf8_lossy(&out.stdout).trim())
+    })
+    .clone()
+}
+
+/// Parse `owner/repo` out of the github.com remote URL forms
+/// (`git@github.com:o/r`, `https://github.com/o/r`, `ssh://git@github.com/o/r`,
+/// each with an optional `.git`).
+fn parse_github_nwo(url: &str) -> Option<String> {
+    let rest = url
+        .strip_prefix("git@github.com:")
+        .or_else(|| url.strip_prefix("https://github.com/"))
+        .or_else(|| url.strip_prefix("http://github.com/"))
+        .or_else(|| url.strip_prefix("ssh://git@github.com/"))?;
+    let rest = rest
+        .strip_suffix(".git")
+        .unwrap_or(rest)
+        .trim_end_matches('/');
+    let mut parts = rest.splitn(2, '/');
+    let owner = parts.next().filter(|s| !s.is_empty())?;
+    let repo = parts.next().filter(|s| !s.is_empty() && !s.contains('/'))?;
+    Some(format!("{owner}/{repo}"))
+}
+
 /// Open a GitHub issue or PR in the browser.
+///
+/// The URL is built locally from the origin remote — pressing `o` must not
+/// spend an API request. Non-github.com remotes fall back to `gh … --web`.
 fn open_in_browser(entity: &str, number: u64) -> Result<(), String> {
+    if let Some(nwo) = origin_github_nwo() {
+        let path = if entity == "pr" { "pull" } else { "issues" };
+        return crate::core::browser::open_url(&format!(
+            "https://github.com/{nwo}/{path}/{number}"
+        ));
+    }
     Command::new("gh")
         .args([entity, "view", &number.to_string(), "--web"])
         .stdin(std::process::Stdio::null())
@@ -270,5 +312,27 @@ mod tests {
             "JSON parse error: expected value at line 1"
         ));
         assert!(!is_rate_limited(""));
+    }
+
+    #[test]
+    fn parse_github_nwo_handles_the_common_remote_forms() {
+        for url in [
+            "git@github.com:td72/vig",
+            "git@github.com:td72/vig.git",
+            "https://github.com/td72/vig",
+            "https://github.com/td72/vig.git",
+            "https://github.com/td72/vig/",
+            "ssh://git@github.com/td72/vig.git",
+        ] {
+            assert_eq!(parse_github_nwo(url).as_deref(), Some("td72/vig"), "{url}");
+        }
+        for url in [
+            "git@gitlab.com:td72/vig.git",
+            "https://github.enterprise.example/td72/vig",
+            "git@github.com:onlyowner",
+            "https://github.com/",
+        ] {
+            assert_eq!(parse_github_nwo(url), None, "{url}");
+        }
     }
 }
