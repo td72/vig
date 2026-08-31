@@ -4,19 +4,20 @@
 //! `gh pr view` are ever run.
 //!
 //! The board fills the page; with several linked projects `p` / `P` switch
-//! between them. The `projects` list pane exists but is not placed by the
+//! between them (a `projects-board` config node pins the page to one board
+//! instead). The `projects` list pane exists but is not placed by the
 //! built-in layout — a user layout that places it gets the list back and
 //! the list's selection drives the board.
 
 use crate::core::app::{AppContext, PageState};
-use crate::core::config::{Config, LoadedPageConfig};
+use crate::core::config::{Config, LoadedPageConfig, ProjectsBoard};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::PageAction;
 use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::ui::status_bar;
-use crate::projects::domain::types::{Board, ProjectListCache, RepoInfo};
+use crate::projects::domain::types::{Board, Project, ProjectListCache, RepoInfo};
 use crate::projects::domain::{client, disk_cache};
 use crate::projects::panes::board::{BoardAction, BoardPane};
 use crate::projects::panes::detail::{DetailAction, DetailPane, ItemDetail};
@@ -43,6 +44,9 @@ pub const SCOPE_NOTICE: &str = "gh needs the project scope: run `gh auth refresh
 /// Notice shown in the board pane when the repository has no linked project.
 pub const NO_LINKED_NOTICE: &str = "No projects are linked to this repository \
     (link one from the repository's Projects tab or `gh project link`)";
+
+/// Status message when `p` / `P` is pressed while `projects-board` pins the board.
+pub const PINNED_MESSAGE: &str = "board pinned by config (projects-board)";
 
 /// Pane IDs resolved from the KDL config at construction time.
 #[derive(Debug, Clone, Copy)]
@@ -114,6 +118,9 @@ pub struct ProjectsState {
     /// The linked projects have been read (from `gh repo view` or the disk
     /// cache): an empty list then really means nothing is linked.
     links_known: bool,
+    /// The `projects-board` config pin: only the matching project is shown
+    /// and `p` / `P` do not cycle.
+    pinned: Option<ProjectsBoard>,
     bg_rx: Option<mpsc::Receiver<ProjectsBgMessage>>,
     bg_tx: Option<mpsc::Sender<ProjectsBgMessage>>,
     initialized: bool,
@@ -152,6 +159,7 @@ impl ProjectsState {
         let page_cfg = cfg.projects_page()?;
         let ids = ProjectsPaneIds::from_config(&page_cfg);
         let list_placed = page_cfg.is_placed("projects");
+        let pinned = cfg.projects_board()?;
         // Validates the bind declarations (projects → board while the list
         // is placed, board → detail).
         let _ = page_cfg.resolve_select_bindings();
@@ -188,6 +196,7 @@ impl ProjectsState {
             repo: None,
             list_placed,
             links_known: false,
+            pinned,
             bg_rx: None,
             bg_tx: None,
             initialized: false,
@@ -218,7 +227,8 @@ impl ProjectsState {
         if let Some(cache) = cached {
             self.links_known = true;
             self.set_repo(Some(cache.repo));
-            self.panes.projects.set_projects(cache.projects);
+            let projects = self.apply_pin(cache.projects);
+            self.panes.projects.set_projects(projects);
             self.sync_board();
         }
         self.spawn_list();
@@ -305,17 +315,32 @@ impl ProjectsState {
         self.sync_board();
     }
 
+    /// With `projects-board` set, drop every project but the pinned one.
+    fn apply_pin(&self, projects: Vec<Project>) -> Vec<Project> {
+        match &self.pinned {
+            None => projects,
+            Some(pin) => projects
+                .into_iter()
+                .filter(|p| pin.matches(p.number, &p.title))
+                .collect(),
+        }
+    }
+
     /// What the board pane says while it has no board: loading, or that
-    /// nothing is linked.
+    /// nothing is linked (or that the configured pin matches nothing).
     fn update_notice(&mut self) {
         let notice = if !self.panes.projects.items.is_empty() {
             None
         } else if self.panes.projects.is_loading() {
             Some("Loading...".to_string())
-        } else if self.links_known {
-            Some(NO_LINKED_NOTICE.to_string())
-        } else {
+        } else if !self.links_known {
             None
+        } else if let Some(pin) = &self.pinned {
+            Some(format!(
+                "projects-board {pin} does not match any project linked to this repository"
+            ))
+        } else {
+            Some(NO_LINKED_NOTICE.to_string())
         };
         self.panes.board.set_notice(notice);
     }
@@ -418,6 +443,7 @@ impl ProjectsState {
                                     projects: projects.clone(),
                                 });
                             }
+                            let projects = self.apply_pin(projects);
                             self.panes.projects.set_projects(projects);
                             self.sync_board();
                         }
@@ -517,7 +543,11 @@ impl ProjectsState {
                     return Ok(PageAction::None);
                 }
                 ViewAction::NextProject | ViewAction::PrevProject => {
-                    self.cycle_project(*action == ViewAction::NextProject);
+                    if self.pinned.is_some() {
+                        ctx.status_message = Some(PINNED_MESSAGE.to_string());
+                    } else {
+                        self.cycle_project(*action == ViewAction::NextProject);
+                    }
                     return Ok(PageAction::None);
                 }
                 _ => {}
@@ -946,5 +976,62 @@ mod tests {
         press(&mut st, &mut c, "p");
         assert_eq!(st.panes.projects.selected_number(), Some(2));
         assert_eq!(st.panes.board.board.as_ref().map(|b| b.number), Some(2));
+    }
+
+    /// A user config that pins the board.
+    fn pinned_config(node: &str) -> Config {
+        let doc: kdl::KdlDocument = node.parse().unwrap();
+        Config::with_user(&doc, std::path::PathBuf::from("/u/config.kdl")).unwrap()
+    }
+
+    #[test]
+    fn projects_board_pins_the_board_by_title_case_insensitively() {
+        let cfg = pinned_config(r#"projects-board "VIG Demo Board""#);
+        let mut st = state_with(&cfg);
+        let tx = st.bg_tx.clone().unwrap();
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        st.drain_bg_messages();
+        // Only the pinned project remains: the header shows no `(i/n)`.
+        assert_eq!(st.panes.projects.selected_number(), Some(2));
+        assert_eq!(st.board_label(), Some(("vig demo board", 1, 1)));
+        assert!(st.panes.board.notice().is_none());
+        assert!(st.board_inflight.contains(&2));
+        // `p` / `P` do not cycle; a status message says why.
+        let mut c = ctx();
+        press(&mut st, &mut c, "p");
+        assert_eq!(st.panes.projects.selected_number(), Some(2));
+        assert_eq!(c.status_message.as_deref(), Some(PINNED_MESSAGE));
+        c.status_message = None;
+        press(&mut st, &mut c, "P");
+        assert_eq!(st.panes.projects.selected_number(), Some(2));
+        assert_eq!(c.status_message.as_deref(), Some(PINNED_MESSAGE));
+    }
+
+    #[test]
+    fn projects_board_pins_the_board_by_number() {
+        let cfg = pinned_config("projects-board 7");
+        let mut st = state_with(&cfg);
+        let tx = st.bg_tx.clone().unwrap();
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        st.drain_bg_messages();
+        assert_eq!(st.panes.projects.selected_number(), Some(7));
+        assert_eq!(st.board_label(), Some(("Roadmap", 1, 1)));
+        assert!(st.panes.board.notice().is_none());
+    }
+
+    #[test]
+    fn an_unmatched_projects_board_pin_names_itself_in_the_notice() {
+        let cfg = pinned_config(r#"projects-board "foo""#);
+        let mut st = state_with(&cfg);
+        let tx = st.bg_tx.clone().unwrap();
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        st.drain_bg_messages();
+        assert!(st.board_label().is_none());
+        assert_eq!(
+            st.panes.board.notice().map(String::as_str),
+            Some(r#"projects-board "foo" does not match any project linked to this repository"#)
+        );
+        // No stray error: the pin simply does not match.
+        assert!(st.gh_error.is_none());
     }
 }

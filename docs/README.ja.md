@@ -355,7 +355,8 @@ Normal / Visual モードとヤンクもそのまま使えます。apply / drop 
 1 列ずつ、加えてステータス未設定のアイテム用の `No status` 列です。リンクされたプロジェクトが
 複数あるときはヘッダに `Board: <タイトル> (i/n)` と出て、`p` / `P` で順に切り替えられます。
 1 つもリンクされていないときはリンク方法（リポジトリの Projects タブ、または
-`gh project link`）を案内します。カードにはアイテム種別（`●` issue、`⇅` pull request、
+`gh project link`）を案内します。設定のトップレベルに `projects-board` を書くと、
+タイトルまたはプロジェクト番号でボードを 1 つに固定できます（[config.md](config.md)）。カードにはアイテム種別（`●` issue、`⇅` pull request、
 `✎` draft）、番号、タイトル、担当者を表示し、別リポジトリのアイテムには番号の前に薄い色で
 `owner/repo` が付きます。`t` でテーブルモードに切り替わり、1 行 1 アイテムで
 プロジェクトのフィールド（Status、Priority、Estimate、Iteration、日付、カスタムのテキスト /

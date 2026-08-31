@@ -3,7 +3,7 @@
 //! Merge rules (see `docs/config.md`):
 //! - `theme "<name>"`, `icons "<mode>"`, `image-preview "<mode>"`,
 //!   `procs-refresh-interval "<duration>"`, `procs-history "<n>"`,
-//!   `pages "<name>" ...` — replaced.
+//!   `projects-board <title-or-number>`, `pages "<name>" ...` — replaced.
 //! - `app { }` — merged per key; a user entry replaces the default entry with the same key.
 //! - `page "x"` — must exist in the defaults.
 //!   - `layout { }`, `tabs`, `bind` — replaced wholesale when present in the user page.
@@ -31,13 +31,15 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "image-preview"
             | "procs-refresh-interval"
             | "procs-history"
+            | "projects-board"
             | "pages" => replace_single(default, unode),
             "app" => merge_app(default, unode)?,
             "page" => merge_page(default, unode)?,
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
-                 `procs-refresh-interval`, `procs-history`, `pages`, `app`, or `page`)"
+                 `procs-refresh-interval`, `procs-history`, `projects-board`, `pages`, `app`, \
+                 or `page`)"
             ))
             }
         }
@@ -175,6 +177,7 @@ mod tests {
 
     const DEFAULT: &str = r#"
 theme "dark"
+projects-board "one"
 pages "git" "github"
 app {
     "Ctrl+c" "Quit"
@@ -340,6 +343,18 @@ page "git" {
     }
 
     #[test]
+    fn projects_board_replaced_wholesale() {
+        let d = merged("projects-board 2").unwrap();
+        let pins: Vec<String> = d
+            .nodes()
+            .iter()
+            .filter(|n| n.name().value() == "projects-board")
+            .map(|n| n.entries()[0].value().to_string())
+            .collect();
+        assert_eq!(pins, vec!["2"]);
+    }
+
+    #[test]
     fn pages_replaced_wholesale() {
         let d = merged(r#"pages "github""#).unwrap();
         let pages: Vec<Vec<&str>> = d
@@ -366,6 +381,7 @@ page "git" {
         assert!(err.contains("unknown pane \"nope\""), "{err}");
         let err = merged(r#"colors "x""#).unwrap_err().to_string();
         assert!(err.contains("unknown top-level block \"colors\""), "{err}");
+        assert!(err.contains("`projects-board`"), "{err}");
         let err = merged(r#"page "git" { pane "a" { colors { } } }"#)
             .unwrap_err()
             .to_string();

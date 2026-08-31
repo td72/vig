@@ -380,7 +380,9 @@ full width and the first linked project shows up right away: one column per
 without one. With several linked projects the header reads
 `Board: <title> (i/n)` and `p` / `P` cycle through them; with none the
 board explains how to link one (the repository's Projects tab or
-`gh project link`). Cards show the item type (`●` issue, `⇅` pull request,
+`gh project link`). A top-level `projects-board` config node pins the page
+to one board, by title or project number
+([docs/config.md](docs/config.md)). Cards show the item type (`●` issue, `⇅` pull request,
 `✎` draft), number, title and assignees; a card whose item lives in another
 repository carries a dimmed `owner/repo` prefix before its number. `t`
 switches to a table with one row per item and the project's fields (Status,

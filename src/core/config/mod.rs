@@ -4,7 +4,7 @@ pub mod loader;
 pub mod merge;
 pub mod source;
 
-pub use loader::{Config, LoadedPageConfig};
+pub use loader::{Config, LoadedPageConfig, ProjectsBoard};
 
 #[cfg(test)]
 pub use keymap_builder::build_keymap;

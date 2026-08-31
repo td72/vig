@@ -39,6 +39,7 @@ Your file is a **partial override** of the defaults:
 | `icons "<mode>"` | Replaces the Files view icon mode. |
 | `procs-refresh-interval "<duration>"` | Replaces how often the Procs view re-reads processes and ports. |
 | `procs-history "<n>"` | Replaces how many samples the Procs history graphs keep. |
+| `projects-board <title-or-number>` | Replaces which board the Projects page is pinned to. |
 | `pages "<name>" ...` | Replaces the whole list of enabled pages and their tab order. |
 | `app { }` | Merged per key. A key you set replaces the default binding for that key. |
 | `page "<name>" { pane "<pane>" { keys { } } }` | Merged per key, on top of the default keys (including expanded presets). |
@@ -101,6 +102,7 @@ theme "<name>"
 icons "<mode>"
 procs-refresh-interval "<duration>"
 procs-history "<n>"
+projects-board "<title>"      // or: projects-board <number>
 pages "<name>" "<name>" ...
 app { <key> <action> ... }
 page "git" { ... }
@@ -156,6 +158,27 @@ in the detail pane. One sample is taken per refresh interval; between `"10"` and
 ```kdl
 procs-history "300"
 ```
+
+### `projects-board`
+
+Pins the Projects page to one board. The single argument is either a board
+title (a string, matched case-insensitively against the projects linked to
+the repository) or a project number (an integer):
+
+```kdl
+projects-board "vig demo board"
+```
+
+```kdl
+projects-board 2
+```
+
+When set, the page shows only that board: `p` / `P` no longer cycle
+(pressing them shows `board pinned by config (projects-board)` in the status bar) and the
+header shows the title without the `(i/n)` counter. When no linked project
+matches the pin, the board pane shows a notice naming it. Without the node
+(the default) every linked project is available and `p` / `P` cycle
+through them.
 
 ### `pages`
 
@@ -308,7 +331,9 @@ that has the corresponding preset.
 
 The built-in layout places only the board and the detail; the `projects`
 list pane is defined but **not placed** (`p` / `P` switch between the
-linked projects instead). To get the list back, place it — the built-in
+linked projects instead; a top-level [`projects-board`](#projects-board)
+pins one board and disables them). To get the list back, place it — the
+built-in
 `bind select="projects" detail="board"` then applies on its own:
 
 ```kdl
