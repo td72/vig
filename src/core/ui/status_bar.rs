@@ -554,6 +554,11 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         }
     }
 
+    if let Some(notice) = gh.rate_limit_notice() {
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(notice, Style::default().fg(Color::Yellow)));
+    }
+
     if let Some(ws) = gh.panes.pr_tab.detail.watch_status() {
         spans.push(Span::raw("  "));
         if let Some(ref err) = ws.error {

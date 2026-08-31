@@ -39,6 +39,7 @@ Your file is a **partial override** of the defaults:
 | `icons "<mode>"` | Replaces the Files view icon mode. |
 | `procs-refresh-interval "<duration>"` | Replaces how often the Procs view re-reads processes and ports. |
 | `procs-history "<n>"` | Replaces how many samples the Procs history graphs keep. |
+| `github-poll-interval "<duration>"` | Replaces how often the GitHub page polls runs, checks and logs. |
 | `projects-board <title-or-number>` | Replaces which board the Projects page is pinned to. |
 | `pages "<name>" ...` | Replaces the whole list of enabled pages and their tab order. |
 | `app { }` | Merged per key. A key you set replaces the default binding for that key. |
@@ -102,6 +103,7 @@ theme "<name>"
 icons "<mode>"
 procs-refresh-interval "<duration>"
 procs-history "<n>"
+github-poll-interval "<duration>"
 projects-board "<title>"      // or: projects-board <number>
 pages "<name>" "<name>" ...
 app { <key> <action> ... }
@@ -157,6 +159,25 @@ in the detail pane. One sample is taken per refresh interval; between `"10"` and
 
 ```kdl
 procs-history "300"
+```
+
+### `github-poll-interval`
+
+How often the GitHub page polls while something is active — the Workflow
+Runs column while a run is queued or in progress, a PR's checks in watch
+mode (`w`), and the log of a running job. A number with `s` or `ms` (`"5s"`
+by default); at least `2s`, so a config cannot burn through the API quota.
+Polling pauses while another page is shown.
+
+When GitHub rejects a request as rate-limited, the page suspends all its
+polling with an exponential backoff (30s, 60s, … capped at 10 minutes) and
+shows `⚠ GitHub rate limited (resets in Nm)` in the status bar. The reset
+time comes from one `gh api rate_limit` call (that endpoint is not
+rate-limited). `r` retries immediately; a successful fetch clears the
+backoff.
+
+```kdl
+github-poll-interval "10s"
 ```
 
 ### `projects-board`

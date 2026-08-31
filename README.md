@@ -215,11 +215,15 @@ Sub-issues are listed under their parent issue as a tree, and PRs in a GitHub St
 The third column lists the latest 50 workflow runs (`gh run list`) with their
 status, workflow, run number, branch, event, duration (elapsed while running)
 and age; while any run is queued or in progress the list refreshes every 5
-seconds. Selecting a run fills the detail area with its jobs and their steps
+seconds (`github-poll-interval` in the config). Selecting a run fills the detail area with its jobs and their steps
 nested underneath (failed steps in red) in the **Jobs** sub-pane; `Enter` on a
 job or step loads that job's log into the **Log** sub-pane, with step
 boundaries and `##[group]` markers rendered as section lines. Logs of jobs
-that are still running are polled every 5 seconds and followed like a tail.
+that are still running are polled at the same interval and followed like a
+tail. When GitHub rejects a request as rate-limited, the page suspends its
+polling with an exponential backoff (30s up to 10 minutes) and shows
+`⚠ GitHub rate limited (resets in Nm)` in the status bar; `r` retries
+immediately and a successful fetch clears the backoff.
 Nothing in this view reruns, cancels or deletes anything.
 
 | Key | Action |

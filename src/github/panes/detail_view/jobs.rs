@@ -23,7 +23,8 @@ use std::collections::HashSet;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
-/// How often the jobs of a queued / running run are re-fetched.
+/// How often the jobs of a queued / running run (and a running job's log)
+/// are re-fetched, unless `github-poll-interval` says otherwise.
 pub const JOBS_POLL_INTERVAL: Duration = Duration::from_secs(5);
 
 /// One list row: a job or one of its steps.
@@ -202,14 +203,13 @@ impl JobsView {
         });
     }
 
-    /// Poll a queued / running run once per [`JOBS_POLL_INTERVAL`].
-    pub fn on_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+    /// Poll a queued / running run once per `interval`
+    /// ([`JOBS_POLL_INTERVAL`] unless `github-poll-interval` is set).
+    pub fn on_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>, interval: Duration) {
         if !self.run_active || self.loading {
             return;
         }
-        let due = self
-            .last_fetch
-            .is_none_or(|t| t.elapsed() >= JOBS_POLL_INTERVAL);
+        let due = self.last_fetch.is_none_or(|t| t.elapsed() >= interval);
         if due {
             self.spawn_fetch(tx);
         }
@@ -502,17 +502,17 @@ mod tests {
         assert!(view.run_is_active());
         view.apply(1, Ok(vec![]));
         // Not due yet: the fetch just happened.
-        view.on_tick(&tx);
+        view.on_tick(&tx, JOBS_POLL_INTERVAL);
         assert!(!view.is_loading());
         view.last_fetch = None;
-        view.on_tick(&tx);
+        view.on_tick(&tx, JOBS_POLL_INTERVAL);
         assert!(view.is_loading(), "a due tick re-fetches");
         // The run finished: no more polling.
         view.apply(1, Ok(vec![]));
         view.update_run(&run());
         assert!(!view.run_is_active());
         view.last_fetch = None;
-        view.on_tick(&tx);
+        view.on_tick(&tx, JOBS_POLL_INTERVAL);
         assert!(!view.is_loading());
         drop(rx);
     }

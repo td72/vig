@@ -23,8 +23,44 @@ use std::collections::HashMap;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
-/// How often the run list is re-fetched while a run is queued or running.
-pub const ACTIVE_RUNS_REFRESH_INTERVAL: Duration = Duration::from_secs(5);
+// === Rate-limit backoff ===
+
+/// First polling suspension after a rate-limit rejection.
+const RATE_LIMIT_BASE_BACKOFF: Duration = Duration::from_secs(30);
+/// Longest polling suspension the backoff can grow to.
+const RATE_LIMIT_MAX_BACKOFF: Duration = Duration::from_secs(600);
+
+/// The delay following `current` in the 30s -> 60s -> ... -> 10min progression.
+fn next_backoff(current: Option<Duration>) -> Duration {
+    match current {
+        None => RATE_LIMIT_BASE_BACKOFF,
+        Some(d) => d.saturating_mul(2).min(RATE_LIMIT_MAX_BACKOFF),
+    }
+}
+
+/// `resets in Nm` from the quota reset time (minutes round up), or
+/// `resets soon` once it has passed.
+fn format_reset(reset_at: i64, now: i64) -> String {
+    if reset_at <= now {
+        "resets soon".to_string()
+    } else {
+        format!("resets in {}m", (reset_at - now + 59) / 60)
+    }
+}
+
+/// Polling suspension after GitHub rejected a fetch as rate-limited.
+///
+/// While `since.elapsed() < delay` every automatic poll of the page is
+/// skipped. A rejection *after* the window (i.e. from a retry) doubles the
+/// delay; any successful fetch clears the whole backoff. Manual `r` is
+/// never gated.
+struct RateLimitBackoff {
+    since: Instant,
+    delay: Duration,
+    /// Unix time the quota resets (from `gh api rate_limit`, fetched once
+    /// per episode); the status bar recomputes the remaining minutes.
+    reset_at: Option<i64>,
+}
 
 // === Pane ID registry ===
 
@@ -103,6 +139,37 @@ pub enum GhBgMessage {
         append: bool,
         result: Result<Vec<String>, String>,
     },
+    /// Answer of the one-shot `gh api rate_limit` probe.
+    RateLimitReset(Option<i64>),
+}
+
+/// The error string of a failed fetch carried by `msg`, if any.
+fn fetch_error(msg: &GhBgMessage) -> Option<&str> {
+    match msg {
+        GhBgMessage::IssueList(Err(e))
+        | GhBgMessage::PrList(Err(e))
+        | GhBgMessage::RunList(Err(e))
+        | GhBgMessage::IssueDetail(Err(e))
+        | GhBgMessage::PrDetail(Err(e))
+        | GhBgMessage::RunJobs { result: Err(e), .. }
+        | GhBgMessage::RunLog { result: Err(e), .. } => Some(e),
+        _ => None,
+    }
+}
+
+/// Whether `msg` carries a successful fetch (the auth check and the
+/// reset-time probe don't count as one).
+fn fetch_succeeded(msg: &GhBgMessage) -> bool {
+    matches!(
+        msg,
+        GhBgMessage::IssueList(Ok(_))
+            | GhBgMessage::PrList(Ok(_))
+            | GhBgMessage::RunList(Ok(_))
+            | GhBgMessage::IssueDetail(Ok(_))
+            | GhBgMessage::PrDetail(Ok(_))
+            | GhBgMessage::RunJobs { result: Ok(_), .. }
+            | GhBgMessage::RunLog { result: Ok(_), .. }
+    )
 }
 
 /// Which of the three list → detail pairs the focus is in.
@@ -132,8 +199,10 @@ fn apply_list_result<T: GhListItem>(
             list.apply_list(items);
             *arrived = true;
         }
+        // A rate-limited fetch engages the page-wide backoff instead of
+        // the error line (see `GitHubState::on_rate_limited`).
         Err(e) => {
-            if gh_error.is_none() {
+            if !client::is_rate_limited(&e) && gh_error.is_none() {
                 *gh_error = Some(e);
             }
         }
@@ -234,6 +303,15 @@ pub struct GitHubState {
     detail_bindings: HashMap<usize, usize>,
     /// When the run list was last fetched (tick refresh while runs are active).
     last_runs_refresh: Option<Instant>,
+    /// How often the page polls while something is active - the runs
+    /// watch, the checks watch and the jobs / log polls
+    /// (`github-poll-interval`).
+    poll_interval: Duration,
+    /// Active rate-limit backoff, if GitHub rejected a fetch.
+    rate_limit: Option<RateLimitBackoff>,
+    /// Whether entering a backoff probes `gh api rate_limit` for the reset
+    /// time (tests turn it off).
+    probe_reset: bool,
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
 }
@@ -241,6 +319,7 @@ pub struct GitHubState {
 impl GitHubState {
     pub fn new(cfg: &Config) -> Result<Self> {
         let page_cfg = cfg.github_page()?;
+        let poll_interval = cfg.github_poll_interval()?;
 
         let ids = GhPaneIds::from_config(&page_cfg);
         // Build select→detail and reverse detail→select dispatch maps.
@@ -275,6 +354,11 @@ impl GitHubState {
         let mut run_detail = GhDetailViewPane::new(ids.run_detail);
         run_detail.set_keymap(run_detail_km);
 
+        // The checks watch and the jobs / log polls follow the configured
+        // interval too.
+        pr_detail.set_poll_interval(poll_interval);
+        run_detail.set_poll_interval(poll_interval);
+
         let initial_focus = ids.issue_list;
 
         Ok(Self {
@@ -306,6 +390,9 @@ impl GitHubState {
             select_bindings,
             detail_bindings,
             last_runs_refresh: None,
+            poll_interval,
+            rate_limit: None,
+            probe_reset: true,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
         })
@@ -346,6 +433,56 @@ impl GitHubState {
         self.panes.run_tab.list.spawn_fetch(tx);
     }
 
+    /// A fetch was rejected as rate-limited: start the backoff, or - when
+    /// the rejection came from a retry after the current window - double
+    /// it. Rejections inside the window (several fetches of one burst)
+    /// leave it unchanged.
+    fn on_rate_limited(&mut self) {
+        match &mut self.rate_limit {
+            Some(b) => {
+                if b.since.elapsed() >= b.delay {
+                    b.delay = next_backoff(Some(b.delay));
+                    b.since = Instant::now();
+                }
+            }
+            None => {
+                self.rate_limit = Some(RateLimitBackoff {
+                    since: Instant::now(),
+                    delay: next_backoff(None),
+                    reset_at: None,
+                });
+                if self.probe_reset {
+                    if let Some(tx) = self.bg_tx.clone() {
+                        std::thread::spawn(move || {
+                            let _ = tx.send(GhBgMessage::RateLimitReset(
+                                client::fetch_rate_limit_reset(),
+                            ));
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    /// Whether the backoff currently suspends automatic polling.
+    fn polling_suspended(&self) -> bool {
+        self.rate_limit
+            .as_ref()
+            .is_some_and(|b| b.since.elapsed() < b.delay)
+    }
+
+    /// Status-bar warning while a rate-limit backoff is active.
+    pub fn rate_limit_notice(&self) -> Option<String> {
+        let b = self.rate_limit.as_ref()?;
+        Some(match b.reset_at {
+            Some(reset) => format!(
+                "\u{26a0} GitHub rate limited ({})",
+                format_reset(reset, crate::github::domain::actions::time::now_secs())
+            ),
+            None => "\u{26a0} GitHub rate limited".to_string(),
+        })
+    }
+
     /// Drain background messages from worker threads.
     pub fn drain_bg_messages(&mut self) {
         let messages: Vec<_> = match &self.bg_rx {
@@ -356,7 +493,13 @@ impl GitHubState {
         let mut issue_list_arrived = false;
         let mut pr_list_arrived = false;
         let mut run_list_arrived = false;
+        let mut rate_limited = false;
+        let mut fetch_ok = false;
         for msg in messages {
+            match fetch_error(&msg) {
+                Some(e) if client::is_rate_limited(e) => rate_limited = true,
+                _ => fetch_ok |= fetch_succeeded(&msg),
+            }
             match msg {
                 GhBgMessage::AuthStatus(result) => match result {
                     Ok(()) => {
@@ -417,7 +560,18 @@ impl GitHubState {
                         .detail
                         .apply_log(request_id, append, result);
                 }
+                GhBgMessage::RateLimitReset(reset) => {
+                    if let Some(b) = &mut self.rate_limit {
+                        b.reset_at = reset;
+                    }
+                }
             }
+        }
+
+        if rate_limited {
+            self.on_rate_limited();
+        } else if fetch_ok {
+            self.rate_limit = None;
         }
 
         // A fresh run list also carries the new state of the run on display
@@ -671,6 +825,12 @@ impl crate::core::app::PageState for GitHubState {
         let Some(tx) = self.bg_tx.clone() else {
             return;
         };
+        // A rate-limit backoff suspends every automatic poll of the page
+        // (checks watch, runs watch, jobs / log polls). Manual `r` still
+        // goes through `refresh` / `refresh_detail` directly.
+        if self.polling_suspended() {
+            return;
+        }
         self.panes.pr_tab.detail.handle_watch_tick(&tx);
         if self.gh_available != Some(true) {
             return;
@@ -679,7 +839,7 @@ impl crate::core::app::PageState for GitHubState {
         // the PR checks watch; the shown run polls its jobs and log itself.
         let due = self
             .last_runs_refresh
-            .is_none_or(|t| t.elapsed() >= ACTIVE_RUNS_REFRESH_INTERVAL);
+            .is_none_or(|t| t.elapsed() >= self.poll_interval);
         if self.panes.run_tab.list.has_active() && due && !self.panes.run_tab.list.is_loading() {
             self.spawn_runs(&tx);
         }
@@ -1019,6 +1179,7 @@ mod kdl_regression {
         // Keep the receiver alive so worker threads can send without noise.
         std::mem::forget(_rx);
         st.bg_tx = Some(tx);
+        st.probe_reset = false;
         st
     }
 
@@ -1138,5 +1299,163 @@ mod kdl_regression {
         assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == rl));
         st.pane.set_focus(rl);
         assert!(st.dispatch_key(key("l")).is_empty());
+    }
+}
+
+#[cfg(test)]
+mod rate_limit {
+    use super::*;
+    use crate::core::app::PageState;
+
+    const REST_LIMIT: &str =
+        "HTTP 403: API rate limit exceeded for user ID 12345. (https://api.github.com/graphql)";
+
+    fn ctx() -> AppContext {
+        AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: std::path::PathBuf::new(),
+            needs_full_redraw: false,
+        }
+    }
+
+    /// A state with a live channel, no reset probe and no worker threads.
+    fn state() -> (GitHubState, mpsc::Sender<GhBgMessage>) {
+        let mut st = GitHubState::new(&Config::builtin()).expect("github page");
+        let (tx, rx) = mpsc::channel();
+        st.bg_tx = Some(tx.clone());
+        st.bg_rx = Some(rx);
+        st.probe_reset = false;
+        (st, tx)
+    }
+
+    #[test]
+    fn backoff_progression_doubles_to_the_cap() {
+        let mut d = next_backoff(None);
+        assert_eq!(d, Duration::from_secs(30));
+        let mut seen = vec![];
+        for _ in 0..6 {
+            d = next_backoff(Some(d));
+            seen.push(d.as_secs());
+        }
+        assert_eq!(seen, [60, 120, 240, 480, 600, 600]);
+    }
+
+    #[test]
+    fn reset_time_formatting() {
+        assert_eq!(format_reset(1_700, 1_000), "resets in 12m");
+        assert_eq!(format_reset(1_060, 1_000), "resets in 1m");
+        assert_eq!(format_reset(1_061, 1_000), "resets in 2m");
+        assert_eq!(format_reset(1_000, 1_000), "resets soon");
+        assert_eq!(format_reset(500, 1_000), "resets soon");
+    }
+
+    #[test]
+    fn a_rate_limited_fetch_starts_the_backoff_not_the_error_line() {
+        let (mut st, tx) = state();
+        tx.send(GhBgMessage::RunList(Err(REST_LIMIT.into())))
+            .unwrap();
+        tx.send(GhBgMessage::PrList(Err(REST_LIMIT.into())))
+            .unwrap();
+        st.drain_bg_messages();
+        assert!(st.polling_suspended());
+        assert_eq!(st.gh_error, None, "rate limits show the warning instead");
+        assert!(!st.panes.run_tab.list.is_loading());
+        assert_eq!(
+            st.rate_limit.as_ref().unwrap().delay,
+            Duration::from_secs(30)
+        );
+        assert_eq!(
+            st.rate_limit_notice().as_deref(),
+            Some("\u{26a0} GitHub rate limited")
+        );
+        // The reset probe answered: the notice shows the remaining minutes.
+        let reset = crate::github::domain::actions::time::now_secs() + 700;
+        tx.send(GhBgMessage::RateLimitReset(Some(reset))).unwrap();
+        st.drain_bg_messages();
+        let notice = st.rate_limit_notice().unwrap();
+        assert!(
+            notice.contains("GitHub rate limited (resets in"),
+            "{notice}"
+        );
+    }
+
+    #[test]
+    fn a_failed_retry_doubles_the_delay_and_success_clears_it() {
+        let (mut st, tx) = state();
+        tx.send(GhBgMessage::RunList(Err(REST_LIMIT.into())))
+            .unwrap();
+        st.drain_bg_messages();
+        // Same burst: a second rejection inside the window changes nothing.
+        tx.send(GhBgMessage::IssueList(Err(REST_LIMIT.into())))
+            .unwrap();
+        st.drain_bg_messages();
+        assert_eq!(
+            st.rate_limit.as_ref().unwrap().delay,
+            Duration::from_secs(30)
+        );
+        // The window passed and the retry was rejected again: 30s -> 60s.
+        {
+            let b = st.rate_limit.as_mut().unwrap();
+            b.since = Instant::now() - b.delay;
+        }
+        assert!(!st.polling_suspended());
+        tx.send(GhBgMessage::RunList(Err(REST_LIMIT.into())))
+            .unwrap();
+        st.drain_bg_messages();
+        assert_eq!(
+            st.rate_limit.as_ref().unwrap().delay,
+            Duration::from_secs(60)
+        );
+        assert!(st.polling_suspended());
+        // A successful fetch clears the backoff.
+        tx.send(GhBgMessage::RunList(Ok(vec![]))).unwrap();
+        st.drain_bg_messages();
+        assert!(st.rate_limit.is_none());
+        assert!(st.rate_limit_notice().is_none());
+    }
+
+    #[test]
+    fn other_errors_still_reach_the_error_line() {
+        let (mut st, tx) = state();
+        tx.send(GhBgMessage::IssueList(Err("HTTP 404: Not Found".into())))
+            .unwrap();
+        st.drain_bg_messages();
+        assert!(st.rate_limit.is_none());
+        assert_eq!(st.gh_error.as_deref(), Some("HTTP 404: Not Found"));
+    }
+
+    #[test]
+    fn the_backoff_suspends_the_runs_watch() {
+        let (mut st, _tx) = state();
+        st.gh_available = Some(true);
+        st.panes
+            .run_tab
+            .list
+            .set_items(vec![crate::github::panes::run_list::tests::run(
+                2,
+                "in_progress",
+                "",
+            )]);
+        st.last_runs_refresh = None;
+        st.rate_limit = Some(RateLimitBackoff {
+            since: Instant::now(),
+            delay: Duration::from_secs(30),
+            reset_at: None,
+        });
+        let mut ctx = ctx();
+        st.on_tick(&mut ctx);
+        assert!(!st.panes.run_tab.list.is_loading(), "suspended: no refetch");
+        st.rate_limit = None;
+        st.on_tick(&mut ctx);
+        assert!(
+            st.panes.run_tab.list.is_loading(),
+            "backoff cleared: the watch resumes"
+        );
     }
 }

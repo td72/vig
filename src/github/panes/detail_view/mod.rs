@@ -18,7 +18,7 @@ use log::LogView;
 use ratatui::{layout::Rect, Frame};
 use std::collections::HashMap;
 use std::sync::mpsc;
-use std::time::{Instant, SystemTime};
+use std::time::{Duration, Instant, SystemTime};
 
 /// A workflow run shown in the detail area: the run itself (from the list)
 /// plus the Jobs and Log sub-panes. Unlike issues and PRs it is not cached;
@@ -171,6 +171,9 @@ pub struct GhDetailViewPane {
     watch_last_update: Option<SystemTime>,
     watch_in_flight_since: Option<Instant>,
     pub watch_error: Option<String>,
+    /// How often the checks watch and the jobs / log polls fire
+    /// (`github-poll-interval`).
+    poll_interval: Duration,
     keymap: Keymap<DetailAction>,
 }
 
@@ -192,12 +195,19 @@ impl GhDetailViewPane {
             watch_last_update: None,
             watch_in_flight_since: None,
             watch_error: None,
+            poll_interval: jobs::JOBS_POLL_INTERVAL,
             keymap: default_keymap(),
         }
     }
 
     pub fn set_keymap(&mut self, km: Keymap<DetailAction>) {
         self.keymap = km;
+    }
+
+    /// How often the checks watch and the jobs / log polls fire
+    /// (`github-poll-interval`).
+    pub fn set_poll_interval(&mut self, interval: Duration) {
+        self.poll_interval = interval;
     }
 
     pub fn keymap(&self) -> &Keymap<DetailAction> {
@@ -313,9 +323,10 @@ impl GhDetailViewPane {
 
     /// Tick: poll the jobs of a queued / running run and a running job's log.
     pub fn handle_run_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+        let interval = self.poll_interval;
         if let Some(d) = self.run_detail_mut() {
-            d.jobs.on_tick(tx);
-            d.log.on_tick(tx);
+            d.jobs.on_tick(tx, interval);
+            d.log.on_tick(tx, interval);
         }
     }
 
@@ -532,7 +543,7 @@ impl GhDetailViewPane {
         })
     }
 
-    /// Toggle watch mode (auto-refresh checks every 10s). Only activates on PR detail.
+    /// Toggle watch mode (auto-refresh checks at the poll interval). Only activates on PR detail.
     pub fn toggle_watch_mode(&mut self) {
         if !self.is_pr() {
             return;
@@ -549,7 +560,7 @@ impl GhDetailViewPane {
         }
     }
 
-    /// Called on every tick. If watch mode is active and 10s have elapsed, refresh the detail.
+    /// Called on every tick. If watch mode is active and the poll interval has elapsed, refresh the detail.
     pub fn handle_watch_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         if !self.watch_mode {
             return;
@@ -571,7 +582,7 @@ impl GhDetailViewPane {
             }
         }
         if let Some(last) = self.watch_last_refresh {
-            if last.elapsed() >= std::time::Duration::from_secs(10) {
+            if last.elapsed() >= self.poll_interval {
                 self.watch_last_refresh = Some(Instant::now());
                 self.watch_last_update = Some(SystemTime::now());
                 self.refresh_silent(tx);

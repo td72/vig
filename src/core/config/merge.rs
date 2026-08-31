@@ -3,7 +3,8 @@
 //! Merge rules (see `docs/config.md`):
 //! - `theme "<name>"`, `icons "<mode>"`, `image-preview "<mode>"`,
 //!   `procs-refresh-interval "<duration>"`, `procs-history "<n>"`,
-//!   `projects-board <title-or-number>`, `pages "<name>" ...` — replaced.
+//!   `github-poll-interval "<duration>"`, `projects-board <title-or-number>`,
+//!   `pages "<name>" ...` — replaced.
 //! - `app { }` — merged per key; a user entry replaces the default entry with the same key.
 //! - `page "x"` — must exist in the defaults.
 //!   - `layout { }`, `tabs`, `bind` — replaced wholesale when present in the user page.
@@ -31,6 +32,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "image-preview"
             | "procs-refresh-interval"
             | "procs-history"
+            | "github-poll-interval"
             | "projects-board"
             | "pages" => replace_single(default, unode),
             "app" => merge_app(default, unode)?,
@@ -38,8 +40,8 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
-                 `procs-refresh-interval`, `procs-history`, `projects-board`, `pages`, `app`, \
-                 or `page`)"
+                 `procs-refresh-interval`, `procs-history`, `github-poll-interval`, \
+                 `projects-board`, `pages`, `app`, or `page`)"
             ))
             }
         }
@@ -340,6 +342,18 @@ page "git" {
             .filter_map(arg0)
             .collect();
         assert_eq!(themes, vec!["light"]);
+    }
+
+    #[test]
+    fn github_poll_interval_replaced() {
+        let d = merged(r#"github-poll-interval "10s""#).unwrap();
+        let vals: Vec<&str> = d
+            .nodes()
+            .iter()
+            .filter(|n| n.name().value() == "github-poll-interval")
+            .filter_map(arg0)
+            .collect();
+        assert_eq!(vals, vec!["10s"]);
     }
 
     #[test]

@@ -19,6 +19,11 @@ procs-refresh-interval "2s"
 // "10" to "10000"). The default 120 is 4 minutes of history at "2s".
 procs-history "120"
 
+// How often the GitHub page polls while something is active - the Workflow
+// Runs column, a PR's checks in watch mode and a running job's log
+// ("5s", "2s", ...; at least 2s). Polling pauses on the other pages.
+github-poll-interval "5s"
+
 // Pages in tab order: the position here is the slot shown in the header
 // (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
 // wholesale; pages left out are disabled. `app` bindings address pages by name.

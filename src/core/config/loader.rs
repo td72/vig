@@ -25,6 +25,10 @@ const DEFAULT_PROCS_HISTORY: usize = 120;
 const MIN_PROCS_HISTORY: usize = 10;
 /// Bounds the memory the history buffers may take.
 const MAX_PROCS_HISTORY: usize = 10_000;
+/// Used when the config has no `github-poll-interval` node.
+const DEFAULT_GITHUB_POLL_INTERVAL: &str = "5s";
+/// Polling GitHub faster than this would burn through the API quota.
+const MIN_GITHUB_POLL_MS: u64 = 2000;
 
 /// Parse `"2s"`, `"1.5s"` or `"500ms"` into a duration of at least
 /// [`MIN_PROCS_REFRESH_MS`]. `None` for anything else.
@@ -264,6 +268,7 @@ impl Config {
         cfg.image_preview()?;
         cfg.procs_refresh_interval()?;
         cfg.procs_history()?;
+        cfg.github_poll_interval()?;
         cfg.projects_board()?;
         Ok(cfg)
     }
@@ -434,6 +439,36 @@ impl Config {
                 self.describe()
             )),
         }
+    }
+
+    /// How often the GitHub page polls while something is active - the runs
+    /// watch, the PR checks watch and a running job's log
+    /// (`github-poll-interval "5s"`; also `"2s"`, `"7.5s"`; at least 2s).
+    pub fn github_poll_interval(&self) -> Result<Duration> {
+        let raw = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "github-poll-interval")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("github-poll-interval block missing interval argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| DEFAULT_GITHUB_POLL_INTERVAL.to_string());
+        parse_interval(&raw)
+            .filter(|d| d.as_millis() >= u128::from(MIN_GITHUB_POLL_MS))
+            .ok_or_else(|| {
+                anyhow!(
+                    "invalid {}: bad github-poll-interval {raw:?}; expected a duration such as \
+                     \"5s\" or \"10s\" (at least {}ms)",
+                    self.describe(),
+                    MIN_GITHUB_POLL_MS
+                )
+            })
     }
 
     /// Which board the Projects page is pinned to (`projects-board "Roadmap"`
@@ -1443,6 +1478,38 @@ mod tests {
         assert_eq!(parse_interval("0s"), None);
         assert_eq!(parse_interval("-1s"), None);
         assert_eq!(parse_interval("2"), None);
+    }
+
+    #[test]
+    fn github_poll_interval_default_override_and_validation() {
+        assert_eq!(
+            Config::builtin().github_poll_interval().unwrap(),
+            Duration::from_secs(5)
+        );
+        assert_eq!(
+            user(r#"github-poll-interval "2s""#)
+                .unwrap()
+                .github_poll_interval()
+                .unwrap(),
+            Duration::from_secs(2)
+        );
+        assert_eq!(
+            user(r#"github-poll-interval "7.5s""#)
+                .unwrap()
+                .github_poll_interval()
+                .unwrap(),
+            Duration::from_millis(7500)
+        );
+        for bad in [
+            r#"github-poll-interval "fast""#,
+            r#"github-poll-interval "1s""#,
+            r#"github-poll-interval "1999ms""#,
+            r#"github-poll-interval "5""#,
+        ] {
+            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
+            assert!(msg.contains("github-poll-interval"), "{bad}: {msg}");
+        }
     }
 
     #[test]
