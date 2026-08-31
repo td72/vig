@@ -42,8 +42,10 @@ Sleep 200ms
 Type@1ms "sh -c 'sleep 600; true' &"
 Enter
 Sleep 200ms
-# A busy worker so the CPU graphs and the detail sparklines have movement.
-Type@1ms "sh -c 'while :; do :; done' &"
+# Busy workers so the CPU charts have movement and climb into the yellow /
+# red bands of the load gradient (one spinning core barely moves the global
+# CPU % on a many-core machine, so start a handful).
+Type@1ms "for i in 1 2 3 4 5 6; do sh -c 'while :; do :; done' & done"
 Enter
 Sleep 200ms
 Type@1ms "python3 -m http.server 8765 >/dev/null 2>&1 &"
@@ -93,19 +95,24 @@ Sleep 2s
 Enter
 Sleep 2.5s
 
-# Focus the detail pane: CPU% / RSS history sparklines under CPU and MEM
+# Select one of the busy workers, then focus the detail pane: its CPU% /
+# RSS history area charts sit under the CPU and MEM fields, columns colored
+# by load like the System pane (scroll down to reveal them)
+Type "/do :"
+Enter
+Sleep 1.5s
 Type "i"
 Sleep 1.5s
 Type "j"
 Sleep 800ms
 Type "j"
-Sleep 1.2s
+Sleep 1.5s
 Escape
 Sleep 1s
 
-# The System pane on top graphs the machine totals; let a few more samples
-# accumulate so the CPU / MEM sparklines grow from the right
-Sleep 8s
+# The System pane on top graphs the machine totals as colored area charts;
+# let a few more samples accumulate so the curves grow from the right
+Sleep 10s
 
 # `c` toggles the CPU graph to one bar per core (works from the list too)
 Type "c"

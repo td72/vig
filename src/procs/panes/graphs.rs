@@ -1,7 +1,9 @@
-//! Top pane of the Procs page: system-wide CPU and memory history graphs.
-//! Everything drawn here is a machine total — numbers only, never a
-//! process name, user or path — so recordings stay clean even without the
-//! `VIG_PROCS_ROOT_PID` filter (which deliberately does not apply here).
+//! Top pane of the Procs page: system-wide CPU and memory history graphs,
+//! drawn btop-style — filled multi-row area charts whose sample columns are
+//! colored by load. Everything drawn here is a machine total — numbers
+//! only, never a process name, user or path — so recordings stay clean even
+//! without the `VIG_PROCS_ROOT_PID` filter (which deliberately does not
+//! apply here).
 
 use crate::core::app::AppContext;
 use crate::core::keymap::{ActionHelp, Keymap};
@@ -9,11 +11,11 @@ use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::core::theme;
 use crate::files::domain::fs::human_size;
 use crate::procs::domain::history::{Ring, SystemSample};
-use crate::procs::panes::dim;
+use crate::procs::panes::{area_chart, dim, load_style};
 use crossterm::event::KeyCode;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Paragraph, RenderDirection, Sparkline};
+use ratatui::widgets::Paragraph;
 use ratatui::{layout::Rect, Frame};
 
 #[derive(Debug, Clone)]
@@ -49,24 +51,17 @@ pub fn default_keymap() -> Keymap<GraphsAction> {
         .key(KeyCode::Esc, GraphsAction::Esc)
 }
 
-/// `3.2G / 16.0G (20%)` — used / total with a rounded percentage.
-pub fn usage_label(used: u64, total: u64) -> String {
-    let pct = if total == 0 {
-        0
-    } else {
-        (used as f64 / total as f64 * 100.0).round() as u64
-    };
-    format!("{} / {} ({pct}%)", human_size(used), human_size(total))
+/// `3.2G/16.0G` — used / total in human units.
+pub fn ratio_label(used: u64, total: u64) -> String {
+    format!("{}/{}", human_size(used), human_size(total))
 }
 
-/// Style for a CPU percentage (calm, busy, saturated).
-fn load_style(pct: f32) -> Style {
-    if pct >= 80.0 {
-        Style::default().fg(Color::Red)
-    } else if pct >= 50.0 {
-        Style::default().fg(Color::Yellow)
+/// `used` as a percentage of `total` (0 when there is no total).
+pub fn used_pct(used: u64, total: u64) -> f32 {
+    if total == 0 {
+        0.0
     } else {
-        Style::default().fg(Color::Green)
+        (used as f64 / total as f64 * 100.0) as f32
     }
 }
 
@@ -118,6 +113,19 @@ impl GraphsPane {
         self.history.iter().map(|s| s.cpu).fold(0.0, f32::max)
     }
 
+    /// Global CPU% samples, oldest → newest.
+    fn cpu_series(&self) -> Vec<f32> {
+        self.history.iter().map(|s| s.cpu).collect()
+    }
+
+    /// Used memory as a percentage of the total, oldest → newest.
+    fn mem_series(&self) -> Vec<f32> {
+        self.history
+            .iter()
+            .map(|s| used_pct(s.mem_used, s.mem_total))
+            .collect()
+    }
+
     fn execute(&mut self, _shared: &PaneShared, action: GraphsAction) -> Vec<PaneEvent> {
         match action {
             GraphsAction::TogglePerCore => vec![PaneEvent::ToggleCpuCores],
@@ -125,18 +133,11 @@ impl GraphsPane {
         }
     }
 
-    /// Newest-first series for a right-to-left sparkline: the latest sample
-    /// sits at the right edge and history grows leftward, so a buffer that
-    /// is not full yet is right-aligned.
-    fn spark_data(&self, width: usize, value: impl Fn(&SystemSample) -> u64) -> Vec<u64> {
-        self.history.iter().rev().map(value).take(width).collect()
-    }
-
     fn render_cpu(&self, f: &mut Frame, area: Rect, s: &SystemSample) {
         let mut spans = vec![
             Span::styled("CPU  ", Style::default().fg(Color::Cyan)),
-            Span::styled(format!("{:.1}%", s.cpu), load_style(s.cpu)),
-            Span::styled(format!("  peak {:.1}%", self.cpu_peak()), dim()),
+            Span::styled(format!("{:.0}%", s.cpu), load_style(s.cpu)),
+            Span::styled(format!("  peak {:.0}%", self.cpu_peak()), dim()),
         ];
         if self.per_core {
             spans.push(Span::styled(format!("  {} cores", s.per_core.len()), dim()));
@@ -153,28 +154,27 @@ impl GraphsPane {
         if graph.height == 0 {
             return;
         }
-        if self.per_core {
-            let lines = core_grid_lines(&s.per_core, graph.height as usize, graph.width as usize);
-            f.render_widget(Paragraph::new(lines), graph);
+        let lines = if self.per_core {
+            core_grid_lines(&s.per_core, graph.height as usize, graph.width as usize)
         } else {
-            let data = self.spark_data(graph.width as usize, |s| s.cpu.round() as u64);
-            f.render_widget(
-                Sparkline::default()
-                    .data(data)
-                    .max(100)
-                    .direction(RenderDirection::RightToLeft)
-                    .style(Style::default().fg(Color::Green)),
-                graph,
-            );
-        }
+            area_chart(
+                &self.cpu_series(),
+                graph.height as usize,
+                graph.width as usize,
+                100.0,
+            )
+        };
+        f.render_widget(Paragraph::new(lines), graph);
     }
 
     fn render_mem(&self, f: &mut Frame, area: Rect, s: &SystemSample) {
         let swap_line = s.swap_total > 0 && area.height >= 3;
+        let pct = used_pct(s.mem_used, s.mem_total);
         f.render_widget(
             Paragraph::new(Line::from(vec![
                 Span::styled("MEM  ", Style::default().fg(Color::Cyan)),
-                Span::raw(usage_label(s.mem_used, s.mem_total)),
+                Span::raw(ratio_label(s.mem_used, s.mem_total)),
+                Span::styled(format!("  {pct:.0}%"), load_style(pct)),
             ])),
             Rect { height: 1, ..area },
         );
@@ -184,21 +184,21 @@ impl GraphsPane {
             ..area
         };
         if graph.height > 0 {
-            let data = self.spark_data(graph.width as usize, |s| s.mem_used);
-            f.render_widget(
-                Sparkline::default()
-                    .data(data)
-                    .max(s.mem_total.max(1))
-                    .direction(RenderDirection::RightToLeft)
-                    .style(Style::default().fg(Color::Cyan)),
-                graph,
+            let lines = area_chart(
+                &self.mem_series(),
+                graph.height as usize,
+                graph.width as usize,
+                100.0,
             );
+            f.render_widget(Paragraph::new(lines), graph);
         }
         if swap_line {
+            let spct = used_pct(s.swap_used, s.swap_total);
             f.render_widget(
                 Paragraph::new(Line::from(vec![
-                    Span::styled("Swap ", Style::default().fg(Color::Cyan)),
-                    Span::styled(usage_label(s.swap_used, s.swap_total), dim()),
+                    Span::styled("Swp  ", Style::default().fg(Color::Cyan)),
+                    Span::styled(ratio_label(s.swap_used, s.swap_total), dim()),
+                    Span::styled(format!("  {spct:.0}%"), load_style(spct)),
                 ])),
                 Rect {
                     y: area.y + area.height - 1,
@@ -211,7 +211,8 @@ impl GraphsPane {
 }
 
 /// Lay the per-core bars out in columns: cores fill the rows of the first
-/// column, then the next. Every cell is `<idx> <bar> <pct>` — numbers only.
+/// column, then the next. Every cell is `<idx> <bar> <pct>` — numbers only —
+/// with the bar and the percentage in the shared load gradient.
 fn core_grid_lines(cores: &[f32], rows: usize, width: usize) -> Vec<Line<'static>> {
     if cores.is_empty() || rows == 0 || width == 0 {
         return vec![];
@@ -237,7 +238,7 @@ fn core_grid_lines(cores: &[f32], rows: usize, width: usize) -> Vec<Line<'static
             ));
             spans.push(Span::styled("█".repeat(filled), load_style(pct)));
             spans.push(Span::styled("░".repeat(bar_w - filled), dim()));
-            spans.push(Span::raw(format!(" {:>3.0}% ", pct)));
+            spans.push(Span::styled(format!(" {:>3.0}% ", pct), load_style(pct)));
         }
         lines.push(Line::from(spans));
     }
@@ -299,11 +300,14 @@ mod tests {
     }
 
     #[test]
-    fn labels_format_percentages_and_sizes() {
+    fn labels_format_ratios_and_percentages() {
         let g = 1024 * 1024 * 1024;
-        assert_eq!(usage_label((32 * g) / 10, 16 * g), "3.2G / 16.0G (20%)");
-        assert_eq!(usage_label(0, 0), "0B / 0B (0%)");
-        assert_eq!(usage_label(g / 2, g), "512.0M / 1.0G (50%)");
+        assert_eq!(ratio_label((32 * g) / 10, 16 * g), "3.2G/16.0G");
+        assert_eq!(ratio_label(0, 0), "0B/0B");
+        assert_eq!(ratio_label(g / 2, g), "512.0M/1.0G");
+        assert!((used_pct((32 * g) / 10, 16 * g) - 20.0).abs() < 0.01);
+        assert_eq!(used_pct(0, 0), 0.0);
+        assert_eq!(used_pct(g / 2, g), 50.0);
     }
 
     #[test]
@@ -315,9 +319,10 @@ mod tests {
         pane.record(sample(20.0)); // evicts the 10% sample
         assert_eq!(pane.history_len(), 2);
         assert_eq!(pane.cpu_peak(), 90.0);
-        // Newest first, so the sparkline's right edge is the latest sample.
-        assert_eq!(pane.spark_data(10, |s| s.cpu as u64), vec![20, 90]);
-        assert_eq!(pane.spark_data(1, |s| s.cpu as u64), vec![20]);
+        // Oldest → newest, so the chart's right edge is the latest sample.
+        assert_eq!(pane.cpu_series(), vec![90.0, 20.0]);
+        // 4G used of 16G → a flat 25% memory series for the MEM chart.
+        assert_eq!(pane.mem_series(), vec![25.0, 25.0]);
     }
 
     #[test]
@@ -338,7 +343,7 @@ mod tests {
     #[test]
     fn core_grid_lays_cores_out_in_columns() {
         // 4 cores in 2 rows → 2 columns; every index appears exactly once.
-        let lines = core_grid_lines(&[10.0, 20.0, 30.0, 40.0], 2, 40);
+        let lines = core_grid_lines(&[10.0, 20.0, 30.0, 90.0], 2, 40);
         assert_eq!(lines.len(), 2);
         let text: Vec<String> = lines
             .iter()
@@ -349,7 +354,10 @@ mod tests {
         assert!(text[0].contains(" 2 "), "{text:?}");
         assert!(text[1].contains(" 3 "), "{text:?}");
         assert!(text[0].contains("10%"), "{text:?}");
-        assert!(text[1].contains("40%"), "{text:?}");
+        assert!(text[1].contains("90%"), "{text:?}");
+        // The percent text carries the same load color as its bar.
+        let pct_span = lines[1].spans.last().unwrap();
+        assert_eq!(pct_span.style.fg, Some(Color::Red)); // 90%
         assert!(core_grid_lines(&[], 2, 40).is_empty());
     }
 }

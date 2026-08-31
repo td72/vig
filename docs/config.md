@@ -148,8 +148,8 @@ procs-refresh-interval "5s"
 ### `procs-history`
 
 How many samples the Procs view's history graphs keep — the system CPU /
-memory graphs in the `graphs` pane and the per-process sparklines in the
-detail pane. One sample is taken per refresh interval; between `"10"` and
+memory area charts in the `graphs` pane and the per-process history charts
+in the detail pane. One sample is taken per refresh interval; between `"10"` and
 `"10000"`. The default `"120"` is 4 minutes of history at the default
 `"2s"` interval.
 

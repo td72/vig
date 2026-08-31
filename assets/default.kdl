@@ -355,7 +355,7 @@ page "docker" {
 page "procs" {
     layout {
         split direction="vertical" {
-            place "graphs" size="8"
+            place "graphs" size="12"
             split direction="horizontal" size="min:10" {
                 place "processes" size="55%"
                 split direction="vertical" size="min:30" {

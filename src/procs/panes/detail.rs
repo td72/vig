@@ -7,7 +7,7 @@ use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::core::theme;
 use crate::files::domain::fs::human_size;
 use crate::procs::domain::types::{format_elapsed, PortEntry, ProcessInfo};
-use crate::procs::panes::{dim, spark_string, NO_ACCESS};
+use crate::procs::panes::{area_chart, area_chart_plain, dim, NO_ACCESS};
 use crossterm::event::KeyCode;
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
@@ -59,8 +59,11 @@ pub struct DetailData {
 }
 
 const LABEL_W: usize = 9;
-/// Widest history sparkline drawn under the CPU / MEM fields.
+/// Widest history chart drawn under the CPU / MEM fields.
 const SPARK_W: usize = 48;
+/// Rows of each history chart — btop-style filled columns, kept short
+/// because the detail pane is tight.
+const SPARK_ROWS: usize = 2;
 
 pub struct DetailPane {
     pane_id: usize,
@@ -164,26 +167,20 @@ impl DetailPane {
         );
         field(&mut out, "CPU", plain(format!("{:.1}%", info.cpu)));
         if data.cpu_history.len() >= 2 {
-            let vals: Vec<f64> = data.cpu_history.iter().map(|&v| f64::from(v)).collect();
-            continuation(
-                &mut out,
-                vec![Span::styled(
-                    spark_string(&vals, 100.0, value_w.min(SPARK_W)),
-                    Style::default().fg(Color::Green),
-                )],
-            );
+            for line in area_chart(&data.cpu_history, SPARK_ROWS, value_w.min(SPARK_W), 100.0) {
+                continuation(&mut out, line.spans);
+            }
         }
         field(&mut out, "MEM", plain(human_size(info.rss)));
         if data.rss_history.len() >= 2 {
-            let max = data.rss_history.iter().copied().max().unwrap_or(1) as f64;
-            let vals: Vec<f64> = data.rss_history.iter().map(|&v| v as f64).collect();
-            continuation(
-                &mut out,
-                vec![Span::styled(
-                    spark_string(&vals, max, value_w.min(SPARK_W)),
-                    Style::default().fg(Color::Cyan),
-                )],
-            );
+            // Scaled to its own recent peak, so one fixed color: a load
+            // gradient against the peak would paint any steady value red.
+            let max = data.rss_history.iter().copied().max().unwrap_or(1) as f32;
+            let vals: Vec<f32> = data.rss_history.iter().map(|&v| v as f32).collect();
+            let style = Style::default().fg(Color::Cyan);
+            for line in area_chart_plain(&vals, SPARK_ROWS, value_w.min(SPARK_W), max, style) {
+                continuation(&mut out, line.spans);
+            }
         }
         let bold = Style::default().add_modifier(Modifier::BOLD);
         for (i, chunk) in wrap_chars(&info.cmd, value_w).into_iter().enumerate() {
@@ -361,7 +358,7 @@ mod tests {
     }
 
     #[test]
-    fn history_sparklines_sit_under_cpu_and_mem() {
+    fn history_charts_sit_under_cpu_and_mem() {
         let data = DetailData {
             info: proc(42, None, 50.0, 1024),
             parent_name: None,
@@ -371,15 +368,17 @@ mod tests {
             rss_history: vec![512, 1024],
         };
         let t = text(&DetailPane::lines(&data, 40));
-        // CPU row, then its sparkline; MEM row, then its sparkline. Both
-        // right-aligned: latest sample at the right edge.
+        // CPU row, then its two-row area chart; MEM row, then its chart.
+        // All right-aligned: latest sample at the right edge.
         assert_eq!(t[5], "CPU       50.0%");
-        assert!(t[6].ends_with("▁▅█"), "{:?}", t[6]);
+        assert!(t[6].ends_with("  █"), "{:?}", t[6]);
+        assert!(t[7].ends_with(" ██"), "{:?}", t[7]);
         assert!(t[6].starts_with(&" ".repeat(LABEL_W + 1)), "{:?}", t[6]);
-        assert_eq!(t[7], "MEM       1.0K");
-        assert!(t[8].ends_with("▅█"), "{:?}", t[8]);
+        assert_eq!(t[8], "MEM       1.0K");
+        assert!(t[9].ends_with(" █"), "{:?}", t[9]);
+        assert!(t[10].ends_with("██"), "{:?}", t[10]);
 
-        // A single sample draws no sparkline (a one-column graph is noise).
+        // A single sample draws no chart (a one-column graph is noise).
         let one = DetailData {
             cpu_history: vec![1.0],
             rss_history: vec![],
