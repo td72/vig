@@ -2,7 +2,7 @@
 
 [English](../README.md)
 
-Git の差分をサイドバイサイドで表示する TUI ビューア。vim スタイルのキーバインドで操作できます。
+busy なリポジトリを見張るための**閲覧専用 TUI コックピット** — git、GitHub の issue / PR / CI 実行 / Projects ボード、コンテナ、プロセス、worktree をひと目で確認できます。vim スタイルのキーバインド。AI エージェントが作業するリポジトリの監視も想定しています。(名前の由来は *vim* + *git*。すべてのページは現在のリポジトリを起点にします。)
 
 📖 **[ユーザーガイド](https://td72.github.io/vig/ja/)** — インストール、全ビューのツアー、（今後）設定ガイド *（リポジトリ内でも読めます: [docs/guide/ja/](guide/ja/src/SUMMARY.md)）*
 

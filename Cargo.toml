@@ -2,7 +2,7 @@
 name = "vig"
 version = "0.8.0"
 edition = "2021"
-description = "Git TUI side-by-side diff viewer"
+description = "Read-only TUI cockpit for busy repositories - git, GitHub PRs/CI/projects, containers and processes at a glance"
 authors = ["td72"]
 license = "MIT"
 repository = "https://github.com/td72/vig"
