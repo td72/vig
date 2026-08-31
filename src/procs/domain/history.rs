@@ -116,8 +116,8 @@ impl ProcHistory {
             series.cpu.push(p.cpu);
             series.rss.push(p.rss);
         }
-        self.map
-            .retain(|pid, _| procs.iter().any(|p| p.pid == *pid));
+        let alive: std::collections::HashSet<u32> = procs.iter().map(|p| p.pid).collect();
+        self.map.retain(|pid, _| alive.contains(pid));
     }
 
     pub fn series(&self, pid: u32) -> Option<&ProcSeries> {

@@ -232,7 +232,8 @@ mod tests {
         // the CPU list is not empty, and the percentages are in range.
         assert!(snap.system.mem_total > 0);
         assert!(snap.system.mem_used <= snap.system.mem_total);
-        assert!(snap.system.swap_used <= snap.system.swap_total.max(snap.system.swap_used));
+        // Swap totals are platform-dependent (may be 0, and some platforms
+        // report used > total transiently), so only sanity-check presence.
         assert!(!snap.system.per_core.is_empty());
         assert!(snap.system.cpu >= 0.0);
         assert!(snap.system.per_core.iter().all(|&c| c >= 0.0));

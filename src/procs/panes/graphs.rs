@@ -218,8 +218,11 @@ fn core_grid_lines(cores: &[f32], rows: usize, width: usize) -> Vec<Line<'static
     }
     let cols = cores.len().div_ceil(rows);
     let rows_used = cores.len().div_ceil(cols);
-    let cell_w = (width / cols).max(9);
-    let bar_w = cell_w.saturating_sub(9).max(3);
+    // index + space + " 100% " — the index column grows with the core count.
+    let idx_w = (cores.len().saturating_sub(1)).to_string().len().max(2);
+    let fixed = idx_w + 1 + 6;
+    let cell_w = (width / cols).max(fixed + 3);
+    let bar_w = cell_w.saturating_sub(fixed).max(3);
     let mut lines = Vec::new();
     for row in 0..rows_used {
         let mut spans = Vec::new();
@@ -229,7 +232,7 @@ fn core_grid_lines(cores: &[f32], rows: usize, width: usize) -> Vec<Line<'static
             };
             let filled = ((f64::from(pct) / 100.0 * bar_w as f64).round() as usize).min(bar_w);
             spans.push(Span::styled(
-                format!("{:>2} ", col * rows_used + row),
+                format!("{:>idx_w$} ", col * rows_used + row),
                 Style::default().fg(Color::Cyan),
             ));
             spans.push(Span::styled("█".repeat(filled), load_style(pct)));
