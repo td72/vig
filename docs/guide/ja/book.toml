@@ -1,0 +1,24 @@
+# vig ユーザーガイド — 日本語版。
+# `mise run docs:build` で英語版と一緒にビルドされます。
+#
+# 画像の扱い (github.com の blob 表示と GitHub Pages の両対応):
+# - コミットされた Markdown はデモ GIF をリポジトリツリーへの相対パス
+#   (例 `../../../../assets/demo.gif`) で参照するため、github.com 上で
+#   章を開いてもそのまま (LFS media 経由で) 表示されます。
+# - ビルド時には下の `assets` プリプロセッサがパスを `assets/<name>.gif` に
+#   書き換え、ビルドステップ (mise docs:build / docs.yml ワークフロー) が
+#   `assets/*.gif` をビルド出力の `assets/` にコピーするので、Pages 上でも
+#   同じ画像が表示されます。章はすべて `src/` 直下に置きます。
+
+[book]
+title = "vig ユーザーガイド"
+language = "ja"
+src = "src"
+
+[preprocessor.assets]
+command = "python3 ../rewrite_assets.py"
+
+[output.html]
+site-url = "/vig/ja/"
+git-repository-url = "https://github.com/td72/vig"
+edit-url-template = "https://github.com/td72/vig/edit/main/docs/guide/ja/src/{path}"
