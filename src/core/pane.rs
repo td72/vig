@@ -152,6 +152,8 @@ pub enum PaneEvent {
     // Procs-specific
     /// Select this pid in the process list and focus it.
     JumpToProcess(u32),
+    /// Toggle the graphs pane between the CPU history and per-core bars.
+    ToggleCpuCores,
 }
 
 pub struct PaneShared {

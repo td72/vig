@@ -18,10 +18,12 @@ use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::tab::Tab;
 use crate::core::ui::status_bar;
+use crate::procs::domain::history::ProcHistory;
 use crate::procs::domain::ports;
-use crate::procs::domain::snapshot;
-use crate::procs::domain::types::{PortEntry, ProcessInfo};
+use crate::procs::domain::snapshot::{self, Snapshot};
+use crate::procs::domain::types::PortEntry;
 use crate::procs::panes::detail::{DetailAction, DetailData, DetailPane};
+use crate::procs::panes::graphs::{GraphsAction, GraphsPane};
 use crate::procs::panes::ports::{PortsAction, PortsPane};
 use crate::procs::panes::processes::{ProcessesAction, ProcessesPane};
 use anyhow::Result;
@@ -47,6 +49,7 @@ pub struct ProcsPaneIds {
     pub processes: usize,
     pub ports: usize,
     pub detail: usize,
+    pub graphs: usize,
 }
 
 impl ProcsPaneIds {
@@ -55,6 +58,7 @@ impl ProcsPaneIds {
             processes: cfg.resolve_id_expect("processes"),
             ports: cfg.resolve_id_expect("ports"),
             detail: cfg.resolve_id_expect("detail"),
+            graphs: cfg.resolve_id_expect("graphs"),
         }
     }
 }
@@ -64,18 +68,33 @@ pub type ProcTab = Tab<ProcessesPane, DetailPane>;
 pub struct ProcsPanes {
     pub tab: ProcTab,
     pub ports: PortsPane,
+    pub graphs: GraphsPane,
+    /// Per-pid CPU / RSS series shown in the detail pane; capacity is
+    /// `procs-history`, pids not in the latest snapshot are dropped.
+    pub history: ProcHistory,
     pub ids: ProcsPaneIds,
 }
 
 impl ProcsPanes {
-    /// Rebuild the detail from the selected process, its children and the
-    /// ports it owns.
+    /// Rebuild the detail from the selected process, its children, the
+    /// ports it owns and its CPU / RSS history.
     pub fn sync_detail(&mut self) {
-        let data = self.tab.list.selected().map(|info| DetailData {
-            parent_name: info.ppid.and_then(|pp| self.tab.list.name_of(pp)),
-            children: self.tab.list.children_of(info.pid),
-            ports: self.ports.ports_of(info.pid),
-            info: info.clone(),
+        let data = self.tab.list.selected().map(|info| {
+            let (cpu_history, rss_history) = match self.history.series(info.pid) {
+                Some(s) => (
+                    s.cpu.iter().copied().collect(),
+                    s.rss.iter().copied().collect(),
+                ),
+                None => (Vec::new(), Vec::new()),
+            };
+            DetailData {
+                parent_name: info.ppid.and_then(|pp| self.tab.list.name_of(pp)),
+                children: self.tab.list.children_of(info.pid),
+                ports: self.ports.ports_of(info.pid),
+                cpu_history,
+                rss_history,
+                info: info.clone(),
+            }
         });
         self.tab.detail.load(data);
     }
@@ -85,6 +104,8 @@ impl PaneSet for ProcsPanes {
     fn get_mut(&mut self, idx: usize) -> Option<&mut dyn Pane<PaneEvent>> {
         if idx == self.ids.ports {
             Some(&mut self.ports)
+        } else if idx == self.ids.graphs {
+            Some(&mut self.graphs)
         } else {
             self.tab
                 .get_pane_mut(self.ids.processes, self.ids.detail, idx)
@@ -93,7 +114,7 @@ impl PaneSet for ProcsPanes {
 }
 
 pub enum ProcsBgMessage {
-    Snapshot(Vec<ProcessInfo>),
+    Snapshot(Snapshot),
     Ports(Result<Vec<PortEntry>, String>),
 }
 
@@ -146,10 +167,12 @@ impl ProcsState {
         // Validates the bind declarations (processes → detail).
         let _ = page_cfg.resolve_select_bindings();
         let interval = cfg.procs_refresh_interval()?;
+        let history_cap = cfg.procs_history()?;
 
         let processes_km = page_cfg.keymap::<ProcessesAction>("processes")?;
         let ports_km = page_cfg.keymap::<PortsAction>("ports")?;
         let detail_km = page_cfg.keymap::<DetailAction>("detail")?;
+        let graphs_km = page_cfg.keymap::<GraphsAction>("graphs")?;
         let view_km = page_cfg.keymap::<ViewAction>("view")?;
 
         let mut list = ProcessesPane::new(ids.processes, ids.detail);
@@ -158,6 +181,8 @@ impl ProcsState {
         ports.set_keymap(ports_km);
         let mut detail = DetailPane::new(ids.detail, ids.processes);
         detail.set_keymap(detail_km);
+        let mut graphs = GraphsPane::new(ids.graphs, ids.processes, history_cap);
+        graphs.set_keymap(graphs_km);
 
         Ok(Self {
             pane: PaneShared {
@@ -168,6 +193,8 @@ impl ProcsState {
             panes: ProcsPanes {
                 tab: Tab { list, detail },
                 ports,
+                graphs,
+                history: ProcHistory::new(history_cap),
                 ids,
             },
             root_pid: root_pid_from_env(),
@@ -237,12 +264,18 @@ impl ProcsState {
         }
         for msg in messages {
             match msg {
-                ProcsBgMessage::Snapshot(mut procs) => {
+                ProcsBgMessage::Snapshot(snap) => {
                     self.snapshot_pending = false;
+                    let Snapshot { mut procs, system } = snap;
+                    // The graphs are machine totals by design:
+                    // `VIG_PROCS_ROOT_PID` trims the process list only.
+                    self.panes.graphs.record(system);
                     if let Some(root) = self.root_pid {
                         snapshot::retain_subtree(&mut procs, root);
                         self.visible_pids = procs.iter().map(|p| p.pid).collect();
                     }
+                    // Per-pid history follows what the list can show.
+                    self.panes.history.record(&procs);
                     self.panes.tab.list.apply_snapshot(procs);
                     // The owners changed, so the port list may too.
                     if self.root_pid.is_some() {
@@ -287,6 +320,7 @@ impl ProcsState {
             }
             match event {
                 PaneEvent::SelectionChanged => self.panes.sync_detail(),
+                PaneEvent::ToggleCpuCores => self.panes.graphs.toggle_per_core(),
                 PaneEvent::JumpToProcess(pid) => {
                     if self.panes.tab.list.select_pid(Some(pid)) {
                         self.pane.set_focus(self.panes.ids.processes);
@@ -343,6 +377,8 @@ impl PageState for ProcsState {
         entries.extend(self.panes.ports.keymap().help_entries());
         entries.extend(help_section("Detail"));
         entries.extend(self.panes.tab.detail.keymap().help_entries());
+        entries.extend(help_section("Graphs"));
+        entries.extend(self.panes.graphs.keymap().help_entries());
         entries
     }
 
@@ -445,8 +481,11 @@ mod tests {
     fn pane_ids_tabs_and_bindings_from_default_kdl() {
         let cfg = Config::builtin().procs_page().unwrap();
         let ids = ProcsPaneIds::from_config(&cfg);
-        assert_eq!((ids.processes, ids.ports, ids.detail), (0, 1, 2));
-        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2]);
+        assert_eq!(
+            (ids.processes, ids.ports, ids.detail, ids.graphs),
+            (0, 1, 2, 3)
+        );
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2, 3]);
         assert_eq!(
             cfg.resolve_select_bindings().get(&ids.processes),
             Some(&ids.detail)
@@ -457,7 +496,7 @@ mod tests {
     fn keys_from_default_kdl_match_hardcoded_defaults() {
         let s = state();
         for k in [
-            "j", "k", "g", "G", "Ctrl+d", "Ctrl+u", "/", "n", "N", "Enter", "i", "s", "Esc",
+            "j", "k", "g", "G", "Ctrl+d", "Ctrl+u", "/", "n", "N", "Enter", "i", "s", "c", "Esc",
         ] {
             let a = s.panes.tab.list.keymap().lookup(key(k));
             let b = crate::procs::panes::processes::default_keymap();
@@ -465,6 +504,15 @@ mod tests {
                 format!("{:?}", a),
                 format!("{:?}", b.lookup(key(k))),
                 "processes key {k}"
+            );
+        }
+        for k in ["c", "Esc"] {
+            let a = s.panes.graphs.keymap().lookup(key(k));
+            let b = crate::procs::panes::graphs::default_keymap();
+            assert_eq!(
+                format!("{:?}", a),
+                format!("{:?}", b.lookup(key(k))),
+                "graphs key {k}"
             );
         }
         for k in ["j", "k", "/", "Enter", "Esc"] {
@@ -503,6 +551,8 @@ mod tests {
                 parent_name: s.panes.tab.list.name_of(1),
                 children: s.panes.tab.list.children_of(30),
                 ports: s.panes.ports.ports_of(30),
+                cpu_history: vec![],
+                rss_history: vec![],
             },
             60,
         );
@@ -548,6 +598,45 @@ mod tests {
     }
 
     #[test]
+    fn c_toggles_per_core_from_the_list_and_the_graphs_pane() {
+        let mut s = state();
+        let mut c = ctx();
+        assert!(!s.panes.graphs.per_core);
+        // `c` works right from the process list…
+        s.handle_key(&mut c, key("c")).unwrap();
+        assert!(s.panes.graphs.per_core);
+        // …and from the graphs pane itself (last in the Tab cycle).
+        s.handle_key(&mut c, key("Tab")).unwrap(); // ports
+        s.handle_key(&mut c, key("Tab")).unwrap(); // detail
+        s.handle_key(&mut c, key("Tab")).unwrap(); // graphs
+        assert_eq!(s.pane.focused_pane, s.panes.ids.graphs);
+        s.handle_key(&mut c, key("c")).unwrap();
+        assert!(!s.panes.graphs.per_core);
+        // Esc returns to the process list.
+        s.handle_key(&mut c, key("Esc")).unwrap();
+        assert_eq!(s.pane.focused_pane, s.panes.ids.processes);
+    }
+
+    #[test]
+    fn detail_gets_the_selected_pid_history() {
+        let mut s = state();
+        // Two snapshots' worth of per-pid samples (as `drain` would record).
+        s.panes.history.record(&[
+            proc(1, None, 1.0, 10),
+            proc(20, Some(1), 5.0, 100),
+            proc(30, Some(1), 1.0, 900),
+        ]);
+        s.panes
+            .history
+            .record(&[proc(1, None, 2.0, 20), proc(20, Some(1), 6.0, 200)]);
+        s.panes.sync_detail();
+        // Selected pid 1 has both samples; pid 30 was pruned.
+        assert_eq!(s.panes.tab.detail.history_lens(), Some((2, 2)));
+        assert!(s.panes.history.series(30).is_none());
+        assert_eq!(s.panes.history.tracked(), 2);
+    }
+
+    #[test]
     fn help_lists_every_pane() {
         let s = state();
         // The view-switch entry is prepended by `App::active_help_bindings`
@@ -560,8 +649,10 @@ mod tests {
             "── Processes ──",
             "── Ports ──",
             "── Detail ──",
+            "── Graphs ──",
             "Cycle sort",
             "Jump to owning process",
+            "Toggle per-core CPU bars",
         ] {
             assert!(text.iter().any(|l| l.contains(needle)), "{needle}");
         }

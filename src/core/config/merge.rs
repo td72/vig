@@ -2,7 +2,8 @@
 //!
 //! Merge rules (see `docs/config.md`):
 //! - `theme "<name>"`, `icons "<mode>"`, `image-preview "<mode>"`,
-//!   `procs-refresh-interval "<duration>"`, `pages "<name>" ...` — replaced.
+//!   `procs-refresh-interval "<duration>"`, `procs-history "<n>"`,
+//!   `pages "<name>" ...` — replaced.
 //! - `app { }` — merged per key; a user entry replaces the default entry with the same key.
 //! - `page "x"` — must exist in the defaults.
 //!   - `layout { }`, `tabs`, `bind` — replaced wholesale when present in the user page.
@@ -25,15 +26,18 @@ fn find_mut(doc: &mut KdlDocument, pred: impl Fn(&KdlNode) -> bool) -> Option<&m
 pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Result<()> {
     for unode in user.nodes() {
         match unode.name().value() {
-            "theme" | "icons" | "image-preview" | "procs-refresh-interval" | "pages" => {
-                replace_single(default, unode)
-            }
+            "theme"
+            | "icons"
+            | "image-preview"
+            | "procs-refresh-interval"
+            | "procs-history"
+            | "pages" => replace_single(default, unode),
             "app" => merge_app(default, unode)?,
             "page" => merge_page(default, unode)?,
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
-                 `procs-refresh-interval`, `pages`, `app`, or `page`)"
+                 `procs-refresh-interval`, `procs-history`, `pages`, `app`, or `page`)"
             ))
             }
         }

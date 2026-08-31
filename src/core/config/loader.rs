@@ -19,6 +19,12 @@ const VIEW_PANE: &str = "view";
 const DEFAULT_PROCS_REFRESH_INTERVAL: &str = "2s";
 /// Ticks fire every 250 ms, so a shorter interval cannot be honoured.
 const MIN_PROCS_REFRESH_MS: u64 = 250;
+/// Used when the config has no `procs-history` node.
+const DEFAULT_PROCS_HISTORY: usize = 120;
+/// Fewer samples than this would not draw a readable graph.
+const MIN_PROCS_HISTORY: usize = 10;
+/// Bounds the memory the history buffers may take.
+const MAX_PROCS_HISTORY: usize = 10_000;
 
 /// Parse `"2s"`, `"1.5s"` or `"500ms"` into a duration of at least
 /// [`MIN_PROCS_REFRESH_MS`]. `None` for anything else.
@@ -223,6 +229,7 @@ impl Config {
         cfg.icons()?;
         cfg.image_preview()?;
         cfg.procs_refresh_interval()?;
+        cfg.procs_history()?;
         Ok(cfg)
     }
 
@@ -363,6 +370,35 @@ impl Config {
                 MIN_PROCS_REFRESH_MS
             )
         })
+    }
+
+    /// How many samples the Procs history graphs keep (`procs-history "120"`;
+    /// one sample per refresh interval, between 10 and 10000).
+    pub fn procs_history(&self) -> Result<usize> {
+        let raw = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "procs-history")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("procs-history block missing sample-count argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?;
+        let Some(raw) = raw else {
+            return Ok(DEFAULT_PROCS_HISTORY);
+        };
+        match raw.trim().parse::<usize>() {
+            Ok(n) if (MIN_PROCS_HISTORY..=MAX_PROCS_HISTORY).contains(&n) => Ok(n),
+            _ => Err(anyhow!(
+                "invalid {}: bad procs-history {raw:?}; expected a sample count between \
+                 {MIN_PROCS_HISTORY} and {MAX_PROCS_HISTORY}",
+                self.describe()
+            )),
+        }
     }
 
     /// How the Files view previews images (`image-preview "auto"` / `"halfblocks"` / `"none"`).
@@ -1273,15 +1309,24 @@ mod tests {
         assert_eq!(cfg.resolve_id("processes"), Some(0));
         assert_eq!(cfg.resolve_id("ports"), Some(1));
         assert_eq!(cfg.resolve_id("detail"), Some(2));
-        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2]);
+        assert_eq!(cfg.resolve_id("graphs"), Some(3));
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2, 3]);
         assert_eq!(
             cfg.bindings,
             vec![("processes".to_string(), "detail".to_string())]
         );
-        for name in ["view", "processes", "ports", "detail"] {
+        for name in ["view", "processes", "ports", "detail", "graphs"] {
             assert!(
                 cfg.pane_keys.contains_key(name),
                 "missing pane keys for {name}"
+            );
+        }
+        // The per-core toggle is reachable from the list and the pane itself.
+        for pane in ["processes", "graphs"] {
+            let keys = format!("{:?}", cfg.pane_keys[pane]);
+            assert!(
+                keys.contains("key: \"c\", action: \"TogglePerCore\""),
+                "pane {pane} binds c to TogglePerCore: {keys}"
             );
         }
         // App block switches to it with "5".
@@ -1322,6 +1367,44 @@ mod tests {
         assert_eq!(parse_interval("0s"), None);
         assert_eq!(parse_interval("-1s"), None);
         assert_eq!(parse_interval("2"), None);
+    }
+
+    #[test]
+    fn procs_history_default_override_and_validation() {
+        assert_eq!(Config::builtin().procs_history().unwrap(), 120);
+        assert_eq!(
+            user(r#"procs-history "300""#)
+                .unwrap()
+                .procs_history()
+                .unwrap(),
+            300
+        );
+        // The bounds themselves are valid.
+        assert_eq!(
+            user(r#"procs-history "10""#)
+                .unwrap()
+                .procs_history()
+                .unwrap(),
+            10
+        );
+        assert_eq!(
+            user(r#"procs-history "10000""#)
+                .unwrap()
+                .procs_history()
+                .unwrap(),
+            10000
+        );
+        for bad in [
+            r#"procs-history "9""#,
+            r#"procs-history "10001""#,
+            r#"procs-history "many""#,
+            r#"procs-history "-5""#,
+            r#"procs-history "0""#,
+        ] {
+            let msg = format!("{:#}", user(bad).err().expect("expected an error"));
+            assert!(msg.contains("/u/config.kdl"), "{bad}: {msg}");
+            assert!(msg.contains("procs-history"), "{bad}: {msg}");
+        }
     }
 
     #[test]
