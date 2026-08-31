@@ -85,10 +85,16 @@ fn collect_chapters(dir: &Path, in_src: bool, out: &mut Vec<PathBuf>) {
 #[test]
 fn every_guide_kdl_example_loads_as_a_user_config() {
     let files = guide_chapter_files();
-    assert!(
-        !files.is_empty(),
-        "no guide chapters found — was docs/guide moved?"
-    );
+    if files.is_empty() {
+        // The crate package excludes docs/ (Cargo.toml `exclude`), so a
+        // `cargo test` run from a crates.io / distro source tree has no
+        // guide to verify. Only a git checkout must hard-fail here.
+        if !Path::new(env!("CARGO_MANIFEST_DIR")).join(".git").exists() {
+            eprintln!("guide examples: docs/guide not present (packaged source) — skipping");
+            return;
+        }
+        panic!("no guide chapters found — was docs/guide moved?");
+    }
 
     let mut verified = 0usize;
     let mut failures = Vec::new();
