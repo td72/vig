@@ -26,8 +26,6 @@ use std::time::{Duration, Instant};
 
 /// Scrollback cap (GitHub logs can run to tens of thousands of lines).
 pub const LOG_CAP: usize = 20_000;
-/// How often a running job's log is re-fetched.
-const POLL_INTERVAL: Duration = Duration::from_secs(5);
 
 /// State of the Log sub-pane: one job's log buffer and its fetch status.
 #[derive(Debug, Clone)]
@@ -138,13 +136,13 @@ impl LogView {
         }
     }
 
-    /// Poll a running job once per [`POLL_INTERVAL`].
-    pub fn on_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
+    /// Poll a running job once per `interval` (`github-poll-interval`).
+    pub fn on_tick(&mut self, tx: &mpsc::Sender<GhBgMessage>, interval: Duration) {
         let running = self.target.as_ref().is_some_and(|t| t.in_progress);
         if !running || self.in_flight {
             return;
         }
-        let due = self.last_poll.is_none_or(|t| t.elapsed() >= POLL_INTERVAL);
+        let due = self.last_poll.is_none_or(|t| t.elapsed() >= interval);
         if due {
             self.spawn(tx, true);
         }

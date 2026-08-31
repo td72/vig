@@ -25,6 +25,30 @@ pub(crate) fn run_gh_json<T: serde::de::DeserializeOwned>(
     serde_json::from_slice(&stdout).map_err(|e| format!("JSON parse error: {e}"))
 }
 
+/// Whether a `gh` error message is a GitHub rate-limit rejection.
+///
+/// REST answers 403 / 429 with "API rate limit exceeded for ..." ("... have
+/// exceeded a secondary rate limit" for abuse limits); GraphQL answers with
+/// an error of type `RATE_LIMITED` and "API rate limit already exceeded".
+pub fn is_rate_limited(msg: &str) -> bool {
+    msg.contains("API rate limit exceeded")
+        || msg.contains("rate limit already exceeded")
+        || msg.contains("RATE_LIMITED")
+        || msg.contains("secondary rate limit")
+}
+
+/// Unix time the REST core quota resets, via `gh api rate_limit` (that
+/// endpoint answers even while the quota is exhausted, so it is safe to
+/// call from a rate-limited session).
+pub fn fetch_rate_limit_reset() -> Option<i64> {
+    let out = run_gh(
+        &["api", "rate_limit", "--jq", ".resources.core.reset"],
+        "gh api rate_limit failed",
+    )
+    .ok()?;
+    String::from_utf8_lossy(&out).trim().parse().ok()
+}
+
 /// Open a GitHub issue or PR in the browser.
 fn open_in_browser(entity: &str, number: u64) -> Result<(), String> {
     Command::new("gh")
@@ -215,4 +239,36 @@ pub fn repo_nwo() -> Option<String> {
     )
     .ok()?;
     Some(String::from_utf8_lossy(&stdout).trim().to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn recognises_rate_limit_messages() {
+        // REST (HTTP 403 / 429)
+        assert!(is_rate_limited(
+            "HTTP 403: API rate limit exceeded for user ID 12345. \
+             (https://api.github.com/repos/td72/vig/issues)"
+        ));
+        assert!(is_rate_limited(
+            "HTTP 403: You have exceeded a secondary rate limit. \
+             Please wait a few minutes before you try again."
+        ));
+        // GraphQL
+        assert!(is_rate_limited(
+            "GraphQL: API rate limit already exceeded (repository)"
+        ));
+        assert!(is_rate_limited("GraphQL error: RATE_LIMITED"));
+        // Other gh failures are not rate limits.
+        assert!(!is_rate_limited(
+            "gh pr list failed: No such file or directory (os error 2)"
+        ));
+        assert!(!is_rate_limited("HTTP 404: Not Found"));
+        assert!(!is_rate_limited(
+            "JSON parse error: expected value at line 1"
+        ));
+        assert!(!is_rate_limited(""));
+    }
 }
