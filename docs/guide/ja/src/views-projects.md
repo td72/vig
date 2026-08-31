@@ -19,7 +19,7 @@ pull request、`✎` draft）、番号、タイトル、担当者を表示し、
 リンク方法（リポジトリの Projects タブ、または `gh project link`）を案内
 します。設定のトップレベルに `projects-board` を書くと、タイトルまたは
 プロジェクト番号でボードを 1 つに固定できます —
-[docs/config.md](https://github.com/td72/vig/blob/main/docs/config.md)
+[設定リファレンスの `projects-board`](config-reference.md#projects-board)
 を参照してください。
 
 ## テーブルモードと詳細ペイン
@@ -37,7 +37,7 @@ issue / PR の本文とコメントを表示します（draft は本文のみ）
 `projects` 一覧ペインも実装されていますが、組み込みレイアウトには配置
 されていません。設定でレイアウトに配置すると、リンク済みプロジェクトを
 選べる一覧が戻ってきます。貼り付けられるレイアウト例は
-[docs/config.md](https://github.com/td72/vig/blob/main/docs/config.md)
+[設定レシピ](config-recipes.md#projects-のリストペインを復活させる)
 を参照してください。
 
 ## キーバインド

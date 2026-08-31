@@ -8,7 +8,7 @@ with vim-style keybindings. Built for keeping an eye on repos where the work
 is happening — including ones where AI agents do it. (The name comes from
 *vim* + *git*; everything stays rooted at the current repository.)
 
-📖 **[User Guide](https://td72.github.io/vig/)** — installation, a tour of every view, and (soon) the full configuration guide *(also readable in-repo under [docs/guide/](docs/guide/src/SUMMARY.md))*
+📖 **[User Guide](https://td72.github.io/vig/)** — installation, a tour of every view, the full configuration guide and reference, and troubleshooting *(also readable in-repo under [docs/guide/](docs/guide/src/SUMMARY.md))*
 
 > **Safe by design** — vig only performs read operations and safe git commands (`git switch`, `git branch -d`). Destructive operations like merge, rebase, or force delete are intentionally excluded.
 
@@ -79,43 +79,34 @@ vig
 
 ## Configuration
 
-vig works out of the box. To change the layout, key bindings, or highlighting theme, drop a KDL
-file at `~/.config/vig/config.kdl` (or pass `--config <path>` / set
-`$VIG_CONFIG`). Only the parts you write are overridden; everything else
-keeps its default. A `pages` line picks which views are shown and their tab
-order — pages you leave out are disabled.
+vig works out of the box. To change something, drop a KDL file at
+`~/.config/vig/config.kdl` — only the parts you write are overridden;
+everything else keeps its default:
 
 ![config demo](assets/demo-config.gif)
 
 ```kdl
 // ~/.config/vig/config.kdl
 theme "Solarized (dark)"
-pages "git" "files" "worktrees"   // only these three tabs, in this order
 page "git" {
     pane "file_tree" {
         keys {
-            "o" "ExpandOrOpen"   // add a binding
-            "Space" "None"       // remove a binding
+            "o" "ExpandOrOpen"   // rebind a key
         }
     }
 }
 ```
 
 ```bash
-vig config path     # list the config layers (builtin / user / repo-local)
 vig config dump     # print the built-in defaults as a starting point
-vig config themes   # list the available highlighting themes
+vig config path     # list the config layers (builtin / user / repo-local)
 ```
 
-Layouts can be rearranged too (e.g. sidebar on the right). A broken config
-fails fast with the file path and line number rather than silently falling
-back to defaults.
-
-A repository can also carry a personal, gitignored `.vig.kdl` at the
-worktree root: it is merged on top of your config for that repository only.
-A *tracked* `.vig.kdl` (shipped by the repo) asks for confirmation in a
-trust dialog before it is loaded. See [docs/config.md](docs/config.md) for
-the full schema and the trust model.
+📖 Everything else — tabs, layouts, keybindings, per-repository `.vig.kdl`,
+the full schema — lives in the User Guide:
+**[Configuration Basics](https://td72.github.io/vig/configuration-basics.html)** ·
+**[Config Recipes](https://td72.github.io/vig/config-recipes.html)** ·
+**[Config Reference](https://td72.github.io/vig/config-reference.html)**
 
 ## Key Bindings
 
@@ -398,7 +389,7 @@ without one. With several linked projects the header reads
 board explains how to link one (the repository's Projects tab or
 `gh project link`). A top-level `projects-board` config node pins the page
 to one board, by title or project number
-([docs/config.md](docs/config.md)). Cards show the item type (`●` issue, `⇅` pull request,
+([Config Reference](https://td72.github.io/vig/config-reference.html#projects-board)). Cards show the item type (`●` issue, `⇅` pull request,
 `✎` draft), number, title and assignees; a card whose item lives in another
 repository carries a dimmed `owner/repo` prefix before its number. `t`
 switches to a table with one row per item and the project's fields (Status,
@@ -410,8 +401,9 @@ says `(truncated)` when a project has more items.
 
 A `projects` list pane also exists but is not placed by the built-in
 layout. Placing it in your config gets a selectable list of the linked
-projects back — see [docs/config.md](docs/config.md) for the layout to
-paste.
+projects back — see the
+[guide's recipe](https://td72.github.io/vig/config-recipes.html#bring-the-projects-list-pane-back)
+for the layout to paste.
 
 `gh project` needs the `project` token scope. When it is missing the view
 shows a notice instead of the panes: run `gh auth refresh -s project`, then

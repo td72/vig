@@ -4,7 +4,7 @@
 
 busy なリポジトリを見張るための**閲覧専用 TUI コックピット** — git、GitHub の issue / PR / CI 実行 / Projects ボード、コンテナ、プロセス、worktree をひと目で確認できます。vim スタイルのキーバインド。AI エージェントが作業するリポジトリの監視も想定しています。(名前の由来は *vim* + *git*。すべてのページは現在のリポジトリを起点にします。)
 
-📖 **[ユーザーガイド](https://td72.github.io/vig/ja/)** — インストール、全ビューのツアー、（今後）設定ガイド *（リポジトリ内でも読めます: [docs/guide/ja/](guide/ja/src/SUMMARY.md)）*
+📖 **[ユーザーガイド](https://td72.github.io/vig/ja/)** — インストール、全ビューのツアー、設定ガイドとリファレンス、トラブルシューティング *（リポジトリ内でも読めます: [docs/guide/ja/](guide/ja/src/SUMMARY.md)）*
 
 > **安全設計** — vig は読み取り操作と安全な git コマンド（`git switch`、`git branch -d`）のみを実行します。merge、rebase、force delete などの破壊的操作は意図的に除外しています。
 
@@ -75,40 +75,34 @@ vig
 
 ## 設定
 
-設定なしでそのまま使えます。レイアウト・キーバインド・ハイライトテーマを変えたい場合は
-`~/.config/vig/config.kdl`（または `--config <path>` / `$VIG_CONFIG`）に
-KDL ファイルを置きます。書いた部分だけが上書きされ、それ以外はデフォルトのままです。
-`pages` 行で表示するビューとタブの順番を選べます。書かなかったページは無効になります。
+設定なしでそのまま使えます。変えたいところがあれば
+`~/.config/vig/config.kdl` に KDL ファイルを置きます — 書いた部分だけが
+上書きされ、それ以外はデフォルトのままです:
 
 ![config demo](../assets/demo-config.gif)
 
 ```kdl
 // ~/.config/vig/config.kdl
 theme "Solarized (dark)"
-pages "git" "files" "worktrees"   // この 3 タブだけを、この順で表示
 page "git" {
     pane "file_tree" {
         keys {
-            "o" "ExpandOrOpen"   // バインドを追加
-            "Space" "None"       // バインドを解除
+            "o" "ExpandOrOpen"   // キーをリバインド
         }
     }
 }
 ```
 
 ```bash
-vig config path     # 設定レイヤー（builtin / user / repo-local）の状態を表示
 vig config dump     # 組み込みデフォルトを出力（これをコピーして編集）
-vig config themes   # 利用可能なハイライトテーマを一覧表示
+vig config path     # 設定レイヤー（builtin / user / repo-local）の状態を表示
 ```
 
-レイアウトの入れ替え（サイドバーを右側にする等）も可能です。設定に誤りがあると
-デフォルトへ黙ってフォールバックせず、ファイルパスと行番号付きで起動時にエラーになります。
-
-さらに、ワークツリー直下に gitignore した個人用の `.vig.kdl` を置くと、
-そのリポジトリでだけユーザー設定の上にマージされます。git に*追跡されている*
-`.vig.kdl`（リポジトリが同梱しているもの）は、読み込む前に信頼確認ダイアログが
-表示されます。スキーマの全体と信頼モデルは [config.md](config.md) を参照してください。
+📖 それ以外のすべて — タブ、レイアウト、キーバインド、リポジトリごとの
+`.vig.kdl`、スキーマの全体 — はユーザーガイドにあります:
+**[設定の基本](https://td72.github.io/vig/ja/configuration-basics.html)** ·
+**[設定レシピ](https://td72.github.io/vig/ja/config-recipes.html)** ·
+**[設定リファレンス](https://td72.github.io/vig/ja/config-reference.html)**
 
 ## キーバインド
 
@@ -364,7 +358,7 @@ Normal / Visual モードとヤンクもそのまま使えます。apply / drop 
 複数あるときはヘッダに `Board: <タイトル> (i/n)` と出て、`p` / `P` で順に切り替えられます。
 1 つもリンクされていないときはリンク方法（リポジトリの Projects タブ、または
 `gh project link`）を案内します。設定のトップレベルに `projects-board` を書くと、
-タイトルまたはプロジェクト番号でボードを 1 つに固定できます（[config.md](config.md)）。カードにはアイテム種別（`●` issue、`⇅` pull request、
+タイトルまたはプロジェクト番号でボードを 1 つに固定できます（[設定リファレンス](https://td72.github.io/vig/ja/config-reference.html#projects-board)）。カードにはアイテム種別（`●` issue、`⇅` pull request、
 `✎` draft）、番号、タイトル、担当者を表示し、別リポジトリのアイテムには番号の前に薄い色で
 `owner/repo` が付きます。`t` でテーブルモードに切り替わり、1 行 1 アイテムで
 プロジェクトのフィールド（Status、Priority、Estimate、Iteration、日付、カスタムのテキスト /
@@ -374,7 +368,9 @@ GitHub View と同じ issue / PR の本文とコメントを表示します（dr
 
 `projects` 一覧ペインも実装されていますが、組み込みレイアウトには配置されていません。
 設定でレイアウトに配置すると、リンク済みプロジェクトを選べる一覧が戻ってきます。
-貼り付けられるレイアウト例は [config.md](config.md) を参照してください。
+貼り付けられるレイアウト例は
+[設定レシピ](https://td72.github.io/vig/ja/config-recipes.html#projects-のリストペインを復活させる)
+を参照してください。
 
 `gh project` にはトークンの `project` スコープが必要です。無い場合はペインの代わりに案内を
 表示するので、`gh auth refresh -s project` を実行してから `r` を押してください。このビューから
