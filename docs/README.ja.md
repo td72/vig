@@ -4,6 +4,8 @@
 
 Git の差分をサイドバイサイドで表示する TUI ビューア。vim スタイルのキーバインドで操作できます。
 
+📖 **[ユーザーガイド](https://td72.github.io/vig/ja/)** — インストール、全ビューのツアー、（今後）設定ガイド *（リポジトリ内でも読めます: [docs/guide/ja/](guide/ja/src/SUMMARY.md)）*
+
 > **安全設計** — vig は読み取り操作と安全な git コマンド（`git switch`、`git branch -d`）のみを実行します。merge、rebase、force delete などの破壊的操作は意図的に除外しています。
 
 ![demo](../assets/demo.gif)
