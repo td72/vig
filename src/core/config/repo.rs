@@ -1,5 +1,6 @@
 //! The repository-local config layer: a personal `.vig.kdl` at the worktree
-//! root, merged on top of the user config (see `docs/config.md`).
+//! root, merged on top of the user config (see the guide's Configuration
+//! Basics chapter, `docs/guide/src/configuration-basics.md`).
 //!
 //! Trust is decided by git tracking: an **untracked** `.vig.kdl` is the
 //! user's own file and loads silently; a **tracked** one is repo-provided

@@ -19,7 +19,7 @@ With several linked projects the header reads `Board: <title> (i/n)` and
 (the repository's Projects tab or `gh project link`). A top-level
 `projects-board` config node pins the page to one board, by title or project
 number — see
-[docs/config.md](https://github.com/td72/vig/blob/main/docs/config.md).
+[`projects-board` in the Config Reference](config-reference.md#projects-board).
 
 ## Table mode and the detail pane
 
@@ -34,8 +34,8 @@ issue / PR body and comments as in the GitHub view (drafts show their body).
 
 A `projects` list pane also exists but is not placed by the built-in layout.
 Placing it in your config gets a selectable list of the linked projects back —
-see [docs/config.md](https://github.com/td72/vig/blob/main/docs/config.md)
-for the layout to paste.
+see the [recipe](config-recipes.md#bring-the-projects-list-pane-back) for the
+layout to paste.
 
 ## Key bindings
 

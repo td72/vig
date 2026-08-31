@@ -1,6 +1,6 @@
 //! Overlay a user KDL document on top of the built-in default document.
 //!
-//! Merge rules (see `docs/config.md`):
+//! Merge rules (see the guide's Config Reference, `docs/guide/src/config-reference.md`):
 //! - `theme "<name>"`, `icons "<mode>"`, `image-preview "<mode>"`,
 //!   `procs-refresh-interval "<duration>"`, `procs-history "<n>"`,
 //!   `github-poll-interval "<duration>"`, `projects-board <title-or-number>`,

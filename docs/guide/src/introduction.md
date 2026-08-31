@@ -26,8 +26,12 @@ ones where AI agents do the work.
 - **[Config Recipes](config-recipes.md)** — worked, copy-pasteable examples:
   themes, keybindings, tabs, layouts, slots, board pinning, per-repository
   config, polling. Every example is CI-verified.
-- **Config Reference / Troubleshooting** — coming in a later PR; until then,
-  see [docs/config.md](https://github.com/td72/vig/blob/main/docs/config.md).
+- **[Config Reference](config-reference.md)** — the complete reference:
+  every node with its form, default, merge rule and errors, and every page's
+  panes and actions.
+- **[Troubleshooting / FAQ](troubleshooting.md)** — config errors, `gh`
+  authentication and scopes, rate limits, fonts, image previews, and where
+  vig keeps its files.
 
 ## 日本語版
 
