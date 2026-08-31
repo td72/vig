@@ -486,7 +486,13 @@ impl ProjectsState {
                 }
                 ProjectsBgMessage::Board { number, result } => {
                     self.board_inflight.remove(&number);
-                    self.panes.board.set_loading(false);
+                    // Only the selected project's fetch may clear the pane's
+                    // loading state: another board finishing (p/P cycling)
+                    // must not hide the indicator while ours is in flight.
+                    let selected = self.panes.projects.selected_number();
+                    if selected.is_none_or(|n| !self.board_inflight.contains(&n)) {
+                        self.panes.board.set_loading(false);
+                    }
                     let current = self.panes.projects.selected_number() == Some(number);
                     match result {
                         Ok(board) => {
