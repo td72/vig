@@ -10,7 +10,8 @@ use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::projects::domain::types::{
-    sort_items, table_columns, Board, Column, ItemKind, ProjectItem, ProjectView, TableColumn,
+    group_rows, sort_items_dir, table_columns, view_table_columns, Board, Column, ItemKind,
+    ProjectField, ProjectItem, ProjectView, TableColumn, ViewLayout,
 };
 use crossterm::event::KeyCode;
 use ratatui::{
@@ -129,9 +130,19 @@ pub struct BoardPane {
     pub table_row: usize,
     table_state: TableState,
     pub sort_col: usize,
+    /// Sort direction (`true` = descending), seeded by the view's sort.
+    pub sort_desc: bool,
+    /// Table group headers: `(label, item count)` in display order, from
+    /// the view's `groupByFields` (empty when ungrouped).
+    groups: Vec<(String, usize)>,
+    /// The grouping field of the current view, resolved against the board.
+    group_field: Option<ProjectField>,
     /// The shown saved view: an index into `board.views` (0 when the
     /// project has none — the fixed Status kanban).
     pub view_idx: usize,
+    /// The view number the pane last applied (mode / sort seeded from it);
+    /// seeing a different one re-applies.
+    applied_view: Option<u64>,
     loading: bool,
     error: Option<String>,
     view_height: u16,
@@ -160,7 +171,11 @@ impl BoardPane {
             table_row: 0,
             table_state: TableState::default(),
             sort_col: 0,
+            sort_desc: false,
+            groups: Vec::new(),
+            group_field: None,
             view_idx: 0,
+            applied_view: None,
             loading: false,
             error: None,
             view_height: 20,
@@ -216,6 +231,10 @@ impl BoardPane {
         self.col_offset = 0;
         self.table_row = 0;
         self.view_idx = 0;
+        self.applied_view = None;
+        self.sort_desc = false;
+        self.groups.clear();
+        self.group_field = None;
         self.error = None;
     }
 
@@ -229,17 +248,12 @@ impl BoardPane {
             self.view_idx = 0;
         }
         self.view_idx = self.view_idx.min(board.views.len().saturating_sub(1));
+        let same_project = self.board.as_ref().map(|b| b.number) == Some(board.number);
         self.columns = board.columns();
-        self.table_cols = table_columns(&board.fields);
-        self.sort_col = self.sort_col.min(self.table_cols.len().saturating_sub(1));
-        self.sorted = self
-            .table_cols
-            .get(self.sort_col)
-            .map(|c| sort_items(&board.items, c, &board))
-            .unwrap_or_default();
         self.col_scroll = vec![0; self.columns.len()];
         self.error = None;
         self.board = Some(board);
+        self.apply_view(!same_project);
         let idx = keep.and_then(|id| self.board.as_ref()?.items.iter().position(|i| i.id == id));
         match idx {
             Some(idx) => self.select_item(idx),
@@ -337,8 +351,50 @@ impl BoardPane {
             } else {
                 (self.view_idx + n - 1) % n
             };
+            self.apply_view(true);
         }
         vec![]
+    }
+
+    /// Point the pane at the current saved view: its table columns,
+    /// grouping, initial sort and — when `reset` (a view or project
+    /// switch) — the mode its layout calls for. Without a saved view the
+    /// defaults stay (all fields, Status kanban).
+    fn apply_view(&mut self, force: bool) {
+        let Some(board) = &self.board else {
+            return;
+        };
+        let view = board.views.get(self.view_idx);
+        // A different view than last time (a switch, or views arriving for
+        // the first time) seeds mode and sort even without `force`.
+        let reset = force || view.map(|v| v.number) != self.applied_view;
+        self.applied_view = view.map(|v| v.number);
+        self.table_cols = match view {
+            Some(v) if !v.visible_fields.is_empty() => view_table_columns(v, &board.fields),
+            _ => table_columns(&board.fields),
+        };
+        self.group_field = view
+            .and_then(|v| v.group_by.first())
+            .and_then(|name| board.fields.iter().find(|f| &f.name == name))
+            .cloned();
+        if reset {
+            let sort = view.and_then(|v| v.sort_by.first());
+            self.sort_col = sort
+                .and_then(|s| {
+                    self.table_cols
+                        .iter()
+                        .position(|c| c.header() == s.field.as_str())
+                })
+                .unwrap_or(0);
+            self.sort_desc = sort.is_some_and(|s| s.desc);
+            self.mode = match view.map(|v| v.layout) {
+                Some(ViewLayout::Table) => BoardMode::Table,
+                // Board and (until #152) Roadmap render the kanban.
+                _ => BoardMode::Board,
+            };
+        }
+        self.sort_col = self.sort_col.min(self.table_cols.len().saturating_sub(1));
+        self.resort();
     }
 
     /// The sort column's header, for the pane title.
@@ -349,11 +405,41 @@ impl BoardPane {
     fn resort(&mut self) {
         let keep = self.selected_index();
         if let (Some(board), Some(col)) = (&self.board, self.table_cols.get(self.sort_col)) {
-            self.sorted = sort_items(&board.items, col, board);
+            let order = sort_items_dir(&board.items, col, board, self.sort_desc);
+            match &self.group_field {
+                Some(field) => {
+                    let grouped = group_rows(board, field, &order);
+                    self.groups = grouped
+                        .iter()
+                        .map(|(label, items)| (label.clone(), items.len()))
+                        .collect();
+                    self.sorted = grouped.into_iter().flat_map(|(_, items)| items).collect();
+                }
+                None => {
+                    self.groups.clear();
+                    self.sorted = order;
+                }
+            }
         }
+        self.table_row = self.table_row.min(self.sorted.len().saturating_sub(1));
         if let Some(idx) = keep {
             self.select_item(idx);
         }
+    }
+
+    /// Group header rows rendered above row `row` (indices into `sorted`).
+    fn headers_before(&self, row: usize) -> usize {
+        let mut headers = 0;
+        let mut start = 0;
+        for (_, count) in &self.groups {
+            if row >= start {
+                headers += 1;
+            } else {
+                break;
+            }
+            start += count;
+        }
+        headers
     }
 
     fn execute(&mut self, shared: &PaneShared, action: BoardAction) -> Vec<PaneEvent> {
@@ -390,6 +476,7 @@ impl BoardPane {
                         } else {
                             (self.sort_col + n - 1) % n
                         };
+                        self.sort_desc = false;
                         self.resort();
                     }
                 } else if !self.columns.is_empty() {
@@ -414,6 +501,7 @@ impl BoardPane {
             BoardAction::CycleSort => {
                 if self.mode == BoardMode::Table && !self.table_cols.is_empty() {
                     self.sort_col = (self.sort_col + 1) % self.table_cols.len();
+                    self.sort_desc = false;
                     self.resort();
                 }
             }
@@ -467,10 +555,19 @@ impl BoardPane {
                     format!("Board{name}")
                 }
             }
-            BoardMode::Table => match self.sort_label() {
-                Some(s) => format!("Table{name} [sort: {s}]"),
-                None => format!("Table{name}"),
-            },
+            BoardMode::Table => {
+                let mut t = match self.sort_label() {
+                    Some(s) => format!(
+                        "Table{name} [sort: {s}{}]",
+                        if self.sort_desc { " desc" } else { "" }
+                    ),
+                    None => format!("Table{name}"),
+                };
+                if let Some(f) = &self.group_field {
+                    t.push_str(&format!(" · by {}", f.name));
+                }
+                t
+            }
         }
     }
 
@@ -623,7 +720,11 @@ impl BoardPane {
             .collect();
         let header = Row::new(self.table_cols.iter().enumerate().map(|(ci, col)| {
             let text = if ci == self.sort_col {
-                format!("{} ▾", col.header())
+                format!(
+                    "{} {}",
+                    col.header(),
+                    if self.sort_desc { "▴" } else { "▾" }
+                )
             } else {
                 col.header().to_string()
             };
@@ -634,36 +735,52 @@ impl BoardPane {
                     .add_modifier(Modifier::BOLD),
             ))
         }));
-        let rows: Vec<Row> = self
-            .sorted
-            .iter()
-            .zip(&cells)
-            .map(|(&idx, cells)| {
-                let item = &board.items[idx];
-                let hl = theme::search_highlight_for(match_set, current_match, idx);
-                let mut row = Row::new(cells.iter().enumerate().map(|(ci, text)| {
-                    let mut style = match self.table_cols[ci] {
-                        TableColumn::Number => Style::default().fg(Color::Yellow),
-                        TableColumn::Assignees => Style::default().fg(Color::Gray),
-                        TableColumn::Title => Style::default(),
-                        TableColumn::Field { .. } => Style::default().fg(Color::Blue),
-                    };
-                    if let Some(fg) = hl.fg_override {
-                        style = style.fg(fg);
-                    }
-                    let text = if ci == 1 {
-                        format!("{} {}", item.kind().icon(), text)
-                    } else {
-                        truncate_to_width(text, MAX_CELL_WIDTH)
-                    };
-                    Cell::from(Span::styled(text, style))
-                }));
-                if let Some(bg) = hl.bg {
-                    row = row.style(Style::default().bg(bg));
+        // Group boundaries (from the view's grouping): row index in
+        // `sorted` where each group starts, with its header label.
+        let mut group_starts: std::collections::HashMap<usize, String> =
+            std::collections::HashMap::new();
+        let mut start = 0;
+        for (label, count) in &self.groups {
+            group_starts.insert(start, format!("{label} ({count})"));
+            start += count;
+        }
+        let mut rows: Vec<Row> = Vec::with_capacity(self.sorted.len() + self.groups.len());
+        for (ri, (&idx, cells)) in self.sorted.iter().zip(&cells).enumerate() {
+            if let Some(label) = group_starts.get(&ri) {
+                rows.push(Row::new(vec![
+                    Cell::from(""),
+                    Cell::from(Span::styled(
+                        label.clone(),
+                        Style::default()
+                            .fg(Color::Magenta)
+                            .add_modifier(Modifier::BOLD),
+                    )),
+                ]));
+            }
+            let item = &board.items[idx];
+            let hl = theme::search_highlight_for(match_set, current_match, idx);
+            let mut row = Row::new(cells.iter().enumerate().map(|(ci, text)| {
+                let mut style = match self.table_cols[ci] {
+                    TableColumn::Number => Style::default().fg(Color::Yellow),
+                    TableColumn::Assignees => Style::default().fg(Color::Gray),
+                    TableColumn::Title => Style::default(),
+                    TableColumn::Field { .. } => Style::default().fg(Color::Blue),
+                };
+                if let Some(fg) = hl.fg_override {
+                    style = style.fg(fg);
                 }
-                row
-            })
-            .collect();
+                let text = if ci == 1 {
+                    format!("{} {}", item.kind().icon(), text)
+                } else {
+                    truncate_to_width(text, MAX_CELL_WIDTH)
+                };
+                Cell::from(Span::styled(text, style))
+            }));
+            if let Some(bg) = hl.bg {
+                row = row.style(Style::default().bg(bg));
+            }
+            rows.push(row);
+        }
         let selected_is_match = self
             .selected_index()
             .is_some_and(|i| match_set.contains(&i));
@@ -671,8 +788,10 @@ impl BoardPane {
             .header(header)
             .column_spacing(1)
             .row_highlight_style(theme::list_highlight_style(selected_is_match));
-        self.table_state
-            .select(show_selection.then_some(self.table_row));
+        // The visual row of the selection: its position in `sorted` plus
+        // the group headers rendered above it.
+        let visual = self.table_row + self.headers_before(self.table_row);
+        self.table_state.select(show_selection.then_some(visual));
         f.render_stateful_widget(table, inner, &mut self.table_state);
     }
 }
@@ -881,6 +1000,60 @@ mod tests {
             sort_by: vec![],
             visible_fields: vec![],
         }
+    }
+
+    #[test]
+    fn table_view_drives_mode_columns_sort_and_groups() {
+        let mut p = pane();
+        let sh = shared();
+        let mut b = board();
+        let mut table_view = view(1, "Sprint");
+        table_view.visible_fields = vec!["Title".into(), "Priority".into()];
+        table_view.sort_by = vec![crate::projects::domain::types::ViewSort {
+            field: "Priority".into(),
+            desc: true,
+        }];
+        table_view.group_by = vec!["Status".into()];
+        let mut board_view = view(2, "By status");
+        board_view.layout = ViewLayout::Board;
+        b.views = vec![table_view, board_view];
+        p.set_board(b);
+
+        // The Table view puts the pane in table mode with its columns,
+        // its descending initial sort and its grouping.
+        assert_eq!(p.mode, BoardMode::Table);
+        let headers: Vec<&str> = p.table_cols.iter().map(TableColumn::header).collect();
+        assert_eq!(headers, vec!["#", "Title", "Priority"]);
+        assert_eq!(p.sort_label(), Some("Priority"));
+        assert!(p.sort_desc);
+        assert!(!p.groups.is_empty());
+        assert!(p.title().contains("by Status"));
+
+        // s picks the next sort column and resets the direction.
+        p.execute(&sh, BoardAction::CycleSort);
+        assert!(!p.sort_desc);
+
+        // Switching to the Board view goes back to the kanban with the
+        // default (all-fields) table columns.
+        p.execute(&sh, BoardAction::NextView);
+        assert_eq!(p.mode, BoardMode::Board);
+        assert!(p.groups.is_empty());
+        assert!(p.table_cols.iter().any(|c| c.header() == "Estimate"));
+    }
+
+    #[test]
+    fn group_headers_offset_the_visual_selection() {
+        let mut p = pane();
+        let mut b = board();
+        let mut v = view(1, "Grouped");
+        v.group_by = vec!["Status".into()];
+        b.views = vec![v];
+        p.set_board(b);
+        // Row 0 sits under the first group header; a row in the second
+        // group has two headers above it.
+        assert_eq!(p.headers_before(0), 1);
+        let first_group = p.groups[0].1;
+        assert_eq!(p.headers_before(first_group), 2);
     }
 
     #[test]

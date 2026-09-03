@@ -631,8 +631,14 @@ pub fn table_columns(fields: &[ProjectField]) -> Vec<TableColumn> {
 
 /// Item indices sorted by `column`: numerically when every non-empty cell
 /// is a number (`#12`, `3.5`), case-insensitively otherwise; empty cells
-/// last; ties keep the board order. `Status` sorts by option order.
-pub fn sort_items(items: &[ProjectItem], column: &TableColumn, board: &Board) -> Vec<usize> {
+/// last (whatever the direction); ties keep the board order. `Status`
+/// sorts by option order. `desc` flips the order of the non-empty cells.
+pub fn sort_items_dir(
+    items: &[ProjectItem],
+    column: &TableColumn,
+    board: &Board,
+    desc: bool,
+) -> Vec<usize> {
     let option_rank = |s: &str| -> Option<usize> {
         board
             .status_field()
@@ -644,6 +650,7 @@ pub fn sort_items(items: &[ProjectItem], column: &TableColumn, board: &Board) ->
         .filter(|c| !c.is_empty())
         .all(|c| c.trim_start_matches('#').parse::<f64>().is_ok());
     let mut order: Vec<usize> = (0..items.len()).collect();
+    let flip = |o: std::cmp::Ordering| if desc { o.reverse() } else { o };
     order.sort_by(|&a, &b| {
         let (ca, cb) = (&cells[a], &cells[b]);
         match (ca.is_empty(), cb.is_empty()) {
@@ -659,10 +666,10 @@ pub fn sort_items(items: &[ProjectItem], column: &TableColumn, board: &Board) ->
                 option_rank(cb).unwrap_or(usize::MAX),
             );
             if ra != rb {
-                return ra.cmp(&rb);
+                return flip(ra.cmp(&rb));
             }
         }
-        if numeric {
+        flip(if numeric {
             let na: f64 = ca.trim_start_matches('#').parse().unwrap_or(0.0);
             let nb: f64 = cb.trim_start_matches('#').parse().unwrap_or(0.0);
             na.partial_cmp(&nb).unwrap_or(std::cmp::Ordering::Equal)
@@ -671,9 +678,70 @@ pub fn sort_items(items: &[ProjectItem], column: &TableColumn, board: &Board) ->
             ca.chars()
                 .flat_map(char::to_lowercase)
                 .cmp(cb.chars().flat_map(char::to_lowercase))
-        }
+        })
     });
     order
+}
+
+/// Table columns for a saved Table view: `#`, then the view's visible
+/// fields in its order. Fields vig cannot render as a cell (the built-in
+/// ones other than `Title` / `Assignees`, and names the project no longer
+/// lists) are skipped; a view without a usable `Title` still gets one so
+/// every row has a label.
+pub fn view_table_columns(view: &ProjectView, fields: &[ProjectField]) -> Vec<TableColumn> {
+    let mut cols = vec![TableColumn::Number];
+    for name in &view.visible_fields {
+        match name.as_str() {
+            "Title" => cols.push(TableColumn::Title),
+            "Assignees" => cols.push(TableColumn::Assignees),
+            n if !BUILTIN_FIELDS.contains(&n) && fields.iter().any(|f| f.name == n) => {
+                cols.push(TableColumn::Field {
+                    name: n.to_string(),
+                    key: item_key(n),
+                })
+            }
+            _ => {}
+        }
+    }
+    if !cols.contains(&TableColumn::Title) {
+        cols.insert(1, TableColumn::Title);
+    }
+    cols
+}
+
+/// Bucket `order` (already sorted item indices) into groups by `field`'s
+/// value: single-select options in GitHub's order first, then values the
+/// options do not list (in first-seen order), then `No <field>` for items
+/// without a value. Groups keep `order`'s ordering inside.
+pub fn group_rows(
+    board: &Board,
+    field: &ProjectField,
+    order: &[usize],
+) -> Vec<(String, Vec<usize>)> {
+    let key = field.item_key();
+    let mut groups: Vec<(String, Vec<usize>)> = field
+        .options
+        .iter()
+        .map(|o| (o.name.clone(), Vec::new()))
+        .collect();
+    let mut none: Vec<usize> = Vec::new();
+    for &idx in order {
+        let Some(item) = board.items.get(idx) else {
+            continue;
+        };
+        match item.field_text(&key).filter(|v| !v.is_empty()) {
+            Some(v) => match groups.iter_mut().find(|(name, _)| *name == v) {
+                Some((_, items)) => items.push(idx),
+                None => groups.push((v, vec![idx])),
+            },
+            None => none.push(idx),
+        }
+    }
+    groups.retain(|(_, items)| !items.is_empty());
+    if !none.is_empty() {
+        groups.push((format!("No {}", field.name.to_lowercase()), none));
+    }
+    groups
 }
 
 #[cfg(test)]
@@ -743,6 +811,72 @@ pub(crate) mod tests {
         assert_eq!(back.views[0].name, "Sprint");
         assert_eq!(back.views[0].layout, ViewLayout::Board);
         assert!(back.views[0].sort_by[0].desc);
+    }
+
+    #[test]
+    fn view_table_columns_follow_the_view() {
+        let b = board();
+        let mut v = ProjectView {
+            number: 1,
+            name: "V".into(),
+            layout: ViewLayout::Table,
+            filter: None,
+            group_by: vec![],
+            vertical_group_by: vec![],
+            sort_by: vec![],
+            visible_fields: vec![
+                "Priority".into(),
+                "Title".into(),
+                "Linked pull requests".into(), // built-in: skipped
+                "Ghost".into(),                // unknown: skipped
+                "Estimate".into(),
+                "Assignees".into(),
+            ],
+        };
+        let cols = view_table_columns(&v, &b.fields);
+        let headers: Vec<&str> = cols.iter().map(TableColumn::header).collect();
+        assert_eq!(
+            headers,
+            vec!["#", "Priority", "Title", "Estimate", "Assignees"]
+        );
+        // A view without Title still gets one.
+        v.visible_fields = vec!["Priority".into()];
+        let cols = view_table_columns(&v, &b.fields);
+        let headers: Vec<&str> = cols.iter().map(TableColumn::header).collect();
+        assert_eq!(headers, vec!["#", "Title", "Priority"]);
+    }
+
+    #[test]
+    fn sort_items_dir_desc_keeps_empty_cells_last() {
+        let b = board();
+        let cols = table_columns(&b.fields);
+        let est = cols.iter().find(|c| c.header() == "Estimate").unwrap();
+        let asc = sort_items_dir(&b.items, est, &b, false);
+        let desc = sort_items_dir(&b.items, est, &b, true);
+        let cell = |o: &[usize], k: usize| est.cell(&b.items[o[k]]);
+        // Ascending: smallest first; descending: largest first.
+        assert!(cell(&asc, 0) <= cell(&asc, 1));
+        assert!(cell(&desc, 0) >= cell(&desc, 1));
+        // Items without an estimate stay at the end in both directions.
+        assert_eq!(cell(&asc, asc.len() - 1), "");
+        assert_eq!(cell(&desc, desc.len() - 1), "");
+    }
+
+    #[test]
+    fn group_rows_use_option_order_and_no_group_last() {
+        let b = board();
+        let status = b.status_field().unwrap().clone();
+        let order: Vec<usize> = (0..b.items.len()).collect();
+        let groups = group_rows(&b, &status, &order);
+        let labels: Vec<&str> = groups.iter().map(|(l, _)| l.as_str()).collect();
+        // Options in GitHub's order; "Blocked" is a value the options no
+        // longer list; unset items go last.
+        assert_eq!(
+            labels,
+            vec!["Todo", "In Progress", "Done", "Blocked", "No status"]
+        );
+        let total: usize = groups.iter().map(|(_, i)| i.len()).sum();
+        assert_eq!(total, b.items.len());
     }
 
     pub(crate) fn board() -> Board {
@@ -935,18 +1069,18 @@ pub(crate) mod tests {
             ]
         );
         // Numbers sort numerically, drafts (no number) last.
-        let by_number = sort_items(&board.items, &cols[0], &board);
+        let by_number = sort_items_dir(&board.items, &cols[0], &board, false);
         assert_eq!(by_number, [0, 3, 1, 2, 4]);
         // Estimate: 1.5 < 2 < 3, then the empty cells.
         let est = cols.iter().find(|c| c.header() == "Estimate").unwrap();
-        let by_estimate = sort_items(&board.items, est, &board);
+        let by_estimate = sort_items_dir(&board.items, est, &board, false);
         assert_eq!(&by_estimate[..3], &[1, 3, 0][..]);
         // Status: option order, unknown statuses after, empty last.
         let status = cols.iter().find(|c| c.header() == "Status").unwrap();
-        let by_status = sort_items(&board.items, status, &board);
+        let by_status = sort_items_dir(&board.items, status, &board, false);
         assert_eq!(by_status, [3, 1, 0, 4, 2]);
         // Titles: case-insensitive.
-        let by_title = sort_items(&board.items, &cols[1], &board);
+        let by_title = sort_items_dir(&board.items, &cols[1], &board, false);
         assert_eq!(by_title[0], 0, "Config… sorts first");
     }
 
