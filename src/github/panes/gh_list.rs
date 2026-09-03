@@ -103,7 +103,7 @@ pub fn nest_items<T: GhListItem>(items: Vec<T>) -> (Vec<T>, Vec<TreePos>) {
 pub fn copy_url_event(url: Option<String>) -> PaneEvent {
     match url.filter(|u| !u.is_empty()) {
         Some(u) => PaneEvent::CopyToClipboard(u),
-        None => PaneEvent::StatusMessage("No URL for this item (not a github.com remote?)".into()),
+        None => PaneEvent::StatusMessage("No URL for this item".into()),
     }
 }
 

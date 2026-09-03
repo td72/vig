@@ -268,6 +268,7 @@ impl BoardPane {
     fn selected_url(&self) -> Option<String> {
         self.selected_item()
             .and_then(|i| i.url().map(str::to_string))
+            .filter(|u| !u.is_empty())
             .or_else(|| self.project_url.clone())
     }
 

@@ -57,8 +57,9 @@ impl AppContext {
             Ok(mut clip) => {
                 if clip.set_text(text).is_ok() {
                     self.status_message = Some(if line_count == 1 {
-                        let shown: String = text.chars().take(60).collect();
-                        let ellipsis = if text.chars().count() > 60 { "…" } else { "" };
+                        let mut chars = text.chars();
+                        let shown: String = chars.by_ref().take(60).collect();
+                        let ellipsis = if chars.next().is_some() { "…" } else { "" };
                         format!("Copied {shown}{ellipsis}")
                     } else {
                         format!("Yanked {line_count} lines")
