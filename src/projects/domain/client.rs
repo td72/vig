@@ -73,6 +73,11 @@ pub fn fetch_board(owner: &str, owner_kind: &str, number: u64) -> Result<Board, 
 /// does not expose them). `owner_kind` is `User` / `Organization` from the
 /// linked project's `resourcePath`; anything else tries the user query
 /// first, then the organization one.
+///
+/// The query caps what it reads — 20 views, 5 group / sort fields each,
+/// 30 visible fields — far above what the GitHub UI produces (grouping
+/// and sorting take one field there); anything beyond a cap is ignored
+/// rather than paginated.
 pub fn fetch_views(owner: &str, owner_kind: &str, number: u64) -> Result<Vec<ProjectView>, String> {
     match owner_kind {
         "User" => fetch_views_as(owner, number, false),

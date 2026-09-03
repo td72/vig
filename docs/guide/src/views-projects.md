@@ -45,8 +45,8 @@ shows the current view's name and layout (`Board: vig demo board · Sprint
 [board] (2/3)`), and `v` / `V` cycle through them. A project without saved
 views — or a views fetch that fails — falls back to the fixed `Status`
 kanban. Rendering each layout the way the view defines it (its table
-columns, board field and roadmap timeline) is tracked in
-[#150–#152](https://github.com/td72/vig/issues/148).
+columns, board field and roadmap timeline) is tracked by the
+remaining sub-issues of [#148](https://github.com/td72/vig/issues/148).
 
 ## Key bindings
 
