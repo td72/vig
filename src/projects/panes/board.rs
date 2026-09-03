@@ -10,7 +10,7 @@ use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::projects::domain::types::{
-    sort_items, table_columns, Board, Column, ItemKind, ProjectItem, TableColumn,
+    sort_items, table_columns, Board, Column, ItemKind, ProjectItem, ProjectView, TableColumn,
 };
 use crossterm::event::KeyCode;
 use ratatui::{
@@ -37,6 +37,8 @@ pub enum BoardAction {
     NextColumn,
     ToggleTable,
     CycleSort,
+    NextView,
+    PrevView,
     OpenDetail,
     OpenBrowser,
     CopyUrl,
@@ -46,7 +48,8 @@ pub enum BoardAction {
 
 crate::impl_pane_action_from_str!(
     BoardAction, nav: Nav, search: Search, esc: Esc,
-    PrevColumn, NextColumn, ToggleTable, CycleSort, OpenDetail, OpenBrowser, CopyUrl
+    PrevColumn, NextColumn, ToggleTable, CycleSort, NextView, PrevView, OpenDetail,
+    OpenBrowser, CopyUrl
 );
 
 impl ActionHelp for BoardAction {
@@ -59,6 +62,8 @@ impl ActionHelp for BoardAction {
             BoardAction::NextColumn => Some("Next column"),
             BoardAction::ToggleTable => Some("Toggle table mode"),
             BoardAction::CycleSort => Some("Cycle sort column (table)"),
+            BoardAction::NextView => Some("Next saved view"),
+            BoardAction::PrevView => Some("Prev saved view"),
             BoardAction::OpenDetail => Some("Focus detail"),
             BoardAction::OpenBrowser => Some("Open item in browser"),
             BoardAction::CopyUrl => Some("Copy item URL"),
@@ -78,6 +83,8 @@ pub fn default_keymap() -> Keymap<BoardAction> {
         .key(KeyCode::Right, BoardAction::NextColumn)
         .key(KeyCode::Char('t'), BoardAction::ToggleTable)
         .key(KeyCode::Char('s'), BoardAction::CycleSort)
+        .key(KeyCode::Char('v'), BoardAction::NextView)
+        .key(KeyCode::Char('V'), BoardAction::PrevView)
         .key(KeyCode::Enter, BoardAction::OpenDetail)
         .key(KeyCode::Char('i'), BoardAction::OpenDetail)
         .key(KeyCode::Char('o'), BoardAction::OpenBrowser)
@@ -122,6 +129,9 @@ pub struct BoardPane {
     pub table_row: usize,
     table_state: TableState,
     pub sort_col: usize,
+    /// The shown saved view: an index into `board.views` (0 when the
+    /// project has none — the fixed Status kanban).
+    pub view_idx: usize,
     loading: bool,
     error: Option<String>,
     view_height: u16,
@@ -150,6 +160,7 @@ impl BoardPane {
             table_row: 0,
             table_state: TableState::default(),
             sort_col: 0,
+            view_idx: 0,
             loading: false,
             error: None,
             view_height: 20,
@@ -204,6 +215,7 @@ impl BoardPane {
         self.row = 0;
         self.col_offset = 0;
         self.table_row = 0;
+        self.view_idx = 0;
         self.error = None;
     }
 
@@ -211,6 +223,12 @@ impl BoardPane {
     /// still there (a refresh may move it to another column).
     pub fn set_board(&mut self, board: Board) {
         let keep = self.selected_item().map(|i| i.id.clone());
+        // Keep the shown view across a refresh of the same project; another
+        // project starts on its first view.
+        if self.board.as_ref().map(|b| b.number) != Some(board.number) {
+            self.view_idx = 0;
+        }
+        self.view_idx = self.view_idx.min(board.views.len().saturating_sub(1));
         self.columns = board.columns();
         self.table_cols = table_columns(&board.fields);
         self.sort_col = self.sort_col.min(self.table_cols.len().saturating_sub(1));
@@ -293,6 +311,36 @@ impl BoardPane {
         }
     }
 
+    /// The shown saved view, when the project has any.
+    pub fn current_view(&self) -> Option<&ProjectView> {
+        self.board.as_ref()?.views.get(self.view_idx)
+    }
+
+    /// `(view name, position, count)` for the header.
+    pub fn view_label(&self) -> Option<(&str, usize, usize)> {
+        let views = &self.board.as_ref()?.views;
+        let view = views.get(self.view_idx)?;
+        Some((view.name.as_str(), self.view_idx + 1, views.len()))
+    }
+
+    /// `v` / `V`: show the next / previous saved view.
+    fn cycle_view(&mut self, forward: bool) -> Vec<PaneEvent> {
+        let n = self.board.as_ref().map_or(0, |b| b.views.len());
+        if n == 0 {
+            return vec![PaneEvent::StatusMessage(
+                "This project has no saved views".into(),
+            )];
+        }
+        if n > 1 {
+            self.view_idx = if forward {
+                (self.view_idx + 1) % n
+            } else {
+                (self.view_idx + n - 1) % n
+            };
+        }
+        vec![]
+    }
+
     /// The sort column's header, for the pane title.
     pub fn sort_label(&self) -> Option<&str> {
         self.table_cols.get(self.sort_col).map(TableColumn::header)
@@ -369,6 +417,8 @@ impl BoardPane {
                     self.resort();
                 }
             }
+            BoardAction::NextView => return self.cycle_view(true),
+            BoardAction::PrevView => return self.cycle_view(false),
             BoardAction::OpenDetail => {
                 if self.selected_item().is_some() {
                     return vec![PaneEvent::SetFocus(self.detail_pane_id)];
@@ -818,6 +868,50 @@ mod tests {
 
     fn selected_id(p: &BoardPane) -> &str {
         p.selected_item().map(|i| i.id.as_str()).unwrap_or("")
+    }
+
+    fn view(n: u64, name: &str) -> ProjectView {
+        ProjectView {
+            number: n,
+            name: name.into(),
+            layout: crate::projects::domain::types::ViewLayout::Table,
+            filter: None,
+            group_by: vec![],
+            vertical_group_by: vec![],
+            sort_by: vec![],
+            visible_fields: vec![],
+        }
+    }
+
+    #[test]
+    fn v_cycles_saved_views_and_survives_refresh() {
+        let mut p = pane();
+        let sh = shared();
+        // No views: v explains instead of cycling.
+        let ev = p.execute(&sh, BoardAction::NextView);
+        assert!(matches!(&ev[0], PaneEvent::StatusMessage(m) if m.contains("no saved views")));
+
+        let mut b = board();
+        b.views = vec![view(1, "All"), view(2, "Sprint"), view(3, "Roadmap")];
+        p.set_board(b.clone());
+        assert_eq!(p.view_label(), Some(("All", 1, 3)));
+        p.execute(&sh, BoardAction::NextView);
+        assert_eq!(p.view_label(), Some(("Sprint", 2, 3)));
+        p.execute(&sh, BoardAction::PrevView);
+        p.execute(&sh, BoardAction::PrevView);
+        assert_eq!(p.view_label(), Some(("Roadmap", 3, 3)));
+
+        // A refresh of the same project keeps the shown view…
+        p.execute(&sh, BoardAction::NextView); // wraps to All
+        p.execute(&sh, BoardAction::NextView); // Sprint
+        p.set_board(b.clone());
+        assert_eq!(p.view_label(), Some(("Sprint", 2, 3)));
+        // …another project starts over on its first view.
+        let mut other = board();
+        other.number = 99;
+        other.views = vec![view(1, "Only")];
+        p.set_board(other);
+        assert_eq!(p.view_label(), Some(("Only", 1, 1)));
     }
 
     #[test]

@@ -53,16 +53,149 @@ pub fn list_items(owner: &str, number: u64) -> Result<ItemList, String> {
     )
 }
 
-/// Fields and items of one project.
-pub fn fetch_board(owner: &str, number: u64) -> Result<Board, String> {
+/// Fields, items and saved views of one project. A views fetch failure is
+/// not fatal: the board still loads and the page falls back to the fixed
+/// Status kanban.
+pub fn fetch_board(owner: &str, owner_kind: &str, number: u64) -> Result<Board, String> {
     let fields = list_fields(owner, number)?;
     let items = list_items(owner, number)?;
+    let views = fetch_views(owner, owner_kind, number).unwrap_or_default();
     Ok(Board {
         number,
         fields,
         items: items.items,
         total_count: items.total_count,
+        views,
     })
+}
+
+/// The project's saved views via GraphQL (`ProjectV2.views` — `gh project`
+/// does not expose them). `owner_kind` is `User` / `Organization` from the
+/// linked project's `resourcePath`; anything else tries the user query
+/// first, then the organization one.
+pub fn fetch_views(owner: &str, owner_kind: &str, number: u64) -> Result<Vec<ProjectView>, String> {
+    match owner_kind {
+        "User" => fetch_views_as(owner, number, false),
+        "Organization" => fetch_views_as(owner, number, true),
+        _ => fetch_views_as(owner, number, false).or_else(|_| fetch_views_as(owner, number, true)),
+    }
+}
+
+fn fetch_views_as(owner: &str, number: u64, org: bool) -> Result<Vec<ProjectView>, String> {
+    use serde::Deserialize;
+
+    #[derive(Deserialize)]
+    struct Resp {
+        data: serde_json::Value,
+    }
+    #[derive(Deserialize, Default)]
+    struct Views {
+        nodes: Vec<ViewNode>,
+    }
+    #[derive(Deserialize)]
+    struct ViewNode {
+        number: u64,
+        #[serde(default)]
+        name: String,
+        #[serde(default)]
+        layout: String,
+        #[serde(default)]
+        filter: Option<String>,
+        #[serde(rename = "groupByFields", default)]
+        group_by: Named,
+        #[serde(rename = "verticalGroupByFields", default)]
+        vertical_group_by: Named,
+        #[serde(rename = "sortByFields", default)]
+        sort_by: Sorts,
+        #[serde(default)]
+        fields: Named,
+    }
+    #[derive(Deserialize, Default)]
+    struct Named {
+        nodes: Vec<NameNode>,
+    }
+    #[derive(Deserialize, Default)]
+    struct NameNode {
+        #[serde(default)]
+        name: String,
+    }
+    #[derive(Deserialize, Default)]
+    struct Sorts {
+        nodes: Vec<SortNode>,
+    }
+    #[derive(Deserialize)]
+    struct SortNode {
+        #[serde(default)]
+        direction: String,
+        #[serde(default)]
+        field: NameNode,
+    }
+
+    let root = if org { "organization" } else { "user" };
+    let query = format!(
+        "query($login: String!, $number: Int!) {{ {root}(login: $login) {{ \
+           projectV2(number: $number) {{ views(first: 20) {{ nodes {{ \
+             name number layout filter \
+             groupByFields(first: 5) {{ nodes {{ ... on ProjectV2FieldCommon {{ name }} }} }} \
+             verticalGroupByFields(first: 5) {{ nodes {{ ... on ProjectV2FieldCommon {{ name }} }} }} \
+             sortByFields(first: 5) {{ nodes {{ direction field {{ ... on ProjectV2FieldCommon {{ name }} }} }} }} \
+             fields(first: 30) {{ nodes {{ ... on ProjectV2FieldCommon {{ name }} }} }} }} }} }} }} }}"
+    );
+    let resp: Resp = crate::github::domain::client::run_gh_json(
+        &[
+            "api",
+            "graphql",
+            "-f",
+            &format!("query={query}"),
+            "-F",
+            &format!("login={owner}"),
+            "-F",
+            &format!("number={number}"),
+        ],
+        "gh api graphql (project views) failed",
+    )?;
+    let views: Views = resp
+        .data
+        .get(root)
+        .and_then(|v| v.get("projectV2"))
+        .and_then(|v| v.get("views"))
+        .cloned()
+        .map(serde_json::from_value)
+        .transpose()
+        .map_err(|e| format!("project views: JSON parse error: {e}"))?
+        .unwrap_or_default();
+    let names = |n: &Named| -> Vec<String> {
+        n.nodes
+            .iter()
+            .map(|f| f.name.clone())
+            .filter(|s| !s.is_empty())
+            .collect()
+    };
+    Ok(views
+        .nodes
+        .into_iter()
+        .filter_map(|v| {
+            Some(ProjectView {
+                number: v.number,
+                name: v.name,
+                layout: ViewLayout::parse(&v.layout)?,
+                filter: v.filter.filter(|f| !f.trim().is_empty()),
+                group_by: names(&v.group_by),
+                vertical_group_by: names(&v.vertical_group_by),
+                sort_by: v
+                    .sort_by
+                    .nodes
+                    .into_iter()
+                    .filter(|sn| !sn.field.name.is_empty())
+                    .map(|sn| ViewSort {
+                        field: sn.field.name.clone(),
+                        desc: sn.direction == "DESC",
+                    })
+                    .collect(),
+                visible_fields: names(&v.fields),
+            })
+        })
+        .collect())
 }
 
 /// Whether a `gh` error means the token lacks the `project` scope

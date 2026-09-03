@@ -367,6 +367,26 @@ pub fn render_projects_header(f: &mut Frame, ctx: &AppContext, pj: &ProjectsStat
                 Style::default().fg(Color::DarkGray),
             ));
         }
+        // The shown saved view: `· <name> (j/m)` with its layout.
+        if let Some((view, vpos, vtotal)) = pj.panes.board.view_label() {
+            spans.push(Span::styled(" · ", Style::default().fg(Color::DarkGray)));
+            spans.push(Span::styled(
+                view.to_string(),
+                Style::default().fg(Color::White),
+            ));
+            if let Some(v) = pj.panes.board.current_view() {
+                spans.push(Span::styled(
+                    format!(" [{}]", v.layout.label()),
+                    Style::default().fg(Color::DarkGray),
+                ));
+            }
+            if vtotal > 1 {
+                spans.push(Span::styled(
+                    format!(" ({vpos}/{vtotal})"),
+                    Style::default().fg(Color::DarkGray),
+                ));
+            }
+        }
         spans.push(Span::raw(" "));
     }
     render_header_common(f, ctx, spans, area);

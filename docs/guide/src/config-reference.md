@@ -702,6 +702,7 @@ page "projects" {
 | `board` (nav, search) | `PrevColumn` / `NextColumn` | `h`, `Left` / `l`, `Right` | move between columns (table mode: sort column) |
 | | `ToggleTable` | `t` | board ⇄ table mode |
 | | `CycleSort` | `s` | cycle the sort column (table mode) |
+| | `NextView` / `PrevView` | `v` / `V` | cycle the project's saved views |
 | | `OpenDetail` | `i`, `Enter` | focus the item detail |
 | | `OpenBrowser` | `o` | open the item in the browser |
 | | `CopyUrl` | `y` | copy the item URL |

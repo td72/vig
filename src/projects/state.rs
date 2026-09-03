@@ -265,13 +265,13 @@ impl ProjectsState {
         let Some(tx) = self.bg_tx.clone() else {
             return;
         };
-        let Some(owner) = self
+        let Some((owner, owner_kind)) = self
             .panes
             .projects
             .items
             .iter()
             .find(|p| p.number == number)
-            .map(|p| p.owner.login.clone())
+            .map(|p| (p.owner.login.clone(), p.owner.kind.clone()))
         else {
             return;
         };
@@ -280,7 +280,7 @@ impl ProjectsState {
         }
         self.panes.board.set_loading(true);
         std::thread::spawn(move || {
-            let result = client::fetch_board(&owner, number);
+            let result = client::fetch_board(&owner, &owner_kind, number);
             let _ = tx.send(ProjectsBgMessage::Board { number, result });
         });
     }
