@@ -25,13 +25,14 @@ pub enum ProjectsAction {
     Nav(NavAction),
     OpenBoard,
     OpenBrowser,
+    CopyUrl,
     Search(SearchAction),
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     ProjectsAction, nav: Nav, search: Search, esc: Esc,
-    OpenBoard, OpenBrowser
+    OpenBoard, OpenBrowser, CopyUrl
 );
 
 impl ActionHelp for ProjectsAction {
@@ -40,6 +41,7 @@ impl ActionHelp for ProjectsAction {
             ProjectsAction::Nav(nav) => nav.label(),
             ProjectsAction::OpenBoard => Some("Focus board"),
             ProjectsAction::OpenBrowser => Some("Open project in browser"),
+            ProjectsAction::CopyUrl => Some("Copy project URL"),
             ProjectsAction::Search(sa) => sa.label(),
             ProjectsAction::Esc => Some("Clear search"),
         }
@@ -54,6 +56,7 @@ pub fn default_keymap() -> Keymap<ProjectsAction> {
         .key(KeyCode::Char('i'), ProjectsAction::OpenBoard)
         .key(KeyCode::Char('l'), ProjectsAction::OpenBoard)
         .key(KeyCode::Char('o'), ProjectsAction::OpenBrowser)
+        .key(KeyCode::Char('y'), ProjectsAction::CopyUrl)
         .key(KeyCode::Esc, ProjectsAction::Esc)
 }
 
@@ -141,6 +144,9 @@ impl ProjectsPane {
                 Some(p) => vec![PaneEvent::OpenUrl(p.url.clone())],
                 None => vec![],
             },
+            ProjectsAction::CopyUrl => vec![crate::github::panes::gh_list::copy_url_event(
+                self.selected().map(|p| p.url.clone()),
+            )],
             _ => vec![],
         }
     }

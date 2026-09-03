@@ -56,10 +56,13 @@ impl AppContext {
         match arboard::Clipboard::new() {
             Ok(mut clip) => {
                 if clip.set_text(text).is_ok() {
-                    self.status_message = Some(format!(
-                        "Yanked {line_count} line{}",
-                        if line_count == 1 { "" } else { "s" }
-                    ));
+                    self.status_message = Some(if line_count == 1 {
+                        let shown: String = text.chars().take(60).collect();
+                        let ellipsis = if text.chars().count() > 60 { "…" } else { "" };
+                        format!("Copied {shown}{ellipsis}")
+                    } else {
+                        format!("Yanked {line_count} lines")
+                    });
                 } else {
                     self.status_message = Some("Clipboard error".to_string());
                 }

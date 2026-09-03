@@ -110,6 +110,10 @@ impl GhListItem for WorkflowRun {
         PaneEvent::OpenUrl(self.url.clone())
     }
 
+    fn copy_url(&self) -> Option<String> {
+        Some(self.url.clone()).filter(|u| !u.is_empty())
+    }
+
     fn load_disk_cache() -> Option<Vec<Self>> {
         client::load_run_list()
     }

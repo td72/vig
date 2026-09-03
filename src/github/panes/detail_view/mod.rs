@@ -109,6 +109,8 @@ pub enum DetailAction {
     CycleBackward,
     ToggleWatch,
     OpenItem,
+    /// Copy the shown issue / PR / run's URL (built locally).
+    CopyUrl,
     /// Run detail: show the selected job's log (a step row scrolls to it).
     OpenLog,
     /// Run detail: jump to the next / previous failed step in the log.
@@ -120,7 +122,7 @@ pub enum DetailAction {
 crate::impl_pane_action_from_str!(
     DetailAction, nav: Nav, search: Search, esc: Esc,
     FocusBody, FocusRight, CycleForward, CycleBackward, ToggleWatch, OpenItem,
-    OpenLog, NextFailed, PrevFailed
+    CopyUrl, OpenLog, NextFailed, PrevFailed
 );
 
 impl ActionHelp for DetailAction {
@@ -134,6 +136,7 @@ impl ActionHelp for DetailAction {
             DetailAction::CycleBackward => Some("Prev right pane"),
             DetailAction::ToggleWatch => Some("Toggle watch mode"),
             DetailAction::OpenItem => Some("Open in browser"),
+            DetailAction::CopyUrl => Some("Copy item URL"),
             DetailAction::OpenLog => Some("Open job log"),
             DetailAction::NextFailed => Some("Next failed step"),
             DetailAction::PrevFailed => Some("Prev failed step"),
@@ -151,6 +154,7 @@ pub fn default_keymap() -> Keymap<DetailAction> {
         .key(KeyCode::BackTab, DetailAction::CycleBackward)
         .key(KeyCode::Char('w'), DetailAction::ToggleWatch)
         .key(KeyCode::Char('o'), DetailAction::OpenItem)
+        .key(KeyCode::Char('y'), DetailAction::CopyUrl)
         .key(KeyCode::Esc, DetailAction::Esc)
 }
 
@@ -389,6 +393,11 @@ impl GhDetailViewPane {
                 } else {
                     vec![PaneEvent::OpenUrl(url)]
                 }
+            }
+            DetailAction::CopyUrl => {
+                vec![crate::github::panes::gh_list::copy_url_event(Some(
+                    d.run.url.clone(),
+                ))]
             }
             DetailAction::ToggleWatch => vec![],
             DetailAction::Search(_) | DetailAction::Esc => return None,
@@ -701,6 +710,14 @@ impl GhDetailViewPane {
             }
             DetailAction::OpenItem => {
                 return self.open_detail_item();
+            }
+            DetailAction::CopyUrl => {
+                let url = match &self.content {
+                    GhDetailContent::Issue(d) => client::issue_url(d.number),
+                    GhDetailContent::Pr(d) => client::pr_url(d.number),
+                    _ => None,
+                };
+                return vec![crate::github::panes::gh_list::copy_url_event(url)];
             }
             // Handled above (search / esc) or only meaningful for runs.
             DetailAction::Search(_)

@@ -80,6 +80,10 @@ Sleep 1.5s
 Escape
 Sleep 1.5s
 
+# Copy the selected issue's URL (y) — the status bar shows "Copied <url>"
+Type "y"
+Sleep 2.5s
+
 # Switch back to Git View with '1'
 Type "1"
 Sleep 2s

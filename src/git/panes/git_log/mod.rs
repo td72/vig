@@ -17,6 +17,8 @@ use crate::core::search::SearchMatch;
 pub enum GitLogAction {
     Nav(NavAction),
     YankHash,
+    /// Copy the commit's GitHub URL (built locally from the origin remote).
+    YankUrl,
     OpenGitHub,
     FocusReflog,
     Search(SearchAction),
@@ -25,7 +27,7 @@ pub enum GitLogAction {
 
 crate::impl_pane_action_from_str!(
     GitLogAction, nav: Nav, search: Search, esc: Esc,
-    YankHash, OpenGitHub, FocusReflog
+    YankHash, YankUrl, OpenGitHub, FocusReflog
 );
 
 impl ActionHelp for GitLogAction {
@@ -33,6 +35,7 @@ impl ActionHelp for GitLogAction {
         match self {
             GitLogAction::Nav(nav) => nav.label(),
             GitLogAction::YankHash => Some("Copy commit hash"),
+            GitLogAction::YankUrl => Some("Copy commit URL"),
             GitLogAction::OpenGitHub => Some("Open in GitHub"),
             GitLogAction::FocusReflog => Some("Focus reflog"),
             GitLogAction::Search(sa) => sa.label(),
@@ -46,6 +49,7 @@ pub fn default_keymap() -> Keymap<GitLogAction> {
         .bindings(nav_bindings(GitLogAction::Nav))
         .bindings(search_bindings(GitLogAction::Search))
         .key(KeyCode::Char('y'), GitLogAction::YankHash)
+        .key(KeyCode::Char('Y'), GitLogAction::YankUrl)
         .key(KeyCode::Char('o'), GitLogAction::OpenGitHub)
         .key(KeyCode::Char('h'), GitLogAction::FocusReflog)
         .key(KeyCode::Esc, GitLogAction::Esc)
@@ -144,11 +148,17 @@ impl GitLogPane {
                     return vec![PaneEvent::CopyToClipboard(commit.full_hash.clone())];
                 }
             }
+            GitLogAction::YankUrl => {
+                if let Some(commit) = self.commits.get(self.selected_idx) {
+                    return vec![crate::github::panes::gh_list::copy_url_event(
+                        crate::github::domain::client::commit_url(&commit.full_hash),
+                    )];
+                }
+            }
             GitLogAction::OpenGitHub => {
                 if let Some(commit) = self.commits.get(self.selected_idx) {
                     let hash = commit.full_hash.clone();
-                    if let Some(nwo) = crate::github::domain::client::repo_nwo() {
-                        let url = format!("https://github.com/{nwo}/commit/{hash}");
+                    if let Some(url) = crate::github::domain::client::commit_url(&hash) {
                         return vec![PaneEvent::OpenUrl(url)];
                     } else {
                         return vec![PaneEvent::StatusMessage(

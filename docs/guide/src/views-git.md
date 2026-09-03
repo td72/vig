@@ -65,6 +65,7 @@ a hash, or jump to the commit on GitHub.
 | `Ctrl+d` / `Ctrl+u` | Half page scroll |
 | `g` / `G` | Top / Bottom |
 | `y` | Copy commit hash |
+| `Y` | Copy commit URL |
 | `o` | Open in GitHub |
 | `/` | Search commits |
 | `Esc` | Clear search / Back to Branch List |

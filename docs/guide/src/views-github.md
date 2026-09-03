@@ -48,6 +48,7 @@ following.
 | `j` / `k` | Navigate list (the detail follows the selection) |
 | `i` / `Enter` | Open detail view |
 | `o` | Open in browser (issue, PR, run or the selected job) |
+| `y` | Copy the item URL (built locally, no API request) |
 | `Esc` | Back to list |
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `w` (issue / PR detail) | Toggle watch mode (auto-refresh the open item) |
