@@ -310,7 +310,13 @@ impl Pane<PaneEvent> for PreviewPane {
 
     fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
-        // A taller terminal lowers the maximum scroll; never leave the view blank.
+        if self.markdown_active() {
+            // Rebuild for the current width before clamping the scroll below:
+            // a reflow can shrink the line count.
+            self.markdown_lines(area.width.saturating_sub(2) as usize);
+        }
+        // A taller terminal (or a reflow) lowers the maximum scroll; never
+        // leave the view blank.
         self.scroll = self
             .scroll
             .min(self.line_count().saturating_sub(self.view_height as usize));
@@ -327,10 +333,6 @@ impl Pane<PaneEvent> for PreviewPane {
         let width = area.width.saturating_sub(2) as usize;
         let dim = Style::default().fg(Color::DarkGray);
 
-        if self.markdown_active() {
-            // Build for the current width before borrowing content below.
-            self.markdown_lines(width);
-        }
         let lines: Vec<Line> = if self.markdown_active() {
             let truncated = matches!(
                 &self.content,
