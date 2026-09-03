@@ -30,6 +30,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             "theme"
             | "icons"
             | "image-preview"
+            | "markdown-preview"
             | "procs-refresh-interval"
             | "procs-history"
             | "github-poll-interval"
@@ -41,7 +42,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
-                 `procs-refresh-interval`, `procs-history`, `github-poll-interval`, \
+                 `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, \
                  `projects-board`, `pages`, `repo-config`, `app`, or `page`)"
             ))
             }

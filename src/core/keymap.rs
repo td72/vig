@@ -448,6 +448,8 @@ pub enum ViewAction {
     /// Projects page: show the next / previous linked project's board.
     NextProject,
     PrevProject,
+    /// Files page: toggle Markdown rendering in the preview.
+    ToggleMarkdown,
 }
 
 impl_action_from_str!(
@@ -463,7 +465,8 @@ impl_action_from_str!(
     CyclePaneForward,
     CyclePaneBackward,
     NextProject,
-    PrevProject
+    PrevProject,
+    ToggleMarkdown
 );
 
 impl ActionHelp for ViewAction {
@@ -481,6 +484,7 @@ impl ActionHelp for ViewAction {
             ViewAction::CyclePaneBackward => "Prev pane",
             ViewAction::NextProject => "Next linked project",
             ViewAction::PrevProject => "Prev linked project",
+            ViewAction::ToggleMarkdown => "Toggle markdown rendering",
         })
     }
 }

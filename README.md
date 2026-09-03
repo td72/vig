@@ -263,6 +263,11 @@ is drawn at full resolution; elsewhere it falls back to unicode half-blocks.
 `image-preview "halfblocks"` skips the terminal detection and `"none"` shows
 only the metadata. Images over 20 MB are not decoded.
 
+Markdown files (`.md` / `.markdown`) are rendered in the preview — headings,
+emphasis, lists, code and GFM tables fitted to the pane width. `m` toggles
+back to the raw highlighted text, and `markdown-preview "raw"` makes raw the
+default.
+
 | Key | Action |
 |-----|--------|
 | `j` / `k` | Move selection (preview follows) |
@@ -275,6 +280,7 @@ only the metadata. Images over 20 MB are not decoded.
 | `e` | Open selected file in external editor |
 | `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |
 | `O` | Open selected entry with an app you name (`open -a <app>` on macOS) |
+| `m` | Toggle Markdown rendering in the preview |
 | `r` | Re-read the current directory |
 
 ### Docker View

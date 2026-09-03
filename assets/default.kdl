@@ -11,6 +11,10 @@ icons "nerd"
 // fall back to unicode halfblocks), "halfblocks" (skip detection), or "none".
 image-preview "auto"
 
+// Markdown files in the Files view preview: "render" (styled) or "raw"
+// (plain highlighted text). `m` toggles it per session.
+markdown-preview "render"
+
 // How often the Procs view re-reads processes and listening ports
 // ("2s", "500ms", ...; at least 250ms). Sampling pauses while another view is shown.
 procs-refresh-interval "2s"
@@ -259,6 +263,7 @@ page "files" {
             "e" "OpenEditor"
             "o" "OpenDefault"
             "O" "OpenWith"
+            "m" "ToggleMarkdown"
         }
     }
 

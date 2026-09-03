@@ -65,7 +65,29 @@ Type@1ms "# demo"
 Enter
 Type@1ms ""
 Enter
-Type@1ms "A tiny project used to show the Files view."
+Type@1ms "A tiny project used to show the **Files** view."
+Enter
+Type@1ms ""
+Enter
+Type@1ms "## Features"
+Enter
+Type@1ms ""
+Enter
+Type@1ms "- three columns, like yazi"
+Enter
+Type@1ms "- syntax-highlighted previews"
+Enter
+Type@1ms "- rendered *markdown*"
+Enter
+Type@1ms ""
+Enter
+Type@1ms "| Key | Action |"
+Enter
+Type@1ms "|-----|--------|"
+Enter
+Type@1ms "| `m` | toggle markdown |"
+Enter
+Type@1ms "| `o` | open with default app |"
 Enter
 Type@1ms "EOF"
 Enter
@@ -136,13 +158,19 @@ Sleep 1.2s
 Type "h"
 Sleep 1.5s
 
-# Focus the preview of README.md, then back to the list
+# README.md is rendered as markdown; `m` toggles the raw text
 Type "j"
 Sleep 600ms
 Type "j"
 Sleep 600ms
 Type "j"
-Sleep 800ms
+Sleep 2.5s
+Type "m"
+Sleep 2s
+Type "m"
+Sleep 2s
+
+# Focus the preview, then back to the list
 Type "i"
 Sleep 1.5s
 Escape
