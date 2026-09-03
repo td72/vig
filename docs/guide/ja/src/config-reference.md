@@ -699,6 +699,7 @@ page "projects" {
 | `board` (nav, search) | `PrevColumn` / `NextColumn` | `h`、`Left` / `l`、`Right` | 列間を移動（テーブルモード: ソート列） |
 | | `ToggleTable` | `t` | ボード ⇄ テーブルモード |
 | | `CycleSort` | `s` | ソート列を順に切替（テーブルモード） |
+| | `NextView` / `PrevView` | `v` / `V` | プロジェクトの保存済みビューを切り替え |
 | | `OpenDetail` | `i`、`Enter` | アイテム詳細にフォーカス |
 | | `OpenBrowser` | `o` | アイテムをブラウザで開く |
 | | `CopyUrl` | `y` | アイテムの URL をコピー |

@@ -441,6 +441,71 @@ fn capitalize(key: &str) -> String {
     }
 }
 
+// === Saved views ===
+
+/// Layout of a saved project view (`ProjectV2View.layout`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+pub enum ViewLayout {
+    Table,
+    Board,
+    Roadmap,
+}
+
+impl ViewLayout {
+    /// From the GraphQL enum (`TABLE_LAYOUT`, `BOARD_LAYOUT`, `ROADMAP_LAYOUT`).
+    pub fn parse(s: &str) -> Option<Self> {
+        match s {
+            "TABLE_LAYOUT" => Some(Self::Table),
+            "BOARD_LAYOUT" => Some(Self::Board),
+            "ROADMAP_LAYOUT" => Some(Self::Roadmap),
+            _ => None,
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Table => "table",
+            Self::Board => "board",
+            Self::Roadmap => "roadmap",
+        }
+    }
+}
+
+/// One saved view of a project (`ProjectV2.views`): the layout people set
+/// up on GitHub, with the field names driving its columns, grouping and
+/// sorting. Field references are stored by name and resolved against
+/// [`Board::fields`] at render time.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct ProjectView {
+    pub number: u64,
+    #[serde(default)]
+    pub name: String,
+    pub layout: ViewLayout,
+    /// The view's filter expression, verbatim (`status:Todo -label:bug`).
+    #[serde(default)]
+    pub filter: Option<String>,
+    /// Horizontal grouping (table group rows / board swimlanes).
+    #[serde(default)]
+    pub group_by: Vec<String>,
+    /// The field whose options become the board columns.
+    #[serde(default)]
+    pub vertical_group_by: Vec<String>,
+    /// Sort keys with their direction (`ASC` / `DESC`).
+    #[serde(default)]
+    pub sort_by: Vec<ViewSort>,
+    /// Visible fields in the view's column order.
+    #[serde(default)]
+    pub visible_fields: Vec<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct ViewSort {
+    pub field: String,
+    /// `true` for descending (`DESC`).
+    #[serde(default)]
+    pub desc: bool,
+}
+
 // === Board ===
 
 /// A project's board: its fields and items, with the truncation flag of
@@ -454,6 +519,10 @@ pub struct Board {
     pub items: Vec<ProjectItem>,
     #[serde(default)]
     pub total_count: u64,
+    /// The project's saved views, in GitHub's order (empty when the fetch
+    /// failed or the project has none — the fixed Status kanban is shown).
+    #[serde(default)]
+    pub views: Vec<ProjectView>,
 }
 
 impl Board {
@@ -635,6 +704,47 @@ pub(crate) mod tests {
       {"content":null,"id":"I5","status":"Blocked","title":"redacted"}
     ],"totalCount":7}"###;
 
+    #[test]
+    fn view_layout_parses_graphql_enum() {
+        assert_eq!(ViewLayout::parse("TABLE_LAYOUT"), Some(ViewLayout::Table));
+        assert_eq!(ViewLayout::parse("BOARD_LAYOUT"), Some(ViewLayout::Board));
+        assert_eq!(
+            ViewLayout::parse("ROADMAP_LAYOUT"),
+            Some(ViewLayout::Roadmap)
+        );
+        assert_eq!(ViewLayout::parse("SOMETHING_NEW"), None);
+        assert_eq!(ViewLayout::Roadmap.label(), "roadmap");
+    }
+
+    #[test]
+    fn board_without_views_deserializes_from_old_cache() {
+        // A board-<n>.json written before views existed loads with none.
+        let b: Board =
+            serde_json::from_str(r#"{"number":7,"fields":[],"items":[],"total_count":0}"#).unwrap();
+        assert!(b.views.is_empty());
+        // And one with views round-trips.
+        let mut b = board();
+        b.views.push(ProjectView {
+            number: 1,
+            name: "Sprint".into(),
+            layout: ViewLayout::Board,
+            filter: Some("status:Todo".into()),
+            group_by: vec![],
+            vertical_group_by: vec!["Status".into()],
+            sort_by: vec![ViewSort {
+                field: "Priority".into(),
+                desc: true,
+            }],
+            visible_fields: vec!["Title".into(), "Status".into()],
+        });
+        let json = serde_json::to_string(&b).unwrap();
+        let back: Board = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.views.len(), 1);
+        assert_eq!(back.views[0].name, "Sprint");
+        assert_eq!(back.views[0].layout, ViewLayout::Board);
+        assert!(back.views[0].sort_by[0].desc);
+    }
+
     pub(crate) fn board() -> Board {
         let fields: FieldList = serde_json::from_str(FIELDS_JSON).unwrap();
         let items: ItemList = serde_json::from_str(ITEMS_JSON).unwrap();
@@ -643,6 +753,7 @@ pub(crate) mod tests {
             fields: fields.fields,
             items: items.items,
             total_count: items.total_count,
+            views: vec![],
         }
     }
 

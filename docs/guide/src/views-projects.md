@@ -37,6 +37,17 @@ Placing it in your config gets a selectable list of the linked projects back —
 see the [recipe](config-recipes.md#bring-the-projects-list-pane-back) for the
 layout to paste.
 
+## Saved views
+
+The project's saved views (`ProjectV2.views`, fetched over GraphQL — `gh
+project` does not expose them) are read together with the board. The header
+shows the current view's name and layout (`Board: vig demo board · Sprint
+[board] (2/3)`), and `v` / `V` cycle through them. A project without saved
+views — or a views fetch that fails — falls back to the fixed `Status`
+kanban. Rendering each layout the way the view defines it (its table
+columns, board field and roadmap timeline) is tracked by the
+remaining sub-issues of [#148](https://github.com/td72/vig/issues/148).
+
 ## Key bindings
 
 | Key | Action |
@@ -47,6 +58,7 @@ layout to paste.
 | `t` (board) | Toggle table mode |
 | `s` (board, table mode) | Cycle the sort column |
 | `Enter` / `i` (board) | Focus the detail |
+| `v` / `V` | Next / previous saved view of the project |
 | `o` | Open the project / item in the browser |
 | `y` | Copy the project / item URL |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |

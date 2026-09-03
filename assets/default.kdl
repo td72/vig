@@ -565,6 +565,8 @@ page "projects" {
             "Right" "NextColumn"
             "t" "ToggleTable"
             "s" "CycleSort"
+            "v" "NextView"
+            "V" "PrevView"
             "Enter" "OpenDetail"
             "i" "OpenDetail"
             "o" "OpenBrowser"
