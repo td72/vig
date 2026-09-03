@@ -48,6 +48,7 @@ layout to paste.
 | `s` (board, table mode) | Cycle the sort column |
 | `Enter` / `i` (board) | Focus the detail |
 | `o` | Open the project / item in the browser |
+| `y` | Copy the project / item URL |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |
 | `h` / `Esc` (detail) | Back to the board |
 | `Tab` / `Shift+Tab` | Cycle panes: Board → Detail |

@@ -101,6 +101,7 @@ page "git" {
             preset "nav"
             preset "search"
             "y" "YankHash"
+            "Y" "YankUrl"
             "o" "OpenGitHub"
             "h" "FocusReflog"
             "Esc" "Esc"
@@ -170,6 +171,7 @@ page "github" {
             "Enter" "OpenDetail"
             "Tab" "SwitchTab"
             "o" "OpenBrowser"
+            "y" "CopyUrl"
             "Esc" "Esc"
         }
     }
@@ -182,6 +184,7 @@ page "github" {
             "Enter" "OpenDetail"
             "BackTab" "SwitchTab"
             "o" "OpenBrowser"
+            "y" "CopyUrl"
             "Esc" "Esc"
         }
     }
@@ -194,6 +197,7 @@ page "github" {
             "Enter" "OpenDetail"
             "BackTab" "SwitchTab"
             "o" "OpenBrowser"
+            "y" "CopyUrl"
             "Esc" "Esc"
         }
     }
@@ -207,6 +211,7 @@ page "github" {
             "BackTab" "CycleBackward"
             "w" "ToggleWatch"
             "o" "OpenItem"
+            "y" "CopyUrl"
             "Esc" "Esc"
         }
     }
@@ -220,6 +225,7 @@ page "github" {
             "BackTab" "CycleBackward"
             "w" "ToggleWatch"
             "o" "OpenItem"
+            "y" "CopyUrl"
             "Esc" "Esc"
         }
     }
@@ -237,6 +243,7 @@ page "github" {
             "]" "NextFailed"
             "[" "PrevFailed"
             "o" "OpenItem"
+            "y" "CopyUrl"
             "Esc" "Esc"
         }
     }
@@ -541,6 +548,7 @@ page "projects" {
             "i" "OpenBoard"
             "l" "OpenBoard"
             "o" "OpenBrowser"
+            "y" "CopyUrl"
             "Esc" "Esc"
         }
     }
@@ -560,6 +568,7 @@ page "projects" {
             "Enter" "OpenDetail"
             "i" "OpenDetail"
             "o" "OpenBrowser"
+            "y" "CopyUrl"
             "Esc" "Esc"
         }
     }

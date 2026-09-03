@@ -19,13 +19,14 @@ pub enum GhListAction {
     OpenDetail,
     SwitchTab,
     OpenBrowser,
+    CopyUrl,
     Search(SearchAction),
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     GhListAction, nav: Nav, search: Search, esc: Esc,
-    OpenDetail, SwitchTab, OpenBrowser
+    OpenDetail, SwitchTab, OpenBrowser, CopyUrl
 );
 
 impl ActionHelp for GhListAction {
@@ -35,6 +36,7 @@ impl ActionHelp for GhListAction {
             GhListAction::OpenDetail => Some("Open detail"),
             GhListAction::SwitchTab => Some("Switch tab"),
             GhListAction::OpenBrowser => Some("Open in browser"),
+            GhListAction::CopyUrl => Some("Copy URL"),
             GhListAction::Search(sa) => sa.label(),
             GhListAction::Esc => Some("Clear search"),
         }
@@ -49,6 +51,7 @@ pub fn default_keymap(switch_key: KeyCode) -> Keymap<GhListAction> {
         .key(KeyCode::Enter, GhListAction::OpenDetail)
         .key(switch_key, GhListAction::SwitchTab)
         .key(KeyCode::Char('o'), GhListAction::OpenBrowser)
+        .key(KeyCode::Char('y'), GhListAction::CopyUrl)
         .key(KeyCode::Esc, GhListAction::Esc)
 }
 
@@ -68,6 +71,9 @@ pub trait GhListItem: Sized + Send + 'static {
     }
     fn search_text(&self) -> String;
     fn browser_event(&self) -> PaneEvent;
+    /// The item's URL, built locally (no API request); `None` when it
+    /// cannot be derived (e.g. a non-github.com remote).
+    fn copy_url(&self) -> Option<String>;
     fn load_disk_cache() -> Option<Vec<Self>>;
     fn save_disk_cache(items: &[Self]);
     fn fetch_list() -> Result<Vec<Self>, String>;
@@ -91,6 +97,14 @@ pub fn nest_items<T: GhListItem>(items: Vec<T>) -> (Vec<T>, Vec<TreePos>) {
         }
     }
     (out, positions)
+}
+
+/// Copy `url` to the clipboard, or say why there is nothing to copy.
+pub fn copy_url_event(url: Option<String>) -> PaneEvent {
+    match url.filter(|u| !u.is_empty()) {
+        Some(u) => PaneEvent::CopyToClipboard(u),
+        None => PaneEvent::StatusMessage("No URL for this item".into()),
+    }
 }
 
 // === Generic list pane ===
@@ -214,6 +228,11 @@ impl<T: GhListItem> GhListPane<T> {
                     return vec![item.browser_event()];
                 }
             }
+            GhListAction::CopyUrl => {
+                if let Some(item) = self.items.get(self.selected_idx) {
+                    return vec![copy_url_event(item.copy_url())];
+                }
+            }
             _ => {}
         }
         vec![]
@@ -277,4 +296,22 @@ impl<T: GhListItem> Pane<PaneEvent> for GhListPane<T> {
     }
 
     crate::impl_list_pane_selection!();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn copy_url_event_copies_or_explains() {
+        assert!(matches!(
+            copy_url_event(Some("https://github.com/o/r/issues/1".into())),
+            PaneEvent::CopyToClipboard(u) if u.ends_with("/issues/1")
+        ));
+        assert!(matches!(copy_url_event(None), PaneEvent::StatusMessage(_)));
+        assert!(matches!(
+            copy_url_event(Some(String::new())),
+            PaneEvent::StatusMessage(_)
+        ));
+    }
 }

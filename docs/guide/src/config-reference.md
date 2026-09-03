@@ -567,6 +567,7 @@ slot).
 | `branch_list` (nav, search) | `OpenActionMenu` | `Enter` | switch / safe-delete / set as diff base |
 | | `FocusLog` | `i` | focus the git log |
 | `git_log` (nav, search) | `YankHash` | `y` | copy the commit hash |
+| | `YankUrl` | `Y` | copy the commit URL |
 | | `OpenGitHub` | `o` | open the commit on GitHub |
 | | `FocusReflog` | `h` | focus the reflog |
 | `reflog` (nav, search) | `SetDiffBase` | `Enter` | diff the working tree against this entry |
@@ -587,15 +588,18 @@ Panes: `issue_list`, `pr_list`, `run_list` (the three columns) and
 | `issue_list`, `pr_list`, `run_list` (nav, search) | `OpenDetail` | `i`, `Enter` | open the detail view |
 | | `SwitchTab` | `Tab` (issues) / `BackTab` (PRs, runs) | column-local tab switch |
 | | `OpenBrowser` | `o` | open the item in the browser |
+| | `CopyUrl` | `y` | copy the item URL |
 | `issue_detail`, `pr_detail` (nav) | `FocusBody` / `FocusRight` | `h` / `l` | body ↔ right-hand sub-panes |
 | | `CycleForward` / `CycleBackward` | `Tab` / `BackTab` | cycle the sub-panes |
 | | `ToggleWatch` | `w` | watch mode: auto-refresh the open item |
 | | `OpenItem` | `o` | open in the browser |
+| | `CopyUrl` | `y` | copy the item URL |
 | `run_detail` (nav, search) | `FocusBody` / `FocusRight` | `h` / `l` | Jobs ↔ Log sub-panes |
 | | `CycleForward` / `CycleBackward` | `Tab` / `BackTab` | cycle the sub-panes |
 | | `OpenLog` | `i`, `Enter` | show the selected job's log |
 | | `NextFailed` / `PrevFailed` | `]` / `[` | jump between failed steps |
 | | `OpenItem` | `o` | open the run / job in the browser |
+| | `CopyUrl` | `y` | copy the run URL |
 
 In `run_detail`, `Nav.JumpBottom` (`G`) also resumes following a running
 job's log.
@@ -694,11 +698,13 @@ page "projects" {
 | | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | cycle the panes |
 | `projects` (nav, search) | `OpenBoard` | `i`, `l`, `Enter` | show the selected project's board |
 | | `OpenBrowser` | `o` | open the project in the browser |
+| | `CopyUrl` | `y` | copy the project URL |
 | `board` (nav, search) | `PrevColumn` / `NextColumn` | `h`, `Left` / `l`, `Right` | move between columns (table mode: sort column) |
 | | `ToggleTable` | `t` | board ⇄ table mode |
 | | `CycleSort` | `s` | cycle the sort column (table mode) |
 | | `OpenDetail` | `i`, `Enter` | focus the item detail |
 | | `OpenBrowser` | `o` | open the item in the browser |
+| | `CopyUrl` | `y` | copy the item URL |
 | `detail` (nav) | `Back` | `h`, `Left` | back to the board |
 | | `OpenBrowser` | `o` | open the item in the browser |
 

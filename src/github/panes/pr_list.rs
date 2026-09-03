@@ -106,6 +106,10 @@ impl GhListItem for GhPrListItem {
         PaneEvent::OpenPrBrowser(self.number)
     }
 
+    fn copy_url(&self) -> Option<String> {
+        client::pr_url(self.number)
+    }
+
     fn load_disk_cache() -> Option<Vec<Self>> {
         disk_cache::load_pr_list()
     }

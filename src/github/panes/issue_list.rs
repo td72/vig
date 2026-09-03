@@ -57,6 +57,10 @@ impl GhListItem for GhIssueListItem {
         PaneEvent::OpenIssueBrowser(self.number)
     }
 
+    fn copy_url(&self) -> Option<String> {
+        client::issue_url(self.number)
+    }
+
     fn load_disk_cache() -> Option<Vec<Self>> {
         disk_cache::load_issue_list()
     }

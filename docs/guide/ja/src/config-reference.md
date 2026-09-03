@@ -563,6 +563,7 @@ page "git" {
 | `branch_list` (nav, search) | `OpenActionMenu` | `Enter` | switch / 安全な削除 / diff base 設定 |
 | | `FocusLog` | `i` | git log にフォーカス |
 | `git_log` (nav, search) | `YankHash` | `y` | コミットハッシュをコピー |
+| | `YankUrl` | `Y` | コミット URL をコピー |
 | | `OpenGitHub` | `o` | コミットを GitHub で開く |
 | | `FocusReflog` | `h` | reflog にフォーカス |
 | `reflog` (nav, search) | `SetDiffBase` | `Enter` | このエントリと作業ツリーを比較 |
@@ -583,15 +584,18 @@ page "git" {
 | `issue_list`、`pr_list`、`run_list` (nav, search) | `OpenDetail` | `i`、`Enter` | 詳細ビューを開く |
 | | `SwitchTab` | `Tab`（issues）/ `BackTab`（PR、runs） | 列ローカルのタブ切替 |
 | | `OpenBrowser` | `o` | アイテムをブラウザで開く |
+| | `CopyUrl` | `y` | アイテムの URL をコピー |
 | `issue_detail`、`pr_detail` (nav) | `FocusBody` / `FocusRight` | `h` / `l` | 本文 ↔ 右側サブペイン |
 | | `CycleForward` / `CycleBackward` | `Tab` / `BackTab` | サブペインを巡回 |
 | | `ToggleWatch` | `w` | ウォッチモード: 開いたアイテムを自動更新 |
 | | `OpenItem` | `o` | ブラウザで開く |
+| | `CopyUrl` | `y` | アイテムの URL をコピー |
 | `run_detail` (nav, search) | `FocusBody` / `FocusRight` | `h` / `l` | Jobs ↔ Log サブペイン |
 | | `CycleForward` / `CycleBackward` | `Tab` / `BackTab` | サブペインを巡回 |
 | | `OpenLog` | `i`、`Enter` | 選択中ジョブのログを表示 |
 | | `NextFailed` / `PrevFailed` | `]` / `[` | 失敗ステップ間をジャンプ |
 | | `OpenItem` | `o` | 実行 / ジョブをブラウザで開く |
+| | `CopyUrl` | `y` | 実行の URL をコピー |
 
 `run_detail` では `Nav.JumpBottom`（`G`）が、実行中ジョブのログの
 follow 再開も兼ねます。
@@ -691,11 +695,13 @@ page "projects" {
 | | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | ペインを巡回 |
 | `projects` (nav, search) | `OpenBoard` | `i`、`l`、`Enter` | 選択中プロジェクトのボードを表示 |
 | | `OpenBrowser` | `o` | プロジェクトをブラウザで開く |
+| | `CopyUrl` | `y` | プロジェクトの URL をコピー |
 | `board` (nav, search) | `PrevColumn` / `NextColumn` | `h`、`Left` / `l`、`Right` | 列間を移動（テーブルモード: ソート列） |
 | | `ToggleTable` | `t` | ボード ⇄ テーブルモード |
 | | `CycleSort` | `s` | ソート列を順に切替（テーブルモード） |
 | | `OpenDetail` | `i`、`Enter` | アイテム詳細にフォーカス |
 | | `OpenBrowser` | `o` | アイテムをブラウザで開く |
+| | `CopyUrl` | `y` | アイテムの URL をコピー |
 | `detail` (nav) | `Back` | `h`、`Left` | ボードに戻る |
 | | `OpenBrowser` | `o` | アイテムをブラウザで開く |
 

@@ -51,7 +51,7 @@ pub fn fetch_rate_limit_reset() -> Option<i64> {
 
 /// `owner/repo` derived locally from the `origin` remote URL — no API
 /// request. `None` for non-github.com remotes (or no remote).
-fn origin_github_nwo() -> Option<String> {
+pub(crate) fn origin_github_nwo() -> Option<String> {
     static NWO: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
     NWO.get_or_init(|| {
         let out = Command::new("git")
@@ -83,6 +83,22 @@ fn open_in_browser(entity: &str, number: u64) -> Result<(), String> {
         .spawn()
         .map_err(|e| format!("Failed to open {entity} in browser: {e}"))?;
     Ok(())
+}
+
+/// Locally built URL for an issue — no API request. `None` when the
+/// origin remote is not github.com.
+pub fn issue_url(number: u64) -> Option<String> {
+    origin_github_nwo().map(|nwo| format!("https://github.com/{nwo}/issues/{number}"))
+}
+
+/// Locally built URL for a pull request (see `issue_url`).
+pub fn pr_url(number: u64) -> Option<String> {
+    origin_github_nwo().map(|nwo| format!("https://github.com/{nwo}/pull/{number}"))
+}
+
+/// Locally built URL for a commit (see `issue_url`).
+pub fn commit_url(hash: &str) -> Option<String> {
+    origin_github_nwo().map(|nwo| format!("https://github.com/{nwo}/commit/{hash}"))
 }
 
 pub fn check_gh_available() -> Result<(), String> {

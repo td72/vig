@@ -39,13 +39,14 @@ pub enum BoardAction {
     CycleSort,
     OpenDetail,
     OpenBrowser,
+    CopyUrl,
     Search(SearchAction),
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     BoardAction, nav: Nav, search: Search, esc: Esc,
-    PrevColumn, NextColumn, ToggleTable, CycleSort, OpenDetail, OpenBrowser
+    PrevColumn, NextColumn, ToggleTable, CycleSort, OpenDetail, OpenBrowser, CopyUrl
 );
 
 impl ActionHelp for BoardAction {
@@ -60,6 +61,7 @@ impl ActionHelp for BoardAction {
             BoardAction::CycleSort => Some("Cycle sort column (table)"),
             BoardAction::OpenDetail => Some("Focus detail"),
             BoardAction::OpenBrowser => Some("Open item in browser"),
+            BoardAction::CopyUrl => Some("Copy item URL"),
             BoardAction::Search(sa) => sa.label(),
             BoardAction::Esc => Some("Clear search / back to projects"),
         }
@@ -79,6 +81,7 @@ pub fn default_keymap() -> Keymap<BoardAction> {
         .key(KeyCode::Enter, BoardAction::OpenDetail)
         .key(KeyCode::Char('i'), BoardAction::OpenDetail)
         .key(KeyCode::Char('o'), BoardAction::OpenBrowser)
+        .key(KeyCode::Char('y'), BoardAction::CopyUrl)
         .key(KeyCode::Esc, BoardAction::Esc)
 }
 
@@ -260,6 +263,15 @@ impl BoardPane {
         }
     }
 
+    /// URL of the selected item (issues / PRs their own, drafts the
+    /// project's), for both `o` and `y`.
+    fn selected_url(&self) -> Option<String> {
+        self.selected_item()
+            .and_then(|i| i.url().map(str::to_string))
+            .filter(|u| !u.is_empty())
+            .or_else(|| self.project_url.clone())
+    }
+
     pub fn selected_item(&self) -> Option<&ProjectItem> {
         let idx = self.selected_index()?;
         self.board.as_ref()?.items.get(idx)
@@ -363,14 +375,16 @@ impl BoardPane {
                 }
             }
             BoardAction::OpenBrowser => {
-                let url = self
-                    .selected_item()
-                    .and_then(|i| i.url().map(str::to_string))
-                    .or_else(|| self.project_url.clone());
+                let url = self.selected_url();
                 return match url {
                     Some(u) if !u.is_empty() => vec![PaneEvent::OpenUrl(u)],
                     _ => vec![],
                 };
+            }
+            BoardAction::CopyUrl => {
+                return vec![crate::github::panes::gh_list::copy_url_event(
+                    self.selected_url(),
+                )];
             }
             BoardAction::Search(_) | BoardAction::Esc => {}
         }

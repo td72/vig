@@ -160,6 +160,7 @@ the full schema — lives in the User Guide:
 | `Ctrl+d` / `Ctrl+u` | Half page scroll |
 | `g` / `G` | Top / Bottom |
 | `y` | Copy commit hash |
+| `Y` | Copy commit URL |
 | `o` | Open in GitHub |
 | `/` | Search commits |
 | `Esc` | Clear search / Back to Branch List |
@@ -236,6 +237,7 @@ Nothing in this view reruns, cancels or deletes anything.
 | `j` / `k` | Navigate list (the detail follows the selection) |
 | `i` / `Enter` | Open detail view |
 | `o` | Open in browser (issue, PR, run or the selected job) |
+| `y` | Copy the item URL |
 | `Esc` | Back to list |
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |
@@ -424,6 +426,7 @@ press `r`. Nothing in this view adds, moves, edits or deletes anything.
 | `s` (board, table mode) | Cycle the sort column |
 | `Enter` / `i` (board) | Focus the detail |
 | `o` | Open the project / item in the browser |
+| `y` | Copy the project / item URL |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |
 | `h` / `Esc` (detail) | Back to the board |
 | `Tab` / `Shift+Tab` | Cycle panes: Board → Detail |
