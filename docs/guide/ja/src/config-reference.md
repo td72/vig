@@ -28,6 +28,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`theme`](#theme) | `"base16-eighties.dark"` | 置換 |
 | [`icons`](#icons) | `"nerd"` | 置換 |
 | [`image-preview`](#image-preview) | `"auto"` | 置換 |
+| [`markdown-preview`](#markdown-preview) | `"render"` | 置換 |
 | [`procs-refresh-interval`](#procs-refresh-interval) | `"2s"` | 置換 |
 | [`procs-history`](#procs-history) | `"120"` | 置換 |
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | 置換 |
@@ -44,6 +45,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 theme "base16-eighties.dark"
 icons "nerd"
 image-preview "auto"
+markdown-preview "render"
 procs-refresh-interval "2s"
 procs-history "120"
 github-poll-interval "5s"
@@ -59,9 +61,9 @@ app {
 ```kdl,ignore
 colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
-//   `image-preview`, `procs-refresh-interval`, `procs-history`,
-//   `github-poll-interval`, `projects-board`, `pages`, `repo-config`,
-//   `app`, or `page`)
+//   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
+//   `procs-history`, `github-poll-interval`, `projects-board`, `pages`,
+//   `repo-config`, `app`, or `page`)
 ```
 
 ## トップレベルノード
@@ -123,6 +125,22 @@ Files ビューの画像プレビュー（PNG / JPEG / GIF / WebP）の描画方
 
 ```kdl
 image-preview "halfblocks"
+```
+
+### `markdown-preview`
+
+Files ビューが Markdown ファイル（`.md` / `.markdown`）をどうプレビューするか。
+
+- **書式** — `markdown-preview "<mode>"` — `"render"` か `"raw"`
+- **デフォルト** — `"render"`
+- **マージ** — デフォルトを置換。
+
+`"render"` はレンダリング表示（見出し・強調・リスト・コード・ペイン幅に
+合わせた GFM テーブル）、`"raw"` はシンタックスハイライトされた生テキスト
+です。どちらの場合も `m` でセッション内の切り替えができます。
+
+```kdl
+markdown-preview "raw"
 ```
 
 ### `procs-refresh-interval`

@@ -30,6 +30,7 @@ Conventions used below:
 | [`theme`](#theme) | `"base16-eighties.dark"` | replaced |
 | [`icons`](#icons) | `"nerd"` | replaced |
 | [`image-preview`](#image-preview) | `"auto"` | replaced |
+| [`markdown-preview`](#markdown-preview) | `"render"` | replaced |
 | [`procs-refresh-interval`](#procs-refresh-interval) | `"2s"` | replaced |
 | [`procs-history`](#procs-history) | `"120"` | replaced |
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | replaced |
@@ -46,6 +47,7 @@ loads and changes nothing):
 theme "base16-eighties.dark"
 icons "nerd"
 image-preview "auto"
+markdown-preview "render"
 procs-refresh-interval "2s"
 procs-history "120"
 github-poll-interval "5s"
@@ -61,9 +63,9 @@ Anything else at the top level is an error:
 ```kdl,ignore
 colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
-//   `image-preview`, `procs-refresh-interval`, `procs-history`,
-//   `github-poll-interval`, `projects-board`, `pages`, `repo-config`,
-//   `app`, or `page`)
+//   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
+//   `procs-history`, `github-poll-interval`, `projects-board`, `pages`,
+//   `repo-config`, `app`, or `page`)
 ```
 
 ## Top-level nodes
@@ -125,6 +127,23 @@ shows the image's metadata line).
 
 ```kdl
 image-preview "halfblocks"
+```
+
+### `markdown-preview`
+
+How the Files view previews Markdown files (`.md` / `.markdown`).
+
+- **Form** — `markdown-preview "<mode>"` — `"render"` or `"raw"`
+- **Default** — `"render"`
+- **Merge** — replaces the default.
+
+`"render"` shows the rendered form (headings, emphasis, lists, code, GFM
+tables fitted to the pane width); `"raw"` shows the plain
+syntax-highlighted text. `m` toggles between the two for the session either
+way.
+
+```kdl
+markdown-preview "raw"
 ```
 
 ### `procs-refresh-interval`

@@ -6,11 +6,10 @@ use crate::core::app::AppContext;
 use crate::core::keymap::{half_page_step, nav_bindings, ActionHelp, Keymap, NavAction};
 use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::core::theme;
+use crate::core::ui::markdown::markdown_to_lines;
 use crate::github::domain::client as gh;
 use crate::github::domain::types::{GhComment, GhIssueDetail, GhPrDetail};
-use crate::github::panes::detail_view::view::{
-    build_issue_header, build_pr_header, format_date, markdown_to_lines,
-};
+use crate::github::panes::detail_view::view::{build_issue_header, build_pr_header, format_date};
 use crate::projects::domain::types::{ItemKind, ProjectField, ProjectItem};
 use crate::projects::state::ProjectsBgMessage;
 use crossterm::event::KeyCode;

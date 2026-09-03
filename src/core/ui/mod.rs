@@ -1,4 +1,5 @@
 pub mod confirm_dialog;
+pub mod markdown;
 pub mod status_bar;
 pub mod tail_pane;
 pub mod trust_dialog;

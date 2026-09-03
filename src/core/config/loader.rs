@@ -304,6 +304,7 @@ impl Config {
         self.theme()?;
         self.icons()?;
         self.image_preview()?;
+        self.markdown_preview()?;
         self.procs_refresh_interval()?;
         self.procs_history()?;
         self.github_poll_interval()?;
@@ -598,6 +599,35 @@ impl Config {
                 IMAGE_PREVIEW_MODES.join(", ")
             )
         })
+    }
+
+    /// Whether the Files view renders Markdown files in the preview
+    /// (`markdown-preview "render"` / `"raw"`, default render).
+    pub fn markdown_preview(&self) -> Result<bool> {
+        const MODES: [&str; 2] = ["render", "raw"];
+        let mode = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "markdown-preview")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("markdown-preview block missing mode argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| MODES[0].to_string());
+        match mode.as_str() {
+            "render" => Ok(true),
+            "raw" => Ok(false),
+            _ => Err(anyhow!(
+                "invalid {}: unknown markdown-preview mode {mode:?}; expected one of: {}",
+                self.describe(),
+                MODES.join(", ")
+            )),
+        }
     }
 
     /// Whether the Files view shows Nerd Font icons (`icons "nerd"` / `"none"`).
@@ -2294,6 +2324,25 @@ mod tests {
             assert!(msg.contains("bad projects-board"), "{bad}: {msg}");
             assert!(msg.contains("config file /u/config.kdl"), "{bad}: {msg}");
         }
+    }
+
+    #[test]
+    fn markdown_preview_default_override_and_validation() {
+        assert!(Config::builtin().markdown_preview().unwrap());
+        assert!(!user(r#"markdown-preview "raw""#)
+            .unwrap()
+            .markdown_preview()
+            .unwrap());
+        let msg = format!(
+            "{:#}",
+            user(r#"markdown-preview "html""#).expect_err("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(
+            msg.contains("unknown markdown-preview mode \"html\""),
+            "{msg}"
+        );
+        assert!(msg.contains("render, raw"), "{msg}");
     }
 
     #[test]

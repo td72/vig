@@ -20,6 +20,16 @@ to unicode half-blocks. `image-preview "halfblocks"` in the config skips the
 terminal detection and `"none"` shows only the metadata. Images over 20 MB
 are not decoded.
 
+## Markdown previews
+
+Markdown files (`.md` / `.markdown`, by extension) are rendered in the
+preview: headings, emphasis, lists, task lists, code and GFM tables, with
+tables fitted to the pane width and reflowed on resize. A YAML front matter
+block at the top is kept verbatim in a dim style. `m` toggles between the
+rendered form and the raw highlighted text (the pane title shows `markdown` /
+`raw`); the [`markdown-preview`](config-reference.md#markdown-preview) config
+node picks the default.
+
 ## Opening files outside vig
 
 Beyond previewing, the Files view can hand a file to another program — this is
@@ -45,6 +55,7 @@ the only view with an "open with" concept:
 | `e` | Open selected file in external editor |
 | `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |
 | `O` | Open selected entry with an app you name (`open -a <app>` on macOS) |
+| `m` | Toggle Markdown rendering in the preview |
 | `r` | Re-read the current directory |
 
 ## Constraints
