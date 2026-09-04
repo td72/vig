@@ -747,15 +747,26 @@ impl BoardPane {
         let mut rows: Vec<Row> = Vec::with_capacity(self.sorted.len() + self.groups.len());
         for (ri, (&idx, cells)) in self.sorted.iter().zip(&cells).enumerate() {
             if let Some(label) = group_starts.get(&ri) {
-                rows.push(Row::new(vec![
-                    Cell::from(""),
-                    Cell::from(Span::styled(
-                        label.clone(),
-                        Style::default()
-                            .fg(Color::Magenta)
-                            .add_modifier(Modifier::BOLD),
-                    )),
-                ]));
+                // The label goes into the Title column, wherever the view
+                // put it; every other cell stays empty so the row has the
+                // table's column count.
+                let title_col = self
+                    .table_cols
+                    .iter()
+                    .position(|c| matches!(c, TableColumn::Title))
+                    .unwrap_or(0);
+                rows.push(Row::new((0..self.table_cols.len()).map(|ci| {
+                    if ci == title_col {
+                        Cell::from(Span::styled(
+                            label.clone(),
+                            Style::default()
+                                .fg(Color::Magenta)
+                                .add_modifier(Modifier::BOLD),
+                        ))
+                    } else {
+                        Cell::from("")
+                    }
+                })));
             }
             let item = &board.items[idx];
             let hl = theme::search_highlight_for(match_set, current_match, idx);
