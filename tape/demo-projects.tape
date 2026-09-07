@@ -46,39 +46,36 @@ Type "vig"
 Enter
 Sleep 2s
 
-# Switch to the Projects View with '7': the linked project's board loads
-# immediately, taking the full width.
+# Switch to the Projects View with '7'. The project's saved view (a Table
+# view on this board) drives the page: its visible fields are the columns.
 Type "7"
 Sleep 6s
 
-# Move between the Status columns with l / h
-Type "l"
-Sleep 1.2s
-Type "l"
-Sleep 1.2s
-Type "h"
-Sleep 1s
-Type "h"
-Sleep 1s
-
-# Move between the cards of a column with j / k (the detail follows)
+# Move between the rows with j / k (the detail follows), `s` cycles the
+# sort column
 Type "j"
 Sleep 1.5s
 Type "j"
 Sleep 1.5s
+Type "s"
+Sleep 1.5s
+Type "s"
+Sleep 1.5s
 
-# Table mode: one row per item, `s` cycles the sort column
+# `t` toggles the kanban for the same items
 Type "t"
 Sleep 2.5s
-Type "s"
-Sleep 1.5s
-Type "s"
-Sleep 1.5s
-Type "s"
-Sleep 1.5s
 
-# Back to the board
-Type "t"
+# Move between the Status columns with l / h, j / k moves within a column
+Type "l"
+Sleep 1.2s
+Type "l"
+Sleep 1.2s
+Type "h"
+Sleep 1s
+Type "h"
+Sleep 1s
+Type "j"
 Sleep 1.5s
 
 # Open the item detail: project fields, then the issue body

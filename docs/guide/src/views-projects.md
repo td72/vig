@@ -44,8 +44,11 @@ project` does not expose them) are read together with the board. The header
 shows the current view's name and layout (`Board: vig demo board · Sprint
 [board] (2/3)`), and `v` / `V` cycle through them. A project without saved
 views — or a views fetch that fails — falls back to the fixed `Status`
-kanban. Rendering each layout the way the view defines it (its table
-columns, board field and roadmap timeline) is tracked by the
+kanban. A **Table** view renders as the view defines it: its visible
+fields become the columns (in the view's order, behind a `#` column),
+its sort is the initial sort — descending sorts marked `▴` — and its
+grouping renders one bold header row per group, `No <field>` last.
+Rendering Board and Roadmap layouts per the view is tracked by the
 remaining sub-issues of [#148](https://github.com/td72/vig/issues/148).
 
 ## Key bindings
