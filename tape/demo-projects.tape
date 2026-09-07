@@ -82,6 +82,23 @@ Sleep 1.5s
 Type "v"
 Sleep 2.5s
 
+# `v` again: the Timeline view — a roadmap with a bar per item, a today
+# marker, month labels and week ticks
+Type "v"
+Sleep 3s
+
+# `-` zooms out to the month scale, `+` back in
+Type "-"
+Sleep 2s
+Type "+"
+Sleep 1.5s
+
+# j / k move between the items
+Type "j"
+Sleep 1s
+Type "j"
+Sleep 1.5s
+
 # Open the item detail: project fields, then the issue body
 Enter
 Sleep 2.5s

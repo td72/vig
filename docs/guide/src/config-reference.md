@@ -704,6 +704,7 @@ page "projects" {
 | | `CycleSort` | `s` | cycle the sort column (table mode) |
 | | `NextView` / `PrevView` | `v` / `V` | cycle the project's saved views |
 | | `ToggleLane` | `Space` | collapse / expand the selected swimlane |
+| | `ZoomIn` / `ZoomOut` | `+` / `-` | zoom the roadmap time scale |
 | | `OpenDetail` | `i`, `Enter` | focus the item detail |
 | | `OpenBrowser` | `o` | open the item in the browser |
 | | `CopyUrl` | `y` | copy the item URL |

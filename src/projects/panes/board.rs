@@ -9,6 +9,7 @@ use crate::core::keymap::{
 use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
+use crate::projects::domain::roadmap::{self, Zoom};
 use crate::projects::domain::types::{
     columns_by, group_rows, item_key, sort_items_dir, table_columns, view_table_columns, Board,
     Column, ItemKind, ProjectField, ProjectItem, ProjectView, TableColumn, ViewLayout,
@@ -42,6 +43,9 @@ pub enum BoardAction {
     PrevView,
     /// Collapse / expand the selected swimlane (grouped board views).
     ToggleLane,
+    /// Roadmap: a finer / coarser time scale.
+    ZoomIn,
+    ZoomOut,
     OpenDetail,
     OpenBrowser,
     CopyUrl,
@@ -52,7 +56,7 @@ pub enum BoardAction {
 crate::impl_pane_action_from_str!(
     BoardAction, nav: Nav, search: Search, esc: Esc,
     PrevColumn, NextColumn, ToggleTable, CycleSort, NextView, PrevView, ToggleLane,
-    OpenDetail, OpenBrowser, CopyUrl
+    ZoomIn, ZoomOut, OpenDetail, OpenBrowser, CopyUrl
 );
 
 impl ActionHelp for BoardAction {
@@ -68,6 +72,8 @@ impl ActionHelp for BoardAction {
             BoardAction::NextView => Some("Next saved view"),
             BoardAction::PrevView => Some("Prev saved view"),
             BoardAction::ToggleLane => Some("Collapse / expand lane"),
+            BoardAction::ZoomIn => Some("Zoom in (roadmap)"),
+            BoardAction::ZoomOut => Some("Zoom out (roadmap)"),
             BoardAction::OpenDetail => Some("Focus detail"),
             BoardAction::OpenBrowser => Some("Open item in browser"),
             BoardAction::CopyUrl => Some("Copy item URL"),
@@ -90,6 +96,8 @@ pub fn default_keymap() -> Keymap<BoardAction> {
         .key(KeyCode::Char('v'), BoardAction::NextView)
         .key(KeyCode::Char('V'), BoardAction::PrevView)
         .key(KeyCode::Char(' '), BoardAction::ToggleLane)
+        .key(KeyCode::Char('+'), BoardAction::ZoomIn)
+        .key(KeyCode::Char('-'), BoardAction::ZoomOut)
         .key(KeyCode::Enter, BoardAction::OpenDetail)
         .key(KeyCode::Char('i'), BoardAction::OpenDetail)
         .key(KeyCode::Char('o'), BoardAction::OpenBrowser)
@@ -101,6 +109,7 @@ pub fn default_keymap() -> Keymap<BoardAction> {
 pub enum BoardMode {
     Board,
     Table,
+    Roadmap,
 }
 
 /// One swimlane of a board view: a full set of the board's columns holding
@@ -171,6 +180,11 @@ pub struct BoardPane {
     /// The view number the pane last applied (mode / sort seeded from it);
     /// seeing a different one re-applies.
     applied_view: Option<u64>,
+    /// Roadmap: time scale, horizontal scroll in cells (`None` = start of
+    /// the timeline) and the first visible row.
+    zoom: Zoom,
+    roadmap_scroll: Option<i64>,
+    roadmap_offset: usize,
     loading: bool,
     error: Option<String>,
     view_height: u16,
@@ -207,6 +221,9 @@ impl BoardPane {
             group_field: None,
             view_idx: 0,
             applied_view: None,
+            zoom: Zoom::Week,
+            roadmap_scroll: None,
+            roadmap_offset: 0,
             loading: false,
             error: None,
             view_height: 20,
@@ -266,6 +283,9 @@ impl BoardPane {
         self.table_row = 0;
         self.view_idx = 0;
         self.applied_view = None;
+        self.zoom = Zoom::Week;
+        self.roadmap_scroll = None;
+        self.roadmap_offset = 0;
         self.sort_desc = false;
         self.groups.clear();
         self.group_field = None;
@@ -337,7 +357,7 @@ impl BoardPane {
                 .items
                 .get(self.row)
                 .copied(),
-            BoardMode::Table => self.sorted.get(self.table_row).copied(),
+            BoardMode::Table | BoardMode::Roadmap => self.sorted.get(self.table_row).copied(),
         }
     }
 
@@ -480,9 +500,10 @@ impl BoardPane {
             self.sort_desc = sort.is_some_and(|s| s.desc);
             self.mode = match view.map(|v| v.layout) {
                 Some(ViewLayout::Table) => BoardMode::Table,
-                // Board and (until #152) Roadmap render the kanban.
+                Some(ViewLayout::Roadmap) => BoardMode::Roadmap,
                 _ => BoardMode::Board,
             };
+            self.roadmap_scroll = None;
         }
         self.sort_col = self.sort_col.min(self.table_cols.len().saturating_sub(1));
         self.resort();
@@ -643,7 +664,7 @@ impl BoardPane {
                         }
                     }
                 }
-                BoardMode::Table => {
+                BoardMode::Table | BoardMode::Roadmap => {
                     pane::execute_list_nav(
                         nav,
                         &mut self.table_row,
@@ -653,7 +674,14 @@ impl BoardPane {
                 }
             },
             BoardAction::PrevColumn | BoardAction::NextColumn => {
-                if self.mode == BoardMode::Table {
+                if self.mode == BoardMode::Roadmap {
+                    let step = if matches!(action, BoardAction::NextColumn) {
+                        7
+                    } else {
+                        -7
+                    };
+                    self.roadmap_scroll = Some((self.roadmap_scroll.unwrap_or(0) + step).max(0));
+                } else if self.mode == BoardMode::Table {
                     // Left / right pick the sort column in table mode.
                     if !self.table_cols.is_empty() {
                         let n = self.table_cols.len();
@@ -677,8 +705,12 @@ impl BoardPane {
             }
             BoardAction::ToggleTable => {
                 self.mode = match self.mode {
-                    BoardMode::Board => BoardMode::Table,
-                    BoardMode::Table => BoardMode::Board,
+                    BoardMode::Board | BoardMode::Roadmap => BoardMode::Table,
+                    // Back to whatever the current view's layout renders as.
+                    BoardMode::Table => match self.current_view().map(|v| v.layout) {
+                        Some(ViewLayout::Roadmap) => BoardMode::Roadmap,
+                        _ => BoardMode::Board,
+                    },
                 };
                 if let Some(idx) = before {
                     self.select_item(idx);
@@ -701,6 +733,16 @@ impl BoardPane {
                     if collapsed {
                         self.move_off_lane();
                     }
+                }
+            }
+            BoardAction::ZoomIn | BoardAction::ZoomOut => {
+                if self.mode == BoardMode::Roadmap {
+                    self.zoom = if matches!(action, BoardAction::ZoomIn) {
+                        self.zoom.zoom_in()
+                    } else {
+                        self.zoom.zoom_out()
+                    };
+                    self.roadmap_scroll = None;
                 }
             }
             BoardAction::NextView => return self.cycle_view(true),
@@ -762,6 +804,7 @@ impl BoardPane {
                 }
                 t
             }
+            BoardMode::Roadmap => format!("Roadmap{name} [{}]", self.zoom.label()),
             BoardMode::Table => {
                 let mut t = match self.sort_label() {
                     Some(s) => format!(
@@ -1140,6 +1183,219 @@ impl BoardPane {
         self.table_state.select(show_selection.then_some(visual));
         f.render_stateful_widget(table, inner, &mut self.table_state);
     }
+    /// The Roadmap layout: item rows on the left, a time scale with one
+    /// bar per item on the right, a today marker and shaded iteration
+    /// bands. Spans come from date / iteration fields (`span_spec`).
+    fn render_roadmap(
+        &mut self,
+        f: &mut Frame,
+        inner: Rect,
+        show_selection: bool,
+        match_set: &HashSet<usize>,
+        current_match: Option<usize>,
+    ) {
+        let Some(board) = &self.board else {
+            return;
+        };
+        let spec = roadmap::span_spec(board);
+        let spans: Vec<Option<(i64, i64)>> = self
+            .sorted
+            .iter()
+            .map(|&i| roadmap::item_span(&board.items[i], &spec))
+            .collect();
+        let today = roadmap::today();
+        let left_w = (inner.width / 3).clamp(16, 40) as usize;
+        let chart_w = (inner.width as usize).saturating_sub(left_w + 1);
+        // The timeline starts a little before the earliest span (or today).
+        let min_day = spans
+            .iter()
+            .flatten()
+            .map(|s| s.0)
+            .min()
+            .unwrap_or(today)
+            .min(today);
+        let origin = min_day - 2;
+        let scroll = self.roadmap_scroll.unwrap_or(0);
+        let zoom = self.zoom;
+        let header_h = 2usize;
+        let rows_h = (inner.height as usize).saturating_sub(header_h);
+        self.view_height = rows_h as u16;
+        // Keep the selected row on screen.
+        if self.table_row < self.roadmap_offset {
+            self.roadmap_offset = self.table_row;
+        } else if rows_h > 0 && self.table_row >= self.roadmap_offset + rows_h {
+            self.roadmap_offset = self.table_row + 1 - rows_h;
+        }
+        // Day of the leftmost visible cell, and a cell → in-view test.
+        let visible = |x: i64| -> Option<usize> {
+            let c = x - scroll;
+            (0..chart_w as i64).contains(&c).then_some(c as usize)
+        };
+
+        let mut lines: Vec<Line<'static>> = Vec::with_capacity(header_h + rows_h);
+
+        // Header 1: month labels at each month start.
+        let mut months = vec![(' ', Style::default()); chart_w];
+        // Header 2: week ticks and iteration bands.
+        let dim = Style::default().fg(Color::DarkGray);
+        let mut ticks = vec![('·', dim); chart_w];
+        let iterations = roadmap::iterations(board, &spec);
+        for (i, it) in iterations.iter().enumerate() {
+            let band = if i % 2 == 0 {
+                Style::default().fg(Color::Black).bg(Color::Cyan)
+            } else {
+                Style::default().fg(Color::Black).bg(Color::Blue)
+            };
+            let label: Vec<char> = format!(" {} ", it.title).chars().collect();
+            let (bs, be) = (zoom.x(it.start, origin), zoom.x_end(it.end, origin));
+            for x in bs..=be {
+                if let Some(c) = visible(x) {
+                    let k = (x - bs) as usize;
+                    ticks[c] = (*label.get(k).unwrap_or(&' '), band);
+                }
+            }
+        }
+        // Walk the visible days for month starts and week ticks.
+        let days_per_cell = match zoom {
+            Zoom::Month => 3,
+            Zoom::Week => 1,
+            Zoom::Day => 1,
+        };
+        let first_day = origin + scroll * days_per_cell / if zoom == Zoom::Day { 3 } else { 1 };
+        let last_day = first_day + (chart_w as i64) * days_per_cell + 3;
+        for day in first_day - 3..=last_day {
+            let (y, m, d) = roadmap::civil_from_days(day);
+            if d == 1 {
+                const NAMES: [&str; 12] = [
+                    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+                    "Dec",
+                ];
+                let label = format!("{} {y}", NAMES[(m - 1) as usize]);
+                for (k, ch) in label.chars().enumerate() {
+                    if let Some(c) = visible(zoom.x(day, origin) + k as i64) {
+                        months[c] = (ch, Style::default().fg(Color::Cyan));
+                    }
+                }
+            }
+            // Monday ticks with the day of month (epoch day 0 = Thursday).
+            if day.rem_euclid(7) == 4 && iterations.is_empty() {
+                for (k, ch) in d.to_string().chars().enumerate() {
+                    if let Some(c) = visible(zoom.x(day, origin) + k as i64) {
+                        ticks[c] = (ch, dim);
+                    }
+                }
+            }
+        }
+        // Today marker on both header rows.
+        let today_cells: Vec<usize> = (zoom.x(today, origin)..=zoom.x_end(today, origin))
+            .filter_map(visible)
+            .collect();
+        let today_style = Style::default().fg(Color::Black).bg(Color::Yellow);
+        for &c in &today_cells {
+            months[c] = (months[c].0, today_style);
+            ticks[c] = (ticks[c].0, today_style);
+        }
+
+        let cells_to_line = |left: Vec<Span<'static>>, cells: &[(char, Style)]| -> Line<'static> {
+            let mut spans = left;
+            spans.push(Span::styled("│", dim));
+            let mut run = String::new();
+            let mut run_style = Style::default();
+            for (ch, style) in cells {
+                if *style != run_style && !run.is_empty() {
+                    spans.push(Span::styled(std::mem::take(&mut run), run_style));
+                }
+                run_style = *style;
+                run.push(*ch);
+            }
+            if !run.is_empty() {
+                spans.push(Span::styled(run, run_style));
+            }
+            Line::from(spans)
+        };
+        let pad = |text: &str, w: usize| -> String {
+            let t = truncate_to_width(text, w);
+            format!("{t}{}", " ".repeat(w.saturating_sub(t.width())))
+        };
+        lines.push(cells_to_line(vec![Span::raw(" ".repeat(left_w))], &months));
+        lines.push(cells_to_line(vec![Span::raw(" ".repeat(left_w))], &ticks));
+
+        for (ri, (&idx, span)) in self
+            .sorted
+            .iter()
+            .zip(&spans)
+            .enumerate()
+            .skip(self.roadmap_offset)
+            .take(rows_h)
+        {
+            let item = &board.items[idx];
+            let selected = show_selection && ri == self.table_row;
+            let hl = theme::search_highlight_for(match_set, current_match, idx);
+            let row_bg = if hl.is_active() {
+                hl.bg
+            } else if selected {
+                Some(theme::LIST_SELECTION_BG)
+            } else {
+                None
+            };
+            let kind = item.kind();
+            let icon_color = match kind {
+                ItemKind::Issue => Color::Green,
+                ItemKind::PullRequest => Color::Magenta,
+                ItemKind::Draft | ItemKind::Other => Color::DarkGray,
+            };
+            let number = item.number().map(|n| format!("#{n} ")).unwrap_or_default();
+            let head = format!("{} {number}", kind.icon());
+            let title_w = left_w.saturating_sub(head.width());
+            let mut left = vec![
+                Span::styled(
+                    head,
+                    Style::default().fg(hl.fg_override.unwrap_or(icon_color)),
+                ),
+                Span::styled(
+                    pad(item.title(), title_w),
+                    match hl.fg_override {
+                        Some(fg) => Style::default().fg(fg),
+                        None => Style::default(),
+                    },
+                ),
+            ];
+            if selected {
+                for s in &mut left {
+                    s.style = s.style.add_modifier(Modifier::BOLD);
+                }
+            }
+            let mut cells = vec![(' ', Style::default()); chart_w];
+            for &c in &today_cells {
+                cells[c] = ('┊', Style::default().fg(Color::Yellow));
+            }
+            if let Some((s0, e0)) = span {
+                // Draft grey would sink into the (selection) background.
+                let bar_color = match kind {
+                    ItemKind::Draft | ItemKind::Other => Color::Gray,
+                    _ => icon_color,
+                };
+                let bar = Style::default().fg(bar_color);
+                for x in zoom.x(*s0, origin)..=zoom.x_end(*e0, origin) {
+                    if let Some(c) = visible(x) {
+                        cells[c] = ('█', bar);
+                    }
+                }
+            }
+            let mut line = cells_to_line(left, &cells);
+            if let Some(bg) = row_bg {
+                line = line.style(Style::default().bg(bg));
+            }
+            lines.push(line);
+        }
+        if spans.iter().all(Option::is_none) && !self.sorted.is_empty() {
+            lines.push(Line::from(Span::styled(
+                "  (no date or iteration values — bars appear when items get them)",
+                Style::default().fg(theme::EMPTY_TEXT_FG),
+            )));
+        }
+        f.render_widget(Paragraph::new(lines), inner);
+    }
 }
 
 /// The `owner/repo` prefix of a card whose content lives in another
@@ -1283,6 +1539,9 @@ impl Pane<PaneEvent> for BoardPane {
             BoardMode::Table => {
                 self.render_table(f, inner, show_selection, &match_set, current_match)
             }
+            BoardMode::Roadmap => {
+                self.render_roadmap(f, inner, show_selection, &match_set, current_match)
+            }
         }
     }
 
@@ -1323,7 +1582,7 @@ mod tests {
         p
     }
 
-    fn shared() -> PaneShared {
+    pub(super) fn shared() -> PaneShared {
         PaneShared {
             focused_pane: 1,
             previous_pane: 0,
@@ -1335,7 +1594,7 @@ mod tests {
         p.selected_item().map(|i| i.id.as_str()).unwrap_or("")
     }
 
-    fn view(n: u64, name: &str) -> ProjectView {
+    pub(super) fn view(n: u64, name: &str) -> ProjectView {
         ProjectView {
             number: n,
             name: name.into(),
@@ -1448,6 +1707,46 @@ mod tests {
             sorted.sort();
             assert_eq!(titles, sorted, "column {}", col.name);
         }
+    }
+
+    #[test]
+    fn roadmap_view_drives_mode_zoom_and_scroll() {
+        let mut p = pane();
+        let sh = shared();
+        let mut b = board();
+        let mut v = view(1, "Timeline");
+        v.layout = ViewLayout::Roadmap;
+        b.views = vec![v];
+        p.set_board(b);
+        assert_eq!(p.mode, BoardMode::Roadmap);
+        assert!(p.title().starts_with("Roadmap"));
+        assert!(p.title().contains("[week]"));
+
+        // j / k move over the sorted rows.
+        let before = p.selected_index();
+        p.execute(&sh, BoardAction::Nav(NavAction::MoveDown));
+        assert_ne!(p.selected_index(), before);
+
+        // + / - change the zoom (clamped at both ends), resetting scroll.
+        p.execute(&sh, BoardAction::NextColumn);
+        assert_eq!(p.roadmap_scroll, Some(7));
+        p.execute(&sh, BoardAction::PrevColumn);
+        p.execute(&sh, BoardAction::PrevColumn);
+        assert_eq!(p.roadmap_scroll, Some(0)); // never negative
+        p.execute(&sh, BoardAction::ZoomIn);
+        assert!(p.title().contains("[day]"));
+        assert_eq!(p.roadmap_scroll, None);
+        p.execute(&sh, BoardAction::ZoomOut);
+        p.execute(&sh, BoardAction::ZoomOut);
+        assert!(p.title().contains("[month]"));
+        p.execute(&sh, BoardAction::ZoomOut);
+        assert!(p.title().contains("[month]"));
+
+        // t leaves for the table and returns to the roadmap.
+        p.execute(&sh, BoardAction::ToggleTable);
+        assert_eq!(p.mode, BoardMode::Table);
+        p.execute(&sh, BoardAction::ToggleTable);
+        assert_eq!(p.mode, BoardMode::Roadmap);
     }
 
     #[test]
@@ -1722,5 +2021,80 @@ mod tests {
         p.clear();
         assert!(p.board.is_none());
         assert!(p.notice().is_some(), "clear() keeps the notice");
+    }
+}
+
+#[cfg(test)]
+mod roadmap_render_tests {
+    use super::tests::{shared, view};
+    use super::*;
+    use crate::projects::domain::types::tests::board;
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    #[test]
+    fn selected_roadmap_row_keeps_its_bar() {
+        let mut p = BoardPane::new(1, 2, Some(0));
+        let mut b = board();
+        let mut v = view(1, "Timeline");
+        v.layout = ViewLayout::Roadmap;
+        b.views = vec![v];
+        // Give every item a span around today so bars land in view.
+        let t = roadmap::today();
+        let (y, m, d) = roadmap::civil_from_days(t);
+        let date = format!("{y:04}-{m:02}-{d:02}");
+        let (y2, m2, d2) = roadmap::civil_from_days(t + 5);
+        let date2 = format!("{y2:04}-{m2:02}-{d2:02}");
+        for item in &mut b.items {
+            item.fields
+                .insert("start date".into(), serde_json::Value::String(date.clone()));
+            item.fields.insert(
+                "target date".into(),
+                serde_json::Value::String(date2.clone()),
+            );
+        }
+        b.fields.push(ProjectField {
+            id: "FT".into(),
+            name: "Target date".into(),
+            kind: "ProjectV2Field".into(),
+            options: vec![],
+        });
+        p.set_board(b);
+        assert_eq!(p.mode, BoardMode::Roadmap);
+        let sh = shared();
+
+        let mut term = Terminal::new(TestBackend::new(100, 20)).unwrap();
+        term.draw(|f| {
+            let area = f.area();
+            let ctx = crate::core::app::AppContext {
+                should_quit: false,
+                active_page: 0,
+                page_labels: vec![],
+                page_keys: vec![],
+                show_help: false,
+                status_message: None,
+                error_dialog: None,
+                workdir: std::path::PathBuf::new(),
+                needs_full_redraw: false,
+            };
+            p.render(f, &ctx, &sh, area);
+        })
+        .unwrap();
+        let buf = term.backend().buffer().clone();
+        let row_text = |row: u16| -> String {
+            (0..buf.area.width)
+                .map(|x| buf[(x, row)].symbol().to_string())
+                .collect()
+        };
+        // Row 0/1 headers (inside the border), first item row selected.
+        let all: Vec<String> = (0..20).map(row_text).collect();
+        let selected_row = all
+            .iter()
+            .find(|l| l.contains(&board().items[0].title()[..10]))
+            .expect("selected item row rendered");
+        assert!(
+            selected_row.contains('█'),
+            "selected row lost its bar: {selected_row:?}"
+        );
     }
 }
