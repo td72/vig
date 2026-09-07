@@ -290,17 +290,32 @@ impl PreviewPane {
         }
     }
 
+    /// Width in chars of the longest shown line (no allocation: the raw
+    /// lines and the rendered spans are measured in place).
+    fn longest_shown(&self) -> usize {
+        if self.markdown_active() {
+            return self
+                .markdown_lines
+                .as_deref()
+                .unwrap_or(&[])
+                .iter()
+                .map(|l| l.spans.iter().map(|s| s.content.chars().count()).sum())
+                .max()
+                .unwrap_or(0);
+        }
+        match &self.content {
+            Preview::Text { lines, .. } => {
+                lines.iter().map(|l| l.chars().count()).max().unwrap_or(0)
+            }
+            _ => 0,
+        }
+    }
+
     /// The furthest `scroll_x` that still shows something: the longest
     /// shown line minus the text width (0 when everything fits).
     fn max_scroll_x(&self) -> usize {
-        let longest = self
-            .shown_texts()
-            .iter()
-            .map(|t| t.chars().count())
-            .max()
-            .unwrap_or(0);
         let text_width = self.view_width.saturating_sub(self.gutter_width()).max(1);
-        longest.saturating_sub(text_width)
+        self.longest_shown().saturating_sub(text_width)
     }
 
     /// Bring `(row, col)` of the shown text on screen, scrolling both ways
@@ -438,6 +453,22 @@ fn shift_and_highlight(
     out
 }
 
+/// One-char case folding: columns must stay those of the original text,
+/// so a char that lowercases to several (`İ` → `i̇`) keeps its first.
+fn fold_char(c: char) -> char {
+    c.to_lowercase().next().unwrap_or(c)
+}
+
+/// Every start index of `needle` in `hay` (overlaps allowed), by char.
+fn find_all(hay: &[char], needle: &[char]) -> Vec<usize> {
+    if needle.is_empty() || hay.len() < needle.len() {
+        return Vec::new();
+    }
+    (0..=hay.len() - needle.len())
+        .filter(|&i| hay[i..i + needle.len()] == *needle)
+        .collect()
+}
+
 /// `(col_start, col_end, is_current)` of this pane's matches per row.
 fn match_ranges(shared: &PaneShared, pane_id: usize) -> Vec<(usize, usize, usize, bool)> {
     if shared.search.origin != pane_id || shared.search.query.is_none() {
@@ -473,20 +504,18 @@ impl Pane<PaneEvent> for PreviewPane {
     /// Content search over the shown lines (rendered Markdown or raw
     /// text), case-insensitive, one match per occurrence.
     fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
-        let needle = query.to_lowercase();
+        let needle: Vec<char> = query.chars().map(fold_char).collect();
         if needle.is_empty() {
             return Vec::new();
         }
         let mut out = Vec::new();
         for (row, text) in self.shown_texts().iter().enumerate() {
-            let lower = text.to_lowercase();
-            for (byte, _) in lower.match_indices(&needle) {
-                let col_start = lower[..byte].chars().count();
-                let col_end = col_start + needle.chars().count();
+            let hay: Vec<char> = text.chars().map(fold_char).collect();
+            for col_start in find_all(&hay, &needle) {
                 out.push(SearchMatch::TextLine {
                     row,
                     col_start,
-                    col_end,
+                    col_end: col_start + needle.len(),
                 });
             }
         }
@@ -692,6 +721,18 @@ mod tests {
             ]
         );
         assert!(p.collect_search_matches(&shared_for(&p), "").is_empty());
+        // Columns are those of the original text even when a char
+        // lowercases to several (`İ` → `i̇`).
+        let p = pane_with("t.txt", &["İstanbul needle"], false);
+        let m = p.collect_search_matches(&shared_for(&p), "NEEDLE");
+        assert_eq!(
+            m,
+            vec![SearchMatch::TextLine {
+                row: 0,
+                col_start: 9,
+                col_end: 15
+            }]
+        );
         // Rendered markdown: the match sits in the rendered line, not the source.
         let mut p = pane_with("a.md", &["# Title", "", "some **bold** word"], true);
         p.markdown_lines(80);
