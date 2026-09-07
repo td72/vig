@@ -10,6 +10,23 @@ use crate::projects::domain::types::*;
 /// truncated (the status bar says so).
 pub const ITEM_LIMIT: usize = 500;
 
+/// First `item-list` fetch. GraphQL cost scales with the **requested**
+/// limit (measured: `--limit 500` ≈ 101 points, `--limit 50` ≈ 51), so
+/// boards are fetched small first and re-fetched at [`ITEM_LIMIT`] only
+/// when `totalCount` says more items exist.
+pub const ITEM_FIRST_FETCH: usize = 100;
+
+/// `field-list` limit: projects rarely define more than a couple dozen
+/// fields; a full page here costs as much as an item page.
+pub const FIELD_LIMIT: usize = 30;
+
+/// The larger limit to retry with when a first fetch came back full:
+/// `Some(bigger)` when `fetched` filled `limit` and `total` says there is
+/// more (a `total` of 0 means the CLI did not report one — retry too).
+pub fn needs_bigger_fetch(fetched: usize, total: u64, limit: usize, max: usize) -> Option<usize> {
+    (fetched >= limit && limit < max && (total == 0 || total > limit as u64)).then_some(max)
+}
+
 /// The repository vig runs in, its owner and the projects linked to it.
 pub fn repo_info() -> Result<RepoInfo, String> {
     run_gh_json(
@@ -19,6 +36,18 @@ pub fn repo_info() -> Result<RepoInfo, String> {
 }
 
 pub fn list_fields(owner: &str, number: u64) -> Result<Vec<ProjectField>, String> {
+    let fields = list_fields_limited(owner, number, FIELD_LIMIT)?;
+    match needs_bigger_fetch(fields.len(), 0, FIELD_LIMIT, 100) {
+        Some(bigger) => list_fields_limited(owner, number, bigger),
+        None => Ok(fields),
+    }
+}
+
+fn list_fields_limited(
+    owner: &str,
+    number: u64,
+    limit: usize,
+) -> Result<Vec<ProjectField>, String> {
     let list: FieldList = run_gh_json(
         &[
             "project",
@@ -29,7 +58,7 @@ pub fn list_fields(owner: &str, number: u64) -> Result<Vec<ProjectField>, String
             "--format",
             "json",
             "--limit",
-            "100",
+            &limit.to_string(),
         ],
         "gh project field-list failed",
     )?;
@@ -37,6 +66,19 @@ pub fn list_fields(owner: &str, number: u64) -> Result<Vec<ProjectField>, String
 }
 
 pub fn list_items(owner: &str, number: u64) -> Result<ItemList, String> {
+    let list = list_items_limited(owner, number, ITEM_FIRST_FETCH)?;
+    match needs_bigger_fetch(
+        list.items.len(),
+        list.total_count,
+        ITEM_FIRST_FETCH,
+        ITEM_LIMIT,
+    ) {
+        Some(bigger) => list_items_limited(owner, number, bigger),
+        None => Ok(list),
+    }
+}
+
+fn list_items_limited(owner: &str, number: u64, limit: usize) -> Result<ItemList, String> {
     run_gh_json(
         &[
             "project",
@@ -47,7 +89,7 @@ pub fn list_items(owner: &str, number: u64) -> Result<ItemList, String> {
             "--format",
             "json",
             "--limit",
-            &ITEM_LIMIT.to_string(),
+            &limit.to_string(),
         ],
         "gh project item-list failed",
     )
@@ -59,13 +101,14 @@ pub fn list_items(owner: &str, number: u64) -> Result<ItemList, String> {
 pub fn fetch_board(owner: &str, owner_kind: &str, number: u64) -> Result<Board, String> {
     let fields = list_fields(owner, number)?;
     let items = list_items(owner, number)?;
-    let views = fetch_views(owner, owner_kind, number).unwrap_or_default();
+    let (views, api_remaining) = fetch_views(owner, owner_kind, number).unwrap_or_default();
     Ok(Board {
         number,
         fields,
         items: items.items,
         total_count: items.total_count,
         views,
+        api_remaining,
     })
 }
 
@@ -78,7 +121,11 @@ pub fn fetch_board(owner: &str, owner_kind: &str, number: u64) -> Result<Board, 
 /// 30 visible fields — far above what the GitHub UI produces (grouping
 /// and sorting take one field there); anything beyond a cap is ignored
 /// rather than paginated.
-pub fn fetch_views(owner: &str, owner_kind: &str, number: u64) -> Result<Vec<ProjectView>, String> {
+pub fn fetch_views(
+    owner: &str,
+    owner_kind: &str,
+    number: u64,
+) -> Result<(Vec<ProjectView>, Option<u64>), String> {
     match owner_kind {
         "User" => fetch_views_as(owner, number, false),
         "Organization" => fetch_views_as(owner, number, true),
@@ -86,12 +133,21 @@ pub fn fetch_views(owner: &str, owner_kind: &str, number: u64) -> Result<Vec<Pro
     }
 }
 
-fn fetch_views_as(owner: &str, number: u64, org: bool) -> Result<Vec<ProjectView>, String> {
+fn fetch_views_as(
+    owner: &str,
+    number: u64,
+    org: bool,
+) -> Result<(Vec<ProjectView>, Option<u64>), String> {
     use serde::Deserialize;
 
     #[derive(Deserialize)]
     struct Resp {
         data: serde_json::Value,
+    }
+    #[derive(Deserialize, Default)]
+    struct RateLimit {
+        #[serde(default)]
+        remaining: Option<u64>,
     }
     #[derive(Deserialize, Default)]
     struct Views {
@@ -144,7 +200,8 @@ fn fetch_views_as(owner: &str, number: u64, org: bool) -> Result<Vec<ProjectView
              groupByFields(first: 5) {{ nodes {{ ... on ProjectV2FieldCommon {{ name }} }} }} \
              verticalGroupByFields(first: 5) {{ nodes {{ ... on ProjectV2FieldCommon {{ name }} }} }} \
              sortByFields(first: 5) {{ nodes {{ direction field {{ ... on ProjectV2FieldCommon {{ name }} }} }} }} \
-             fields(first: 30) {{ nodes {{ ... on ProjectV2FieldCommon {{ name }} }} }} }} }} }} }} }}"
+             fields(first: 30) {{ nodes {{ ... on ProjectV2FieldCommon {{ name }} }} }} }} }} }} }} \
+           rateLimit {{ remaining }} }}"
     );
     let resp: Resp = crate::github::domain::client::run_gh_json(
         &[
@@ -159,6 +216,11 @@ fn fetch_views_as(owner: &str, number: u64, org: bool) -> Result<Vec<ProjectView
         ],
         "gh api graphql (project views) failed",
     )?;
+    let api_remaining: Option<u64> = resp
+        .data
+        .get("rateLimit")
+        .and_then(|v| serde_json::from_value::<RateLimit>(v.clone()).ok())
+        .and_then(|r| r.remaining);
     let views: Views = resp
         .data
         .get(root)
@@ -176,7 +238,7 @@ fn fetch_views_as(owner: &str, number: u64, org: bool) -> Result<Vec<ProjectView
             .filter(|s| !s.is_empty())
             .collect()
     };
-    Ok(views
+    let views = views
         .nodes
         .into_iter()
         .filter_map(|v| {
@@ -200,7 +262,8 @@ fn fetch_views_as(owner: &str, number: u64, org: bool) -> Result<Vec<ProjectView
                 visible_fields: names(&v.fields),
             })
         })
-        .collect())
+        .collect();
+    Ok((views, api_remaining))
 }
 
 /// Whether a `gh` error means the token lacks the `project` scope
@@ -235,6 +298,21 @@ mod tests {
             "Could not resolve to a ProjectV2 with the number 99."
         ));
         assert!(!is_scope_error("HTTP 404: Not Found"));
+    }
+
+    #[test]
+    fn bigger_fetch_only_when_the_first_page_was_full() {
+        // Under the limit: done.
+        assert_eq!(needs_bigger_fetch(8, 8, 100, 500), None);
+        assert_eq!(needs_bigger_fetch(99, 99, 100, 500), None);
+        // Full page and the total says more: retry at max.
+        assert_eq!(needs_bigger_fetch(100, 340, 100, 500), Some(500));
+        // Full page, no reported total (field-list): retry too.
+        assert_eq!(needs_bigger_fetch(30, 0, 30, 100), Some(100));
+        // Full page but the total says that was everything.
+        assert_eq!(needs_bigger_fetch(100, 100, 100, 500), None);
+        // Already at the max: never retry.
+        assert_eq!(needs_bigger_fetch(500, 900, 500, 500), None);
     }
 
     #[test]

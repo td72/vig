@@ -91,7 +91,11 @@ github-poll-interval "15s"
 ```
 
 Remember the quota is shared with everything else using your token —
-other tools polling the same account count against the same limit.
+other tools polling the same account count against the same limit. A vig
+instance left on the Projects page re-fetches its board every five
+minutes, so a forgotten terminal tab quietly spends points all day; the
+Projects status bar warns `⚠ api N left` when fewer than 1,500 of the
+5,000 hourly GraphQL points remain.
 
 ## The Files view shows boxes / garbage instead of icons
 
