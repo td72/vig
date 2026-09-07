@@ -139,6 +139,9 @@ pub struct ProjectsState {
     board_cache: HashMap<u64, CachedBoard>,
     /// Project numbers with a board fetch in flight.
     board_inflight: HashSet<u64>,
+    /// GraphQL points left at the last board fetch (`rateLimit` piggy-
+    /// backed on the views query); shown in the status bar when low.
+    pub api_remaining: Option<u64>,
     /// Read / write the disk cache (tests turn it off).
     use_disk_cache: bool,
     layout_config: PageLayoutConfig,
@@ -213,6 +216,7 @@ impl ProjectsState {
             last_list_refresh: None,
             board_cache: HashMap::new(),
             board_inflight: HashSet::new(),
+            api_remaining: None,
             use_disk_cache: true,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
@@ -496,6 +500,9 @@ impl ProjectsState {
                     let current = self.panes.projects.selected_number() == Some(number);
                     match result {
                         Ok(board) => {
+                            if let Some(left) = board.api_remaining {
+                                self.api_remaining = Some(left);
+                            }
                             if self.use_disk_cache {
                                 disk_cache::save_board(&board);
                             }

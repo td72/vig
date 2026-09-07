@@ -452,6 +452,19 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
                 spans.push(Span::raw("  "));
                 spans.push(Span::styled(age, Style::default().fg(Color::DarkGray)));
             }
+            // GraphQL points left (5000/h, account-wide) when running low.
+            if let Some(left) = pj.api_remaining.filter(|l| *l < 1500) {
+                let color = if left < 500 {
+                    Color::Red
+                } else {
+                    Color::Yellow
+                };
+                spans.push(Span::raw("  "));
+                spans.push(Span::styled(
+                    format!("⚠ api {left} left"),
+                    Style::default().fg(color),
+                ));
+            }
         }
         if pj.is_loading() {
             spans.push(Span::raw("  "));

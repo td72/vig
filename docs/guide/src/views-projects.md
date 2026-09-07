@@ -83,6 +83,11 @@ sub-issues of [#148](https://github.com/td72/vig/issues/148).
 - `gh project` needs the `project` token scope. When it is missing the view
   shows a notice instead of the panes: run `gh auth refresh -s project`, then
   press `r`.
-- Boards are fetched with `--limit 500`; the status bar says `(truncated)`
-  when a project has more items.
+- Boards are fetched with `--limit 100` first and re-fetched once at
+  `--limit 500` when more items exist (the GraphQL cost scales with the
+  requested limit, so small boards stay cheap); past 500 the status bar
+  says `(truncated)`.
+- The status bar warns `⚠ api N left` when fewer than 1,500 GraphQL
+  points remain of the account's 5,000/hour — see
+  [Troubleshooting](troubleshooting.md#-github-rate-limited).
 - Nothing in this view adds, moves, edits or deletes anything.
