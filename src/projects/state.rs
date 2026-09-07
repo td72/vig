@@ -70,6 +70,8 @@ impl ProjectsPaneIds {
 pub enum ProjectsBgMessage {
     /// `gh repo view`: the repository and its linked projects.
     Repo(Result<RepoInfo, String>),
+    /// `gh api user`: the signed-in login (`assignee:@me` in view filters).
+    Viewer(Option<String>),
     Board {
         number: u64,
         result: Result<Board, String>,
@@ -246,6 +248,7 @@ impl ProjectsState {
             self.sync_board();
         }
         self.spawn_list();
+        self.spawn_viewer();
     }
 
     fn set_repo(&mut self, repo: Option<String>) {
@@ -262,6 +265,16 @@ impl ProjectsState {
         self.update_notice();
         std::thread::spawn(move || {
             let _ = tx.send(ProjectsBgMessage::Repo(client::repo_info()));
+        });
+    }
+
+    /// `gh api user` once per session, for `assignee:@me` filters.
+    fn spawn_viewer(&mut self) {
+        let Some(tx) = self.bg_tx.clone() else {
+            return;
+        };
+        std::thread::spawn(move || {
+            let _ = tx.send(ProjectsBgMessage::Viewer(client::viewer_login()));
         });
     }
 
@@ -445,6 +458,9 @@ impl ProjectsState {
         };
         for msg in messages {
             match msg {
+                ProjectsBgMessage::Viewer(login) => {
+                    self.panes.board.set_viewer(login);
+                }
                 ProjectsBgMessage::Repo(result) => {
                     self.panes.projects.set_loading(false);
                     match result {

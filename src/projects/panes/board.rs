@@ -9,6 +9,7 @@ use crate::core::keymap::{
 use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
+use crate::projects::domain::filter::{self, Filter};
 use crate::projects::domain::roadmap::{self, Zoom};
 use crate::projects::domain::types::{
     columns_by, group_rows, item_key, sort_items_dir, table_columns, view_table_columns, Board,
@@ -180,6 +181,11 @@ pub struct BoardPane {
     /// The view number the pane last applied (mode / sort seeded from it);
     /// seeing a different one re-applies.
     applied_view: Option<u64>,
+    /// The current view's filter expression, parsed (`None` when the view
+    /// has none); items failing it are left out of every layout.
+    filter: Option<Filter>,
+    /// The signed-in login, for `assignee:@me` in filters.
+    viewer: Option<String>,
     /// Roadmap: time scale, horizontal scroll in cells (`None` = start of
     /// the timeline) and the first visible row.
     zoom: Zoom,
@@ -221,6 +227,8 @@ impl BoardPane {
             group_field: None,
             view_idx: 0,
             applied_view: None,
+            filter: None,
+            viewer: None,
             zoom: Zoom::Week,
             roadmap_scroll: None,
             roadmap_offset: 0,
@@ -258,6 +266,36 @@ impl BoardPane {
         self.repo = repo;
     }
 
+    /// The signed-in login (`assignee:@me`); re-applies the view's filter.
+    pub fn set_viewer(&mut self, login: Option<String>) {
+        self.viewer = login;
+        if self.board.is_some() {
+            self.apply_view(false);
+        }
+    }
+
+    /// Items the view's filter hides.
+    pub fn filtered_out(&self) -> usize {
+        match (&self.filter, &self.board) {
+            (Some(_), Some(b)) => b.items.len().saturating_sub(self.sorted.len()),
+            _ => 0,
+        }
+    }
+
+    /// `⚠ filter: unsupported "…"` for tokens the filter ignored.
+    pub fn filter_notice(&self) -> Option<String> {
+        let f = self.filter.as_ref()?;
+        if f.unsupported.is_empty() {
+            return None;
+        }
+        let list: Vec<String> = f.unsupported.iter().map(|t| format!("\"{t}\"")).collect();
+        Some(format!("⚠ filter: unsupported {}", list.join(", ")))
+    }
+
+    fn passes(filter: Option<&Filter>, item: &ProjectItem) -> bool {
+        filter.is_none_or(|f| f.matches(item))
+    }
+
     pub fn set_notice(&mut self, notice: Option<String>) {
         self.notice = notice;
     }
@@ -283,6 +321,7 @@ impl BoardPane {
         self.table_row = 0;
         self.view_idx = 0;
         self.applied_view = None;
+        self.filter = None;
         self.zoom = Zoom::Week;
         self.roadmap_scroll = None;
         self.roadmap_offset = 0;
@@ -327,8 +366,12 @@ impl BoardPane {
         }
     }
 
+    /// Items shown (the view's filter, when any, already applied).
     pub fn item_count(&self) -> usize {
-        self.board.as_ref().map_or(0, |b| b.items.len())
+        match &self.filter {
+            Some(_) => self.sorted.len(),
+            None => self.board.as_ref().map_or(0, |b| b.items.len()),
+        }
     }
 
     pub fn column_count(&self) -> usize {
@@ -488,6 +531,10 @@ impl BoardPane {
             .and_then(|v| v.group_by.first())
             .and_then(|name| board.fields.iter().find(|f| &f.name == name))
             .cloned();
+        self.filter = view
+            .and_then(|v| v.filter.as_deref())
+            .map(|expr| filter::parse(expr, self.viewer.as_deref()))
+            .filter(|f| !f.is_empty() || !f.unsupported.is_empty());
         if reset {
             let sort = view.and_then(|v| v.sort_by.first());
             self.sort_col = sort
@@ -537,7 +584,8 @@ impl BoardPane {
             return;
         };
         let view = board.views.get(self.view_idx);
-        let order = Self::board_card_order(board, view);
+        let mut order = Self::board_card_order(board, view);
+        order.retain(|&i| Self::passes(self.filter.as_ref(), &board.items[i]));
         let find_field = |name: &String| board.fields.iter().find(|f| &f.name == name).cloned();
         let col_field = view
             .and_then(|v| v.vertical_group_by.first())
@@ -604,7 +652,8 @@ impl BoardPane {
     fn resort(&mut self) {
         let keep = self.selected_index();
         if let (Some(board), Some(col)) = (&self.board, self.table_cols.get(self.sort_col)) {
-            let order = sort_items_dir(&board.items, col, board, self.sort_desc);
+            let mut order = sort_items_dir(&board.items, col, board, self.sort_desc);
+            order.retain(|&i| Self::passes(self.filter.as_ref(), &board.items[i]));
             match &self.group_field {
                 Some(field) => {
                     let grouped = group_rows(board, field, &order);
@@ -1747,6 +1796,52 @@ mod tests {
         assert_eq!(p.mode, BoardMode::Table);
         p.execute(&sh, BoardAction::ToggleTable);
         assert_eq!(p.mode, BoardMode::Roadmap);
+    }
+
+    #[test]
+    fn view_filter_hides_items_in_every_layout_and_reports_unsupported() {
+        let mut p = pane();
+        let sh = shared();
+        let mut b = board();
+        let total = b.items.len();
+        let mut v = view(1, "Open work");
+        v.filter = Some("-status:Done updated:>2026-01-01".into());
+        b.views = vec![v];
+        p.set_board(b);
+        // Table rows and the board's lane both drop the Done items.
+        let done = board()
+            .items
+            .iter()
+            .filter(|i| i.status.as_deref() == Some("Done"))
+            .count();
+        assert!(done > 0);
+        assert_eq!(p.item_count(), total - done);
+        assert_eq!(p.filtered_out(), done);
+        let lane_total: usize = p.lanes[0].columns.iter().map(|c| c.items.len()).sum();
+        assert_eq!(lane_total, total - done);
+        // The range token is reported, not applied.
+        assert_eq!(
+            p.filter_notice().as_deref(),
+            Some("⚠ filter: unsupported \"updated:>2026-01-01\"")
+        );
+        // Switching to a view without a filter shows everything again.
+        let mut b = board();
+        b.views = vec![view(1, "Open work"), view(2, "All")];
+        b.views[0].filter = Some("-status:Done".into());
+        p.set_board(b);
+        p.execute(&sh, BoardAction::NextView);
+        assert_eq!(p.item_count(), total);
+        assert_eq!(p.filtered_out(), 0);
+        assert_eq!(p.filter_notice(), None);
+
+        // `assignee:@me` resolves once the login is known.
+        let mut b = board();
+        b.views = vec![view(1, "Mine")];
+        b.views[0].filter = Some("assignee:@me".into());
+        p.set_board(b);
+        assert_eq!(p.item_count(), 0);
+        p.set_viewer(Some("td72".into()));
+        assert!(p.item_count() > 0);
     }
 
     #[test]

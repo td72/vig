@@ -448,6 +448,19 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
                     Style::default().fg(Color::Yellow),
                 ));
             }
+            // The view's filter hid some items.
+            let hidden = pj.panes.board.filtered_out();
+            if hidden > 0 {
+                spans.push(Span::raw(" "));
+                spans.push(Span::styled(
+                    format!("({hidden} filtered out)"),
+                    Style::default().fg(Color::DarkGray),
+                ));
+            }
+            if let Some(notice) = pj.panes.board.filter_notice() {
+                spans.push(Span::raw("  "));
+                spans.push(Span::styled(notice, Style::default().fg(Color::Yellow)));
+            }
             if let Some(age) = pj.board_age() {
                 spans.push(Span::raw("  "));
                 spans.push(Span::styled(age, Style::default().fg(Color::DarkGray)));
