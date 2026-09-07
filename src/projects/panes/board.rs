@@ -827,7 +827,8 @@ impl BoardPane {
                     .map(|c| c.items.len())
                     .max()
                     .unwrap_or(0);
-                ((cards.max(1) * CARD_HEIGHT) as u16 + 2).min(h.saturating_sub(1))
+                let want = cards.max(1) * CARD_HEIGHT + 2;
+                want.min(h.saturating_sub(1) as usize) as u16
             })
             .collect();
         self.lane_offset = self.lane_offset.min(self.lane);

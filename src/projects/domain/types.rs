@@ -557,7 +557,7 @@ impl Column {
 /// card order inside each column; items not in `order` are left out.
 ///
 /// With `field` `None` the board's `Status` field is used (the classic
-/// kanban, [`Board::columns`]).
+/// kanban).
 pub fn columns_by(board: &Board, field: Option<&ProjectField>, order: &[usize]) -> Vec<Column> {
     let field = field.or_else(|| board.status_field());
     let (key, no_label) = match field {
