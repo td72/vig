@@ -266,6 +266,18 @@ fn fetch_views_as(
     Ok((views, api_remaining))
 }
 
+/// The signed-in login (`gh api user`, REST — no GraphQL points), for
+/// `assignee:@me` in view filters. `None` when unavailable.
+pub fn viewer_login() -> Option<String> {
+    let out = crate::github::domain::client::run_gh(
+        &["api", "user", "--jq", ".login"],
+        "gh api user failed",
+    )
+    .ok()?;
+    let login = String::from_utf8_lossy(&out).trim().to_string();
+    (!login.is_empty()).then_some(login)
+}
+
 /// Whether a `gh` error means the token lacks the `project` scope
 /// (`gh project` prints "missing required scopes [project]"; the GraphQL
 /// API asks for `read:project`).

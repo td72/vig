@@ -65,6 +65,16 @@ zoom between month, week and day scales, `h` / `l` scroll the timeline,
 and `t` drops into the table and back. Items without a span are listed
 without a bar.
 
+A view's **filter** (`status:Todo -label:bug assignee:@me is:issue
+no:milestone …`) is evaluated locally against the items already fetched —
+no extra API call — before grouping and sorting, in every layout. Supported:
+free-text title words, `field:value` with `,` lists and quoted values, `-`
+negation, `is:issue|pr|draft`, `no:` / `has:`, `assignee:` (`@me` is the
+signed-in login), `label:`, `milestone:`, `repo:`. Ranges (`>`, `..`),
+wildcards and `is:open|closed` cannot be evaluated: the status bar says
+`⚠ filter: unsupported "…"` and those tokens are ignored. The status bar also
+counts what the filter hid (`(3 filtered out)`).
+
 ## Key bindings
 
 | Key | Action |
