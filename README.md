@@ -277,7 +277,9 @@ default.
 | `h` / `←` / `Backspace` | Parent directory |
 | `i` | Focus preview |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (preview) | Scroll |
-| `h` / `Esc` (preview) | Back to file list |
+| `h` / `l` (preview) | Scroll long lines horizontally |
+| `/` `n` `N` (preview) | Search the file contents (matches highlighted, view follows) |
+| `Esc` (preview) | Clear the search / back to the file list |
 | `/` `n` `N` | Search file names |
 | `e` | Open selected file in external editor |
 | `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |

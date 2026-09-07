@@ -65,7 +65,7 @@ Type@1ms "# demo"
 Enter
 Type@1ms ""
 Enter
-Type@1ms "A tiny project used to show the **Files** view."
+Type@1ms "A tiny project used to show the **Files** view, with one deliberately long line that runs past the preview so horizontal scrolling has something to reveal."
 Enter
 Type@1ms ""
 Enter
@@ -170,9 +170,24 @@ Sleep 2s
 Type "m"
 Sleep 2s
 
-# Focus the preview, then back to the list
+# Focus the preview: `/` searches the file contents, `n` steps through
+# the matches, `l` / `h` scroll long lines horizontally
 Type "i"
 Sleep 1.5s
+Type "/reveal"
+Enter
+Sleep 2s
+Type "l"
+Sleep 800ms
+Type "l"
+Sleep 1.2s
+Type "h"
+Sleep 800ms
+Type "h"
+Sleep 1s
+# Esc clears the search, then returns to the list
+Escape
+Sleep 800ms
 Escape
 Sleep 1s
 

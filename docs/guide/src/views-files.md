@@ -30,6 +30,16 @@ rendered form and the raw highlighted text (the pane title shows `markdown` /
 `raw`); the [`markdown-preview`](config-reference.md#markdown-preview) config
 node picks the default.
 
+## Reading long files
+
+Inside the preview, `h` / `l` (or `←` / `→`) scroll long lines horizontally
+— nothing wraps, and the line number gutter stays put. `/` searches the
+file contents (case-insensitive) over what is shown: the rendered text in
+Markdown mode, the raw lines otherwise; matches are highlighted, `n` / `N`
+step through them and the view scrolls both ways so the current match is
+visible. `Esc` clears the search, then returns to the file list. Image
+previews have nothing to search.
+
 ## Opening files outside vig
 
 Beyond previewing, the Files view can hand a file to another program — this is
@@ -50,7 +60,9 @@ the only view with an "open with" concept:
 | `h` / `←` / `Backspace` | Parent directory |
 | `i` | Focus preview |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (preview) | Scroll |
-| `h` / `Esc` (preview) | Back to file list |
+| `h` / `l` (preview) | Scroll long lines horizontally |
+| `/` `n` `N` (preview) | Search the file contents |
+| `Esc` (preview) | Clear the search / back to the file list |
 | `/` `n` `N` | Search file names |
 | `e` | Open selected file in external editor |
 | `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |

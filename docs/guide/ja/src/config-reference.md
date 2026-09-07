@@ -616,7 +616,8 @@ follow 再開も兼ねます。
 | `dir_list` (nav, search) | `Enter` | `l`、`Right`、`Enter` | ディレクトリに入る / プレビューにフォーカス |
 | | `Parent` | `h`、`Left`、`Backspace` | 親ディレクトリへ |
 | | `FocusPreview` | `i` | プレビューにフォーカス |
-| `preview` (nav) | `Back` | `h`、`Left` | ファイル一覧に戻る |
+| `preview` (nav, search) | `ScrollLeft` / `ScrollRight` | `h`、`Left` / `l`、`Right` | 長い行を横スクロール |
+| | `Back` | — | ファイル一覧に戻る（既定では未割り当て。`Esc` / `Tab` で戻れる） |
 
 ### ページ `docker`
 

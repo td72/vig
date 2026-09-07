@@ -9,7 +9,7 @@ pub enum DiffSide {
 /// SearchOrigin is the pane index where the search was initiated.
 pub type SearchOrigin = usize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SearchMatch {
     /// Matches in a list-based pane (file tree, branch list, commit log, reflog, etc.)
     ListEntry(usize),
@@ -19,6 +19,13 @@ pub enum SearchMatch {
         col_start: usize,
         col_end: usize,
         side: DiffSide,
+    },
+    /// Matches in a plain text pane (the Files preview): a char range on
+    /// one displayed line.
+    TextLine {
+        row: usize,
+        col_start: usize,
+        col_end: usize,
     },
 }
 
