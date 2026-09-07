@@ -1369,7 +1369,12 @@ impl BoardPane {
                 cells[c] = ('┊', Style::default().fg(Color::Yellow));
             }
             if let Some((s0, e0)) = span {
-                let bar = Style::default().fg(icon_color);
+                // Draft grey would sink into the (selection) background.
+                let bar_color = match kind {
+                    ItemKind::Draft | ItemKind::Other => Color::Gray,
+                    _ => icon_color,
+                };
+                let bar = Style::default().fg(bar_color);
                 for x in zoom.x(*s0, origin)..=zoom.x_end(*e0, origin) {
                     if let Some(c) = visible(x) {
                         cells[c] = ('█', bar);
@@ -1576,7 +1581,7 @@ mod tests {
         p
     }
 
-    fn shared() -> PaneShared {
+    pub(super) fn shared() -> PaneShared {
         PaneShared {
             focused_pane: 1,
             previous_pane: 0,
@@ -1588,7 +1593,7 @@ mod tests {
         p.selected_item().map(|i| i.id.as_str()).unwrap_or("")
     }
 
-    fn view(n: u64, name: &str) -> ProjectView {
+    pub(super) fn view(n: u64, name: &str) -> ProjectView {
         ProjectView {
             number: n,
             name: name.into(),
@@ -2015,5 +2020,80 @@ mod tests {
         p.clear();
         assert!(p.board.is_none());
         assert!(p.notice().is_some(), "clear() keeps the notice");
+    }
+}
+
+#[cfg(test)]
+mod roadmap_render_tests {
+    use super::tests::{shared, view};
+    use super::*;
+    use crate::projects::domain::types::tests::board;
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    #[test]
+    fn selected_roadmap_row_keeps_its_bar() {
+        let mut p = BoardPane::new(1, 2, Some(0));
+        let mut b = board();
+        let mut v = view(1, "Timeline");
+        v.layout = ViewLayout::Roadmap;
+        b.views = vec![v];
+        // Give every item a span around today so bars land in view.
+        let t = roadmap::today();
+        let (y, m, d) = roadmap::civil_from_days(t);
+        let date = format!("{y:04}-{m:02}-{d:02}");
+        let (y2, m2, d2) = roadmap::civil_from_days(t + 5);
+        let date2 = format!("{y2:04}-{m2:02}-{d2:02}");
+        for item in &mut b.items {
+            item.fields
+                .insert("start date".into(), serde_json::Value::String(date.clone()));
+            item.fields.insert(
+                "target date".into(),
+                serde_json::Value::String(date2.clone()),
+            );
+        }
+        b.fields.push(ProjectField {
+            id: "FT".into(),
+            name: "Target date".into(),
+            kind: "ProjectV2Field".into(),
+            options: vec![],
+        });
+        p.set_board(b);
+        assert_eq!(p.mode, BoardMode::Roadmap);
+        let sh = shared();
+
+        let mut term = Terminal::new(TestBackend::new(100, 20)).unwrap();
+        term.draw(|f| {
+            let area = f.area();
+            let ctx = crate::core::app::AppContext {
+                should_quit: false,
+                active_page: 0,
+                page_labels: vec![],
+                page_keys: vec![],
+                show_help: false,
+                status_message: None,
+                error_dialog: None,
+                workdir: std::path::PathBuf::new(),
+                needs_full_redraw: false,
+            };
+            p.render(f, &ctx, &sh, area);
+        })
+        .unwrap();
+        let buf = term.backend().buffer().clone();
+        let row_text = |row: u16| -> String {
+            (0..buf.area.width)
+                .map(|x| buf[(x, row)].symbol().to_string())
+                .collect()
+        };
+        // Row 0/1 headers (inside the border), first item row selected.
+        let all: Vec<String> = (0..20).map(row_text).collect();
+        let selected_row = all
+            .iter()
+            .find(|l| l.contains(&board().items[0].title()[..10]))
+            .expect("selected item row rendered");
+        assert!(
+            selected_row.contains('█'),
+            "selected row lost its bar: {selected_row:?}"
+        );
     }
 }
