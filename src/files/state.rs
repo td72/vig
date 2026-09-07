@@ -258,9 +258,10 @@ impl FilesState {
                 PaneEvent::JumpToMatch(forward) => {
                     let jumped = self
                         .pane
-                        .jump_to_search_match(&mut self.panes, ctx, forward)
-                        .is_some();
-                    if jumped {
+                        .jump_to_search_match(&mut self.panes, ctx, forward);
+                    // A file-name search moved the list: reload the preview.
+                    // A content search jumped inside the preview: keep it.
+                    if jumped == Some(self.panes.ids.dir_list) {
                         self.panes.tab.sync_detail();
                     }
                 }

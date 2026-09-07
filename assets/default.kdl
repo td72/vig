@@ -296,8 +296,11 @@ page "files" {
     pane "preview" {
         keys {
             preset "nav"
-            "h" "Back"
-            "Left" "Back"
+            preset "search"
+            "h" "ScrollLeft"
+            "Left" "ScrollLeft"
+            "l" "ScrollRight"
+            "Right" "ScrollRight"
             "Esc" "Esc"
         }
     }

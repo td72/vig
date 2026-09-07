@@ -2,8 +2,11 @@
 //! directory listing for the selected entry.
 
 use crate::core::app::AppContext;
-use crate::core::keymap::{nav_bindings, ActionHelp, Keymap, NavAction};
-use crate::core::pane::{Pane, PaneEvent, PaneShared};
+use crate::core::keymap::{
+    nav_bindings, search_bindings, ActionHelp, Keymap, NavAction, SearchAction,
+};
+use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
+use crate::core::search::SearchMatch;
 use crate::core::syntax::SyntaxHighlighter;
 use crate::core::theme;
 use crate::files::domain::fs::{self, DirEntry, Preview};
@@ -21,12 +24,20 @@ use ratatui_image::StatefulImage;
 #[derive(Debug, Clone)]
 pub enum PreviewAction {
     Nav(NavAction),
+    /// Horizontal scroll of long lines.
+    ScrollLeft,
+    ScrollRight,
+    /// Content search (`/`, `n`, `N`) over the shown lines.
+    Search(SearchAction),
     /// Return focus to the directory list.
     Back,
     Esc,
 }
 
-crate::impl_pane_action_from_str!(PreviewAction, nav: Nav, Back, Esc);
+crate::impl_pane_action_from_str!(
+    PreviewAction, nav: Nav, search: Search, esc: Esc,
+    ScrollLeft, ScrollRight, Back
+);
 
 impl ActionHelp for PreviewAction {
     fn label(&self) -> Option<&'static str> {
@@ -34,17 +45,26 @@ impl ActionHelp for PreviewAction {
             PreviewAction::Nav(NavAction::MoveDown) => Some("Scroll down"),
             PreviewAction::Nav(NavAction::MoveUp) => Some("Scroll up"),
             PreviewAction::Nav(nav) => nav.label(),
+            PreviewAction::ScrollLeft => Some("Scroll left"),
+            PreviewAction::ScrollRight => Some("Scroll right"),
+            PreviewAction::Search(sa) => sa.label(),
             PreviewAction::Back => Some("Back to file list"),
-            PreviewAction::Esc => Some("Back to file list"),
+            PreviewAction::Esc => Some("Clear search / back to file list"),
         }
     }
 }
 
+/// Columns one `h` / `l` press scrolls by.
+const HSCROLL_STEP: usize = 8;
+
 pub fn default_keymap() -> Keymap<PreviewAction> {
     Keymap::new()
         .bindings(nav_bindings(PreviewAction::Nav))
-        .key(KeyCode::Char('h'), PreviewAction::Back)
-        .key(KeyCode::Left, PreviewAction::Back)
+        .bindings(search_bindings(PreviewAction::Search))
+        .key(KeyCode::Char('h'), PreviewAction::ScrollLeft)
+        .key(KeyCode::Left, PreviewAction::ScrollLeft)
+        .key(KeyCode::Char('l'), PreviewAction::ScrollRight)
+        .key(KeyCode::Right, PreviewAction::ScrollRight)
         .key(KeyCode::Esc, PreviewAction::Esc)
 }
 
@@ -57,7 +77,12 @@ pub struct PreviewPane {
     content: Preview,
     colors: Option<Vec<Vec<Color>>>,
     scroll: usize,
+    /// Horizontal scroll: content columns hidden on the left (the line
+    /// number gutter of a raw preview stays put).
+    scroll_x: usize,
     view_height: u16,
+    /// Content columns available for text (from the last render).
+    view_width: usize,
     icons: bool,
     /// `None` when image previews are disabled (`image-preview "none"`).
     picker: Option<Picker>,
@@ -102,7 +127,9 @@ impl PreviewPane {
             content: Preview::Empty,
             colors: None,
             scroll: 0,
+            scroll_x: 0,
             view_height: 20,
+            view_width: 80,
         }
     }
 
@@ -117,6 +144,7 @@ impl PreviewPane {
     /// Load the preview for `entry` (or clear it).
     pub fn load(&mut self, entry: Option<&DirEntry>) {
         self.scroll = 0;
+        self.scroll_x = 0;
         self.entry = entry.cloned();
         self.colors = None;
         self.markdown_lines = None;
@@ -150,6 +178,7 @@ impl PreviewPane {
     pub fn toggle_markdown(&mut self) {
         self.markdown = !self.markdown;
         self.scroll = 0;
+        self.scroll_x = 0;
     }
 
     /// Whether the selected entry is a Markdown file (by extension).
@@ -235,6 +264,77 @@ impl PreviewPane {
         lines
     }
 
+    /// The text lines as shown: the rendered Markdown when active, else
+    /// the raw file lines. Search and horizontal scroll work on these.
+    fn shown_texts(&self) -> Vec<String> {
+        if self.markdown_active() {
+            return self
+                .markdown_lines
+                .as_deref()
+                .unwrap_or(&[])
+                .iter()
+                .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect())
+                .collect();
+        }
+        match &self.content {
+            Preview::Text { lines, .. } => lines.clone(),
+            _ => Vec::new(),
+        }
+    }
+
+    /// Width of the line number gutter (`"123 "`) in raw mode, 0 otherwise.
+    fn gutter_width(&self) -> usize {
+        match (&self.content, self.markdown_active()) {
+            (Preview::Text { lines, .. }, false) => lines.len().to_string().len() + 1,
+            _ => 0,
+        }
+    }
+
+    /// Width in chars of the longest shown line (no allocation: the raw
+    /// lines and the rendered spans are measured in place).
+    fn longest_shown(&self) -> usize {
+        if self.markdown_active() {
+            return self
+                .markdown_lines
+                .as_deref()
+                .unwrap_or(&[])
+                .iter()
+                .map(|l| l.spans.iter().map(|s| s.content.chars().count()).sum())
+                .max()
+                .unwrap_or(0);
+        }
+        match &self.content {
+            Preview::Text { lines, .. } => {
+                lines.iter().map(|l| l.chars().count()).max().unwrap_or(0)
+            }
+            _ => 0,
+        }
+    }
+
+    /// The furthest `scroll_x` that still shows something: the longest
+    /// shown line minus the text width (0 when everything fits).
+    fn max_scroll_x(&self) -> usize {
+        let text_width = self.view_width.saturating_sub(self.gutter_width()).max(1);
+        self.longest_shown().saturating_sub(text_width)
+    }
+
+    /// Bring `(row, col)` of the shown text on screen, scrolling both ways
+    /// as little as needed.
+    fn scroll_into_view(&mut self, row: usize, col_start: usize, col_end: usize) {
+        let height = (self.view_height as usize).max(1);
+        if row < self.scroll {
+            self.scroll = row;
+        } else if row >= self.scroll + height {
+            self.scroll = row + 1 - height;
+        }
+        let text_width = self.view_width.saturating_sub(self.gutter_width()).max(1);
+        if col_start < self.scroll_x {
+            self.scroll_x = col_start.saturating_sub(HSCROLL_STEP);
+        } else if col_end > self.scroll_x + text_width {
+            self.scroll_x = col_end.saturating_sub(text_width);
+        }
+    }
+
     fn line_count(&self) -> usize {
         if self.markdown_active() {
             if let Some(md) = &self.markdown_lines {
@@ -248,8 +348,20 @@ impl PreviewPane {
         }
     }
 
-    fn execute(&mut self, _shared: &PaneShared, action: PreviewAction) -> Vec<PaneEvent> {
+    fn execute(&mut self, shared: &PaneShared, action: PreviewAction) -> Vec<PaneEvent> {
+        let back = vec![PaneEvent::SetFocus(self.list_pane_id)];
+        if let Some(events) = pane::try_dispatch_search_esc(&action, shared, self.pane_id, back) {
+            return events;
+        }
         match action {
+            PreviewAction::ScrollLeft => {
+                self.scroll_x = self.scroll_x.saturating_sub(HSCROLL_STEP);
+                vec![]
+            }
+            PreviewAction::ScrollRight => {
+                self.scroll_x = (self.scroll_x + HSCROLL_STEP).min(self.max_scroll_x());
+                vec![]
+            }
             PreviewAction::Nav(nav) => {
                 let max = self.line_count().saturating_sub(self.view_height as usize);
                 let half = crate::core::keymap::half_page_step(self.view_height) as usize;
@@ -264,17 +376,15 @@ impl PreviewPane {
                 .min(max);
                 vec![]
             }
-            PreviewAction::Back | PreviewAction::Esc => {
+            PreviewAction::Back | PreviewAction::Esc | PreviewAction::Search(_) => {
                 vec![PaneEvent::SetFocus(self.list_pane_id)]
             }
         }
     }
 
-    fn text_line(&self, row: usize, text: &str, gutter: usize) -> Line<'static> {
-        let mut spans = vec![Span::styled(
-            format!("{:>gutter$} ", row + 1),
-            Style::default().fg(Color::DarkGray),
-        )];
+    /// The syntax-colored content of raw line `row` (no gutter).
+    fn text_spans(&self, row: usize, text: &str) -> Vec<Span<'static>> {
+        let mut spans = Vec::new();
         match self.colors.as_ref().and_then(|c| c.get(row)) {
             Some(colors) if !colors.is_empty() => {
                 // Group runs of identical color into one span.
@@ -294,8 +404,91 @@ impl PreviewPane {
             }
             _ => spans.push(Span::raw(text.to_string())),
         }
-        Line::from(spans)
+        spans
     }
+}
+
+/// Apply the horizontal scroll and the search highlights to one line's
+/// content spans: `hl` holds `(col_start, col_end, is_current)` char
+/// ranges in the unscrolled text; the first `skip` chars are dropped.
+fn shift_and_highlight(
+    spans: Vec<Span<'static>>,
+    skip: usize,
+    hl: &[(usize, usize, bool)],
+) -> Vec<Span<'static>> {
+    if skip == 0 && hl.is_empty() {
+        return spans;
+    }
+    let mut out: Vec<Span<'static>> = Vec::new();
+    let mut run = String::new();
+    let mut run_style = Style::default();
+    let mut col = 0usize;
+    for span in spans {
+        for ch in span.content.chars() {
+            let c = col;
+            col += 1;
+            if c < skip {
+                continue;
+            }
+            let mut style = span.style;
+            if let Some((_, _, current)) = hl.iter().find(|(s, e, _)| c >= *s && c < *e) {
+                style = if *current {
+                    style
+                        .bg(theme::SEARCH_CURRENT_BG)
+                        .fg(theme::SEARCH_CURRENT_FG)
+                } else {
+                    style.bg(theme::SEARCH_MATCH_BG)
+                };
+            }
+            if style != run_style && !run.is_empty() {
+                out.push(Span::styled(std::mem::take(&mut run), run_style));
+            }
+            run_style = style;
+            run.push(ch);
+        }
+    }
+    if !run.is_empty() {
+        out.push(Span::styled(run, run_style));
+    }
+    out
+}
+
+/// One-char case folding: columns must stay those of the original text,
+/// so a char that lowercases to several (`İ` → `i̇`) keeps its first.
+fn fold_char(c: char) -> char {
+    c.to_lowercase().next().unwrap_or(c)
+}
+
+/// Every start index of `needle` in `hay` (overlaps allowed), by char.
+fn find_all(hay: &[char], needle: &[char]) -> Vec<usize> {
+    if needle.is_empty() || hay.len() < needle.len() {
+        return Vec::new();
+    }
+    (0..=hay.len() - needle.len())
+        .filter(|&i| hay[i..i + needle.len()] == *needle)
+        .collect()
+}
+
+/// `(col_start, col_end, is_current)` of this pane's matches per row.
+fn match_ranges(shared: &PaneShared, pane_id: usize) -> Vec<(usize, usize, usize, bool)> {
+    if shared.search.origin != pane_id || shared.search.query.is_none() {
+        return Vec::new();
+    }
+    let current = shared.search.current_match_idx;
+    shared
+        .search
+        .matches
+        .iter()
+        .enumerate()
+        .filter_map(|(i, m)| match m {
+            SearchMatch::TextLine {
+                row,
+                col_start,
+                col_end,
+            } => Some((*row, *col_start, *col_end, current == Some(i))),
+            _ => None,
+        })
+        .collect()
 }
 
 fn colored(text: String, color: Option<Color>) -> Span<'static> {
@@ -307,6 +500,38 @@ fn colored(text: String, color: Option<Color>) -> Span<'static> {
 
 impl Pane<PaneEvent> for PreviewPane {
     crate::impl_handle_key!(keymap);
+
+    /// Content search over the shown lines (rendered Markdown or raw
+    /// text), case-insensitive, one match per occurrence.
+    fn collect_search_matches(&self, _shared: &PaneShared, query: &str) -> Vec<SearchMatch> {
+        let needle: Vec<char> = query.chars().map(fold_char).collect();
+        if needle.is_empty() {
+            return Vec::new();
+        }
+        let mut out = Vec::new();
+        for (row, text) in self.shown_texts().iter().enumerate() {
+            let hay: Vec<char> = text.chars().map(fold_char).collect();
+            for col_start in find_all(&hay, &needle) {
+                out.push(SearchMatch::TextLine {
+                    row,
+                    col_start,
+                    col_end: col_start + needle.len(),
+                });
+            }
+        }
+        out
+    }
+
+    fn jump_to_match(&mut self, _shared: &PaneShared, search_match: &SearchMatch) {
+        if let SearchMatch::TextLine {
+            row,
+            col_start,
+            col_end,
+        } = search_match
+        {
+            self.scroll_into_view(*row, *col_start, *col_end);
+        }
+    }
 
     fn render(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
@@ -331,7 +556,18 @@ impl Pane<PaneEvent> for PreviewPane {
         let block = theme::pane_block(&title, shared.focused_pane == self.pane_id);
         let height = self.view_height as usize;
         let width = area.width.saturating_sub(2) as usize;
+        self.view_width = width;
+        self.scroll_x = self.scroll_x.min(self.max_scroll_x());
         let dim = Style::default().fg(Color::DarkGray);
+        let ranges = match_ranges(shared, self.pane_id);
+        let row_hl = |row: usize| -> Vec<(usize, usize, bool)> {
+            ranges
+                .iter()
+                .filter(|(r, ..)| *r == row)
+                .map(|(_, s, e, c)| (*s, *e, *c))
+                .collect()
+        };
+        let skip = self.scroll_x;
 
         let lines: Vec<Line> = if self.markdown_active() {
             let truncated = matches!(
@@ -342,7 +578,17 @@ impl Pane<PaneEvent> for PreviewPane {
                 }
             );
             let md = self.markdown_lines.as_deref().unwrap_or(&[]);
-            let mut out: Vec<Line> = md.iter().skip(self.scroll).take(height).cloned().collect();
+            let mut out: Vec<Line> = md
+                .iter()
+                .enumerate()
+                .skip(self.scroll)
+                .take(height)
+                .map(|(row, line)| {
+                    let base = line.style;
+                    Line::from(shift_and_highlight(line.spans.clone(), skip, &row_hl(row)))
+                        .style(base)
+                })
+                .collect();
             if truncated && self.scroll + height >= md.len() {
                 out.push(Line::from(Span::styled(" … (truncated)", dim)));
             }
@@ -356,7 +602,18 @@ impl Pane<PaneEvent> for PreviewPane {
                         .enumerate()
                         .skip(self.scroll)
                         .take(height)
-                        .map(|(row, text)| self.text_line(row, text, gutter))
+                        .map(|(row, text)| {
+                            let mut spans = vec![Span::styled(
+                                format!("{:>gutter$} ", row + 1),
+                                Style::default().fg(Color::DarkGray),
+                            )];
+                            spans.extend(shift_and_highlight(
+                                self.text_spans(row, text),
+                                skip,
+                                &row_hl(row),
+                            ));
+                            Line::from(spans)
+                        })
                         .collect();
                     if *truncated && self.scroll + height >= lines.len() {
                         out.push(Line::from(Span::styled(" … (truncated)", dim)));
@@ -430,6 +687,137 @@ mod tests {
             .iter()
             .map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect())
             .collect()
+    }
+
+    fn shared_for(p: &PreviewPane) -> PaneShared {
+        PaneShared {
+            focused_pane: p.pane_id,
+            previous_pane: p.list_pane_id,
+            search: crate::core::search::SearchState::new(),
+        }
+    }
+
+    #[test]
+    fn content_search_finds_char_ranges_in_raw_and_rendered_text() {
+        let p = pane_with(
+            "a.rs",
+            &["fn main() {", "    let Needle = needle();", "}"],
+            false,
+        );
+        let m = p.collect_search_matches(&shared_for(&p), "needle");
+        assert_eq!(
+            m,
+            vec![
+                SearchMatch::TextLine {
+                    row: 1,
+                    col_start: 8,
+                    col_end: 14
+                },
+                SearchMatch::TextLine {
+                    row: 1,
+                    col_start: 17,
+                    col_end: 23
+                },
+            ]
+        );
+        assert!(p.collect_search_matches(&shared_for(&p), "").is_empty());
+        // Columns are those of the original text even when a char
+        // lowercases to several (`İ` → `i̇`).
+        let p = pane_with("t.txt", &["İstanbul needle"], false);
+        let m = p.collect_search_matches(&shared_for(&p), "NEEDLE");
+        assert_eq!(
+            m,
+            vec![SearchMatch::TextLine {
+                row: 0,
+                col_start: 9,
+                col_end: 15
+            }]
+        );
+        // Rendered markdown: the match sits in the rendered line, not the source.
+        let mut p = pane_with("a.md", &["# Title", "", "some **bold** word"], true);
+        p.markdown_lines(80);
+        let m = p.collect_search_matches(&shared_for(&p), "bold");
+        assert_eq!(m.len(), 1);
+        let SearchMatch::TextLine { row, col_start, .. } = m[0] else {
+            panic!("text match");
+        };
+        let shown = p.shown_texts();
+        assert_eq!(&shown[row][col_start..col_start + 4], "bold");
+    }
+
+    #[test]
+    fn jump_scrolls_the_match_into_view_both_ways() {
+        let lines: Vec<String> = (0..50)
+            .map(|i| format!("{:>3}: {}needle{}", i, "x".repeat(60), i))
+            .collect();
+        let refs: Vec<&str> = lines.iter().map(String::as_str).collect();
+        let mut p = pane_with("long.txt", &refs, false);
+        p.view_height = 10;
+        p.view_width = 40;
+        let sh = shared_for(&p);
+        p.jump_to_match(
+            &sh,
+            &SearchMatch::TextLine {
+                row: 30,
+                col_start: 65,
+                col_end: 71,
+            },
+        );
+        assert!(
+            p.scroll <= 30 && 30 < p.scroll + 10,
+            "row on screen: {}",
+            p.scroll
+        );
+        let text_width = 40 - p.gutter_width();
+        assert!(
+            p.scroll_x <= 65 && 71 <= p.scroll_x + text_width,
+            "col on screen: {}",
+            p.scroll_x
+        );
+        // Jumping back to a match near the start scrolls left again.
+        p.jump_to_match(
+            &sh,
+            &SearchMatch::TextLine {
+                row: 2,
+                col_start: 0,
+                col_end: 3,
+            },
+        );
+        assert_eq!(p.scroll, 2);
+        assert_eq!(p.scroll_x, 0);
+    }
+
+    #[test]
+    fn horizontal_scroll_clamps_to_the_longest_line() {
+        let mut p = pane_with("w.txt", &["short", &"y".repeat(30)], false);
+        p.view_width = 20;
+        let sh = shared_for(&p);
+        for _ in 0..10 {
+            p.execute(&sh, PreviewAction::ScrollRight);
+        }
+        assert_eq!(p.scroll_x, p.max_scroll_x());
+        assert!(p.scroll_x > 0);
+        for _ in 0..10 {
+            p.execute(&sh, PreviewAction::ScrollLeft);
+        }
+        assert_eq!(p.scroll_x, 0);
+        // Everything fits: no horizontal scroll at all.
+        p.view_width = 80;
+        p.execute(&sh, PreviewAction::ScrollRight);
+        assert_eq!(p.scroll_x, 0);
+    }
+
+    #[test]
+    fn shift_and_highlight_drops_scrolled_chars_and_marks_matches() {
+        let spans = vec![Span::raw("abcdef"), Span::raw("gh")];
+        let out = shift_and_highlight(spans, 2, &[(3, 5, true)]);
+        let text: String = out.iter().map(|s| s.content.as_ref()).collect();
+        assert_eq!(text, "cdefgh");
+        let hit = out
+            .iter()
+            .find(|s| s.content.as_ref() == "de")
+            .expect("highlighted run");
+        assert_eq!(hit.style.bg, Some(theme::SEARCH_CURRENT_BG));
     }
 
     #[test]

@@ -619,7 +619,8 @@ Panes: `parent_dir`, `dir_list`, `preview` — all placed. `parent_dir` is
 | `dir_list` (nav, search) | `Enter` | `l`, `Right`, `Enter` | enter directory / focus preview |
 | | `Parent` | `h`, `Left`, `Backspace` | go to the parent directory |
 | | `FocusPreview` | `i` | focus the preview |
-| `preview` (nav) | `Back` | `h`, `Left` | back to the file list |
+| `preview` (nav, search) | `ScrollLeft` / `ScrollRight` | `h`, `Left` / `l`, `Right` | scroll long lines horizontally |
+| | `Back` | — | back to the file list (unbound by default: `Esc` / `Tab` get there) |
 
 ### Page `docker`
 
