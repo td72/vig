@@ -700,6 +700,7 @@ page "projects" {
 | | `ToggleTable` | `t` | ボード ⇄ テーブルモード |
 | | `CycleSort` | `s` | ソート列を順に切替（テーブルモード） |
 | | `NextView` / `PrevView` | `v` / `V` | プロジェクトの保存済みビューを切り替え |
+| | `ToggleLane` | `Space` | 選択中のスイムレーンを折りたたみ / 展開 |
 | | `OpenDetail` | `i`、`Enter` | アイテム詳細にフォーカス |
 | | `OpenBrowser` | `o` | アイテムをブラウザで開く |
 | | `CopyUrl` | `y` | アイテムの URL をコピー |

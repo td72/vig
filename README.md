@@ -426,6 +426,7 @@ press `r`. Nothing in this view adds, moves, edits or deletes anything.
 | `s` (board, table mode) | Cycle the sort column |
 | `Enter` / `i` (board) | Focus the detail |
 | `v` / `V` | Next / previous saved view of the project |
+| `Space` | Collapse / expand the selected swimlane (grouped board views) |
 | `o` | Open the project / item in the browser |
 | `y` | Copy the project / item URL |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |

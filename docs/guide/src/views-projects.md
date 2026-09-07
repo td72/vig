@@ -48,8 +48,15 @@ kanban. A **Table** view renders as the view defines it: its visible
 fields become the columns (in the view's order, behind a `#` column),
 its sort is the initial sort — descending sorts marked `▴` — and its
 grouping renders one bold header row per group, `No <field>` last.
-Rendering Board and Roadmap layouts per the view is tracked by the
-remaining sub-issues of [#148](https://github.com/td72/vig/issues/148).
+
+A **Board** view follows the view too: the columns come from its column
+field (`verticalGroupByFields` — any single-select or iteration field, in
+option order plus `No <field>`; `Status` when unset), its sort orders the
+cards inside each column, and its horizontal grouping renders **swimlanes**
+— one band per value with its own header line, `Space` collapses / expands
+the selected lane and `j` / `k` cross between lanes at a column's edge.
+Rendering the Roadmap layout per the view is tracked by the remaining
+sub-issues of [#148](https://github.com/td72/vig/issues/148).
 
 ## Key bindings
 
@@ -62,6 +69,7 @@ remaining sub-issues of [#148](https://github.com/td72/vig/issues/148).
 | `s` (board, table mode) | Cycle the sort column |
 | `Enter` / `i` (board) | Focus the detail |
 | `v` / `V` | Next / previous saved view of the project |
+| `Space` | Collapse / expand the selected swimlane |
 | `o` | Open the project / item in the browser |
 | `y` | Copy the project / item URL |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |
