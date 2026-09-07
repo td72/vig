@@ -1292,6 +1292,7 @@ impl BoardPane {
             .collect();
         let today_style = Style::default().fg(Color::Black).bg(Color::Yellow);
         for &c in &today_cells {
+            months[c] = (months[c].0, today_style);
             ticks[c] = (ticks[c].0, today_style);
         }
 

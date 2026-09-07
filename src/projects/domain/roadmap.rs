@@ -39,7 +39,10 @@ pub fn parse_date(s: &str) -> Option<i64> {
     if !(1..=12).contains(&m) || !(1..=31).contains(&d) {
         return None;
     }
-    Some(days_from_civil(y, m, d))
+    // Impossible days (2026-02-31) would silently shift into the next
+    // month; only dates that survive the round trip are real.
+    let days = days_from_civil(y, m, d);
+    (civil_from_days(days) == (y, m, d)).then_some(days)
 }
 
 /// Days since the epoch for "now".
@@ -253,6 +256,9 @@ mod tests {
         assert_eq!(parse_date("1970-01-01"), Some(0));
         assert_eq!(parse_date("1970-01-02"), Some(1));
         assert_eq!(parse_date("2026-13-01"), None);
+        assert_eq!(parse_date("2026-02-31"), None);
+        assert_eq!(parse_date("2026-02-29"), None); // not a leap year
+        assert!(parse_date("2028-02-29").is_some());
         assert_eq!(parse_date("not a date"), None);
         // Timestamps work too (only the date part is read).
         assert_eq!(parse_date("1970-01-02T10:00:00Z"), Some(1));
