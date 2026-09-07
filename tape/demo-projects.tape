@@ -78,6 +78,10 @@ Sleep 1s
 Type "j"
 Sleep 1.5s
 
+# `v` switches to the project's next saved view (a Board-layout view here)
+Type "v"
+Sleep 2.5s
+
 # Open the item detail: project fields, then the issue body
 Enter
 Sleep 2.5s

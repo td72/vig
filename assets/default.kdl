@@ -567,6 +567,7 @@ page "projects" {
             "s" "CycleSort"
             "v" "NextView"
             "V" "PrevView"
+            "Space" "ToggleLane"
             "Enter" "OpenDetail"
             "i" "OpenDetail"
             "o" "OpenBrowser"

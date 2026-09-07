@@ -534,35 +534,6 @@ impl Board {
     pub fn status_field(&self) -> Option<&ProjectField> {
         self.fields.iter().find(|f| f.is_status())
     }
-
-    /// Kanban columns: one per `Status` option in GitHub's order, then any
-    /// status the options do not list, then [`NO_STATUS`] when some item
-    /// has none. Each column holds indices into `items`.
-    pub fn columns(&self) -> Vec<Column> {
-        let mut columns: Vec<Column> = self
-            .status_field()
-            .map(|f| f.options.iter().map(|o| Column::new(&o.name)).collect())
-            .unwrap_or_default();
-        let mut no_status = Column::new(NO_STATUS);
-        for (idx, item) in self.items.iter().enumerate() {
-            match item.status.as_deref().filter(|s| !s.is_empty()) {
-                Some(status) => {
-                    if let Some(col) = columns.iter_mut().find(|c| c.name == status) {
-                        col.items.push(idx);
-                    } else {
-                        let mut col = Column::new(status);
-                        col.items.push(idx);
-                        columns.push(col);
-                    }
-                }
-                None => no_status.items.push(idx),
-            }
-        }
-        if !no_status.items.is_empty() {
-            columns.push(no_status);
-        }
-        columns
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -572,12 +543,52 @@ pub struct Column {
 }
 
 impl Column {
-    fn new(name: &str) -> Self {
+    pub(crate) fn new(name: &str) -> Self {
         Self {
             name: name.to_string(),
             items: Vec::new(),
         }
     }
+}
+
+/// Kanban columns over any field: one per option of `field` in GitHub's
+/// order (kept even when empty), then values the options do not list, then
+/// `No <field>` when some item has none. `order` (item indices) drives the
+/// card order inside each column; items not in `order` are left out.
+///
+/// With `field` `None` the board's `Status` field is used (the classic
+/// kanban, [`Board::columns`]).
+pub fn columns_by(board: &Board, field: Option<&ProjectField>, order: &[usize]) -> Vec<Column> {
+    let field = field.or_else(|| board.status_field());
+    let (key, no_label) = match field {
+        Some(f) => (f.item_key(), format!("No {}", f.name.to_lowercase())),
+        None => ("status".to_string(), NO_STATUS.to_string()),
+    };
+    let mut columns: Vec<Column> = field
+        .map(|f| f.options.iter().map(|o| Column::new(&o.name)).collect())
+        .unwrap_or_default();
+    let mut none = Column::new(&no_label);
+    for &idx in order {
+        let Some(item) = board.items.get(idx) else {
+            continue;
+        };
+        match item.field_text(&key).filter(|s| !s.is_empty()) {
+            Some(value) => {
+                if let Some(col) = columns.iter_mut().find(|c| c.name == value) {
+                    col.items.push(idx);
+                } else {
+                    let mut col = Column::new(&value);
+                    col.items.push(idx);
+                    columns.push(col);
+                }
+            }
+            None => none.items.push(idx),
+        }
+    }
+    if !none.items.is_empty() {
+        columns.push(none);
+    }
+    columns
 }
 
 // === Table ===
@@ -1025,7 +1036,7 @@ pub(crate) mod tests {
     #[test]
     fn columns_follow_option_order_then_unknown_then_no_status() {
         let board = board();
-        let cols = board.columns();
+        let cols = columns_by(&board, None, &(0..board.items.len()).collect::<Vec<_>>());
         let names: Vec<&str> = cols.iter().map(|c| c.name.as_str()).collect();
         assert_eq!(names, ["Todo", "In Progress", "Done", "Blocked", NO_STATUS]);
         assert_eq!(cols[0].items, [3]);
@@ -1040,14 +1051,18 @@ pub(crate) mod tests {
         for item in &mut plain.items {
             item.status = None;
         }
-        let cols = plain.columns();
+        let cols = columns_by(&plain, None, &(0..plain.items.len()).collect::<Vec<_>>());
         assert_eq!(cols.len(), 1);
         assert_eq!(cols[0].name, NO_STATUS);
         assert_eq!(cols[0].items.len(), 5);
         // No column for "No status" when every item has one.
         let mut full = board.clone();
         full.items.retain(|i| i.status.is_some());
-        assert!(full.columns().iter().all(|c| c.name != NO_STATUS));
+        assert!(
+            columns_by(&full, None, &(0..full.items.len()).collect::<Vec<_>>())
+                .iter()
+                .all(|c| c.name != NO_STATUS)
+        );
     }
 
     #[test]

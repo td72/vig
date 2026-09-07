@@ -10,8 +10,8 @@ use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
 use crate::projects::domain::types::{
-    group_rows, sort_items_dir, table_columns, view_table_columns, Board, Column, ItemKind,
-    ProjectField, ProjectItem, ProjectView, TableColumn, ViewLayout,
+    columns_by, group_rows, item_key, sort_items_dir, table_columns, view_table_columns, Board,
+    Column, ItemKind, ProjectField, ProjectItem, ProjectView, TableColumn, ViewLayout,
 };
 use crossterm::event::KeyCode;
 use ratatui::{
@@ -40,6 +40,8 @@ pub enum BoardAction {
     CycleSort,
     NextView,
     PrevView,
+    /// Collapse / expand the selected swimlane (grouped board views).
+    ToggleLane,
     OpenDetail,
     OpenBrowser,
     CopyUrl,
@@ -49,8 +51,8 @@ pub enum BoardAction {
 
 crate::impl_pane_action_from_str!(
     BoardAction, nav: Nav, search: Search, esc: Esc,
-    PrevColumn, NextColumn, ToggleTable, CycleSort, NextView, PrevView, OpenDetail,
-    OpenBrowser, CopyUrl
+    PrevColumn, NextColumn, ToggleTable, CycleSort, NextView, PrevView, ToggleLane,
+    OpenDetail, OpenBrowser, CopyUrl
 );
 
 impl ActionHelp for BoardAction {
@@ -65,6 +67,7 @@ impl ActionHelp for BoardAction {
             BoardAction::CycleSort => Some("Cycle sort column (table)"),
             BoardAction::NextView => Some("Next saved view"),
             BoardAction::PrevView => Some("Prev saved view"),
+            BoardAction::ToggleLane => Some("Collapse / expand lane"),
             BoardAction::OpenDetail => Some("Focus detail"),
             BoardAction::OpenBrowser => Some("Open item in browser"),
             BoardAction::CopyUrl => Some("Copy item URL"),
@@ -86,6 +89,7 @@ pub fn default_keymap() -> Keymap<BoardAction> {
         .key(KeyCode::Char('s'), BoardAction::CycleSort)
         .key(KeyCode::Char('v'), BoardAction::NextView)
         .key(KeyCode::Char('V'), BoardAction::PrevView)
+        .key(KeyCode::Char(' '), BoardAction::ToggleLane)
         .key(KeyCode::Enter, BoardAction::OpenDetail)
         .key(KeyCode::Char('i'), BoardAction::OpenDetail)
         .key(KeyCode::Char('o'), BoardAction::OpenBrowser)
@@ -97,6 +101,23 @@ pub fn default_keymap() -> Keymap<BoardAction> {
 pub enum BoardMode {
     Board,
     Table,
+}
+
+/// One swimlane of a board view: a full set of the board's columns holding
+/// the items whose grouping field has this lane's value. An ungrouped board
+/// is a single unnamed lane.
+pub struct BoardLane {
+    /// `None` for the single lane of an ungrouped board.
+    pub name: Option<String>,
+    pub collapsed: bool,
+    pub columns: Vec<Column>,
+}
+
+impl BoardLane {
+    /// Items across the lane's columns.
+    fn len(&self) -> usize {
+        self.columns.iter().map(|c| c.items.len()).sum()
+    }
 }
 
 pub struct BoardPane {
@@ -112,20 +133,27 @@ pub struct BoardPane {
     repo: Option<String>,
     /// Shown instead of a board (loading, nothing linked).
     notice: Option<String>,
-    columns: Vec<Column>,
+    /// The board's swimlanes (one unnamed lane when the view has no
+    /// horizontal grouping); every lane holds the same column set.
+    lanes: Vec<BoardLane>,
+    /// The name of the field driving the columns, when it is not `Status`.
+    column_field_name: Option<String>,
     table_cols: Vec<TableColumn>,
     /// Table row order: indices into `board.items`.
     sorted: Vec<usize>,
     pub mode: BoardMode,
-    /// Board mode: selected column and card within it.
+    /// Board mode: selected lane, column and card within it.
+    pub lane: usize,
     pub col: usize,
     pub row: usize,
+    /// Board mode: first visible lane (vertical scroll over the lanes).
+    lane_offset: usize,
     /// Board mode: first visible column (horizontal scroll) and how many
     /// columns fit the pane (from the last render).
     col_offset: usize,
     visible_cols: usize,
-    /// Board mode: first visible card per column.
-    col_scroll: Vec<usize>,
+    /// Board mode: first visible card per lane and column.
+    col_scroll: Vec<Vec<usize>>,
     /// Table mode: selected row (into `sorted`) and scroll state.
     pub table_row: usize,
     table_state: TableState,
@@ -159,12 +187,15 @@ impl BoardPane {
             project_url: None,
             repo: None,
             notice: None,
-            columns: Vec::new(),
+            lanes: Vec::new(),
+            column_field_name: None,
             table_cols: Vec::new(),
             sorted: Vec::new(),
             mode: BoardMode::Board,
+            lane: 0,
             col: 0,
             row: 0,
+            lane_offset: 0,
             col_offset: 0,
             visible_cols: 1,
             col_scroll: Vec::new(),
@@ -222,12 +253,15 @@ impl BoardPane {
     /// Drop the board (no project selected).
     pub fn clear(&mut self) {
         self.board = None;
-        self.columns.clear();
+        self.lanes.clear();
+        self.column_field_name = None;
         self.table_cols.clear();
         self.sorted.clear();
         self.col_scroll.clear();
+        self.lane = 0;
         self.col = 0;
         self.row = 0;
+        self.lane_offset = 0;
         self.col_offset = 0;
         self.table_row = 0;
         self.view_idx = 0;
@@ -249,8 +283,6 @@ impl BoardPane {
         }
         self.view_idx = self.view_idx.min(board.views.len().saturating_sub(1));
         let same_project = self.board.as_ref().map(|b| b.number) == Some(board.number);
-        self.columns = board.columns();
-        self.col_scroll = vec![0; self.columns.len()];
         self.error = None;
         self.board = Some(board);
         self.apply_view(!same_project);
@@ -258,10 +290,14 @@ impl BoardPane {
         match idx {
             Some(idx) => self.select_item(idx),
             None => {
-                self.col = self.col.min(self.columns.len().saturating_sub(1));
+                self.lane = self.lane.min(self.lanes.len().saturating_sub(1));
+                self.col = self.col.min(self.column_count().saturating_sub(1));
                 if self.column_len(self.col) == 0 {
-                    // Start on the first column that has a card.
-                    if let Some(c) = self.columns.iter().position(|c| !c.items.is_empty()) {
+                    // Start on the first column of the lane that has a card.
+                    let cur = self.lanes.get(self.lane);
+                    if let Some(c) =
+                        cur.and_then(|l| l.columns.iter().position(|c| !c.items.is_empty()))
+                    {
                         self.col = c;
                     }
                 }
@@ -276,7 +312,7 @@ impl BoardPane {
     }
 
     pub fn column_count(&self) -> usize {
-        self.columns.len()
+        self.lanes.first().map_or(0, |l| l.columns.len())
     }
 
     pub fn truncated(&self) -> bool {
@@ -284,13 +320,23 @@ impl BoardPane {
     }
 
     fn column_len(&self, col: usize) -> usize {
-        self.columns.get(col).map_or(0, |c| c.items.len())
+        self.lanes
+            .get(self.lane)
+            .and_then(|l| l.columns.get(col))
+            .map_or(0, |c| c.items.len())
     }
 
     /// Index into `board.items` of the selected card / row.
     pub fn selected_index(&self) -> Option<usize> {
         match self.mode {
-            BoardMode::Board => self.columns.get(self.col)?.items.get(self.row).copied(),
+            BoardMode::Board => self
+                .lanes
+                .get(self.lane)?
+                .columns
+                .get(self.col)?
+                .items
+                .get(self.row)
+                .copied(),
             BoardMode::Table => self.sorted.get(self.table_row).copied(),
         }
     }
@@ -309,19 +355,64 @@ impl BoardPane {
         self.board.as_ref()?.items.get(idx)
     }
 
-    /// Point both modes' selections at item `idx`.
+    /// Point both modes' selections at item `idx` (expanding the lane
+    /// holding it, so the selection never hides inside a collapsed one).
     fn select_item(&mut self, idx: usize) {
-        if let Some((c, r)) = self
-            .columns
-            .iter()
-            .enumerate()
-            .find_map(|(c, col)| col.items.iter().position(|&i| i == idx).map(|r| (c, r)))
-        {
+        let found = self.lanes.iter().enumerate().find_map(|(li, lane)| {
+            lane.columns
+                .iter()
+                .enumerate()
+                .find_map(|(c, col)| col.items.iter().position(|&i| i == idx).map(|r| (li, c, r)))
+        });
+        if let Some((li, c, r)) = found {
+            self.lane = li;
             self.col = c;
             self.row = r;
+            self.lanes[li].collapsed = false;
         }
         if let Some(r) = self.sorted.iter().position(|&i| i == idx) {
             self.table_row = r;
+        }
+    }
+
+    /// The selected lane collapsed: move the selection to the nearest
+    /// expanded lane with any card (its first non-empty column).
+    fn move_off_lane(&mut self) {
+        let after = self.lane + 1..self.lanes.len();
+        let before = (0..self.lane).rev();
+        for li in after.chain(before) {
+            let lane = &self.lanes[li];
+            if lane.collapsed || lane.len() == 0 {
+                continue;
+            }
+            if let Some(c) = lane.columns.iter().position(|c| !c.items.is_empty()) {
+                self.lane = li;
+                self.col = c;
+                self.row = 0;
+                return;
+            }
+        }
+    }
+
+    /// Move the selection to the next / previous expanded lane that has a
+    /// card in the current column.
+    fn cross_lane(&mut self, forward: bool) {
+        let candidates: Vec<usize> = if forward {
+            (self.lane + 1..self.lanes.len()).collect()
+        } else {
+            (0..self.lane).rev().collect()
+        };
+        for li in candidates {
+            let lane = &self.lanes[li];
+            if lane.collapsed {
+                continue;
+            }
+            let len = lane.columns.get(self.col).map_or(0, |c| c.items.len());
+            if len > 0 {
+                self.lane = li;
+                self.row = if forward { 0 } else { len - 1 };
+                return;
+            }
         }
     }
 
@@ -395,6 +486,93 @@ impl BoardPane {
         }
         self.sort_col = self.sort_col.min(self.table_cols.len().saturating_sub(1));
         self.resort();
+        self.rebuild_lanes();
+    }
+
+    /// Card order for the board: the view's first sort key, else the
+    /// fetch order.
+    fn board_card_order(board: &Board, view: Option<&ProjectView>) -> Vec<usize> {
+        let Some(sort) = view.and_then(|v| v.sort_by.first()) else {
+            return (0..board.items.len()).collect();
+        };
+        let col = match sort.field.as_str() {
+            "Title" => TableColumn::Title,
+            "Assignees" => TableColumn::Assignees,
+            name => TableColumn::Field {
+                name: name.to_string(),
+                key: item_key(name),
+            },
+        };
+        sort_items_dir(&board.items, &col, board, sort.desc)
+    }
+
+    /// Build the swimlanes for the current view: columns from its
+    /// `verticalGroupByFields` (else `Status`), one lane per value of its
+    /// `groupByFields` (else a single unnamed lane), cards ordered by its
+    /// sort. Collapsed lanes stay collapsed across a refresh (by name).
+    fn rebuild_lanes(&mut self) {
+        let Some(board) = &self.board else {
+            self.lanes.clear();
+            return;
+        };
+        let view = board.views.get(self.view_idx);
+        let order = Self::board_card_order(board, view);
+        let find_field = |name: &String| board.fields.iter().find(|f| &f.name == name).cloned();
+        let col_field = view
+            .and_then(|v| v.vertical_group_by.first())
+            .and_then(find_field);
+        let lane_field = view.and_then(|v| v.group_by.first()).and_then(find_field);
+        self.column_field_name = col_field.as_ref().map(|f| f.name.clone());
+        let template = columns_by(board, col_field.as_ref(), &order);
+        let collapsed: std::collections::HashSet<String> = self
+            .lanes
+            .iter()
+            .filter(|l| l.collapsed)
+            .filter_map(|l| l.name.clone())
+            .collect();
+        self.lanes = match &lane_field {
+            None => vec![BoardLane {
+                name: None,
+                collapsed: false,
+                columns: template,
+            }],
+            Some(field) => {
+                let key = col_field
+                    .as_ref()
+                    .map(|f| f.item_key())
+                    .unwrap_or_else(|| "status".to_string());
+                let no_label = col_field
+                    .as_ref()
+                    .map(|f| format!("No {}", f.name.to_lowercase()))
+                    .unwrap_or_else(|| crate::projects::domain::types::NO_STATUS.to_string());
+                group_rows(board, field, &order)
+                    .into_iter()
+                    .map(|(label, items)| {
+                        let mut columns: Vec<Column> =
+                            template.iter().map(|c| Column::new(&c.name)).collect();
+                        for idx in items {
+                            let value = board.items[idx]
+                                .field_text(&key)
+                                .filter(|v| !v.is_empty())
+                                .unwrap_or_else(|| no_label.clone());
+                            if let Some(col) = columns.iter_mut().find(|c| c.name == value) {
+                                col.items.push(idx);
+                            }
+                        }
+                        BoardLane {
+                            collapsed: collapsed.contains(&label),
+                            name: Some(label),
+                            columns,
+                        }
+                    })
+                    .collect()
+            }
+        };
+        self.lane = self.lane.min(self.lanes.len().saturating_sub(1));
+        self.lane_offset = self.lane_offset.min(self.lane);
+        self.col = self.col.min(self.column_count().saturating_sub(1));
+        self.row = self.row.min(self.column_len(self.col).saturating_sub(1));
+        self.col_scroll = vec![vec![0; self.column_count()]; self.lanes.len()];
     }
 
     /// The sort column's header, for the pane title.
@@ -455,7 +633,15 @@ impl BoardPane {
             BoardAction::Nav(nav) => match self.mode {
                 BoardMode::Board => {
                     let len = self.column_len(self.col);
-                    pane::execute_list_nav(nav, &mut self.row, len, Some(self.view_height));
+                    match nav {
+                        // At a column's edge, j / k cross into the next /
+                        // previous lane that has a card here.
+                        NavAction::MoveDown if self.row + 1 >= len => self.cross_lane(true),
+                        NavAction::MoveUp if self.row == 0 => self.cross_lane(false),
+                        _ => {
+                            pane::execute_list_nav(nav, &mut self.row, len, Some(self.view_height));
+                        }
+                    }
                 }
                 BoardMode::Table => {
                     pane::execute_list_nav(
@@ -479,8 +665,8 @@ impl BoardPane {
                         self.sort_desc = false;
                         self.resort();
                     }
-                } else if !self.columns.is_empty() {
-                    let n = self.columns.len();
+                } else if self.column_count() > 0 {
+                    let n = self.column_count();
                     self.col = if matches!(action, BoardAction::NextColumn) {
                         (self.col + 1).min(n - 1)
                     } else {
@@ -503,6 +689,18 @@ impl BoardPane {
                     self.sort_col = (self.sort_col + 1) % self.table_cols.len();
                     self.sort_desc = false;
                     self.resort();
+                }
+            }
+            BoardAction::ToggleLane => {
+                if self.mode == BoardMode::Board && self.lanes.len() > 1 {
+                    let collapsed = {
+                        let lane = &mut self.lanes[self.lane];
+                        lane.collapsed = !lane.collapsed;
+                        lane.collapsed
+                    };
+                    if collapsed {
+                        self.move_off_lane();
+                    }
                 }
             }
             BoardAction::NextView => return self.cycle_view(true),
@@ -543,9 +741,9 @@ impl BoardPane {
             .unwrap_or_default();
         match self.mode {
             BoardMode::Board => {
-                let n = self.columns.len();
+                let n = self.column_count();
                 let visible = self.visible_cols;
-                if n > visible {
+                let mut t = if n > visible {
                     let last = (self.col_offset + visible).min(n);
                     format!(
                         "Board{name} (columns {}-{last} of {n})",
@@ -553,7 +751,16 @@ impl BoardPane {
                     )
                 } else {
                     format!("Board{name}")
+                };
+                if let Some(f) = self.column_field_name.as_deref().filter(|f| *f != "Status") {
+                    t.push_str(&format!(" [columns: {f}]"));
                 }
+                if self.lanes.len() > 1 {
+                    if let Some(f) = &self.group_field {
+                        t.push_str(&format!(" · lanes: {}", f.name));
+                    }
+                }
+                t
             }
             BoardMode::Table => {
                 let mut t = match self.sort_label() {
@@ -574,7 +781,7 @@ impl BoardPane {
     /// How many columns fit `inner_width`, scrolling so the selected
     /// column stays on screen.
     fn layout_columns(&mut self, inner_width: u16) {
-        let n = self.columns.len().max(1);
+        let n = self.column_count().max(1);
         let visible = ((inner_width / MIN_COLUMN_WIDTH) as usize).clamp(1, n);
         self.visible_cols = visible;
         if self.col < self.col_offset {
@@ -594,7 +801,133 @@ impl BoardPane {
         match_set: &HashSet<usize>,
         current_match: Option<usize>,
     ) {
-        let visible = self.visible_cols.min(self.columns.len());
+        if self.lanes.len() <= 1 {
+            self.render_lane(
+                f,
+                0,
+                inner,
+                is_focused,
+                show_selection,
+                match_set,
+                current_match,
+            );
+            return;
+        }
+        // Swimlanes: one header line per lane, expanded lanes get their
+        // columns below it. Lanes scroll (`lane_offset`) so the selected
+        // one is always on screen with room for at least one card.
+        let h = inner.height;
+        let wants: Vec<u16> = self
+            .lanes
+            .iter()
+            .map(|lane| {
+                let cards = lane
+                    .columns
+                    .iter()
+                    .map(|c| c.items.len())
+                    .max()
+                    .unwrap_or(0);
+                ((cards.max(1) * CARD_HEIGHT) as u16 + 2).min(h.saturating_sub(1))
+            })
+            .collect();
+        self.lane_offset = self.lane_offset.min(self.lane);
+        loop {
+            let mut y = 0u16;
+            let mut current_placed = false;
+            for (li, want) in wants.iter().enumerate().skip(self.lane_offset) {
+                if y >= h {
+                    break;
+                }
+                y += 1; // header
+                if self.lanes[li].collapsed {
+                    if li == self.lane {
+                        current_placed = true;
+                    }
+                } else {
+                    let give = (*want).min(h - y);
+                    if li == self.lane && give >= 4 {
+                        current_placed = true;
+                    }
+                    y += give;
+                }
+            }
+            if current_placed || self.lane_offset >= self.lane {
+                break;
+            }
+            self.lane_offset += 1;
+        }
+        let bottom = inner.y + h;
+        let mut y = inner.y;
+        for (li, want) in wants.iter().enumerate().skip(self.lane_offset) {
+            if y >= bottom {
+                break;
+            }
+            let want = *want;
+            let lane = &self.lanes[li];
+            let marker = if lane.collapsed { "▸" } else { "▾" };
+            let label = format!(
+                " {marker} {} ({})",
+                lane.name.as_deref().unwrap_or(""),
+                lane.len()
+            );
+            let style = if li == self.lane && is_focused {
+                Style::default()
+                    .fg(Color::Magenta)
+                    .add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(Color::Magenta)
+            };
+            let header = Rect {
+                x: inner.x,
+                y,
+                width: inner.width,
+                height: 1,
+            };
+            f.render_widget(
+                Paragraph::new(Line::from(Span::styled(label, style))),
+                header,
+            );
+            y += 1;
+            if !self.lanes[li].collapsed && y < bottom {
+                let give = want.min(bottom - y);
+                if give >= 3 {
+                    let area = Rect {
+                        x: inner.x,
+                        y,
+                        width: inner.width,
+                        height: give,
+                    };
+                    self.render_lane(
+                        f,
+                        li,
+                        area,
+                        is_focused,
+                        show_selection,
+                        match_set,
+                        current_match,
+                    );
+                }
+                y += give;
+            }
+        }
+    }
+
+    /// One lane's columns (the whole pane for an ungrouped board).
+    #[allow(clippy::too_many_arguments)]
+    fn render_lane(
+        &mut self,
+        f: &mut Frame,
+        lane_idx: usize,
+        inner: Rect,
+        is_focused: bool,
+        show_selection: bool,
+        match_set: &HashSet<usize>,
+        current_match: Option<usize>,
+    ) {
+        let visible = self.visible_cols.min(self.column_count());
+        if visible == 0 || inner.height == 0 {
+            return;
+        }
         let constraints: Vec<Constraint> = (0..visible)
             .map(|_| Constraint::Ratio(1, visible as u32))
             .collect();
@@ -602,10 +935,11 @@ impl BoardPane {
         let Some(board) = &self.board else {
             return;
         };
+        let in_lane = lane_idx == self.lane;
         for (slot, ci) in (self.col_offset..self.col_offset + visible).enumerate() {
-            let column = &self.columns[ci];
+            let column = &self.lanes[lane_idx].columns[ci];
             let area = areas[slot];
-            let active = ci == self.col;
+            let active = in_lane && ci == self.col;
             let (border, title_style) = if active && is_focused {
                 (
                     Style::default().fg(theme::BORDER_FOCUSED),
@@ -640,7 +974,7 @@ impl BoardPane {
             if active {
                 self.view_height = per_page as u16;
             }
-            let scroll = &mut self.col_scroll[ci];
+            let scroll = &mut self.col_scroll[lane_idx][ci];
             if active {
                 if self.row < *scroll {
                     *scroll = self.row;
@@ -1010,6 +1344,108 @@ mod tests {
             vertical_group_by: vec![],
             sort_by: vec![],
             visible_fields: vec![],
+        }
+    }
+
+    #[test]
+    fn board_view_columns_come_from_vertical_group_by() {
+        let mut p = pane();
+        let mut b = board();
+        let mut v = view(1, "By priority");
+        v.layout = ViewLayout::Board;
+        v.vertical_group_by = vec!["Priority".into()];
+        b.views = vec![v];
+        p.set_board(b);
+        assert_eq!(p.mode, BoardMode::Board);
+        let names: Vec<&str> = p.lanes[0].columns.iter().map(|c| c.name.as_str()).collect();
+        // P1 / P2 in option order (kept even when empty), unset items last.
+        assert_eq!(names, vec!["P1", "P2", "No priority"]);
+        assert!(p.title().contains("[columns: Priority]"));
+        let total: usize = p.lanes[0].columns.iter().map(|c| c.items.len()).sum();
+        assert_eq!(total, p.item_count());
+    }
+
+    #[test]
+    fn board_view_group_by_builds_swimlanes_and_j_crosses_them() {
+        let mut p = pane();
+        let sh = shared();
+        let mut b = board();
+        let mut v = view(1, "Lanes");
+        v.layout = ViewLayout::Board;
+        v.group_by = vec!["Priority".into()];
+        b.views = vec![v];
+        p.set_board(b);
+        // One lane per priority value, unset items in "No priority".
+        let names: Vec<&str> = p.lanes.iter().filter_map(|l| l.name.as_deref()).collect();
+        assert_eq!(names, vec!["P1", "P2", "No priority"]);
+        assert!(p.lanes.iter().all(|l| l.columns.len() == p.column_count()));
+
+        // j at the bottom of a column crosses into the next lane that has
+        // a card in that column.
+        p.lane = 0;
+        p.col = p.lanes[0]
+            .columns
+            .iter()
+            .position(|c| !c.items.is_empty())
+            .unwrap();
+        p.row = p.lanes[0].columns[p.col].items.len() - 1;
+        let before = (p.lane, p.selected_index());
+        p.execute(&sh, BoardAction::Nav(NavAction::MoveDown));
+        if p.lanes
+            .iter()
+            .skip(1)
+            .any(|l| !l.columns[p.col].items.is_empty())
+        {
+            assert_ne!(p.lane, before.0);
+            assert_eq!(p.row, 0);
+        }
+
+        // Space collapses the lane and moves the selection out of it.
+        p.lane = 0;
+        p.col = p.lanes[0]
+            .columns
+            .iter()
+            .position(|c| !c.items.is_empty())
+            .unwrap();
+        p.row = 0;
+        p.execute(&sh, BoardAction::ToggleLane);
+        assert!(p.lanes[0].collapsed);
+        assert_ne!(p.lane, 0);
+
+        // Jumping to an item inside the collapsed lane expands it again.
+        let hidden = p.lanes[0]
+            .columns
+            .iter()
+            .flat_map(|c| c.items.iter())
+            .next()
+            .copied()
+            .unwrap();
+        p.select_item(hidden);
+        assert!(!p.lanes[0].collapsed);
+        assert_eq!(p.lane, 0);
+    }
+
+    #[test]
+    fn board_view_sort_orders_cards_inside_columns() {
+        let mut p = pane();
+        let mut b = board();
+        let mut v = view(1, "Sorted");
+        v.layout = ViewLayout::Board;
+        v.sort_by = vec![crate::projects::domain::types::ViewSort {
+            field: "Title".into(),
+            desc: false,
+        }];
+        b.views = vec![v];
+        p.set_board(b);
+        for col in &p.lanes[0].columns {
+            let titles: Vec<String> = col
+                .items
+                .iter()
+                .map(|&i| p.board.as_ref().unwrap().items[i].title().to_lowercase())
+                .collect();
+            let mut sorted = titles.clone();
+            sorted.sort();
+            assert_eq!(titles, sorted, "column {}", col.name);
         }
     }
 
