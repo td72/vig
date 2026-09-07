@@ -55,8 +55,15 @@ option order plus `No <field>`; `Status` when unset), its sort orders the
 cards inside each column, and its horizontal grouping renders **swimlanes**
 — one band per value with its own header line, `Space` collapses / expands
 the selected lane and `j` / `k` cross between lanes at a column's edge.
-Rendering the Roadmap layout per the view is tracked by the remaining
-sub-issues of [#148](https://github.com/td72/vig/issues/148).
+A **Roadmap** view renders a timeline: item rows on the left, a time
+scale on the right with one bar per item, a yellow today marker and
+shaded iteration bands. Spans come from the project's date fields (a
+name containing `start` / `begin` is the span start, `target` / `end` /
+`due` / `finish` the end; a single date field is a point) or, for items
+without dates, from the iteration field's start and duration. `+` / `-`
+zoom between month, week and day scales, `h` / `l` scroll the timeline,
+and `t` drops into the table and back. Items without a span are listed
+without a bar.
 
 ## Key bindings
 
@@ -70,6 +77,7 @@ sub-issues of [#148](https://github.com/td72/vig/issues/148).
 | `Enter` / `i` (board) | Focus the detail |
 | `v` / `V` | Next / previous saved view of the project |
 | `Space` | Collapse / expand the selected swimlane |
+| `+` / `-` | Zoom the roadmap time scale in / out |
 | `o` | Open the project / item in the browser |
 | `y` | Copy the project / item URL |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |

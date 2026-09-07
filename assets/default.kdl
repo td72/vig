@@ -568,6 +568,8 @@ page "projects" {
             "v" "NextView"
             "V" "PrevView"
             "Space" "ToggleLane"
+            "+" "ZoomIn"
+            "-" "ZoomOut"
             "Enter" "OpenDetail"
             "i" "OpenDetail"
             "o" "OpenBrowser"
