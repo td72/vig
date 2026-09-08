@@ -390,8 +390,7 @@ dropped, added or removed from this view.
 ![projects demo](assets/demo-projects.gif)
 
 A read-only board for the GitHub Projects (v2) linked to the current
-repository (`gh repo view --json projectsV2`), built on `gh project
-field-list` and `gh project item-list --format json`. The board takes the
+repository (`gh repo view --json projectsV2`), with the board itself fetched over GraphQL (a few points per board). The board takes the
 full width and the first linked project shows up right away: one column per
 `Status` option in GitHub's order, plus a `No status` column for items
 without one. With several linked projects the header reads

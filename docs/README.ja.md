@@ -362,7 +362,7 @@ Normal / Visual モードとヤンクもそのまま使えます。apply / drop 
 
 現在のリポジトリにリンクされた GitHub Projects (v2) を読み取り専用のボードとして眺める
 ビューです（リンクの取得は `gh repo view --json projectsV2`、ボードは
-`gh project field-list` / `gh project item-list --format json`）。ボードは全幅で表示され、
+ボード本体は GraphQL で取得（ボード 1 回あたり数ポイント））。ボードは全幅で表示され、
 最初のリンク済みプロジェクトがすぐに読み込まれます。列は `Status` の選択肢を GitHub 上の順に
 1 列ずつ、加えてステータス未設定のアイテム用の `No status` 列です。リンクされたプロジェクトが
 複数あるときはヘッダに `Board: <タイトル> (i/n)` と出て、`p` / `P` で順に切り替えられます。

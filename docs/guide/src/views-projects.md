@@ -3,8 +3,7 @@
 ![projects demo](../../../assets/demo-projects.gif)
 
 A read-only board for the GitHub Projects (v2) linked to the current
-repository (`gh repo view --json projectsV2`), built on `gh project
-field-list` and `gh project item-list --format json`.
+repository (`gh repo view --json projectsV2`), with the board itself fetched over GraphQL (a few points per board).
 
 The board takes the full width and the first linked project shows up right
 away: one column per `Status` option in GitHub's order, plus a `No status`
@@ -101,10 +100,11 @@ counts what the filter hid (`(3 filtered out)`).
 - `gh project` needs the `project` token scope. When it is missing the view
   shows a notice instead of the panes: run `gh auth refresh -s project`, then
   press `r`.
-- Boards are fetched with `--limit 100` first and re-fetched once at
-  `--limit 500` when more items exist (the GraphQL cost scales with the
-  requested limit, so small boards stay cheap); past 500 the status bar
-  says `(truncated)`.
+- Boards are fetched with two GraphQL requests — the fields, saved views
+  and item count, then the items in pages sized to that count — asking
+  only for what the page renders, which costs about a point per hundred
+  item × field pairs (a small board: ~2 points). Past 500 items the status
+  bar says `(truncated)`.
 - The header warns `⚠ api N left` when fewer than 1,500 GraphQL points
   remain of the account's 5,000/hour, and automatic re-fetches slow down
   or stop on their own — see
