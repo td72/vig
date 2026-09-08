@@ -141,9 +141,6 @@ pub struct ProjectsState {
     board_cache: HashMap<u64, CachedBoard>,
     /// Project numbers with a board fetch in flight.
     board_inflight: HashSet<u64>,
-    /// GraphQL points left at the last board fetch (`rateLimit` piggy-
-    /// backed on the views query); shown in the status bar when low.
-    pub api_remaining: Option<u64>,
     /// Read / write the disk cache (tests turn it off).
     use_disk_cache: bool,
     layout_config: PageLayoutConfig,
@@ -218,7 +215,6 @@ impl ProjectsState {
             last_list_refresh: None,
             board_cache: HashMap::new(),
             board_inflight: HashSet::new(),
-            api_remaining: None,
             use_disk_cache: true,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
@@ -304,9 +300,53 @@ impl ProjectsState {
 
     /// The cached board for `number` is missing or older than [`STALE_AFTER`].
     fn board_stale(&self, number: u64) -> bool {
+        self.board_stale_for(number, STALE_AFTER)
+    }
+
+    fn board_stale_for(&self, number: u64, stale_after: Duration) -> bool {
         self.board_cache
             .get(&number)
-            .is_none_or(|c| c.fetched_at.is_none_or(|t| t.elapsed() >= STALE_AFTER))
+            .is_none_or(|c| c.fetched_at.is_none_or(|t| t.elapsed() >= stale_after))
+    }
+
+    /// Another vig instance may have refreshed the board on disk since we
+    /// fetched: adopt that file when it is fresher than our copy and still
+    /// within `stale_after`, instead of fetching again. Returns whether it
+    /// was adopted.
+    fn adopt_newer_disk_board(&mut self, number: u64, stale_after: Duration) -> bool {
+        if !self.use_disk_cache {
+            return false;
+        }
+        let Some((board, age)) = disk_cache::load_board_with_age(number) else {
+            return false;
+        };
+        if age >= stale_after {
+            return false;
+        }
+        let ours = self
+            .board_cache
+            .get(&number)
+            .and_then(|c| c.fetched_at)
+            .map(|t| t.elapsed());
+        if ours.is_some_and(|mine| mine <= age) {
+            return false;
+        }
+        self.panes
+            .projects
+            .set_item_count(number, board.total_count);
+        let current = self.panes.projects.selected_number() == Some(number);
+        self.board_cache.insert(
+            number,
+            CachedBoard {
+                board: board.clone(),
+                fetched_at: Instant::now().checked_sub(age),
+            },
+        );
+        if current {
+            self.panes.board.set_board(board);
+            self.sync_detail();
+        }
+        true
     }
 
     pub fn is_loading(&self) -> bool {
@@ -516,9 +556,6 @@ impl ProjectsState {
                     let current = self.panes.projects.selected_number() == Some(number);
                     match result {
                         Ok(board) => {
-                            if let Some(left) = board.api_remaining {
-                                self.api_remaining = Some(left);
-                            }
                             if self.use_disk_cache {
                                 disk_cache::save_board(&board);
                             }
@@ -725,7 +762,7 @@ impl PageState for ProjectsState {
         self.pane.search.active
     }
 
-    fn on_activate(&mut self, _ctx: &mut AppContext) {
+    fn on_activate(&mut self, ctx: &mut AppContext) {
         if !self.initialized {
             self.initialize();
             return;
@@ -733,14 +770,23 @@ impl PageState for ProjectsState {
         if self.gh_available == Some(false) || self.scope_missing {
             return;
         }
+        // Automatic re-fetches follow the app-wide refresh scale: ×6 when
+        // idle, ×2 when the quota runs low, none when it is nearly gone or
+        // auto-refresh is off (manual `r` still works).
+        let Some(scale) = ctx.refresh_scale() else {
+            return;
+        };
+        let stale_after = STALE_AFTER * scale;
         let list_stale = self
             .last_list_refresh
-            .is_none_or(|t| t.elapsed() >= STALE_AFTER);
+            .is_none_or(|t| t.elapsed() >= stale_after);
         if list_stale && !self.panes.projects.is_loading() {
             self.spawn_list();
         }
         if let Some(number) = self.panes.projects.selected_number() {
-            if self.board_stale(number) {
+            if self.board_stale_for(number, stale_after)
+                && !self.adopt_newer_disk_board(number, STALE_AFTER)
+            {
                 self.spawn_board(number);
             }
         }
@@ -773,6 +819,8 @@ mod tests {
             error_dialog: None,
             workdir: std::path::PathBuf::new(),
             needs_full_redraw: false,
+            last_input: Instant::now(),
+            auto_refresh: true,
         }
     }
 

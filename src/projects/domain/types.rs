@@ -523,10 +523,6 @@ pub struct Board {
     /// failed or the project has none — the fixed Status kanban is shown).
     #[serde(default)]
     pub views: Vec<ProjectView>,
-    /// GraphQL points left when this board was fetched (piggy-backed on
-    /// the views query, cost-free). Not cached: `None` from disk.
-    #[serde(skip)]
-    pub api_remaining: Option<u64>,
 }
 
 impl Board {
@@ -903,7 +899,6 @@ pub(crate) mod tests {
             items: items.items,
             total_count: items.total_count,
             views: vec![],
-            api_remaining: None,
         }
     }
 

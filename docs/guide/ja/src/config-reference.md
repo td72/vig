@@ -32,6 +32,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`procs-refresh-interval`](#procs-refresh-interval) | `"2s"` | 置換 |
 | [`procs-history`](#procs-history) | `"120"` | 置換 |
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | 置換 |
+| [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
 | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
 | [`pages`](#pages) | 全 7 ページ | 丸ごと置換 |
 | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
@@ -49,6 +50,7 @@ markdown-preview "render"
 procs-refresh-interval "2s"
 procs-history "120"
 github-poll-interval "5s"
+github-auto-refresh "on"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 repo-config "on"
 app {
@@ -62,8 +64,8 @@ app {
 colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
-//   `procs-history`, `github-poll-interval`, `projects-board`, `pages`,
-//   `repo-config`, `app`, or `page`)
+//   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
+//   `projects-board`, `pages`, `repo-config`, `app`, or `page`)
 ```
 
 ## トップレベルノード
@@ -209,6 +211,26 @@ PR チェック、実行中ジョブのログ。別のページを表示して�
 
 ```kdl
 github-poll-interval "10s"
+```
+
+### `github-auto-refresh`
+
+vig が GitHub のデータを自動で更新するか: GitHub ページのポーリング
+（実行、watch モード、実行中ジョブのログ）と、Projects ページに戻った
+ときの stale 再取得。
+
+- **書式** — `github-auto-refresh "<mode>"` — `"on"` か `"off"`
+- **デフォルト** — `"on"`
+- **マージ** — デフォルトを置換。
+
+`"off"` は手動の `r` だけを残します — 共有トークン、CI 端末、vig を多数
+起動するマシン向け。on でも自動更新は自分で控えめになります: キー入力が
+10 分無いと全間隔が ×6（ヘッダに `idle`）、GraphQL クォータ（毎時）の残り
+20% 未満で ×2、5% 未満で停止（`refresh stopped`）。残り 1,500 ポイント
+未満ではヘッダに `⚠ api N left` も出ます。
+
+```kdl
+github-auto-refresh "off"
 ```
 
 ### `projects-board`

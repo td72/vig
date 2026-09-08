@@ -91,11 +91,17 @@ github-poll-interval "15s"
 ```
 
 Remember the quota is shared with everything else using your token —
-other tools polling the same account count against the same limit. A vig
-instance left on the Projects page re-fetches its board every five
-minutes, so a forgotten terminal tab quietly spends points all day; the
-Projects status bar warns `⚠ api N left` when fewer than 1,500 of the
-5,000 hourly GraphQL points remain.
+other tools polling the same account count against the same limit — and
+every vig instance you have open. vig protects the quota by itself: after
+10 minutes without a key press a forgotten instance polls six times less
+often (`idle` in the header), under 20 % of the hourly 5,000 GraphQL
+points every automatic interval doubles, under 5 % automatic refreshes
+stop (`refresh stopped`; `r` still works), and the header shows
+`⚠ api N left` below 1,500 points. Instances on the same repository also
+share their disk cache, so a board another instance just fetched is read
+from disk rather than fetched again. To stop automatic refreshes
+altogether, set
+[`github-auto-refresh "off"`](config-reference.md#github-auto-refresh).
 
 ## The Files view shows boxes / garbage instead of icons
 

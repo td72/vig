@@ -101,14 +101,13 @@ fn list_items_limited(owner: &str, number: u64, limit: usize) -> Result<ItemList
 pub fn fetch_board(owner: &str, owner_kind: &str, number: u64) -> Result<Board, String> {
     let fields = list_fields(owner, number)?;
     let items = list_items(owner, number)?;
-    let (views, api_remaining) = fetch_views(owner, owner_kind, number).unwrap_or_default();
+    let (views, _api_remaining) = fetch_views(owner, owner_kind, number).unwrap_or_default();
     Ok(Board {
         number,
         fields,
         items: items.items,
         total_count: items.total_count,
         views,
-        api_remaining,
     })
 }
 
@@ -221,6 +220,9 @@ fn fetch_views_as(
         .get("rateLimit")
         .and_then(|v| serde_json::from_value::<RateLimit>(v.clone()).ok())
         .and_then(|r| r.remaining);
+    if let Some(left) = api_remaining {
+        crate::core::api_budget::note(left);
+    }
     let views: Views = resp
         .data
         .get(root)

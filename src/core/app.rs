@@ -5,6 +5,7 @@ pub use crate::core::search::SearchMatch;
 use anyhow::{anyhow, Result};
 use crossterm::event::KeyEvent;
 use std::path::PathBuf;
+use std::time::{Duration, Instant};
 
 pub struct ErrorDialogState {
     pub title: String,
@@ -26,9 +27,76 @@ pub struct AppContext {
     /// Set when terminal content outside ratatui's buffer (inline images)
     /// must be wiped: the main loop clears the terminal before the next draw.
     pub needs_full_redraw: bool,
+    /// When the last key was pressed; automatic refreshes slow down after
+    /// [`IDLE_AFTER`] without one (a forgotten terminal tab).
+    pub last_input: Instant,
+    /// `github-auto-refresh`: `false` leaves only manual `r` refreshes.
+    pub auto_refresh: bool,
+}
+
+/// No key press for this long puts automatic refreshes into idle mode.
+pub const IDLE_AFTER: Duration = Duration::from_secs(600);
+/// Idle mode multiplies every automatic interval by this.
+pub const IDLE_SCALE: u32 = 6;
+
+/// The multiplier for automatic refresh intervals, or `None` when they
+/// are stopped (auto-refresh off, or under 5 % of the GraphQL quota).
+/// Idle ×6, under 20 % of the quota ×2, both compound.
+pub fn refresh_scale(auto_refresh: bool, idle: bool, remaining: Option<u64>) -> Option<u32> {
+    use crate::core::api_budget::{throttle_for, Throttle};
+    if !auto_refresh {
+        return None;
+    }
+    let quota = match throttle_for(remaining) {
+        Throttle::Stop => return None,
+        Throttle::Slow => 2,
+        Throttle::Normal => 1,
+    };
+    Some(quota * if idle { IDLE_SCALE } else { 1 })
 }
 
 impl AppContext {
+    /// No key press for [`IDLE_AFTER`].
+    pub fn idle(&self) -> bool {
+        self.last_input.elapsed() >= IDLE_AFTER
+    }
+
+    /// See [`refresh_scale`], with the live idle state and quota.
+    pub fn refresh_scale(&self) -> Option<u32> {
+        refresh_scale(
+            self.auto_refresh,
+            self.idle(),
+            crate::core::api_budget::remaining(),
+        )
+    }
+
+    /// `base` scaled for idle / quota, capped at `cap`; `None` when
+    /// automatic refreshes are stopped.
+    pub fn scaled_interval(&self, base: Duration, cap: Duration) -> Option<Duration> {
+        self.refresh_scale().map(|k| (base * k).min(cap))
+    }
+
+    /// Header note about the refresh state: the quota when low, `idle`,
+    /// or that automatic refreshes are off / stopped.
+    pub fn refresh_notice(&self) -> Option<(String, bool)> {
+        use crate::core::api_budget::{remaining, throttle_for, Throttle, WARN_BELOW};
+        let left = remaining();
+        let mut parts: Vec<String> = Vec::new();
+        let mut red = false;
+        if let Some(r) = left.filter(|r| *r < WARN_BELOW) {
+            parts.push(format!("⚠ api {r} left"));
+            red = throttle_for(left) == Throttle::Stop;
+        }
+        if !self.auto_refresh {
+            parts.push("auto-refresh off".into());
+        } else if throttle_for(left) == Throttle::Stop {
+            parts.push("refresh stopped".into());
+        } else if self.idle() {
+            parts.push("idle".into());
+        }
+        (!parts.is_empty()).then(|| (parts.join(" · "), red))
+    }
+
     /// Consume the pending full-redraw request.
     pub fn take_full_redraw(&mut self) -> bool {
         std::mem::take(&mut self.needs_full_redraw)
@@ -247,6 +315,7 @@ impl App {
     }
 
     pub fn handle_key(&mut self, key: KeyEvent) -> Result<PageAction> {
+        self.ctx.last_input = Instant::now();
         if self.ctx.show_help {
             self.ctx.show_help = false;
             return Ok(PageAction::None);
@@ -309,6 +378,20 @@ mod tests {
 
     /// Build the `App` from `cfg` exactly as production does; `App::new`
     /// fails (failing the test) if the page ids ever drift from the
+    #[test]
+    fn refresh_scale_compounds_idle_and_quota_and_stops() {
+        // Normal: ×1; idle: ×6; low quota (<20 %): ×2; both: ×12.
+        assert_eq!(refresh_scale(true, false, None), Some(1));
+        assert_eq!(refresh_scale(true, false, Some(4000)), Some(1));
+        assert_eq!(refresh_scale(true, true, Some(4000)), Some(IDLE_SCALE));
+        assert_eq!(refresh_scale(true, false, Some(900)), Some(2));
+        assert_eq!(refresh_scale(true, true, Some(900)), Some(2 * IDLE_SCALE));
+        // Under 5 % of the quota, or auto-refresh off: stopped.
+        assert_eq!(refresh_scale(true, false, Some(200)), None);
+        assert_eq!(refresh_scale(true, true, Some(200)), None);
+        assert_eq!(refresh_scale(false, false, None), None);
+    }
+
     /// `page:*` references in the config.
     fn app_with(cfg: &Config) -> App {
         let (pages, workdir) = all_pages(cfg);
@@ -322,6 +405,8 @@ mod tests {
             error_dialog: None,
             workdir,
             needs_full_redraw: false,
+            last_input: Instant::now(),
+            auto_refresh: true,
         };
         App::new(ctx, pages, cfg).expect("app keymap")
     }

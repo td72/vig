@@ -194,6 +194,13 @@ pub fn list_pr_stacks(limit: usize) -> Result<HashMap<u64, GhPrStackRef>, String
     #[derive(Deserialize)]
     struct Data {
         repository: Repo,
+        #[serde(rename = "rateLimit", default)]
+        rate_limit: Option<RateLimit>,
+    }
+    #[derive(Deserialize, Default)]
+    struct RateLimit {
+        #[serde(default)]
+        remaining: Option<u64>,
     }
     #[derive(Deserialize)]
     struct Repo {
@@ -228,7 +235,8 @@ pub fn list_pr_stacks(limit: usize) -> Result<HashMap<u64, GhPrStackRef>, String
     const QUERY: &str = "query($owner: String!, $name: String!, $first: Int!) { \
         repository(owner: $owner, name: $name) { \
           pullRequests(states: OPEN, first: $first, orderBy: {field: CREATED_AT, direction: DESC}) { \
-            nodes { number stack { number size } stackEntry { position } } } } }";
+            nodes { number stack { number size } stackEntry { position } } } } \
+        rateLimit { remaining } }";
     let resp: Resp = run_gh_json(
         &[
             "api",
@@ -244,6 +252,9 @@ pub fn list_pr_stacks(limit: usize) -> Result<HashMap<u64, GhPrStackRef>, String
         ],
         "gh api graphql (pull request stacks) failed",
     )?;
+    if let Some(left) = resp.data.rate_limit.as_ref().and_then(|r| r.remaining) {
+        crate::core::api_budget::note(left);
+    }
     Ok(resp
         .data
         .repository

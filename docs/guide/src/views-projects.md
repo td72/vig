@@ -105,7 +105,8 @@ counts what the filter hid (`(3 filtered out)`).
   `--limit 500` when more items exist (the GraphQL cost scales with the
   requested limit, so small boards stay cheap); past 500 the status bar
   says `(truncated)`.
-- The status bar warns `⚠ api N left` when fewer than 1,500 GraphQL
-  points remain of the account's 5,000/hour — see
+- The header warns `⚠ api N left` when fewer than 1,500 GraphQL points
+  remain of the account's 5,000/hour, and automatic re-fetches slow down
+  or stop on their own — see
   [Troubleshooting](troubleshooting.md#-github-rate-limited).
 - Nothing in this view adds, moves, edits or deletes anything.

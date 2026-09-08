@@ -308,9 +308,32 @@ impl Config {
         self.procs_refresh_interval()?;
         self.procs_history()?;
         self.github_poll_interval()?;
+        self.github_auto_refresh()?;
         self.projects_board()?;
         self.repo_config()?;
         Ok(())
+    }
+
+    /// Whether automatic refreshes run at all (`github-auto-refresh "on"` /
+    /// `"off"`, default on): the GitHub page's polling and the Projects
+    /// page's stale re-fetch. `"off"` leaves only manual `r`.
+    pub fn github_auto_refresh(&self) -> Result<bool> {
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "github-auto-refresh")
+        else {
+            return Ok(true);
+        };
+        match node.get(0usize).and_then(|v| v.as_string()) {
+            Some("on") => Ok(true),
+            Some("off") => Ok(false),
+            _ => Err(anyhow!(
+                "invalid {}: github-auto-refresh expects \"on\" or \"off\"",
+                self.describe()
+            )),
+        }
     }
 
     /// Whether the repository-local `.vig.kdl` layer is enabled
@@ -2324,6 +2347,21 @@ mod tests {
             assert!(msg.contains("bad projects-board"), "{bad}: {msg}");
             assert!(msg.contains("config file /u/config.kdl"), "{bad}: {msg}");
         }
+    }
+
+    #[test]
+    fn github_auto_refresh_default_override_and_validation() {
+        assert!(Config::builtin().github_auto_refresh().unwrap());
+        assert!(!user(r#"github-auto-refresh "off""#)
+            .unwrap()
+            .github_auto_refresh()
+            .unwrap());
+        let msg = format!(
+            "{:#}",
+            user(r#"github-auto-refresh "sometimes""#).expect_err("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("github-auto-refresh expects"), "{msg}");
     }
 
     #[test]
