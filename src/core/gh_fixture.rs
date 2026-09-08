@@ -125,12 +125,16 @@ pub fn replay(args: &[&str]) -> Option<Result<Vec<u8>, String>> {
     Some(std::fs::read(&path).map_err(|e| format!("{ENV}: no fixture {} ({e})", path.display())))
 }
 
-/// Write `stdout` as the fixture for `args` when recording is on.
+/// Write `stdout` as the fixture for `args` when recording is on. A
+/// failed write is reported on stderr (recording is a CLI subcommand)
+/// rather than silently producing an incomplete fixture set.
 pub fn record(args: &[&str], stdout: &[u8]) {
     let Some(dir) = record_dir() else {
         return;
     };
-    write(&dir, args, stdout);
+    if let Err(e) = write(&dir, args, stdout) {
+        eprintln!("warning: could not write fixture {}: {e}", name_for(args));
+    }
 }
 
 /// `tape/fixtures` of this checkout when it holds recordings (tests
@@ -141,10 +145,16 @@ pub fn recorded_dir() -> Option<PathBuf> {
     dir.join("auth_status.out").exists().then_some(dir)
 }
 
-fn write(dir: &Path, args: &[&str], stdout: &[u8]) {
-    let _ = std::fs::create_dir_all(dir);
-    let _ = std::fs::write(dir.join(name_for(args)), stdout);
+fn write(dir: &Path, args: &[&str], stdout: &[u8]) -> std::io::Result<()> {
+    std::fs::create_dir_all(dir)?;
+    std::fs::write(dir.join(name_for(args)), stdout)
 }
+
+/// Serialises the tests that point the global replay directory at the
+/// recordings (and clear it again): they must not overlap with each other
+/// or with a test that expects `gh` to be off.
+#[cfg(test)]
+pub static REPLAY_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 #[cfg(test)]
 mod tests {
@@ -179,7 +189,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("vig-fixture-test-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let args = ["issue", "view", "7", "--json", "title"];
-        write(&dir, &args, b"{\"title\":\"seven\"}");
+        write(&dir, &args, b"{\"title\":\"seven\"}").unwrap();
         // Through the file directly (the global replay dir is shared by
         // every test, so it is not touched here).
         let path = dir.join(name_for(&args));

@@ -1199,10 +1199,23 @@ mod kdl_regression {
     #[test]
     fn page_loads_lists_from_recorded_fixtures() {
         use crate::core::app::PageState;
-        let Some(dir) = crate::core::gh_fixture::recorded_dir() else {
+        use crate::core::gh_fixture;
+        let Some(dir) = gh_fixture::recorded_dir() else {
             return;
         };
-        crate::core::gh_fixture::set_replay_dir(Some(dir));
+        // Replay is process-global: hold the lock for the whole test and
+        // clear the directory again at the end.
+        let _guard = gh_fixture::REPLAY_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        gh_fixture::set_replay_dir(Some(dir));
+        struct Reset;
+        impl Drop for Reset {
+            fn drop(&mut self) {
+                gh_fixture::set_replay_dir(None);
+            }
+        }
+        let _reset = Reset;
         let mut st = GitHubState::new(&Config::builtin()).expect("github page");
         st.probe_reset = false;
         st.initialize();

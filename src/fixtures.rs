@@ -37,11 +37,19 @@ pub fn record(dir: &Path) -> Result<()> {
     }
     step("workflow runs, jobs and logs");
     let runs = actions::list_runs(actions::RUN_LIST_LIMIT).map_err(anyhow::Error::msg)?;
+    let mut missing_logs = Vec::new();
     for run in runs.iter().take(RUNS_WITH_JOBS) {
         let jobs = actions::list_jobs(run.id).map_err(anyhow::Error::msg)?;
         for job in &jobs {
-            let _ = actions::fetch_job_log(run.id, job.id, false);
+            // Logs expire on GitHub's side (and are absent for queued
+            // jobs), so a miss is reported rather than fatal.
+            if let Err(e) = actions::fetch_job_log(run.id, job.id, false) {
+                missing_logs.push(format!("run {} job {} ({e})", run.number, job.id));
+            }
         }
+    }
+    for m in &missing_logs {
+        eprintln!("warning: no log recorded for {m}");
     }
 
     step("linked projects");
