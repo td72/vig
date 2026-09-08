@@ -392,6 +392,34 @@ mod tests {
         assert_eq!(refresh_scale(false, false, None), None);
     }
 
+    #[test]
+    fn refresh_notice_reports_idle_and_off() {
+        let mut ctx = AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: PathBuf::new(),
+            needs_full_redraw: false,
+            last_input: Instant::now(),
+            auto_refresh: true,
+        };
+        // Fresh input, quota unknown: nothing to say.
+        assert_eq!(ctx.refresh_notice(), None);
+        // Idle: the header says so, in yellow.
+        ctx.last_input = Instant::now() - IDLE_AFTER;
+        assert_eq!(ctx.refresh_notice(), Some(("idle".to_string(), false)));
+        // Auto-refresh off wins over idle.
+        ctx.auto_refresh = false;
+        assert_eq!(
+            ctx.refresh_notice(),
+            Some(("auto-refresh off".to_string(), false))
+        );
+    }
+
     /// `page:*` references in the config.
     fn app_with(cfg: &Config) -> App {
         let (pages, workdir) = all_pages(cfg);

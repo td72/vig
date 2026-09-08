@@ -55,15 +55,16 @@ fn render_header_common(
         Span::raw(" "),
     ];
     spans.extend(context_spans);
+    // Refresh state (the GraphQL quota when low, idle, auto-refresh off)
+    // sits before the tabs so a narrow terminal never clips it.
+    if let Some((notice, red)) = ctx.refresh_notice() {
+        let color = if red { Color::Red } else { Color::Yellow };
+        spans.push(Span::raw(" "));
+        spans.push(Span::styled(notice, Style::default().fg(color)));
+    }
     spans.extend(page_tab_spans(ctx));
     spans.push(Span::raw("  "));
     spans.push(Span::styled("? help", Style::default().fg(Color::DarkGray)));
-    // Refresh state: the GraphQL quota when low, idle, auto-refresh off.
-    if let Some((notice, red)) = ctx.refresh_notice() {
-        let color = if red { Color::Red } else { Color::Yellow };
-        spans.push(Span::raw("  "));
-        spans.push(Span::styled(notice, Style::default().fg(color)));
-    }
 
     f.render_widget(Paragraph::new(Line::from(spans)), area);
 }

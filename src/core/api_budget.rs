@@ -9,6 +9,10 @@ use std::sync::atomic::{AtomicU64, Ordering};
 pub const HOURLY_LIMIT: u64 = 5000;
 /// The header warns below this many points.
 pub const WARN_BELOW: u64 = 1500;
+/// Under this share of the hourly limit, automatic intervals double.
+pub const SLOW_BELOW_PERCENT: u64 = 20;
+/// Under this share of the hourly limit, automatic refreshes stop.
+pub const STOP_BELOW_PERCENT: u64 = 5;
 
 const UNKNOWN: u64 = u64::MAX;
 static REMAINING: AtomicU64 = AtomicU64::new(UNKNOWN);
@@ -35,9 +39,10 @@ pub enum Throttle {
 }
 
 pub fn throttle_for(remaining: Option<u64>) -> Throttle {
+    let percent_of_limit = |r: u64| r * 100 / HOURLY_LIMIT;
     match remaining {
-        Some(r) if r * 20 < HOURLY_LIMIT => Throttle::Stop,
-        Some(r) if r * 5 < HOURLY_LIMIT => Throttle::Slow,
+        Some(r) if percent_of_limit(r) < STOP_BELOW_PERCENT => Throttle::Stop,
+        Some(r) if percent_of_limit(r) < SLOW_BELOW_PERCENT => Throttle::Slow,
         _ => Throttle::Normal,
     }
 }

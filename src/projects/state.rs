@@ -785,7 +785,7 @@ impl PageState for ProjectsState {
         }
         if let Some(number) = self.panes.projects.selected_number() {
             if self.board_stale_for(number, stale_after)
-                && !self.adopt_newer_disk_board(number, STALE_AFTER)
+                && !self.adopt_newer_disk_board(number, stale_after)
             {
                 self.spawn_board(number);
             }
