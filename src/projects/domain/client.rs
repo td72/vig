@@ -1,7 +1,8 @@
 //! Thin wrappers around the `gh` reads the page needs. Every command here
-//! only reads: `gh repo view` (the linked projects) and `gh project
-//! item-list / field-list` (a board). Nothing in this module (or the page)
-//! adds, edits or deletes items or fields.
+//! only reads: `gh repo view` (the linked projects), `gh api graphql`
+//! (a board — see `graphql.rs`) and, as the fallback, `gh project
+//! item-list / field-list`. Nothing in this module (or the page) adds,
+//! edits or deletes items or fields.
 
 use crate::github::domain::client::run_gh_json;
 use crate::projects::domain::types::*;
@@ -95,10 +96,15 @@ fn list_items_limited(owner: &str, number: u64, limit: usize) -> Result<ItemList
     )
 }
 
-/// Fields, items and saved views of one project. A views fetch failure is
-/// not fatal: the board still loads and the page falls back to the fixed
-/// Status kanban.
+/// Fields, items and saved views of one project: the GraphQL path
+/// ([`graphql::fetch_board`], a couple of points) first, and the
+/// `gh project` CLI path when that fails (a schema the account's API
+/// does not serve, an old `gh`). On the CLI path a views fetch failure
+/// is not fatal: the board still loads with the fixed Status kanban.
 pub fn fetch_board(owner: &str, owner_kind: &str, number: u64) -> Result<Board, String> {
+    if let Ok(board) = crate::projects::domain::graphql::fetch_board(owner, owner_kind, number) {
+        return Ok(board);
+    }
     let fields = list_fields(owner, number)?;
     let items = list_items(owner, number)?;
     let (views, _api_remaining) = fetch_views(owner, owner_kind, number).unwrap_or_default();
@@ -137,60 +143,6 @@ fn fetch_views_as(
     number: u64,
     org: bool,
 ) -> Result<(Vec<ProjectView>, Option<u64>), String> {
-    use serde::Deserialize;
-
-    #[derive(Deserialize)]
-    struct Resp {
-        data: serde_json::Value,
-    }
-    #[derive(Deserialize, Default)]
-    struct RateLimit {
-        #[serde(default)]
-        remaining: Option<u64>,
-    }
-    #[derive(Deserialize, Default)]
-    struct Views {
-        nodes: Vec<ViewNode>,
-    }
-    #[derive(Deserialize)]
-    struct ViewNode {
-        number: u64,
-        #[serde(default)]
-        name: String,
-        #[serde(default)]
-        layout: String,
-        #[serde(default)]
-        filter: Option<String>,
-        #[serde(rename = "groupByFields", default)]
-        group_by: Named,
-        #[serde(rename = "verticalGroupByFields", default)]
-        vertical_group_by: Named,
-        #[serde(rename = "sortByFields", default)]
-        sort_by: Sorts,
-        #[serde(default)]
-        fields: Named,
-    }
-    #[derive(Deserialize, Default)]
-    struct Named {
-        nodes: Vec<NameNode>,
-    }
-    #[derive(Deserialize, Default)]
-    struct NameNode {
-        #[serde(default)]
-        name: String,
-    }
-    #[derive(Deserialize, Default)]
-    struct Sorts {
-        nodes: Vec<SortNode>,
-    }
-    #[derive(Deserialize)]
-    struct SortNode {
-        #[serde(default)]
-        direction: String,
-        #[serde(default)]
-        field: NameNode,
-    }
-
     let root = if org { "organization" } else { "user" };
     let query = format!(
         "query($login: String!, $number: Int!) {{ {root}(login: $login) {{ \
@@ -202,7 +154,7 @@ fn fetch_views_as(
              fields(first: 30) {{ nodes {{ ... on ProjectV2FieldCommon {{ name }} }} }} }} }} }} }} \
            rateLimit {{ remaining }} }}"
     );
-    let resp: Resp = crate::github::domain::client::run_gh_json(
+    let resp: serde_json::Value = crate::github::domain::client::run_gh_json(
         &[
             "api",
             "graphql",
@@ -215,56 +167,16 @@ fn fetch_views_as(
         ],
         "gh api graphql (project views) failed",
     )?;
-    let api_remaining: Option<u64> = resp
-        .data
-        .get("rateLimit")
-        .and_then(|v| serde_json::from_value::<RateLimit>(v.clone()).ok())
-        .and_then(|r| r.remaining);
+    let api_remaining = resp
+        .pointer("/data/rateLimit/remaining")
+        .and_then(serde_json::Value::as_u64);
     if let Some(left) = api_remaining {
         crate::core::api_budget::note(left);
     }
-    let views: Views = resp
-        .data
-        .get(root)
-        .and_then(|v| v.get("projectV2"))
-        .and_then(|v| v.get("views"))
-        .cloned()
-        .map(serde_json::from_value)
-        .transpose()
-        .map_err(|e| format!("project views: JSON parse error: {e}"))?
+    let views = resp
+        .pointer(&format!("/data/{root}/projectV2/views"))
+        .map(crate::projects::domain::graphql::views_from)
         .unwrap_or_default();
-    let names = |n: &Named| -> Vec<String> {
-        n.nodes
-            .iter()
-            .map(|f| f.name.clone())
-            .filter(|s| !s.is_empty())
-            .collect()
-    };
-    let views = views
-        .nodes
-        .into_iter()
-        .filter_map(|v| {
-            Some(ProjectView {
-                number: v.number,
-                name: v.name,
-                layout: ViewLayout::parse(&v.layout)?,
-                filter: v.filter.filter(|f| !f.trim().is_empty()),
-                group_by: names(&v.group_by),
-                vertical_group_by: names(&v.vertical_group_by),
-                sort_by: v
-                    .sort_by
-                    .nodes
-                    .into_iter()
-                    .filter(|sn| !sn.field.name.is_empty())
-                    .map(|sn| ViewSort {
-                        field: sn.field.name.clone(),
-                        desc: sn.direction == "DESC",
-                    })
-                    .collect(),
-                visible_fields: names(&v.fields),
-            })
-        })
-        .collect();
     Ok((views, api_remaining))
 }
 
