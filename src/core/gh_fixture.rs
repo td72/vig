@@ -161,11 +161,16 @@ pub fn run_isolated(name: &str) {
         .args(["--exact", "--ignored", "--test-threads=1", name])
         .output()
         .expect("spawn the test binary");
+    let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(
         out.status.success(),
-        "isolated test {name} failed:\n{}\n{}",
-        String::from_utf8_lossy(&out.stdout),
+        "isolated test {name} failed:\n{stdout}\n{}",
         String::from_utf8_lossy(&out.stderr)
+    );
+    // A misspelt path would match nothing and "pass" vacuously.
+    assert!(
+        stdout.contains("1 passed"),
+        "isolated test {name} did not run (wrong path?):\n{stdout}"
     );
 }
 

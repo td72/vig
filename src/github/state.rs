@@ -1199,7 +1199,7 @@ mod kdl_regression {
     #[test]
     fn page_loads_lists_from_recorded_fixtures() {
         crate::core::gh_fixture::run_isolated(
-            "github::state::tests::page_loads_lists_from_recorded_fixtures_isolated",
+            "github::state::kdl_regression::page_loads_lists_from_recorded_fixtures_isolated",
         );
     }
 
