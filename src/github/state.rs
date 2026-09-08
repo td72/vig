@@ -27,6 +27,9 @@ use std::time::{Duration, Instant};
 
 /// First polling suspension after a rate-limit rejection.
 const RATE_LIMIT_BASE_BACKOFF: Duration = Duration::from_secs(30);
+/// Longest interval automatic polls stretch to when idle / low on quota.
+const MAX_AUTO_INTERVAL: Duration = Duration::from_secs(600);
+
 /// Longest polling suspension the backoff can grow to.
 const RATE_LIMIT_MAX_BACKOFF: Duration = Duration::from_secs(600);
 
@@ -823,7 +826,7 @@ impl crate::core::app::PageState for GitHubState {
         self.pane.search.active
     }
 
-    fn on_tick(&mut self, _ctx: &mut AppContext) {
+    fn on_tick(&mut self, ctx: &mut AppContext) {
         let Some(tx) = self.bg_tx.clone() else {
             return;
         };
@@ -833,6 +836,12 @@ impl crate::core::app::PageState for GitHubState {
         if self.polling_suspended() {
             return;
         }
+        // Idle / low-quota scaling of every automatic poll (`None`: stopped).
+        let Some(interval) = ctx.scaled_interval(self.poll_interval, MAX_AUTO_INTERVAL) else {
+            return;
+        };
+        self.panes.pr_tab.detail.set_poll_interval(interval);
+        self.panes.run_tab.detail.set_poll_interval(interval);
         self.panes.pr_tab.detail.handle_watch_tick(&tx);
         if self.gh_available != Some(true) {
             return;
@@ -841,7 +850,7 @@ impl crate::core::app::PageState for GitHubState {
         // the PR checks watch; the shown run polls its jobs and log itself.
         let due = self
             .last_runs_refresh
-            .is_none_or(|t| t.elapsed() >= self.poll_interval);
+            .is_none_or(|t| t.elapsed() >= interval);
         if self.panes.run_tab.list.has_active() && due && !self.panes.run_tab.list.is_loading() {
             self.spawn_runs(&tx);
         }
@@ -1244,6 +1253,8 @@ mod kdl_regression {
             error_dialog: None,
             workdir: std::path::PathBuf::new(),
             needs_full_redraw: false,
+            last_input: std::time::Instant::now(),
+            auto_refresh: true,
         };
         let events = st.dispatch_key(key("Enter"));
         assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == rd));
@@ -1323,6 +1334,8 @@ mod rate_limit {
             error_dialog: None,
             workdir: std::path::PathBuf::new(),
             needs_full_redraw: false,
+            last_input: std::time::Instant::now(),
+            auto_refresh: true,
         }
     }
 

@@ -2171,6 +2171,8 @@ mod roadmap_render_tests {
                 error_dialog: None,
                 workdir: std::path::PathBuf::new(),
                 needs_full_redraw: false,
+                last_input: std::time::Instant::now(),
+                auto_refresh: true,
             };
             p.render(f, &ctx, &sh, area);
         })

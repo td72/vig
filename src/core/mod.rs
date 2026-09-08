@@ -1,3 +1,4 @@
+pub mod api_budget;
 pub mod app;
 pub mod browser;
 pub mod config;

@@ -55,6 +55,13 @@ fn render_header_common(
         Span::raw(" "),
     ];
     spans.extend(context_spans);
+    // Refresh state (the GraphQL quota when low, idle, auto-refresh off)
+    // sits before the tabs so a narrow terminal never clips it.
+    if let Some((notice, red)) = ctx.refresh_notice() {
+        let color = if red { Color::Red } else { Color::Yellow };
+        spans.push(Span::raw(" "));
+        spans.push(Span::styled(notice, Style::default().fg(color)));
+    }
     spans.extend(page_tab_spans(ctx));
     spans.push(Span::raw("  "));
     spans.push(Span::styled("? help", Style::default().fg(Color::DarkGray)));
@@ -464,19 +471,6 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
             if let Some(age) = pj.board_age() {
                 spans.push(Span::raw("  "));
                 spans.push(Span::styled(age, Style::default().fg(Color::DarkGray)));
-            }
-            // GraphQL points left (5000/h, account-wide) when running low.
-            if let Some(left) = pj.api_remaining.filter(|l| *l < 1500) {
-                let color = if left < 500 {
-                    Color::Red
-                } else {
-                    Color::Yellow
-                };
-                spans.push(Span::raw("  "));
-                spans.push(Span::styled(
-                    format!("⚠ api {left} left"),
-                    Style::default().fg(color),
-                ));
             }
         }
         if pj.is_loading() {

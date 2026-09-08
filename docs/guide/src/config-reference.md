@@ -34,6 +34,7 @@ Conventions used below:
 | [`procs-refresh-interval`](#procs-refresh-interval) | `"2s"` | replaced |
 | [`procs-history`](#procs-history) | `"120"` | replaced |
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | replaced |
+| [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
 | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
 | [`pages`](#pages) | all seven pages | replaced wholesale |
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
@@ -51,6 +52,7 @@ markdown-preview "render"
 procs-refresh-interval "2s"
 procs-history "120"
 github-poll-interval "5s"
+github-auto-refresh "on"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 repo-config "on"
 app {
@@ -64,8 +66,8 @@ Anything else at the top level is an error:
 colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
-//   `procs-history`, `github-poll-interval`, `projects-board`, `pages`,
-//   `repo-config`, `app`, or `page`)
+//   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
+//   `projects-board`, `pages`, `repo-config`, `app`, or `page`)
 ```
 
 ## Top-level nodes
@@ -212,6 +214,27 @@ for the full story.
 
 ```kdl
 github-poll-interval "10s"
+```
+
+### `github-auto-refresh`
+
+Whether vig refreshes GitHub data on its own: the GitHub page's polling
+(runs, watch mode, a running job's log) and the Projects page's stale
+re-fetch when the page is shown again.
+
+- **Form** — `github-auto-refresh "<mode>"` — `"on"` or `"off"`
+- **Default** — `"on"`
+- **Merge** — replaces the default.
+
+`"off"` leaves only the manual `r` refresh — for shared tokens, CI terminals
+or a machine running many vig instances. Even when on, automatic refreshes
+back off by themselves: after 10 minutes without a key press every interval
+is ×6 (`idle` in the header), under 20 % of the hourly GraphQL quota ×2, and
+under 5 % they stop (`refresh stopped`). The header also shows `⚠ api N
+left` below 1,500 points.
+
+```kdl
+github-auto-refresh "off"
 ```
 
 ### `projects-board`

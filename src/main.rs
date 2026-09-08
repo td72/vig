@@ -289,6 +289,8 @@ fn run_tui(cfg: Config) -> Result<()> {
         error_dialog: None,
         workdir: workdir.clone(),
         needs_full_redraw: false,
+        last_input: std::time::Instant::now(),
+        auto_refresh: cfg.github_auto_refresh()?,
     };
     let mut app = App::new(ctx, pages, &cfg)?;
 

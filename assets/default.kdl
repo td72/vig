@@ -15,6 +15,12 @@ image-preview "auto"
 // (plain highlighted text). `m` toggles it per session.
 markdown-preview "render"
 
+// Automatic refreshes (GitHub page polling, Projects stale re-fetch):
+// "on" or "off". Off leaves only manual `r`. Automatic refreshes also slow
+// down after 10 minutes without a key press and when the GraphQL quota
+// runs low, and stop under 5 % of it.
+github-auto-refresh "on"
+
 // How often the Procs view re-reads processes and listening ports
 // ("2s", "500ms", ...; at least 250ms). Sampling pauses while another view is shown.
 procs-refresh-interval "2s"
