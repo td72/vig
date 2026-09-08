@@ -405,8 +405,7 @@ switches to a table with one row per item and the project's fields (Status,
 Priority, Estimate, Iteration, dates, custom text / number fields) as
 sortable columns. The detail pane lists every field value of the selected
 item, then the issue / PR body and comments as in the GitHub view (drafts
-show their body). Boards are fetched with `--limit 500`; the status bar
-says `(truncated)` when a project has more items.
+show their body). Past 500 items the status bar says `(truncated)`.
 
 A `projects` list pane also exists but is not placed by the built-in
 layout. Placing it in your config gets a selectable list of the linked

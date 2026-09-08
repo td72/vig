@@ -361,8 +361,8 @@ Normal / Visual モードとヤンクもそのまま使えます。apply / drop 
 ![projects demo](../assets/demo-projects.gif)
 
 現在のリポジトリにリンクされた GitHub Projects (v2) を読み取り専用のボードとして眺める
-ビューです（リンクの取得は `gh repo view --json projectsV2`、ボードは
-ボード本体は GraphQL で取得（ボード 1 回あたり数ポイント））。ボードは全幅で表示され、
+ビューです（リンクの取得は `gh repo view --json projectsV2`、ボード本体は
+GraphQL で取得 — 1 回あたり数ポイント）。ボードは全幅で表示され、
 最初のリンク済みプロジェクトがすぐに読み込まれます。列は `Status` の選択肢を GitHub 上の順に
 1 列ずつ、加えてステータス未設定のアイテム用の `No status` 列です。リンクされたプロジェクトが
 複数あるときはヘッダに `Board: <タイトル> (i/n)` と出て、`p` / `P` で順に切り替えられます。
@@ -373,8 +373,7 @@ Normal / Visual モードとヤンクもそのまま使えます。apply / drop 
 `owner/repo` が付きます。`t` でテーブルモードに切り替わり、1 行 1 アイテムで
 プロジェクトのフィールド（Status、Priority、Estimate、Iteration、日付、カスタムのテキスト /
 数値フィールド）を列として表示・ソートできます。詳細ペインは選択中アイテムの全フィールド値に続けて、
-GitHub View と同じ issue / PR の本文とコメントを表示します（draft は本文のみ）。ボードは
-`--limit 500` で取得し、それを超えるプロジェクトではステータスバーに `(truncated)` と出ます。
+GitHub View と同じ issue / PR の本文とコメントを表示します（draft は本文のみ）。500 件を超えるプロジェクトではステータスバーに `(truncated)` と出ます。
 
 `projects` 一覧ペインも実装されていますが、組み込みレイアウトには配置されていません。
 設定でレイアウトに配置すると、リンク済みプロジェクトを選べる一覧が戻ってきます。

@@ -5,7 +5,8 @@
 //! hundred item × field pairs (a fields + 3-item probe measured 1 point).
 //!
 //! Two requests per board: the project's fields, saved views and item
-//! count, then the items in pages of up to 100 sized to that count. The
+//! count, then the items in pages of up to 100 sized to that count, each
+//! item with as many field values as the project has fields. The
 //! responses are reshaped into the `gh … --format json` layout so the
 //! rest of the page ([`ProjectItem`] / [`ProjectField`]) is untouched.
 
@@ -17,8 +18,9 @@ use serde_json::{json, Value};
 
 /// Items per page (GitHub's maximum for `items(first:)`).
 const PAGE: usize = 100;
-/// Field values requested per item; projects rarely define more.
-const VALUES_PER_ITEM: usize = 30;
+/// Fields requested (GitHub's maximum for `fields(first:)`; a project
+/// cannot define more).
+const FIELD_CAP: usize = 100;
 
 const VIEWS_SELECTION: &str = "views(first: 20) { nodes { \
     name number layout filter \
@@ -31,7 +33,7 @@ const VIEWS_SELECTION: &str = "views(first: 20) { nodes { \
 fn meta_query(root: &str) -> String {
     format!(
         "query($login: String!, $number: Int!) {{ {root}(login: $login) {{ projectV2(number: $number) {{ \
-           fields(first: 30) {{ nodes {{ __typename \
+           fields(first: {FIELD_CAP}) {{ nodes {{ __typename \
              ... on ProjectV2FieldCommon {{ id name }} \
              ... on ProjectV2SingleSelectField {{ options {{ id name }} }} }} }} \
            {VIEWS_SELECTION} \
@@ -40,8 +42,11 @@ fn meta_query(root: &str) -> String {
     )
 }
 
-/// One page of items with their field values.
-fn items_query(root: &str) -> String {
+/// One page of items with their field values. `values_per_item` is the
+/// project's field count (an item cannot carry more values than that),
+/// which keeps the cost proportional to what the board really has.
+fn items_query(root: &str, values_per_item: usize) -> String {
+    let values_per_item = values_per_item.clamp(1, FIELD_CAP);
     format!(
         "query($login: String!, $number: Int!, $first: Int!, $after: String) {{ \
          {root}(login: $login) {{ projectV2(number: $number) {{ \
@@ -52,7 +57,7 @@ fn items_query(root: &str) -> String {
                  ... on Issue {{ number title url body repository {{ nameWithOwner }} }} \
                  ... on PullRequest {{ number title url body repository {{ nameWithOwner }} }} \
                  ... on DraftIssue {{ title body }} }} \
-               fieldValues(first: {VALUES_PER_ITEM}) {{ nodes {{ __typename \
+               fieldValues(first: {values_per_item}) {{ nodes {{ __typename \
                  ... on ProjectV2ItemFieldTextValue {{ text field {{ ... on ProjectV2FieldCommon {{ name }} }} }} \
                  ... on ProjectV2ItemFieldNumberValue {{ number field {{ ... on ProjectV2FieldCommon {{ name }} }} }} \
                  ... on ProjectV2ItemFieldDateValue {{ date field {{ ... on ProjectV2FieldCommon {{ name }} }} }} \
@@ -77,8 +82,13 @@ fn run(root: &str, query: &str, vars: &[(&str, String)]) -> Result<Value, String
         format!("query={query}"),
     ];
     for (k, v) in vars {
-        // Strings go through -f, numbers through -F (typed).
-        let flag = if v.parse::<i64>().is_ok() { "-F" } else { "-f" };
+        // `Int!` variables go through -F (typed), `String` ones through -f
+        // — by name, so a numeric-looking login or cursor stays a string.
+        let flag = if matches!(*k, "number" | "first") {
+            "-F"
+        } else {
+            "-f"
+        };
         args.push(flag.into());
         args.push(format!("{k}={v}"));
     }
@@ -142,7 +152,7 @@ fn fetch_as(root: &str, owner: &str, number: u64) -> Result<Board, String> {
         if let Some(cursor) = &after {
             vars.push(("after", cursor.clone()));
         }
-        let page = run(root, &items_query(root), &vars)?;
+        let page = run(root, &items_query(root, fields.len()), &vars)?;
         let page_items = items_from(page.pointer("/items/nodes").unwrap_or(&Value::Null));
         if page_items.is_empty() {
             break;
@@ -504,7 +514,7 @@ mod tests {
 
     #[test]
     fn queries_mention_every_value_type_and_page_by_cursor() {
-        let q = items_query("user");
+        let q = items_query("user", 15);
         for ty in [
             "TextValue",
             "NumberValue",
@@ -520,6 +530,11 @@ mod tests {
             assert!(q.contains(&format!("ProjectV2ItemField{ty}")), "{ty}");
         }
         assert!(q.contains("items(first: $first, after: $after)"));
+        assert!(q.contains("fieldValues(first: 15)"));
+        // Clamped to GitHub's maximum, never zero.
+        assert!(items_query("user", 500).contains("fieldValues(first: 100)"));
+        assert!(items_query("user", 0).contains("fieldValues(first: 1)"));
+        assert!(meta_query("user").contains("fields(first: 100)"));
         assert!(q.contains("rateLimit { cost remaining }"));
         assert!(meta_query("organization")
             .starts_with("query($login: String!, $number: Int!) { organization(login: $login)"));
