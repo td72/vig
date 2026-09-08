@@ -1,1 +1,1 @@
-[]
+[{"author":{"id":"MDQ6VXNlcjEyMTA5NDkz","is_bot":false,"login":"td72","name":"Kohei Hosokawa"},"baseRefName":"main","createdAt":"2026-09-08T10:13:05Z","headRefName":"feat/gh-fixtures","isDraft":false,"labels":[],"number":174,"reviewDecision":"","state":"OPEN","title":"🧪 Record and replay gh output for API-free demos and integration tests"}]

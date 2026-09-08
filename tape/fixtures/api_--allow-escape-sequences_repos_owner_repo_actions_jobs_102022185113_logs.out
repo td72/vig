@@ -1,0 +1,951 @@
+﻿2026-09-08T10:13:14.4907947Z Current runner version: '2.337.0'
+2026-09-08T10:13:14.4930814Z ##[group]Runner Image Provisioner
+2026-09-08T10:13:14.4932017Z Hosted Compute Agent
+2026-09-08T10:13:14.4932616Z Version: 20260828.587
+2026-09-08T10:13:14.4933294Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-09-08T10:13:14.4934043Z Build Date: 2026-08-28T16:44:25Z
+2026-09-08T10:13:14.4934753Z Worker ID: {9bdb40ec-0e11-457b-a225-0ea58d1fec83}
+2026-09-08T10:13:14.4935538Z Azure Region: westcentralus
+2026-09-08T10:13:14.4936158Z ##[endgroup]
+2026-09-08T10:13:14.4937562Z ##[group]Operating System
+2026-09-08T10:13:14.4938332Z Ubuntu
+2026-09-08T10:13:14.4938873Z 24.04.4
+2026-09-08T10:13:14.4939424Z LTS
+2026-09-08T10:13:14.4939929Z ##[endgroup]
+2026-09-08T10:13:14.4940462Z ##[group]Runner Image
+2026-09-08T10:13:14.4941116Z Image: ubuntu-24.04
+2026-09-08T10:13:14.4941954Z Version: 20260831.293.1
+2026-09-08T10:13:14.4943253Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260831.293/images/ubuntu/Ubuntu2404-Readme.md
+2026-09-08T10:13:14.4944783Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260831.293
+2026-09-08T10:13:14.4945798Z ##[endgroup]
+2026-09-08T10:13:14.4946976Z ##[group]GITHUB_TOKEN Permissions
+2026-09-08T10:13:14.4948866Z Contents: read
+2026-09-08T10:13:14.4949469Z Metadata: read
+2026-09-08T10:13:14.4950100Z Packages: read
+2026-09-08T10:13:14.4950705Z ##[endgroup]
+2026-09-08T10:13:14.4953218Z Secret source: Actions
+2026-09-08T10:13:14.4954353Z Prepare workflow directory
+2026-09-08T10:13:14.5288431Z Prepare all required actions
+2026-09-08T10:13:14.5336536Z Getting action download info
+2026-09-08T10:13:14.8825618Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+2026-09-08T10:13:14.9956208Z Download action repository 'actions-rust-lang/setup-rust-toolchain@v1' (SHA:166cdcfd11aee3cb47222f9ddb555ce30ddb9659)
+2026-09-08T10:13:15.2238581Z Download action repository 'awalsh128/cache-apt-pkgs-action@v1' (SHA:553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9)
+2026-09-08T10:13:16.2733060Z Download action repository 'j178/prek-action@v1' (SHA:0bb87d7f00b0c99306c8bcb8b8beba1eb581c037)
+2026-09-08T10:13:16.6174038Z Getting action download info
+2026-09-08T10:13:16.7403661Z Download action repository 'Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4' (SHA:c19371144df3bb44fab255c43d04cbc2ab54d1c4)
+2026-09-08T10:13:17.6861753Z Getting action download info
+2026-09-08T10:13:17.7927591Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+2026-09-08T10:13:17.9014539Z Download action repository 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f' (SHA:bbbca2ddaa5d8feaa63e36b76fdaad77386f024f)
+2026-09-08T10:13:18.0072746Z Getting action download info
+2026-09-08T10:13:18.1412370Z Download action repository 'actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7' (SHA:8b402f58fbc84540c8b491a91e594a4576fec3d7)
+2026-09-08T10:13:18.7251123Z Complete job name: lint
+2026-09-08T10:13:18.7929486Z ##[group]Run actions/checkout@v6
+2026-09-08T10:13:18.7930202Z with:
+2026-09-08T10:13:18.7930420Z   repository: td72/vig
+2026-09-08T10:13:18.7933729Z   token: ***
+2026-09-08T10:13:18.7933956Z   ssh-strict: true
+2026-09-08T10:13:18.7934171Z   ssh-user: git
+2026-09-08T10:13:18.7934530Z   persist-credentials: true
+2026-09-08T10:13:18.7934819Z   clean: true
+2026-09-08T10:13:18.7935034Z   sparse-checkout-cone-mode: true
+2026-09-08T10:13:18.7935291Z   fetch-depth: 1
+2026-09-08T10:13:18.7935496Z   fetch-tags: false
+2026-09-08T10:13:18.7935874Z   show-progress: true
+2026-09-08T10:13:18.7936099Z   lfs: false
+2026-09-08T10:13:18.7936290Z   submodules: false
+2026-09-08T10:13:18.7936498Z   set-safe-directory: true
+2026-09-08T10:13:18.7936749Z   allow-unsafe-pr-checkout: false
+2026-09-08T10:13:18.7937504Z ##[endgroup]
+2026-09-08T10:13:18.8932917Z Syncing repository: td72/vig
+2026-09-08T10:13:18.8934615Z ##[group]Getting Git version info
+2026-09-08T10:13:18.8935237Z Working directory is '/home/runner/work/vig/vig'
+2026-09-08T10:13:18.8936405Z [command]/usr/bin/git version
+2026-09-08T10:13:18.8992156Z git version 2.55.0
+2026-09-08T10:13:18.9016624Z ##[endgroup]
+2026-09-08T10:13:18.9030982Z Temporarily overriding HOME='/home/runner/work/_temp/b5b3f3c2-b379-4fa2-a95d-5234f70b50f4' before making global git config changes
+2026-09-08T10:13:18.9032605Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-08T10:13:18.9036001Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+2026-09-08T10:13:18.9086292Z Deleting the contents of '/home/runner/work/vig/vig'
+2026-09-08T10:13:18.9098172Z ##[group]Determining repository object format
+2026-09-08T10:13:18.9098974Z ##[endgroup]
+2026-09-08T10:13:18.9106012Z ##[group]Initializing the repository
+2026-09-08T10:13:18.9106684Z [command]/usr/bin/git init /home/runner/work/vig/vig
+2026-09-08T10:13:18.9198154Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-08T10:13:18.9199378Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-08T10:13:18.9200763Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-08T10:13:18.9201919Z hint: call:
+2026-09-08T10:13:18.9202539Z hint:
+2026-09-08T10:13:18.9203253Z hint: 	git config --global init.defaultBranch <name>
+2026-09-08T10:13:18.9204040Z hint:
+2026-09-08T10:13:18.9204892Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-08T10:13:18.9205920Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-08T10:13:18.9206739Z hint:
+2026-09-08T10:13:18.9207284Z hint: 	git branch -m <name>
+2026-09-08T10:13:18.9207920Z hint:
+2026-09-08T10:13:18.9208810Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-08T10:13:18.9209890Z Initialized empty Git repository in /home/runner/work/vig/vig/.git/
+2026-09-08T10:13:18.9213700Z [command]/usr/bin/git remote add origin https://github.com/td72/vig
+2026-09-08T10:13:18.9259061Z ##[endgroup]
+2026-09-08T10:13:18.9259946Z ##[group]Disabling automatic garbage collection
+2026-09-08T10:13:18.9262242Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-08T10:13:18.9293087Z ##[endgroup]
+2026-09-08T10:13:18.9293972Z ##[group]Setting up auth
+2026-09-08T10:13:18.9294693Z Removing SSH command configuration
+2026-09-08T10:13:18.9299357Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-08T10:13:18.9347827Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-08T10:13:18.9699374Z Removing HTTP extra header
+2026-09-08T10:13:18.9707563Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-08T10:13:18.9750530Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-08T10:13:18.9988022Z Removing includeIf entries pointing to credentials config files
+2026-09-08T10:13:18.9995958Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-08T10:13:19.0032948Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-08T10:13:19.0258940Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-09-08T10:13:19.0298980Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:19.0334510Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:19.0373357Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:19.0407485Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:19.0437273Z ##[endgroup]
+2026-09-08T10:13:19.0437760Z ##[group]Fetching the repository
+2026-09-08T10:13:19.0445601Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +972b3002ebc1f45ef27d05fca67cd8434d6ec513:refs/remotes/pull/174/merge
+2026-09-08T10:13:19.8165490Z From https://github.com/td72/vig
+2026-09-08T10:13:19.8166583Z  * [new ref]         972b3002ebc1f45ef27d05fca67cd8434d6ec513 -> pull/174/merge
+2026-09-08T10:13:19.8174341Z ##[endgroup]
+2026-09-08T10:13:19.8175052Z ##[group]Determining the checkout info
+2026-09-08T10:13:19.8175808Z ##[endgroup]
+2026-09-08T10:13:19.8184345Z [command]/usr/bin/git sparse-checkout disable
+2026-09-08T10:13:19.8243795Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-08T10:13:19.8273489Z ##[group]Checking out the ref
+2026-09-08T10:13:19.8278607Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/174/merge
+2026-09-08T10:13:20.4938024Z Note: switching to 'refs/remotes/pull/174/merge'.
+2026-09-08T10:13:20.4938528Z 
+2026-09-08T10:13:20.4938904Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-09-08T10:13:20.4939690Z changes and commit them, and you can discard any commits you make in this
+2026-09-08T10:13:20.4940172Z state without impacting any branches by switching back to a branch.
+2026-09-08T10:13:20.4940471Z 
+2026-09-08T10:13:20.4940672Z If you want to create a new branch to retain commits you create, you may
+2026-09-08T10:13:20.4941173Z do so (now or later) by using -c with the switch command. Example:
+2026-09-08T10:13:20.4941858Z 
+2026-09-08T10:13:20.4942055Z   git switch -c <new-branch-name>
+2026-09-08T10:13:20.4942385Z 
+2026-09-08T10:13:20.4942572Z Or undo this operation with:
+2026-09-08T10:13:20.4942900Z 
+2026-09-08T10:13:20.4943087Z   git switch -
+2026-09-08T10:13:20.4943403Z 
+2026-09-08T10:13:20.4943945Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-09-08T10:13:20.4944514Z 
+2026-09-08T10:13:20.4945143Z HEAD is now at 972b300 Merge ba2786add22e6608d1e22dac38fe516700a24452 into ca2b9890758636cb1cf92916180f91e2ef787106
+2026-09-08T10:13:20.5346557Z ##[endgroup]
+2026-09-08T10:13:20.5390100Z [command]/usr/bin/git log -1 --format=%H
+2026-09-08T10:13:20.5416971Z 972b3002ebc1f45ef27d05fca67cd8434d6ec513
+2026-09-08T10:13:20.5774417Z ##[group]Run actions-rust-lang/setup-rust-toolchain@v1
+2026-09-08T10:13:20.5774784Z with:
+2026-09-08T10:13:20.5774995Z   components: clippy, rustfmt
+2026-09-08T10:13:20.5775238Z   cache: true
+2026-09-08T10:13:20.5775456Z   cache-on-failure: true
+2026-09-08T10:13:20.5775691Z   cache-bin: true
+2026-09-08T10:13:20.5775903Z   cache-provider: github
+2026-09-08T10:13:20.5776133Z   cache-all-crates: false
+2026-09-08T10:13:20.5776404Z   cache-workspace-crates: false
+2026-09-08T10:13:20.5776656Z   cache-save-if: true
+2026-09-08T10:13:20.5776878Z   cache-targets: true
+2026-09-08T10:13:20.5777090Z   matcher: true
+2026-09-08T10:13:20.5777301Z   rustflags: -D warnings
+2026-09-08T10:13:20.5777531Z   override: true
+2026-09-08T10:13:20.5777733Z ##[endgroup]
+2026-09-08T10:13:20.5863698Z ##[start-action display=Unbork mac;id=__actions-rust-lang_setup-rust-toolchain.__run]
+2026-09-08T10:13:20.5882243Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-09-08T10:13:20.5920399Z ##[start-action display=Run : construct rustup command line;id=__actions-rust-lang_setup-rust-toolchain.flags]
+2026-09-08T10:13:20.5956376Z ##[group]Run : construct rustup command line
+2026-09-08T10:13:20.5956983Z [36;1m: construct rustup command line[0m
+2026-09-08T10:13:20.5957468Z [36;1mecho "targets=$(for t in ${_srt_targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:20.5958141Z [36;1mecho "components=$(for c in ${_srt_components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:20.5958646Z [36;1mecho "downgrade=" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:20.5997819Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:20.5998179Z env:
+2026-09-08T10:13:20.5998371Z   _srt_targets: 
+2026-09-08T10:13:20.5998595Z   _srt_components: clippy, rustfmt
+2026-09-08T10:13:20.5998852Z ##[endgroup]
+2026-09-08T10:13:20.6111135Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=18]
+2026-09-08T10:13:20.6116256Z ##[start-action display=Setting Environment Variables;id=__actions-rust-lang_setup-rust-toolchain.__run_2]
+2026-09-08T10:13:20.6132528Z ##[group]Run if [[ ! -v CARGO_INCREMENTAL ]]; then
+2026-09-08T10:13:20.6132932Z [36;1mif [[ ! -v CARGO_INCREMENTAL ]]; then[0m
+2026-09-08T10:13:20.6133279Z [36;1m  echo "CARGO_INCREMENTAL=0" >> $GITHUB_ENV[0m
+2026-09-08T10:13:20.6133574Z [36;1mfi[0m
+2026-09-08T10:13:20.6133812Z [36;1mif [[ ! -v CARGO_PROFILE_DEV_DEBUG ]]; then[0m
+2026-09-08T10:13:20.6134160Z [36;1m  echo "CARGO_PROFILE_DEV_DEBUG=0" >> $GITHUB_ENV[0m
+2026-09-08T10:13:20.6134459Z [36;1mfi[0m
+2026-09-08T10:13:20.6134681Z [36;1mif [[ ! -v CARGO_TERM_COLOR ]]; then[0m
+2026-09-08T10:13:20.6135028Z [36;1m  echo "CARGO_TERM_COLOR=always" >> $GITHUB_ENV[0m
+2026-09-08T10:13:20.6135331Z [36;1mfi[0m
+2026-09-08T10:13:20.6135548Z [36;1mif [[ ! -v RUST_BACKTRACE ]]; then[0m
+2026-09-08T10:13:20.6135866Z [36;1m  echo "RUST_BACKTRACE=short" >> $GITHUB_ENV[0m
+2026-09-08T10:13:20.6136153Z [36;1mfi[0m
+2026-09-08T10:13:20.6136415Z [36;1mif [[ ( ! -v RUSTFLAGS ) && $_srt_NEW_RUSTFLAGS != "" ]]; then[0m
+2026-09-08T10:13:20.6136813Z [36;1m  echo "RUSTFLAGS=$_srt_NEW_RUSTFLAGS" >> $GITHUB_ENV[0m
+2026-09-08T10:13:20.6137129Z [36;1mfi[0m
+2026-09-08T10:13:20.6137353Z [36;1m# Enable faster sparse index on nightly[0m
+2026-09-08T10:13:20.6137717Z [36;1m# The value is ignored on stable and causes no problems[0m
+2026-09-08T10:13:20.6138238Z [36;1m# https://internals.rust-lang.org/t/call-for-testing-cargo-sparse-registry/16862[0m
+2026-09-08T10:13:20.6138764Z [36;1mif [[ ! -v CARGO_UNSTABLE_SPARSE_REGISTRY ]]; then[0m
+2026-09-08T10:13:20.6139159Z [36;1m  echo "CARGO_UNSTABLE_SPARSE_REGISTRY=true" >> $GITHUB_ENV[0m
+2026-09-08T10:13:20.6139509Z [36;1mfi[0m
+2026-09-08T10:13:20.6139776Z [36;1mif [[ ! -v CARGO_REGISTRIES_CRATES_IO_PROTOCOL ]]; then[0m
+2026-09-08T10:13:20.6140390Z [36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV[0m
+2026-09-08T10:13:20.6140768Z [36;1mfi[0m
+2026-09-08T10:13:20.6171825Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:20.6172171Z env:
+2026-09-08T10:13:20.6172378Z   _srt_NEW_RUSTFLAGS: -D warnings
+2026-09-08T10:13:20.6172644Z ##[endgroup]
+2026-09-08T10:13:20.6233075Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=11]
+2026-09-08T10:13:20.6235459Z ##[start-action display=Install Rust Problem Matcher;id=__actions-rust-lang_setup-rust-toolchain.__run_3]
+2026-09-08T10:13:20.6253483Z ##[group]Run echo "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"
+2026-09-08T10:13:20.6254282Z [36;1mecho "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"[0m
+2026-09-08T10:13:20.6285908Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:20.6286254Z env:
+2026-09-08T10:13:20.6286459Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:20.6286695Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:20.6286936Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:20.6287167Z   RUST_BACKTRACE: short
+2026-09-08T10:13:20.6287395Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:20.6287774Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:20.6288067Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:20.6288355Z ##[endgroup]
+2026-09-08T10:13:20.6363645Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=12]
+2026-09-08T10:13:20.6366449Z ##[start-action display=Install rustup, if needed;id=__actions-rust-lang_setup-rust-toolchain.__run_4]
+2026-09-08T10:13:20.6382179Z ##[group]Run if ! command -v rustup &> /dev/null ; then
+2026-09-08T10:13:20.6382564Z [36;1mif ! command -v rustup &> /dev/null ; then[0m
+2026-09-08T10:13:20.6383228Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y[0m
+2026-09-08T10:13:20.6383819Z [36;1m[0m
+2026-09-08T10:13:20.6384086Z [36;1m  # Resolve the correct CARGO_HOME path depending on OS[0m
+2026-09-08T10:13:20.6384450Z [36;1m  if [[ "$RUNNER_OS" == "Windows" ]]; then[0m
+2026-09-08T10:13:20.6384878Z [36;1m    echo "${CARGO_HOME:-$USERPROFILE/.cargo}/bin" | sed 's|/|\\|g' >> $GITHUB_PATH[0m
+2026-09-08T10:13:20.6385279Z [36;1m  else[0m
+2026-09-08T10:13:20.6385540Z [36;1m    echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH[0m
+2026-09-08T10:13:20.6385857Z [36;1m  fi[0m
+2026-09-08T10:13:20.6386041Z [36;1mfi[0m
+2026-09-08T10:13:20.6416868Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:20.6417201Z env:
+2026-09-08T10:13:20.6417393Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:20.6417633Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:20.6417879Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:20.6418110Z   RUST_BACKTRACE: short
+2026-09-08T10:13:20.6418333Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:20.6418589Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:20.6418887Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:20.6419172Z   RUNNER_OS: Linux
+2026-09-08T10:13:20.6419374Z ##[endgroup]
+2026-09-08T10:13:20.6476886Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=10]
+2026-09-08T10:13:20.6480861Z ##[start-action display=rustup toolchain install stable;id=__actions-rust-lang_setup-rust-toolchain.__run_5]
+2026-09-08T10:13:20.6498194Z ##[group]Run # Check if value is set
+2026-09-08T10:13:20.6498529Z [36;1m# Check if value is set[0m
+2026-09-08T10:13:20.6498801Z [36;1mif [[ -n "$_srt_rust_src_dir" ]][0m
+2026-09-08T10:13:20.6499070Z [36;1mthen[0m
+2026-09-08T10:13:20.6499311Z [36;1m  # If value is set the directory must exist[0m
+2026-09-08T10:13:20.6499634Z [36;1m  if [[ -d "$_srt_rust_src_dir" ]][0m
+2026-09-08T10:13:20.6499913Z [36;1m  then[0m
+2026-09-08T10:13:20.6500129Z [36;1m    cd "$_srt_rust_src_dir"[0m
+2026-09-08T10:13:20.6500547Z [36;1m  else[0m
+2026-09-08T10:13:20.6500875Z [36;1m    echo "'rust-src-dir' does not point to an existing directory" >&2[0m
+2026-09-08T10:13:20.6501688Z [36;1m    echo "The value of 'rust-src-dir' is: ${_srt_rust_src_dir}" >&2[0m
+2026-09-08T10:13:20.6502121Z [36;1m    exit 1[0m
+2026-09-08T10:13:20.6502333Z [36;1m  fi[0m
+2026-09-08T10:13:20.6502529Z [36;1mfi[0m
+2026-09-08T10:13:20.6502876Z [36;1mif [[ -z "$_srt_toolchain" && ( -f "rust-toolchain" || -f "rust-toolchain.toml") ]][0m
+2026-09-08T10:13:20.6503284Z [36;1mthen[0m
+2026-09-08T10:13:20.6503541Z [36;1m  # Install the toolchain as specified in the file[0m
+2026-09-08T10:13:20.6503960Z [36;1m  # rustup show is the old way that implicitly installed a toolchain[0m
+2026-09-08T10:13:20.6504387Z [36;1m  # rustup toolchain install is the new explicit way[0m
+2026-09-08T10:13:20.6504853Z [36;1m  # https://github.com/rust-lang/rustup/issues/3635#issuecomment-2343511297[0m
+2026-09-08T10:13:20.6505342Z [36;1m  rustup show active-toolchain || rustup toolchain install[0m
+2026-09-08T10:13:20.6505716Z [36;1m  if [[ -n $_srt_components ]]; then[0m
+2026-09-08T10:13:20.6506044Z [36;1m    rustup component add ${_srt_components//,/ }[0m
+2026-09-08T10:13:20.6506345Z [36;1m  fi[0m
+2026-09-08T10:13:20.6506692Z [36;1m  if [[ -n $_srt_targets ]]; then[0m
+2026-09-08T10:13:20.6506998Z [36;1m    rustup target add ${_srt_targets//,/ }[0m
+2026-09-08T10:13:20.6507280Z [36;1m  fi[0m
+2026-09-08T10:13:20.6507468Z [36;1melse[0m
+2026-09-08T10:13:20.6507685Z [36;1m  if [[ -z "$_srt_toolchain" ]][0m
+2026-09-08T10:13:20.6507944Z [36;1m  then[0m
+2026-09-08T10:13:20.6508152Z [36;1m    _srt_toolchain=stable[0m
+2026-09-08T10:13:20.6508398Z [36;1m  fi[0m
+2026-09-08T10:13:20.6508899Z [36;1m  rustup toolchain install ${_srt_toolchain//,/ }  --component clippy --component rustfmt --profile minimal --no-self-update[0m
+2026-09-08T10:13:20.6509483Z [36;1m  # Take the last element from the list[0m
+2026-09-08T10:13:20.6509793Z [36;1m  if [[ "$_srt_override" == "true" ]][0m
+2026-09-08T10:13:20.6510065Z [36;1m  then[0m
+2026-09-08T10:13:20.6510311Z [36;1m    rustup override set ${_srt_toolchain//*,/ }[0m
+2026-09-08T10:13:20.6510613Z [36;1m  fi[0m
+2026-09-08T10:13:20.6510799Z [36;1mfi[0m
+2026-09-08T10:13:20.6542207Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:20.6542551Z env:
+2026-09-08T10:13:20.6542744Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:20.6542975Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:20.6543217Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:20.6543446Z   RUST_BACKTRACE: short
+2026-09-08T10:13:20.6543671Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:20.6543918Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:20.6544212Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:20.6544496Z   _srt_toolchain: 
+2026-09-08T10:13:20.6544698Z   _srt_targets: 
+2026-09-08T10:13:20.6544915Z   _srt_components: clippy, rustfmt
+2026-09-08T10:13:20.6545167Z   _srt_override: true
+2026-09-08T10:13:20.6545383Z   _srt_rust_src_dir: 
+2026-09-08T10:13:20.6545587Z ##[endgroup]
+2026-09-08T10:13:20.8504977Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-09-08T10:13:21.1587000Z info: latest update on 2026-09-03 for version 1.98.1 (48a229cea 2026-09-01)
+2026-09-08T10:13:21.1730062Z info: removing previous version of component clippy
+2026-09-08T10:13:21.1747829Z info: removing previous version of component rustfmt
+2026-09-08T10:13:21.1759430Z info: removing previous version of component cargo
+2026-09-08T10:13:21.1807662Z info: removing previous version of component rust-std
+2026-09-08T10:13:21.1854127Z info: removing previous version of component rustc
+2026-09-08T10:13:21.1906138Z info: downloading 5 components
+2026-09-08T10:13:29.4251148Z 
+2026-09-08T10:13:29.4321459Z   stable-x86_64-unknown-linux-gnu updated - rustc 1.98.1 (48a229cea 2026-09-01) (from rustc 1.98.0 (88d9e12ae 2026-08-18))
+2026-09-08T10:13:29.4322147Z 
+2026-09-08T10:13:29.4426022Z info: override toolchain for /home/runner/work/vig/vig set to stable-x86_64-unknown-linux-gnu
+2026-09-08T10:13:29.4449924Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=8796]
+2026-09-08T10:13:29.4453292Z ##[start-action display=Print installed versions;id=__actions-rust-lang_setup-rust-toolchain.versions]
+2026-09-08T10:13:29.4475565Z ##[group]Run echo "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT
+2026-09-08T10:13:29.4476076Z [36;1mecho "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:29.4476442Z [36;1mrustc --version --verbose[0m
+2026-09-08T10:13:29.4476775Z [36;1mecho "cargo-version=$(cargo --version)" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:29.4477125Z [36;1mcargo --version --verbose[0m
+2026-09-08T10:13:29.4477462Z [36;1mecho "rustup-version=$(rustup --version)" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:29.4477814Z [36;1mrustup --version[0m
+2026-09-08T10:13:29.4478042Z [36;1m[0m
+2026-09-08T10:13:29.4478494Z [36;1m_srt_DATE=$(rustc --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-09-08T10:13:29.4479138Z [36;1m_srt_HASH=$(rustc --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-09-08T10:13:29.4479643Z [36;1mecho "cachekey=$(echo $_srt_DATE$_srt_HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:29.4515198Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:29.4515543Z env:
+2026-09-08T10:13:29.4515737Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:29.4515969Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:29.4516207Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:29.4516438Z   RUST_BACKTRACE: short
+2026-09-08T10:13:29.4516663Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:29.4516915Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:29.4517215Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:29.4517505Z ##[endgroup]
+2026-09-08T10:13:29.4808601Z rustc 1.98.1 (48a229cea 2026-09-01)
+2026-09-08T10:13:29.4809524Z binary: rustc
+2026-09-08T10:13:29.4810394Z commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+2026-09-08T10:13:29.4810979Z commit-date: 2026-09-01
+2026-09-08T10:13:29.4811614Z host: x86_64-unknown-linux-gnu
+2026-09-08T10:13:29.4812092Z release: 1.98.1
+2026-09-08T10:13:29.4812475Z LLVM version: 22.1.8
+2026-09-08T10:13:29.5082885Z cargo 1.98.1 (797e8a9bc 2026-08-05)
+2026-09-08T10:13:29.5083400Z release: 1.98.1
+2026-09-08T10:13:29.5083864Z commit-hash: 797e8a9bca276c1c9f9f738d2a20f484fa4eea9d
+2026-09-08T10:13:29.5084495Z commit-date: 2026-08-05
+2026-09-08T10:13:29.5084917Z host: x86_64-unknown-linux-gnu
+2026-09-08T10:13:29.5085373Z libgit2: 1.9.4 (sys:0.21.0 vendored)
+2026-09-08T10:13:29.5086002Z libcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)
+2026-09-08T10:13:29.5086665Z ssl: OpenSSL 3.6.3 9 Jun 2026
+2026-09-08T10:13:29.5087029Z os: Ubuntu 24.4.0 (noble) [64-bit]
+2026-09-08T10:13:29.5128262Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+2026-09-08T10:13:29.5208317Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+2026-09-08T10:13:29.5256395Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+2026-09-08T10:13:29.5256895Z rustup 1.29.0 (28d1352db 2026-03-05)
+2026-09-08T10:13:29.5331919Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+2026-09-08T10:13:29.5625161Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.versions;outcome=success;conclusion=success;duration_ms=117]
+2026-09-08T10:13:29.5628300Z ##[start-action display=Downgrade registry access protocol when needed;id=__actions-rust-lang_setup-rust-toolchain.__run_6]
+2026-09-08T10:13:29.5648049Z ##[group]Run # Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+2026-09-08T10:13:29.5648614Z [36;1m# Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL[0m
+2026-09-08T10:13:29.5649139Z [36;1m# On versions 1.66, 1.67, and 1.68.0-nightly the value "sparse" is still unstable.[0m
+2026-09-08T10:13:29.5649844Z [36;1m# https://github.com/dtolnay/rust-toolchain/pull/69#discussion_r1107268108[0m
+2026-09-08T10:13:29.5650425Z [36;1m# If we detect an incompatible value, set it to "git" which is always supported.[0m
+2026-09-08T10:13:29.5651172Z [36;1mif [[ "rustc 1.98.1 (48a229cea 2026-09-01)" =~ ^rustc\ (1\.6[67]\.|1\.68\.0-nightly) && "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL}" == "sparse" ]]; then[0m
+2026-09-08T10:13:29.5652237Z [36;1m  echo "Downgrade cargo registry protocol to git"[0m
+2026-09-08T10:13:29.5652653Z [36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git" >> $GITHUB_ENV[0m
+2026-09-08T10:13:29.5653005Z [36;1mfi[0m
+2026-09-08T10:13:29.5688177Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:29.5688522Z env:
+2026-09-08T10:13:29.5688720Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:29.5688951Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:29.5689195Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:29.5689433Z   RUST_BACKTRACE: short
+2026-09-08T10:13:29.5689665Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:29.5689912Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:29.5690201Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:29.5690483Z ##[endgroup]
+2026-09-08T10:13:29.5748439Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=11]
+2026-09-08T10:13:29.5750828Z ##[start-action display=Setup Rust Caching;id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache]
+2026-09-08T10:13:29.5796974Z ##[group]Run Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
+2026-09-08T10:13:29.5797345Z with:
+2026-09-08T10:13:29.5797543Z   cache-on-failure: true
+2026-09-08T10:13:29.5797768Z   cache-bin: true
+2026-09-08T10:13:29.5797985Z   cache-provider: github
+2026-09-08T10:13:29.5798216Z   cache-all-crates: false
+2026-09-08T10:13:29.5798456Z   cache-workspace-crates: false
+2026-09-08T10:13:29.5798706Z   cache-targets: true
+2026-09-08T10:13:29.5798919Z   save-if: true
+2026-09-08T10:13:29.5799131Z   prefix-key: v0-rust
+2026-09-08T10:13:29.5799346Z   add-job-id-key: true
+2026-09-08T10:13:29.5799581Z   add-rust-environment-hash-key: true
+2026-09-08T10:13:29.5799847Z   lookup-only: false
+2026-09-08T10:13:29.5800055Z   cmd-format: {0}
+2026-09-08T10:13:29.5800258Z env:
+2026-09-08T10:13:29.5800443Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:29.5800670Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:29.5800907Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:29.5801135Z   RUST_BACKTRACE: short
+2026-09-08T10:13:29.5801603Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:29.5801848Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:29.5802143Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:29.5802428Z ##[endgroup]
+2026-09-08T10:13:29.8525140Z (node:2431) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-08T10:13:29.8526607Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-08T10:13:30.0222816Z ##[group]Cache Configuration
+2026-09-08T10:13:30.0223662Z Cache Provider:
+2026-09-08T10:13:30.0224197Z     github
+2026-09-08T10:13:30.0224599Z Workspaces:
+2026-09-08T10:13:30.0224953Z     /home/runner/work/vig/vig
+2026-09-08T10:13:30.0225377Z Cache Paths:
+2026-09-08T10:13:30.0225804Z     /home/runner/.cargo/bin
+2026-09-08T10:13:30.0226235Z     /home/runner/.cargo/.crates.toml
+2026-09-08T10:13:30.0226705Z     /home/runner/.cargo/.crates2.json
+2026-09-08T10:13:30.0227173Z     /home/runner/.cargo/registry
+2026-09-08T10:13:30.0227604Z     /home/runner/.cargo/git
+2026-09-08T10:13:30.0228018Z     /home/runner/work/vig/vig/target
+2026-09-08T10:13:30.0228449Z Restore Key:
+2026-09-08T10:13:30.0228820Z     v0-rust-lint-Linux-x64-09ed3713
+2026-09-08T10:13:30.0229257Z Cache Key:
+2026-09-08T10:13:30.0229634Z     v0-rust-lint-Linux-x64-09ed3713-eb78a9df
+2026-09-08T10:13:30.0230116Z .. Prefix:
+2026-09-08T10:13:30.0230482Z   - v0-rust-lint-Linux-x64
+2026-09-08T10:13:30.0230913Z .. Environment considered:
+2026-09-08T10:13:30.0231837Z   - Rust Versions:
+2026-09-08T10:13:30.0232469Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+2026-09-08T10:13:30.0233305Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+2026-09-08T10:13:30.0233955Z   - CARGO_INCREMENTAL
+2026-09-08T10:13:30.0234357Z   - CARGO_PROFILE_DEV_DEBUG
+2026-09-08T10:13:30.0234792Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+2026-09-08T10:13:30.0235253Z   - CARGO_TERM_COLOR
+2026-09-08T10:13:30.0235651Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+2026-09-08T10:13:30.0236089Z   - RUST_BACKTRACE
+2026-09-08T10:13:30.0236414Z   - RUSTFLAGS
+2026-09-08T10:13:30.0236633Z .. Lockfiles considered:
+2026-09-08T10:13:30.0236884Z   - /home/runner/work/vig/vig/Cargo.lock
+2026-09-08T10:13:30.0237167Z   - /home/runner/work/vig/vig/Cargo.toml
+2026-09-08T10:13:30.0237629Z ##[endgroup]
+2026-09-08T10:13:30.0237742Z 
+2026-09-08T10:13:30.0237837Z ... Restoring cache ...
+2026-09-08T10:13:30.2004552Z Cache hit for: v0-rust-lint-Linux-x64-09ed3713-eb78a9df
+2026-09-08T10:13:31.4077472Z Received 33554432 of 231199837 (14.5%), 32.0 MBs/sec
+2026-09-08T10:13:32.4105134Z Received 167772160 of 231199837 (72.6%), 79.9 MBs/sec
+2026-09-08T10:13:32.7015469Z Received 231199837 of 231199837 (100.0%), 96.1 MBs/sec
+2026-09-08T10:13:32.7016831Z Cache Size: ~220 MB (231199837 B)
+2026-09-08T10:13:32.7162975Z [command]/usr/bin/tar -xf /home/runner/work/_temp/f0adb199-e6d3-4cdf-8473-117c258ca8ca/cache.tzst -P -C /home/runner/work/vig/vig --use-compress-program unzstd
+2026-09-08T10:13:33.9519382Z Cache restored successfully
+2026-09-08T10:13:33.9619365Z Restored from cache key "v0-rust-lint-Linux-x64-09ed3713-eb78a9df" full match: true.
+2026-09-08T10:13:33.9746748Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=4399]
+2026-09-08T10:13:33.9887639Z ##[group]Run awalsh128/cache-apt-pkgs-action@v1
+2026-09-08T10:13:33.9887980Z with:
+2026-09-08T10:13:33.9888228Z   packages: libgit2-dev libssl-dev pkg-config
+2026-09-08T10:13:33.9888547Z   execute_install_scripts: false
+2026-09-08T10:13:33.9888818Z   empty_packages_behavior: error
+2026-09-08T10:13:33.9889067Z   debug: false
+2026-09-08T10:13:33.9889271Z env:
+2026-09-08T10:13:33.9889464Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:33.9889715Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:33.9889962Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:33.9890196Z   RUST_BACKTRACE: short
+2026-09-08T10:13:33.9890436Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:33.9890684Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:33.9890990Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:33.9891573Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:33.9891823Z ##[endgroup]
+2026-09-08T10:13:33.9898774Z ##[start-action display=Run ${GITHUB_ACTION_PATH}/pre_cache_action.sh \;id=__awalsh128_cache-apt-pkgs-action.pre-cache]
+2026-09-08T10:13:33.9914147Z ##[group]Run ${GITHUB_ACTION_PATH}/pre_cache_action.sh \
+2026-09-08T10:13:33.9914552Z [36;1m${GITHUB_ACTION_PATH}/pre_cache_action.sh \[0m
+2026-09-08T10:13:33.9914873Z [36;1m  ~/cache-apt-pkgs \[0m
+2026-09-08T10:13:33.9915132Z [36;1m  "$VERSION" \[0m
+2026-09-08T10:13:33.9915370Z [36;1m  "$EXEC_INSTALL_SCRIPTS" \[0m
+2026-09-08T10:13:33.9915632Z [36;1m  "$DEBUG" \[0m
+2026-09-08T10:13:33.9915869Z [36;1m  "$ADD_REPOSITORY" \[0m
+2026-09-08T10:13:33.9916121Z [36;1m  "$PACKAGES"[0m
+2026-09-08T10:13:33.9916406Z [36;1mif [ -f ~/cache-apt-pkgs/cache_key.md5 ]; then[0m
+2026-09-08T10:13:33.9916853Z [36;1m  echo "CACHE_KEY=$(cat ~/cache-apt-pkgs/cache_key.md5)" >> $GITHUB_ENV[0m
+2026-09-08T10:13:33.9917251Z [36;1melse[0m
+2026-09-08T10:13:33.9917484Z [36;1m  echo "CACHE_KEY=" >> $GITHUB_ENV[0m
+2026-09-08T10:13:33.9917756Z [36;1mfi[0m
+2026-09-08T10:13:33.9953844Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:33.9954206Z env:
+2026-09-08T10:13:33.9954415Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:33.9954650Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:33.9954895Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:33.9955124Z   RUST_BACKTRACE: short
+2026-09-08T10:13:33.9955349Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:33.9955604Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:33.9955908Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:33.9956212Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:33.9956434Z   VERSION: 
+2026-09-08T10:13:33.9956649Z   EXEC_INSTALL_SCRIPTS: false
+2026-09-08T10:13:33.9956904Z   EMPTY_PACKAGES_BEHAVIOR: error
+2026-09-08T10:13:33.9957152Z   DEBUG: false
+2026-09-08T10:13:33.9957351Z   ADD_REPOSITORY: 
+2026-09-08T10:13:33.9957598Z   PACKAGES: libgit2-dev libssl-dev pkg-config
+2026-09-08T10:13:33.9957881Z ##[endgroup]
+2026-09-08T10:13:34.0061628Z Normalizing package list...
+2026-09-08T10:13:35.0662756Z done
+2026-09-08T10:13:35.0678354Z Validating action arguments (version='', packages='libgit2-dev=1.7.2+ds-1ubuntu3.1 libssl-dev=3.0.13-0ubuntu3.15 pkg-config=1.8.1-2build1')...
+2026-09-08T10:13:35.0692497Z done
+2026-09-08T10:13:35.0692736Z 
+2026-09-08T10:13:35.0692960Z Creating cache key...
+2026-09-08T10:13:35.0773471Z - CPU architecture is 'x86_64'.
+2026-09-08T10:13:35.0774645Z - Value to hash is 'libgit2-dev=1.7.2+ds-1ubuntu3.1 libssl-dev=3.0.13-0ubuntu3.15 pkg-config=1.8.1-2build1 @  3'.
+2026-09-08T10:13:35.0802763Z - Value hashed as 'f383ff6fc98053745e76aa2f6d3abfb7'.
+2026-09-08T10:13:35.0803601Z done
+2026-09-08T10:13:35.0804100Z Hash value written to /home/runner/cache-apt-pkgs/cache_key.md5
+2026-09-08T10:13:35.0827124Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.pre-cache;outcome=success;conclusion=success;duration_ms=1092]
+2026-09-08T10:13:35.0830347Z ##[start-action display=Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9;id=__awalsh128_cache-apt-pkgs-action.load-cache]
+2026-09-08T10:13:35.0867325Z ##[group]Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+2026-09-08T10:13:35.0867891Z with:
+2026-09-08T10:13:35.0868220Z   path: ~/cache-apt-pkgs
+2026-09-08T10:13:35.0868678Z   key: cache-apt-pkgs_f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:35.0869102Z   enableCrossOsArchive: false
+2026-09-08T10:13:35.0869436Z   fail-on-cache-miss: false
+2026-09-08T10:13:35.0869818Z   lookup-only: false
+2026-09-08T10:13:35.0870181Z env:
+2026-09-08T10:13:35.0885881Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:35.0886222Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:35.0886518Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:35.0886769Z   RUST_BACKTRACE: short
+2026-09-08T10:13:35.0887006Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:35.0887264Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:35.0887568Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:35.0887865Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:35.0888121Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:35.0888409Z ##[endgroup]
+2026-09-08T10:13:35.3974748Z Cache hit for: cache-apt-pkgs_f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:36.4796778Z Received 2668034 of 2668034 (100.0%), 3.0 MBs/sec
+2026-09-08T10:13:36.4797444Z Cache Size: ~3 MB (2668034 B)
+2026-09-08T10:13:36.4827159Z [command]/usr/bin/tar -xf /home/runner/work/_temp/78c9c4ad-3db8-450e-90ca-86c43c54ea44/cache.tzst -P -C /home/runner/work/vig/vig --use-compress-program unzstd
+2026-09-08T10:13:36.5012372Z Cache restored successfully
+2026-09-08T10:13:36.5089323Z Cache restored from key: cache-apt-pkgs_f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:36.5156002Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.load-cache;outcome=success;conclusion=success;duration_ms=1432]
+2026-09-08T10:13:36.5162842Z ##[start-action display=Run ${GITHUB_ACTION_PATH}/post_cache_action.sh \;id=__awalsh128_cache-apt-pkgs-action.post-cache]
+2026-09-08T10:13:36.5186644Z ##[group]Run ${GITHUB_ACTION_PATH}/post_cache_action.sh \
+2026-09-08T10:13:36.5187068Z [36;1m${GITHUB_ACTION_PATH}/post_cache_action.sh \[0m
+2026-09-08T10:13:36.5187420Z [36;1m  ~/cache-apt-pkgs \[0m
+2026-09-08T10:13:36.5187673Z [36;1m  / \[0m
+2026-09-08T10:13:36.5187887Z [36;1m  "$CACHE_HIT" \[0m
+2026-09-08T10:13:36.5188145Z [36;1m  "$EXEC_INSTALL_SCRIPTS" \[0m
+2026-09-08T10:13:36.5188413Z [36;1m  "$DEBUG" \[0m
+2026-09-08T10:13:36.5188653Z [36;1m  "$ADD_REPOSITORY" \[0m
+2026-09-08T10:13:36.5188912Z [36;1m  "$PACKAGES"[0m
+2026-09-08T10:13:36.5189415Z [36;1mfunction create_list { local list=$(cat ~/cache-apt-pkgs/manifest_${1}.log | tr '\n' ','); echo ${list:0:-1}; };[0m
+2026-09-08T10:13:36.5190076Z [36;1mecho "package-version-list=$(create_list main)" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:36.5190592Z [36;1mecho "all-package-version-list=$(create_list all)" >> $GITHUB_OUTPUT[0m
+2026-09-08T10:13:36.5239186Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:36.5239549Z env:
+2026-09-08T10:13:36.5239760Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:36.5240018Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:36.5240286Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:36.5240542Z   RUST_BACKTRACE: short
+2026-09-08T10:13:36.5240778Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:36.5241036Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:36.5241653Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:36.5241965Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:36.5242235Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:36.5242521Z   CACHE_HIT: true
+2026-09-08T10:13:36.5242930Z   EXEC_INSTALL_SCRIPTS: false
+2026-09-08T10:13:36.5243188Z   DEBUG: false
+2026-09-08T10:13:36.5243395Z   ADD_REPOSITORY: 
+2026-09-08T10:13:36.5243643Z   PACKAGES: libgit2-dev libssl-dev pkg-config
+2026-09-08T10:13:36.5243944Z ##[endgroup]
+2026-09-08T10:13:36.5419758Z Found 9 files in the cache.
+2026-09-08T10:13:36.5432164Z - cache_key.md5
+2026-09-08T10:13:36.5444225Z - install.log
+2026-09-08T10:13:36.5456527Z - libgit2-1.7=1.7.2+ds-1ubuntu3.1.tar
+2026-09-08T10:13:36.5468662Z - libgit2-dev=1.7.2+ds-1ubuntu3.1.tar
+2026-09-08T10:13:36.5480665Z - libhttp-parser-dev=2.9.4-6build1.tar
+2026-09-08T10:13:36.5492789Z - libhttp-parser2.9=2.9.4-6build1.tar
+2026-09-08T10:13:36.5504458Z - libssh2-1-dev=1.11.0-4.1ubuntu0.24.04.3.tar
+2026-09-08T10:13:36.5515919Z - manifest_all.log
+2026-09-08T10:13:36.5527588Z - manifest_main.log
+2026-09-08T10:13:36.5527871Z 
+2026-09-08T10:13:36.5528136Z Reading from main requested packages manifest...
+2026-09-08T10:13:36.5560091Z - libgit2-dev=1.7.2+ds-1ubuntu3.1
+2026-09-08T10:13:36.5576236Z - libssl-dev=3.0.13-0ubuntu3.15
+2026-09-08T10:13:36.5592541Z - pkg-config=1.8.1-2build1
+2026-09-08T10:13:36.5592961Z done
+2026-09-08T10:13:36.5593243Z 
+2026-09-08T10:13:36.5630332Z Restoring 5 packages from cache...
+2026-09-08T10:13:36.5642937Z - libgit2-1.7=1.7.2+ds-1ubuntu3.1.tar restoring...
+2026-09-08T10:13:36.5730832Z   done
+2026-09-08T10:13:36.5743046Z - libgit2-dev=1.7.2+ds-1ubuntu3.1.tar restoring...
+2026-09-08T10:13:36.5918221Z   done
+2026-09-08T10:13:36.5930238Z - libhttp-parser-dev=2.9.4-6build1.tar restoring...
+2026-09-08T10:13:36.6012810Z   done
+2026-09-08T10:13:36.6024895Z - libhttp-parser2.9=2.9.4-6build1.tar restoring...
+2026-09-08T10:13:36.6098376Z   done
+2026-09-08T10:13:36.6110482Z - libssh2-1-dev=1.11.0-4.1ubuntu0.24.04.3.tar restoring...
+2026-09-08T10:13:36.6328843Z   done
+2026-09-08T10:13:36.6329177Z done
+2026-09-08T10:13:36.6331960Z 
+2026-09-08T10:13:36.6383004Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.post-cache;outcome=success;conclusion=success;duration_ms=121]
+2026-09-08T10:13:36.6387585Z ##[start-action display=Run actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f;id=__awalsh128_cache-apt-pkgs-action.upload-logs]
+2026-09-08T10:13:36.6397028Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.upload-logs;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-09-08T10:13:36.6401035Z ##[start-action display=Run actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9;id=__awalsh128_cache-apt-pkgs-action.save-cache]
+2026-09-08T10:13:36.6414531Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.save-cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-09-08T10:13:36.6416737Z ##[start-action display=Run rm -rf ~/cache-apt-pkgs;id=__awalsh128_cache-apt-pkgs-action.clean-cache]
+2026-09-08T10:13:36.6432734Z ##[group]Run rm -rf ~/cache-apt-pkgs
+2026-09-08T10:13:36.6433087Z [36;1mrm -rf ~/cache-apt-pkgs[0m
+2026-09-08T10:13:36.6467685Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:36.6468045Z env:
+2026-09-08T10:13:36.6468262Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:36.6468504Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:36.6468761Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:36.6469012Z   RUST_BACKTRACE: short
+2026-09-08T10:13:36.6469256Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:36.6469509Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:36.6469818Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:36.6470123Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:36.6470377Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:36.6470660Z ##[endgroup]
+2026-09-08T10:13:36.6554551Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.clean-cache;outcome=success;conclusion=success;duration_ms=13]
+2026-09-08T10:13:36.6668167Z ##[group]Run j178/prek-action@v1
+2026-09-08T10:13:36.6668467Z with:
+2026-09-08T10:13:36.6668686Z   extra-args: --all-files
+2026-09-08T10:13:36.6668947Z   install-only: false
+2026-09-08T10:13:36.6669184Z   prek-version: latest
+2026-09-08T10:13:36.6669425Z   working-directory: .
+2026-09-08T10:13:36.6672407Z   token: ***
+2026-09-08T10:13:36.6672624Z env:
+2026-09-08T10:13:36.6672826Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:36.6673066Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:36.6673326Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:36.6673567Z   RUST_BACKTRACE: short
+2026-09-08T10:13:36.6673809Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:36.6674063Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:36.6674369Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:36.6674675Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:36.6674927Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:36.6675209Z ##[endgroup]
+2026-09-08T10:13:36.6682050Z ##[start-action display=Resolve version;id=__j178_prek-action.resolve]
+2026-09-08T10:13:36.6696626Z ##[group]Run # Resolve prek version
+2026-09-08T10:13:36.6696980Z [36;1m# Resolve prek version[0m
+2026-09-08T10:13:36.6697228Z [36;1m[0m
+2026-09-08T10:13:36.6697427Z [36;1mimport os[0m
+2026-09-08T10:13:36.6697651Z [36;1mimport json[0m
+2026-09-08T10:13:36.6697894Z [36;1mfrom urllib import request[0m
+2026-09-08T10:13:36.6698152Z [36;1m[0m
+2026-09-08T10:13:36.6698393Z [36;1mprek_version = os.environ['PREK_VERSION'][0m
+2026-09-08T10:13:36.6698741Z [36;1mgh_token = os.environ.get('GH_TOKEN', '')[0m
+2026-09-08T10:13:36.6699041Z [36;1m[0m
+2026-09-08T10:13:36.6699245Z [36;1mif prek_version == 'latest':[0m
+2026-09-08T10:13:36.6699639Z [36;1m    url = 'https://api.github.com/repos/j178/prek/releases/latest'[0m
+2026-09-08T10:13:36.6700110Z [36;1m    headers = {'Accept': 'application/vnd.github+json'}[0m
+2026-09-08T10:13:36.6700442Z [36;1m[0m
+2026-09-08T10:13:36.6700647Z [36;1m    if gh_token:[0m
+2026-09-08T10:13:36.6701040Z [36;1m        headers['Authorization'] = f'***'[0m
+2026-09-08T10:13:36.6701660Z [36;1m[0m
+2026-09-08T10:13:36.6701905Z [36;1m    try:[0m
+2026-09-08T10:13:36.6702185Z [36;1m        req = request.Request(url, headers=headers)[0m
+2026-09-08T10:13:36.6702563Z [36;1m        with request.urlopen(req) as response:[0m
+2026-09-08T10:13:36.6702919Z [36;1m            data = json.loads(response.read())[0m
+2026-09-08T10:13:36.6703249Z [36;1m            prek_version = data['tag_name'][0m
+2026-09-08T10:13:36.6703563Z [36;1m    except Exception as e:[0m
+2026-09-08T10:13:36.6703835Z [36;1m        if gh_token:[0m
+2026-09-08T10:13:36.6704338Z [36;1m            print(f'::warning::Authenticated request failed: {e}, falling back to unauthenticated request')[0m
+2026-09-08T10:13:36.6704884Z [36;1m            headers.pop('Authorization', None)[0m
+2026-09-08T10:13:36.6705258Z [36;1m            req = request.Request(url, headers=headers)[0m
+2026-09-08T10:13:36.6705635Z [36;1m            with request.urlopen(req) as response:[0m
+2026-09-08T10:13:36.6705993Z [36;1m                data = json.loads(response.read())[0m
+2026-09-08T10:13:36.6706339Z [36;1m                prek_version = data['tag_name'][0m
+2026-09-08T10:13:36.6706641Z [36;1m        else:[0m
+2026-09-08T10:13:36.6706876Z [36;1m            raise[0m
+2026-09-08T10:13:36.6707113Z [36;1m[0m
+2026-09-08T10:13:36.6707340Z [36;1mversion = prek_version.lstrip('v')[0m
+2026-09-08T10:13:36.6707651Z [36;1mversion = f'v{version}'[0m
+2026-09-08T10:13:36.6707899Z [36;1m[0m
+2026-09-08T10:13:36.6708158Z [36;1mwith open(os.environ['GITHUB_OUTPUT'], 'a') as f:[0m
+2026-09-08T10:13:36.6708519Z [36;1m    f.write(f'version={version}\n')[0m
+2026-09-08T10:13:36.6852088Z shell: /usr/bin/python {0}
+2026-09-08T10:13:36.6852359Z env:
+2026-09-08T10:13:36.6852564Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:36.6852810Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:36.6853070Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:36.6853310Z   RUST_BACKTRACE: short
+2026-09-08T10:13:36.6853754Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:36.6854035Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:36.6854349Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:36.6854653Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:36.6854912Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:36.6855320Z   PREK_VERSION: latest
+2026-09-08T10:13:36.6857937Z   GH_TOKEN: ***
+2026-09-08T10:13:36.6858160Z ##[endgroup]
+2026-09-08T10:13:37.1058400Z ##[end-action id=__j178_prek-action.resolve;outcome=success;conclusion=success;duration_ms=437]
+2026-09-08T10:13:37.1061756Z ##[start-action display=Install prek;id=__j178_prek-action.__run]
+2026-09-08T10:13:37.1107936Z ##[group]Run # Installing prek
+2026-09-08T10:13:37.1108235Z [36;1m# Installing prek[0m
+2026-09-08T10:13:37.1108483Z [36;1m[0m
+2026-09-08T10:13:37.1108746Z [36;1mecho "::group::Installing prek ${PREK_VERSION}"[0m
+2026-09-08T10:13:37.1109096Z [36;1mexport PREK_UNMANAGED_INSTALL=1[0m
+2026-09-08T10:13:37.1109545Z [36;1mexport PREK_INSTALL_DIR="$RUNNER_TOOL_CACHE/prek/${PREK_VERSION}/$RUNNER_ARCH"[0m
+2026-09-08T10:13:37.1110020Z [36;1mmkdir -p "$PREK_INSTALL_DIR"[0m
+2026-09-08T10:13:37.1110639Z [36;1mcurl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/download/${PREK_VERSION}/prek-installer.sh | sh[0m
+2026-09-08T10:13:37.1111518Z [36;1mecho "$PREK_INSTALL_DIR" >> $GITHUB_PATH[0m
+2026-09-08T10:13:37.1111979Z [36;1mecho "::endgroup::"[0m
+2026-09-08T10:13:37.1146100Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:37.1146454Z env:
+2026-09-08T10:13:37.1146663Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:37.1146913Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:37.1147167Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:37.1147415Z   RUST_BACKTRACE: short
+2026-09-08T10:13:37.1147649Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:37.1147898Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:37.1148213Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:37.1148516Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:37.1148776Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:37.1149066Z   PREK_VERSION: v0.5.2
+2026-09-08T10:13:37.1149288Z ##[endgroup]
+2026-09-08T10:13:37.1202685Z ##[group]Installing prek v0.5.2
+2026-09-08T10:13:37.3558404Z downloading prek 0.5.2 x86_64-unknown-linux-gnu
+2026-09-08T10:13:37.7577393Z no checksums to verify
+2026-09-08T10:13:37.8694654Z installing to /opt/hostedtoolcache/prek/v0.5.2/X64
+2026-09-08T10:13:37.8752011Z   prek
+2026-09-08T10:13:37.8774632Z everything's installed!
+2026-09-08T10:13:37.8800736Z ##[endgroup]
+2026-09-08T10:13:37.8810237Z ##[end-action id=__j178_prek-action.__run;outcome=success;conclusion=success;duration_ms=774]
+2026-09-08T10:13:37.8814149Z ##[start-action display=Install prek (Windows);id=__j178_prek-action.__run_2]
+2026-09-08T10:13:37.8817934Z ##[end-action id=__j178_prek-action.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-09-08T10:13:37.8819916Z ##[start-action display=Setup cache;id=__j178_prek-action.__actions_cache]
+2026-09-08T10:13:38.2444179Z ##[group]Run actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7
+2026-09-08T10:13:38.2444563Z with:
+2026-09-08T10:13:38.2444805Z   path: ~/.cache/prek
+~\AppData\Local\prek
+
+2026-09-08T10:13:38.2445270Z   key: prek-v1|Linux|X64||3c8c476c57504604fc76efcc05c1852ee1d57fd29e2bcfc241b070cb2d3a49d4
+2026-09-08T10:13:38.2445752Z   enableCrossOsArchive: false
+2026-09-08T10:13:38.2446029Z   fail-on-cache-miss: false
+2026-09-08T10:13:38.2446279Z   lookup-only: false
+2026-09-08T10:13:38.2446509Z   save-always: false
+2026-09-08T10:13:38.2446721Z env:
+2026-09-08T10:13:38.2446920Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:38.2447162Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:38.2447416Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:38.2447659Z   RUST_BACKTRACE: short
+2026-09-08T10:13:38.2447908Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:38.2448161Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:38.2448472Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:38.2448946Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:38.2449212Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:38.2449500Z ##[endgroup]
+2026-09-08T10:13:38.5542846Z Cache not found for input keys: prek-v1|Linux|X64||3c8c476c57504604fc76efcc05c1852ee1d57fd29e2bcfc241b070cb2d3a49d4
+2026-09-08T10:13:38.5599990Z ##[end-action id=__j178_prek-action.__actions_cache;outcome=success;conclusion=success;duration_ms=677]
+2026-09-08T10:13:38.5603386Z ##[start-action display=Run prek;id=__j178_prek-action.__run_3]
+2026-09-08T10:13:38.5620419Z ##[group]Run # Running prek
+2026-09-08T10:13:38.5620708Z [36;1m# Running prek[0m
+2026-09-08T10:13:38.5620943Z [36;1m[0m
+2026-09-08T10:13:38.5621145Z [36;1mimport shlex[0m
+2026-09-08T10:13:38.5621829Z [36;1mimport sys[0m
+2026-09-08T10:13:38.5622211Z [36;1mimport os[0m
+2026-09-08T10:13:38.5622437Z [36;1m[0m
+2026-09-08T10:13:38.5622745Z [36;1mcmd = ['prek', 'run', '--show-diff-on-failure', '--color=always'][0m
+2026-09-08T10:13:38.5623142Z [36;1m[0m
+2026-09-08T10:13:38.5623373Z [36;1mextra_args = os.environ['EXTRA_ARGS'][0m
+2026-09-08T10:13:38.5623683Z [36;1mif extra_args:[0m
+2026-09-08T10:13:38.5623914Z [36;1m    try:[0m
+2026-09-08T10:13:38.5624171Z [36;1m        parsed_args = shlex.split(extra_args)[0m
+2026-09-08T10:13:38.5624510Z [36;1m        cmd.extend(parsed_args)[0m
+2026-09-08T10:13:38.5624813Z [36;1m    except ValueError as e:[0m
+2026-09-08T10:13:38.5625185Z [36;1m        print(f'Error parsing extra-args: {e}', file=sys.stderr)[0m
+2026-09-08T10:13:38.5625561Z [36;1m        sys.exit(1)[0m
+2026-09-08T10:13:38.5625801Z [36;1m[0m
+2026-09-08T10:13:38.5626018Z [36;1mos.execvp(cmd[0], cmd)[0m
+2026-09-08T10:13:38.5688644Z shell: /usr/bin/python {0}
+2026-09-08T10:13:38.5688915Z env:
+2026-09-08T10:13:38.5689132Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:38.5689387Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:38.5689655Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:38.5689903Z   RUST_BACKTRACE: short
+2026-09-08T10:13:38.5690152Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:38.5690419Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:38.5690729Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:38.5691028Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:38.5691559Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:38.5691882Z   EXTRA_ARGS: --all-files
+2026-09-08T10:13:38.5692128Z ##[endgroup]
+2026-09-08T10:13:44.9132906Z trim trailing whitespace[32m.................................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9134281Z fix end of files[32m.........................................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9135499Z check toml[32m...............................................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9136462Z check yaml[32m...............................................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9137170Z check for merge conflicts[32m................................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9137887Z check for added large files[32m..............................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9138540Z cargo fmt[32m................................................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9139180Z cargo clippy[32m.............................................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9139832Z check gif freshness[32m......................................................[39m[32;7mPassed[0m
+2026-09-08T10:13:44.9156000Z ##[end-action id=__j178_prek-action.__run_3;outcome=success;conclusion=success;duration_ms=6355]
+2026-09-08T10:13:44.9158258Z ##[start-action display=Show verbose logs;id=__j178_prek-action.__run_4]
+2026-09-08T10:13:44.9176201Z ##[group]Run # Prek verbose logs
+2026-09-08T10:13:44.9176517Z [36;1m# Prek verbose logs[0m
+2026-09-08T10:13:44.9176766Z [36;1m[0m
+2026-09-08T10:13:44.9176998Z [36;1mecho "::group::Prek verbose logs"[0m
+2026-09-08T10:13:44.9177596Z [36;1mcache_dir="$(prek cache dir --no-log-file 2>/dev/null || echo ~/.cache/prek)"[0m
+2026-09-08T10:13:44.9178062Z [36;1mlog="$cache_dir/prek.log"[0m
+2026-09-08T10:13:44.9178391Z [36;1mcat "$log" || echo "No prek log file found at $log"[0m
+2026-09-08T10:13:44.9178728Z [36;1mecho "::endgroup::"[0m
+2026-09-08T10:13:44.9213918Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:44.9214267Z env:
+2026-09-08T10:13:44.9214476Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:44.9214726Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:44.9214982Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:44.9215234Z   RUST_BACKTRACE: short
+2026-09-08T10:13:44.9215466Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:44.9215719Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:44.9216022Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:44.9216318Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:44.9216587Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:44.9216875Z ##[endgroup]
+2026-09-08T10:13:44.9269327Z ##[group]Prek verbose logs
+2026-09-08T10:13:44.9308368Z 2026-09-08T10:13:38.595314Z DEBUG prek: 0.5.2
+2026-09-08T10:13:44.9309145Z 2026-09-08T10:13:38.595334Z DEBUG Args: ["prek", "run", "--show-diff-on-failure", "--color=always", "--all-files"]
+2026-09-08T10:13:44.9309949Z 2026-09-08T10:13:38.596675Z TRACE root: close time.busy=1.32ms time.idle=2.13µs
+2026-09-08T10:13:44.9310807Z 2026-09-08T10:13:38.596696Z DEBUG Git root: /home/runner/work/vig/vig
+2026-09-08T10:13:44.9311593Z 2026-09-08T10:13:38.596717Z DEBUG Found workspace root at `/home/runner/work/vig/vig`
+2026-09-08T10:13:44.9312074Z 2026-09-08T10:13:38.596721Z TRACE Include selectors: ``
+2026-09-08T10:13:44.9312453Z 2026-09-08T10:13:38.596724Z TRACE Skip selectors: ``
+2026-09-08T10:13:44.9313135Z 2026-09-08T10:13:38.596764Z DEBUG discover{root="/home/runner/work/vig/vig" config=None refresh=false}: Performing fresh workspace discovery
+2026-09-08T10:13:44.9314476Z 2026-09-08T10:13:38.596786Z TRACE discover{root="/home/runner/work/vig/vig" config=None refresh=false}:list_submodules{git_root="/home/runner/work/vig/vig"}: close time.busy=6.16µs time.idle=421ns
+2026-09-08T10:13:44.9315446Z 2026-09-08T10:13:38.597644Z DEBUG Loading project configuration path=prek.toml
+2026-09-08T10:13:44.9316209Z 2026-09-08T10:13:38.600046Z TRACE discover{root="/home/runner/work/vig/vig" config=None refresh=false}: close time.busy=3.30ms time.idle=790ns
+2026-09-08T10:13:44.9317070Z 2026-09-08T10:13:38.600211Z TRACE Checking lock resource="store" path=/home/runner/.cache/prek/.lock
+2026-09-08T10:13:44.9317647Z 2026-09-08T10:13:38.600231Z DEBUG Acquired lock resource="store"
+2026-09-08T10:13:44.9318159Z 2026-09-08T10:13:38.600376Z TRACE Released lock path=/home/runner/.cache/prek/.lock
+2026-09-08T10:13:44.9319247Z 2026-09-08T10:13:38.600387Z DEBUG Hooks going to run: ["trailing-whitespace", "end-of-file-fixer", "check-toml", "check-yaml", "check-merge-conflict", "check-added-large-files", "cargo-fmt", "cargo-clippy", "check-gif-freshness"]
+2026-09-08T10:13:44.9320857Z 2026-09-08T10:13:38.600415Z TRACE ls_files{cwd="/home/runner/work/vig/vig"}: Executing `cd /home/runner/work/vig/vig && /usr/bin/git -c core.useBuiltinFSMonitor=false --literal-pathspecs ls-files -z -- /home/runner/work/vig/vig`
+2026-09-08T10:13:44.9322436Z 2026-09-08T10:13:38.601840Z TRACE ls_files{cwd="/home/runner/work/vig/vig"}: close time.busy=246µs time.idle=1.19ms
+2026-09-08T10:13:44.9323067Z 2026-09-08T10:13:38.601855Z DEBUG All files in the workspace: 247
+2026-09-08T10:13:44.9323521Z 2026-09-08T10:13:38.602532Z TRACE Files for project `.` after filtered: 247
+2026-09-08T10:13:44.9324074Z 2026-09-08T10:13:38.602540Z DEBUG Running priority group with priority 0: ["trailing-whitespace"]
+2026-09-08T10:13:44.9324882Z 2026-09-08T10:13:38.602565Z TRACE matching_filenames{hook="trailing-whitespace"}: close time.busy=11.9µs time.idle=780ns
+2026-09-08T10:13:44.9325628Z 2026-09-08T10:13:38.602574Z TRACE Files for hook `trailing-whitespace` after filtering matched=true filenames=202
+2026-09-08T10:13:44.9326645Z 2026-09-08T10:13:38.606725Z  INFO run{hook_id=trailing-whitespace language=system}: close time.busy=3.22ms time.idle=926µs
+2026-09-08T10:13:44.9327358Z 2026-09-08T10:13:38.606750Z DEBUG Running priority group with priority 1: ["end-of-file-fixer"]
+2026-09-08T10:13:44.9328137Z 2026-09-08T10:13:38.606768Z TRACE matching_filenames{hook="end-of-file-fixer"}: close time.busy=11.5µs time.idle=400ns
+2026-09-08T10:13:44.9328985Z 2026-09-08T10:13:38.606776Z TRACE Files for hook `end-of-file-fixer` after filtering matched=true filenames=202
+2026-09-08T10:13:44.9329728Z 2026-09-08T10:13:38.610370Z  INFO run{hook_id=end-of-file-fixer language=system}: close time.busy=2.32ms time.idle=1.27ms
+2026-09-08T10:13:44.9330390Z 2026-09-08T10:13:38.610395Z DEBUG Running priority group with priority 2: ["check-toml"]
+2026-09-08T10:13:44.9331109Z 2026-09-08T10:13:38.610402Z TRACE matching_filenames{hook="check-toml"}: close time.busy=1.40µs time.idle=362ns
+2026-09-08T10:13:44.9332612Z 2026-09-08T10:13:38.610410Z TRACE Files for hook `check-toml` after filtering matched=true filenames=6
+2026-09-08T10:13:44.9334098Z 2026-09-08T10:13:38.612349Z  INFO run{hook_id=check-toml language=system}: close time.busy=1.86ms time.idle=78.3µs
+2026-09-08T10:13:44.9335390Z 2026-09-08T10:13:38.612373Z DEBUG Running priority group with priority 3: ["check-yaml"]
+2026-09-08T10:13:44.9336191Z 2026-09-08T10:13:38.612380Z TRACE matching_filenames{hook="check-yaml"}: close time.busy=1.07µs time.idle=331ns
+2026-09-08T10:13:44.9336889Z 2026-09-08T10:13:38.612388Z TRACE Files for hook `check-yaml` after filtering matched=true filenames=4
+2026-09-08T10:13:44.9337654Z 2026-09-08T10:13:38.613007Z  INFO run{hook_id=check-yaml language=system}: close time.busy=579µs time.idle=35.6µs
+2026-09-08T10:13:44.9338329Z 2026-09-08T10:13:38.613027Z DEBUG Running priority group with priority 4: ["check-merge-conflict"]
+2026-09-08T10:13:44.9339152Z 2026-09-08T10:13:38.613036Z TRACE matching_filenames{hook="check-merge-conflict"}: close time.busy=2.83µs time.idle=321ns
+2026-09-08T10:13:44.9339913Z 2026-09-08T10:13:38.613043Z TRACE Files for hook `check-merge-conflict` after filtering matched=true filenames=231
+2026-09-08T10:13:44.9340830Z 2026-09-08T10:13:38.613075Z TRACE run{hook_id=check-merge-conflict language=system}: Executing `/usr/bin/git -c core.useBuiltinFSMonitor=false rev-parse --git-dir`
+2026-09-08T10:13:44.9342172Z 2026-09-08T10:13:38.614316Z  INFO run{hook_id=check-merge-conflict language=system}: close time.busy=262µs time.idle=1.00ms
+2026-09-08T10:13:44.9342924Z 2026-09-08T10:13:38.614341Z DEBUG Running priority group with priority 5: ["check-added-large-files"]
+2026-09-08T10:13:44.9343752Z 2026-09-08T10:13:38.614349Z TRACE matching_filenames{hook="check-added-large-files"}: close time.busy=2.39µs time.idle=401ns
+2026-09-08T10:13:44.9344547Z 2026-09-08T10:13:38.614356Z TRACE Files for hook `check-added-large-files` after filtering matched=true filenames=247
+2026-09-08T10:13:44.9345747Z 2026-09-08T10:13:38.614381Z TRACE run{hook_id=check-added-large-files language=system}: Executing `cd /home/runner/work/vig/vig && /usr/bin/git -c core.useBuiltinFSMonitor=false diff --staged --relative --name-only --diff-filter=A -z`
+2026-09-08T10:13:44.9347025Z 2026-09-08T10:13:38.616108Z  INFO run{hook_id=check-added-large-files language=system}: close time.busy=234µs time.idle=1.51ms
+2026-09-08T10:13:44.9348219Z 2026-09-08T10:13:38.616157Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: Executing `/usr/bin/git -c core.useBuiltinFSMonitor=false diff --full-index --no-ext-diff --no-textconv --ignore-submodules -- /home/runner/work/vig/vig`
+2026-09-08T10:13:44.9349467Z 2026-09-08T10:13:38.646468Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: close time.busy=218µs time.idle=30.1ms
+2026-09-08T10:13:44.9350135Z 2026-09-08T10:13:38.646485Z DEBUG Running priority group with priority 6: ["cargo-fmt"]
+2026-09-08T10:13:44.9350737Z 2026-09-08T10:13:38.646496Z TRACE Files for hook `cargo-fmt` after filtering matched=true filenames=0
+2026-09-08T10:13:44.9351862Z 2026-09-08T10:13:38.646623Z TRACE run{hook_id=cargo-fmt language=system}: Running cargo-fmt total_files=0 concurrency=4
+2026-09-08T10:13:44.9352781Z 2026-09-08T10:13:38.646712Z TRACE run{hook_id=cargo-fmt language=system}: Executing `cd /home/runner/work/vig/vig && /home/runner/.cargo/bin/cargo fmt --check`
+2026-09-08T10:13:44.9353854Z 2026-09-08T10:13:39.070822Z  INFO run{hook_id=cargo-fmt language=system}: close time.busy=444µs time.idle=424ms
+2026-09-08T10:13:44.9354991Z 2026-09-08T10:13:39.070877Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: Executing `/usr/bin/git -c core.useBuiltinFSMonitor=false diff --full-index --no-ext-diff --no-textconv --ignore-submodules -- /home/runner/work/vig/vig`
+2026-09-08T10:13:44.9356235Z 2026-09-08T10:13:39.102251Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: close time.busy=401µs time.idle=31.0ms
+2026-09-08T10:13:44.9356921Z 2026-09-08T10:13:39.102285Z DEBUG Running priority group with priority 7: ["cargo-clippy"]
+2026-09-08T10:13:44.9357555Z 2026-09-08T10:13:39.102300Z TRACE Files for hook `cargo-clippy` after filtering matched=true filenames=0
+2026-09-08T10:13:44.9358288Z 2026-09-08T10:13:39.102389Z TRACE run{hook_id=cargo-clippy language=system}: Running cargo-clippy total_files=0 concurrency=4
+2026-09-08T10:13:44.9359626Z 2026-09-08T10:13:39.102473Z TRACE run{hook_id=cargo-clippy language=system}: Executing `cd /home/runner/work/vig/vig && /home/runner/.cargo/bin/cargo clippy --all-targets -- -D warnings`
+2026-09-08T10:13:44.9360722Z 2026-09-08T10:13:44.845363Z  INFO run{hook_id=cargo-clippy language=system}: close time.busy=528µs time.idle=5.74s
+2026-09-08T10:13:44.9362377Z 2026-09-08T10:13:44.845407Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: Executing `/usr/bin/git -c core.useBuiltinFSMonitor=false diff --full-index --no-ext-diff --no-textconv --ignore-submodules -- /home/runner/work/vig/vig`
+2026-09-08T10:13:44.9363684Z 2026-09-08T10:13:44.877217Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: close time.busy=318µs time.idle=31.5ms
+2026-09-08T10:13:44.9364397Z 2026-09-08T10:13:44.877246Z DEBUG Running priority group with priority 8: ["check-gif-freshness"]
+2026-09-08T10:13:44.9365086Z 2026-09-08T10:13:44.877256Z TRACE Files for hook `check-gif-freshness` after filtering matched=true filenames=0
+2026-09-08T10:13:44.9365899Z 2026-09-08T10:13:44.877358Z TRACE run{hook_id=check-gif-freshness language=system}: Running check-gif-freshness total_files=0 concurrency=4
+2026-09-08T10:13:44.9366961Z 2026-09-08T10:13:44.877440Z TRACE run{hook_id=check-gif-freshness language=system}: Executing `cd /home/runner/work/vig/vig && /usr/bin/bash -c staged=$(git diff --cached --name-only)
+2026-09-08T10:13:44.9367722Z tapes=$(echo "$staged" | grep '\.tape$' || true)
+2026-09-08T10:13:44.9368061Z if [ -z "$tapes" ]; then exit 0; fi
+2026-09-08T10:13:44.9368336Z for tape in $tapes; do
+2026-09-08T10:13:44.9368599Z   gif="assets/$(basename "${tape%.tape}").gif"
+2026-09-08T10:13:44.9368933Z   if ! echo "$staged" | grep -qF "$gif"; then
+2026-09-08T10:13:44.9369403Z     echo "$tape was modified but $gif is not staged — run: mise run demo:all"
+2026-09-08T10:13:44.9369785Z     exit 1
+2026-09-08T10:13:44.9369969Z   fi
+2026-09-08T10:13:44.9370146Z done
+2026-09-08T10:13:44.9370329Z `
+2026-09-08T10:13:44.9370874Z 2026-09-08T10:13:44.882501Z  INFO run{hook_id=check-gif-freshness language=system}: close time.busy=403µs time.idle=4.83ms
+2026-09-08T10:13:44.9372325Z 2026-09-08T10:13:44.882526Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: Executing `/usr/bin/git -c core.useBuiltinFSMonitor=false diff --full-index --no-ext-diff --no-textconv --ignore-submodules -- /home/runner/work/vig/vig`
+2026-09-08T10:13:44.9373585Z 2026-09-08T10:13:44.912998Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: close time.busy=206µs time.idle=30.3ms
+2026-09-08T10:13:44.9374278Z ##[endgroup]
+2026-09-08T10:13:44.9378119Z ##[end-action id=__j178_prek-action.__run_4;outcome=success;conclusion=success;duration_ms=21]
+2026-09-08T10:13:44.9380129Z ##[start-action display=Prune cache;id=__j178_prek-action.__run_5]
+2026-09-08T10:13:44.9395312Z ##[group]Run # Prune prek cache
+2026-09-08T10:13:44.9395604Z [36;1m# Prune prek cache[0m
+2026-09-08T10:13:44.9395841Z [36;1m[0m
+2026-09-08T10:13:44.9396069Z [36;1mecho "::group::Pruning prek cache"[0m
+2026-09-08T10:13:44.9396437Z [36;1mprek cache gc -v || echo "Failed to prune prek cache"[0m
+2026-09-08T10:13:44.9396923Z [36;1mecho "::endgroup::"[0m
+2026-09-08T10:13:44.9428225Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-08T10:13:44.9428581Z env:
+2026-09-08T10:13:44.9428792Z   CARGO_INCREMENTAL: 0
+2026-09-08T10:13:44.9429031Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-09-08T10:13:44.9429285Z   CARGO_TERM_COLOR: always
+2026-09-08T10:13:44.9429522Z   RUST_BACKTRACE: short
+2026-09-08T10:13:44.9429751Z   RUSTFLAGS: -D warnings
+2026-09-08T10:13:44.9430008Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+2026-09-08T10:13:44.9430309Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+2026-09-08T10:13:44.9430606Z   CACHE_ON_FAILURE: true
+2026-09-08T10:13:44.9430944Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+2026-09-08T10:13:44.9431237Z ##[endgroup]
+2026-09-08T10:13:44.9486518Z ##[group]Pruning prek cache
+2026-09-08T10:13:44.9512386Z Nothing to clean
+2026-09-08T10:13:44.9518227Z ##[endgroup]
+2026-09-08T10:13:44.9524546Z ##[end-action id=__j178_prek-action.__run_5;outcome=success;conclusion=success;duration_ms=14]
+2026-09-08T10:13:44.9656590Z Post job cleanup.
+2026-09-08T10:13:44.9659885Z ##[start-action display=Setup cache;id=__8fb309c2-ad97-493b-9de4-f79569deef13.__actions_cache]
+2026-09-08T10:13:45.3733835Z Post job cleanup.
+2026-09-08T10:13:45.5094183Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/vig/vig --files-from manifest.txt --use-compress-program zstdmt
+2026-09-08T10:13:45.9696894Z Sent 1093 of 1093 (100.0%), 0.0 MBs/sec
+2026-09-08T10:13:46.1884277Z Cache saved with key: prek-v1|Linux|X64||3c8c476c57504604fc76efcc05c1852ee1d57fd29e2bcfc241b070cb2d3a49d4
+2026-09-08T10:13:46.1951094Z ##[end-action id=__8fb309c2-ad97-493b-9de4-f79569deef13.__actions_cache;outcome=success;conclusion=success;duration_ms=1229]
+2026-09-08T10:13:46.2125580Z Post job cleanup.
+2026-09-08T10:13:46.2128651Z ##[start-action display=Setup Rust Caching;id=__da6679d9-b50a-41e2-b409-229e7ba5a7a1.__Swatinem_rust-cache]
+2026-09-08T10:13:46.2169164Z Post job cleanup.
+2026-09-08T10:13:46.4827304Z Cache up-to-date.
+2026-09-08T10:13:46.4830701Z (node:2902) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-08T10:13:46.4832266Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-08T10:13:46.4973682Z ##[end-action id=__da6679d9-b50a-41e2-b409-229e7ba5a7a1.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=284]
+2026-09-08T10:13:46.5054207Z Post job cleanup.
+2026-09-08T10:13:46.5934611Z [command]/usr/bin/git version
+2026-09-08T10:13:46.5979204Z git version 2.55.0
+2026-09-08T10:13:46.6025345Z Temporarily overriding HOME='/home/runner/work/_temp/609bef85-15e0-4045-b5a9-141153e0da05' before making global git config changes
+2026-09-08T10:13:46.6027900Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-08T10:13:46.6031148Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+2026-09-08T10:13:46.6063627Z Removing SSH command configuration
+2026-09-08T10:13:46.6070401Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-08T10:13:46.6106525Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-08T10:13:46.6356124Z Removing HTTP extra header
+2026-09-08T10:13:46.6363012Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-08T10:13:46.6398037Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-08T10:13:46.6652259Z Removing includeIf entries pointing to credentials config files
+2026-09-08T10:13:46.6662315Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-08T10:13:46.6689954Z includeif.gitdir:/home/runner/work/vig/vig/.git.path
+2026-09-08T10:13:46.6691167Z includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+2026-09-08T10:13:46.6692355Z includeif.gitdir:/github/workspace/.git.path
+2026-09-08T10:13:46.6693249Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-09-08T10:13:46.6701947Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git.path
+2026-09-08T10:13:46.6728130Z /home/runner/work/_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:46.6741519Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:46.6780444Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+2026-09-08T10:13:46.6807233Z /home/runner/work/_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:46.6822782Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:46.6861445Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-09-08T10:13:46.6893195Z /github/runner_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:46.6905453Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:46.6947978Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-09-08T10:13:46.6975169Z /github/runner_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:46.6984730Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config
+2026-09-08T10:13:46.7056272Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-08T10:13:46.7275278Z Removing credentials config '/home/runner/work/_temp/git-credentials-f64ecf93-6bcc-445c-a7c5-9e6b167c171e.config'
+2026-09-08T10:13:46.7414320Z Cleaning up orphan processes
