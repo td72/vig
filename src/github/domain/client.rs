@@ -5,6 +5,10 @@ use std::process::Command;
 
 /// Run a `gh` command and return its stdout on success.
 pub(crate) fn run_gh(args: &[&str], context: &str) -> Result<Vec<u8>, String> {
+    // Recorded output stands in for `gh` in demo recordings and tests.
+    if let Some(replayed) = crate::core::gh_fixture::replay(args) {
+        return replayed;
+    }
     let output = Command::new("gh")
         .args(args)
         .output()
@@ -13,6 +17,7 @@ pub(crate) fn run_gh(args: &[&str], context: &str) -> Result<Vec<u8>, String> {
         let stderr = String::from_utf8_lossy(&output.stderr);
         return Err(stderr.trim().to_string());
     }
+    crate::core::gh_fixture::record(args, &output.stdout);
     Ok(output.stdout)
 }
 

@@ -1194,6 +1194,73 @@ mod kdl_regression {
         st
     }
 
+    /// The whole page against the recorded `gh` output in `tape/fixtures`:
+    /// issues, PRs and runs load and render without the network.
+    #[test]
+    fn page_loads_lists_from_recorded_fixtures() {
+        use crate::core::app::PageState;
+        use crate::core::gh_fixture;
+        let Some(dir) = gh_fixture::recorded_dir() else {
+            return;
+        };
+        // Replay is process-global: hold the lock for the whole test and
+        // clear the directory again at the end.
+        let _guard = gh_fixture::REPLAY_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        gh_fixture::set_replay_dir(Some(dir));
+        struct Reset;
+        impl Drop for Reset {
+            fn drop(&mut self) {
+                gh_fixture::set_replay_dir(None);
+            }
+        }
+        let _reset = Reset;
+        let mut st = GitHubState::new(&Config::builtin()).expect("github page");
+        st.probe_reset = false;
+        st.initialize();
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while (st.panes.issue_tab.list.item_count() == 0 || st.panes.run_tab.list.item_count() == 0)
+            && Instant::now() < deadline
+        {
+            std::thread::sleep(Duration::from_millis(20));
+            st.drain_background();
+        }
+        assert!(
+            st.panes.issue_tab.list.item_count() > 0,
+            "issues from fixtures"
+        );
+        assert!(st.panes.run_tab.list.item_count() > 0, "runs from fixtures");
+        assert_eq!(st.gh_available, Some(true));
+        use ratatui::backend::TestBackend;
+        let mut term = ratatui::Terminal::new(TestBackend::new(120, 40)).unwrap();
+        let ctx = crate::core::app::AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: std::path::PathBuf::new(),
+            needs_full_redraw: false,
+            last_input: Instant::now(),
+            auto_refresh: true,
+        };
+        term.draw(|f| st.render(f, &ctx, f.area())).unwrap();
+        let buf = term.backend().buffer().clone();
+        let text: String = (0..buf.area.height)
+            .map(|y| {
+                (0..buf.area.width)
+                    .map(|x| buf[(x, y)].symbol().to_string())
+                    .collect::<String>()
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        assert!(text.contains("Workflow Runs"), "runs column rendered");
+        assert!(text.contains('#'), "issue numbers rendered");
+    }
+
     #[test]
     fn active_tab_follows_focus_through_the_bindings() {
         let mut st = state();

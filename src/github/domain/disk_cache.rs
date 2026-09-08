@@ -22,6 +22,10 @@ fn repo_nwo() -> Option<&'static str> {
 
 /// Build the cache directory path: `<cache_dir>/vig/<version>/<owner>/<repo>/`
 pub(crate) fn cache_dir() -> Option<PathBuf> {
+    // Replayed fixtures must not be mixed with (or leak into) real caches.
+    if crate::core::gh_fixture::active() {
+        return None;
+    }
     let base = dirs::cache_dir()?;
     let nwo = repo_nwo()?;
     Some(base.join("vig").join(CACHE_VERSION).join(nwo))

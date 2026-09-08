@@ -34,12 +34,12 @@ depends = ["demo:build"]
 description = "Record reflog demo GIF"
 
 [tasks."demo:github-issue"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-github-issue.tape"
+run = "VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-github-issue.tape"
 depends = ["demo:build"]
 description = "Record GitHub Issue demo GIF"
 
 [tasks."demo:github-pr"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-github-pr.tape"
+run = "VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-github-pr.tape"
 depends = ["demo:build"]
 description = "Record GitHub PR demo GIF"
 
@@ -74,9 +74,9 @@ depends = ["demo:build"]
 description = "Record Worktrees view demo GIF"
 
 [tasks."demo:projects"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-projects.tape"
+run = "VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-projects.tape"
 depends = ["demo:build"]
-description = "Record Projects view demo GIF (requires gh with the project scope)"
+description = "Record Projects view demo GIF (from tape/fixtures, no API)"
 
 [tasks."demo:repo-config"]
 run = "PATH=$PWD/target/release:$PATH vhs tape/demo-repo-config.tape"
@@ -86,6 +86,10 @@ description = "Record repo-local config demo GIF"
 [tasks."demo:all"]
 depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr", "demo:commit-log", "demo:config", "demo:repo-config", "demo:files", "demo:docker", "demo:procs", "demo:worktrees", "demo:projects"]
 description = "Record all demo GIFs"
+
+[tasks."fixtures:refresh"]
+run = "cargo run --release -- fixtures record tape/fixtures"
+description = "Re-record the gh output the GitHub / Projects demos and tests replay (the only step that uses the API)"
 
 [tasks."docs:build"]
 run = [

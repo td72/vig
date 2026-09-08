@@ -1,0 +1,919 @@
+test (aarch64-apple-darwin, macos-latest)	Set up job	﻿2026-09-08T10:01:06.6710200Z Current runner version: '2.337.0'
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6736960Z ##[group]Runner Image Provisioner
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6738570Z Hosted Compute Agent
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6739610Z Version: 20260828.587
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6740750Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6742130Z Build Date: 2026-08-28T16:44:25Z
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6743410Z Worker ID: {ffca0283-b77f-432e-8d0c-1b83ed392508}
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6744740Z Azure Region: westus
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6745760Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6749290Z ##[group]Operating System
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6750440Z macOS
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6751320Z 26.6.2
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6752170Z 25G83
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6753120Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6754430Z ##[group]Runner Image
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6755560Z Image: macos-26-arm64
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6756600Z Version: 20260831.0337.3
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6758710Z Included Software: https://github.com/actions/runner-images/blob/macos-26-arm64/20260831.0337/images/macos/macos-26-arm64-Readme.md
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6762590Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-26-arm64%2F20260831.0337
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6764510Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6766700Z ##[group]GITHUB_TOKEN Permissions
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6771530Z Contents: read
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6772650Z Metadata: read
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6773590Z Packages: read
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6774550Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6778530Z Secret source: Actions
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.6780320Z Prepare workflow directory
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.7113590Z Prepare all required actions
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.7148990Z Getting action download info
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:06.8652290Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:07.2966680Z Download action repository 'actions-rust-lang/setup-rust-toolchain@v1' (SHA:166cdcfd11aee3cb47222f9ddb555ce30ddb9659)
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:07.7149220Z Download action repository 'awalsh128/cache-apt-pkgs-action@v1' (SHA:553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9)
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:08.7895120Z Getting action download info
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:08.8633220Z Download action repository 'Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4' (SHA:c19371144df3bb44fab255c43d04cbc2ab54d1c4)
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:09.8464870Z Getting action download info
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:09.9360730Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:10.1147040Z Download action repository 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f' (SHA:bbbca2ddaa5d8feaa63e36b76fdaad77386f024f)
+test (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-08T10:01:10.2354520Z Complete job name: test (aarch64-apple-darwin, macos-latest)
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	﻿2026-09-08T10:01:10.3095310Z ##[group]Run actions/checkout@v6
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3096340Z with:
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3096910Z   repository: td72/vig
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3102800Z   token: ***
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3103370Z   ssh-strict: true
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3103950Z   ssh-user: git
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3104570Z   persist-credentials: true
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3105220Z   clean: true
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3105810Z   sparse-checkout-cone-mode: true
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3106510Z   fetch-depth: 1
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3107090Z   fetch-tags: false
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3107670Z   show-progress: true
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3108820Z   lfs: false
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3109430Z   submodules: false
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3110030Z   set-safe-directory: true
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3110780Z   allow-unsafe-pr-checkout: false
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.3111690Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9021520Z Syncing repository: td72/vig
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9024280Z ##[group]Getting Git version info
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9025330Z Working directory is '/Users/runner/work/vig/vig'
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9026770Z [command]/opt/homebrew/bin/git version
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9584560Z git version 2.55.0
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9597940Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9614100Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/bbe988fb-557b-491b-9379-abdf04c8a646/.gitconfig'
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9617800Z Temporarily overriding HOME='/Users/runner/work/_temp/bbe988fb-557b-491b-9379-abdf04c8a646' before making global git config changes
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9620010Z Adding repository directory to the temporary git global config as a safe directory
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9621900Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/vig/vig
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9715460Z Deleting the contents of '/Users/runner/work/vig/vig'
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9719300Z ##[group]Determining repository object format
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9721160Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9724360Z ##[group]Initializing the repository
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:10.9727120Z [command]/opt/homebrew/bin/git init /Users/runner/work/vig/vig
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0087530Z hint: Using 'master' as the name for the initial branch. This default branch name
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0106940Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0173690Z hint: to use in all of your new repositories, which will suppress this warning,
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0176850Z hint: call:
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0183170Z hint:
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0185710Z hint: 	git config --global init.defaultBranch <name>
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0188620Z hint:
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0189710Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0190960Z hint: 'development'. The just-created branch can be renamed via this command:
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0192440Z hint:
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0193590Z hint: 	git branch -m <name>
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0195590Z hint:
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0197750Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0201380Z Initialized empty Git repository in /Users/runner/work/vig/vig/.git/
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0208160Z [command]/opt/homebrew/bin/git remote add origin https://github.com/td72/vig
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0221740Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0224650Z ##[group]Disabling automatic garbage collection
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0227330Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0364290Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0367170Z ##[group]Setting up auth
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0372100Z Removing SSH command configuration
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0376550Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.0490340Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.2075610Z Removing HTTP extra header
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.2077300Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.2144250Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.3834360Z Removing includeIf entries pointing to credentials config files
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.3935510Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.4241060Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.6018200Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.6023020Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/vig/vig/.git.path /Users/runner/work/_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.6095430Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/vig/vig/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.6185260Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.6278880Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.6360620Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.6363920Z ##[group]Fetching the repository
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:11.6367580Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ca2b9890758636cb1cf92916180f91e2ef787106:refs/remotes/origin/main
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6769250Z From https://github.com/td72/vig
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6772330Z  * [new ref]         ca2b9890758636cb1cf92916180f91e2ef787106 -> origin/main
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6781370Z [command]/opt/homebrew/bin/git branch --list --remote origin/main
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6875060Z   origin/main
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6936070Z [command]/opt/homebrew/bin/git rev-parse refs/remotes/origin/main
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6978050Z ca2b9890758636cb1cf92916180f91e2ef787106
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6989130Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6991860Z ##[group]Determining the checkout info
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.6994410Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.7000550Z [command]/opt/homebrew/bin/git sparse-checkout disable
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.7160570Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.7290050Z ##[group]Checking out the ref
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:12.7291450Z [command]/opt/homebrew/bin/git checkout --progress --force -B main refs/remotes/origin/main
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:13.1194580Z Switched to a new branch 'main'
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:13.1196210Z branch 'main' set up to track 'origin/main'.
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:13.2974820Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:13.3203370Z [command]/opt/homebrew/bin/git log -1 --format=%H
+test (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-08T10:01:13.3204360Z ca2b9890758636cb1cf92916180f91e2ef787106
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-09-08T10:01:13.3682350Z ##[group]Run actions-rust-lang/setup-rust-toolchain@v1
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3683500Z with:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3684200Z   target: aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3684900Z   cache: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3685560Z   cache-on-failure: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3686190Z   cache-bin: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3686770Z   cache-provider: github
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3687400Z   cache-all-crates: false
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3688050Z   cache-workspace-crates: false
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3688690Z   cache-save-if: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3689400Z   cache-targets: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3690000Z   matcher: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3690580Z   rustflags: -D warnings
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3691180Z   override: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3691810Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3750320Z ##[start-action display=Unbork mac;id=__actions-rust-lang_setup-rust-toolchain.__run]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3811720Z ##[group]Run brew install bash
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3812060Z ^[[36;1mbrew install bash^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3866400Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:13.3866810Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:16.8927500Z ^[[32m==>^[[0m ^[[1mDownloading bottle manifests^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:16.9132490Z ✔︎ Bottle Manifest bash (5.3.15)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:16.9133730Z ^[[34m==>^[[0m ^[[1mWould install 1 formula:^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:16.9134370Z bash
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:17.0117770Z ^[[34m==>^[[0m ^[[1mWould install 1 dependency for bash:^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:17.0119070Z ncurses
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:17.0248930Z ^[[32m==>^[[0m ^[[1mFetching downloads for: ^[[32mbash^[[39m^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:17.3551680Z ✔︎ Bottle Manifest ncurses (6.6)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:17.6112760Z ✔︎ Bottle bash (5.3.15)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:18.1690380Z ✔︎ Bottle ncurses (6.6)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:18.1835960Z ^[[32m==>^[[0m ^[[1mInstalling bash dependency: ^[[32mncurses^[[39m^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:18.1856320Z ^[[34m==>^[[0m ^[[1mPouring ncurses--6.6.arm64_tahoe.bottle.tar.gz^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:18.8866710Z 🍺  /opt/homebrew/Cellar/ncurses/6.6: 4,086 files, 10.3MB
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:18.8868850Z ^[[32m==>^[[0m ^[[1mInstalling ^[[32mbash^[[39m^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:18.8871300Z ^[[34m==>^[[0m ^[[1mPouring bash--5.3.15.arm64_tahoe.bottle.tar.gz^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1504130Z 🍺  /opt/homebrew/Cellar/bash/5.3.15: 172 files, 13MB
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1510350Z ^[[32m==>^[[0m ^[[1mCaveats^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1511350Z ^[[34m==>^[[0m ^[[1mbash^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1514330Z DEFAULT_LOADABLE_BUILTINS_PATH: /opt/homebrew/lib/bash:/usr/local/lib/bash:/usr/lib/bash:/opt/local/lib/bash:/usr/pkg/lib/bash:/opt/pkg/lib/bash:.
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1631820Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=5788]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1664070Z ##[start-action display=Run : construct rustup command line;id=__actions-rust-lang_setup-rust-toolchain.flags]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1688640Z ##[group]Run : construct rustup command line
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1689060Z ^[[36;1m: construct rustup command line^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1689510Z ^[[36;1mecho "targets=$(for t in ${_srt_targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1690160Z ^[[36;1mecho "components=$(for c in ${_srt_components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1690580Z ^[[36;1mecho "downgrade=" >> $GITHUB_OUTPUT^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1702950Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1703360Z env:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1703650Z   _srt_targets: aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1703880Z   _srt_components:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.1704080Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2643030Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=97]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2651320Z ##[start-action display=Setting Environment Variables;id=__actions-rust-lang_setup-rust-toolchain.__run_2]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2670390Z ##[group]Run if [[ ! -v CARGO_INCREMENTAL ]]; then
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2670860Z ^[[36;1mif [[ ! -v CARGO_INCREMENTAL ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2671620Z ^[[36;1m  echo "CARGO_INCREMENTAL=0" >> $GITHUB_ENV^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2671880Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2672080Z ^[[36;1mif [[ ! -v CARGO_PROFILE_DEV_DEBUG ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2672360Z ^[[36;1m  echo "CARGO_PROFILE_DEV_DEBUG=0" >> $GITHUB_ENV^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2672680Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2672910Z ^[[36;1mif [[ ! -v CARGO_TERM_COLOR ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2673250Z ^[[36;1m  echo "CARGO_TERM_COLOR=always" >> $GITHUB_ENV^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2673510Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2673700Z ^[[36;1mif [[ ! -v RUST_BACKTRACE ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2673960Z ^[[36;1m  echo "RUST_BACKTRACE=short" >> $GITHUB_ENV^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2674240Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2674510Z ^[[36;1mif [[ ( ! -v RUSTFLAGS ) && $_srt_NEW_RUSTFLAGS != "" ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2674850Z ^[[36;1m  echo "RUSTFLAGS=$_srt_NEW_RUSTFLAGS" >> $GITHUB_ENV^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2675200Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2675400Z ^[[36;1m# Enable faster sparse index on nightly^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2675730Z ^[[36;1m# The value is ignored on stable and causes no problems^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2676180Z ^[[36;1m# https://internals.rust-lang.org/t/call-for-testing-cargo-sparse-registry/16862^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2676620Z ^[[36;1mif [[ ! -v CARGO_UNSTABLE_SPARSE_REGISTRY ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2677020Z ^[[36;1m  echo "CARGO_UNSTABLE_SPARSE_REGISTRY=true" >> $GITHUB_ENV^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2677320Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2677560Z ^[[36;1mif [[ ! -v CARGO_REGISTRIES_CRATES_IO_PROTOCOL ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2677920Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2678290Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2689780Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2690160Z env:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2690380Z   _srt_NEW_RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.2690940Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3029440Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=37]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3036270Z ##[start-action display=Install Rust Problem Matcher;id=__actions-rust-lang_setup-rust-toolchain.__run_3]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3080650Z ##[group]Run echo "::add-matcher::/Users/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3081310Z ^[[36;1mecho "::add-matcher::/Users/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3091830Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3092140Z env:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3092290Z   CARGO_INCREMENTAL: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3092490Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3092700Z   CARGO_TERM_COLOR: always
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3092900Z   RUST_BACKTRACE: short
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3093090Z   RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3093320Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3093570Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3093810Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3365340Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=32]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3368230Z ##[start-action display=Install rustup, if needed;id=__actions-rust-lang_setup-rust-toolchain.__run_4]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3385430Z ##[group]Run if ! command -v rustup &> /dev/null ; then
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3385770Z ^[[36;1mif ! command -v rustup &> /dev/null ; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3386350Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3386830Z ^[[36;1m^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3387050Z ^[[36;1m  # Resolve the correct CARGO_HOME path depending on OS^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3387370Z ^[[36;1m  if [[ "$RUNNER_OS" == "Windows" ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3387780Z ^[[36;1m    echo "${CARGO_HOME:-$USERPROFILE/.cargo}/bin" | sed 's|/|\\|g' >> $GITHUB_PATH^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3388350Z ^[[36;1m  else^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3388580Z ^[[36;1m    echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3388850Z ^[[36;1m  fi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3389010Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3398620Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3398930Z env:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3399070Z   CARGO_INCREMENTAL: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3399270Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3399460Z   CARGO_TERM_COLOR: always
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3399640Z   RUST_BACKTRACE: short
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3399830Z   RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3400080Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3400400Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3400630Z   RUNNER_OS: macOS
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3400790Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3651430Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=28]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3662270Z ##[start-action display=rustup toolchain install stable;id=__actions-rust-lang_setup-rust-toolchain.__run_5]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3696860Z ##[group]Run # Check if value is set
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3697680Z ^[[36;1m# Check if value is set^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3698270Z ^[[36;1mif [[ -n "$_srt_rust_src_dir" ]]^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3698880Z ^[[36;1mthen^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3699430Z ^[[36;1m  # If value is set the directory must exist^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3700140Z ^[[36;1m  if [[ -d "$_srt_rust_src_dir" ]]^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3700770Z ^[[36;1m  then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3701220Z ^[[36;1m    cd "$_srt_rust_src_dir"^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3701810Z ^[[36;1m  else^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3702490Z ^[[36;1m    echo "'rust-src-dir' does not point to an existing directory" >&2^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3703690Z ^[[36;1m    echo "The value of 'rust-src-dir' is: ${_srt_rust_src_dir}" >&2^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3705640Z ^[[36;1m    exit 1^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3706100Z ^[[36;1m  fi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3706570Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3707280Z ^[[36;1mif [[ -z "$_srt_toolchain" && ( -f "rust-toolchain" || -f "rust-toolchain.toml") ]]^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3708200Z ^[[36;1mthen^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3708750Z ^[[36;1m  # Install the toolchain as specified in the file^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3709710Z ^[[36;1m  # rustup show is the old way that implicitly installed a toolchain^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3710650Z ^[[36;1m  # rustup toolchain install is the new explicit way^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3711750Z ^[[36;1m  # https://github.com/rust-lang/rustup/issues/3635#issuecomment-2343511297^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3712840Z ^[[36;1m  rustup show active-toolchain || rustup toolchain install^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3745920Z ^[[36;1m  if [[ -n $_srt_components ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3746550Z ^[[36;1m    rustup component add ${_srt_components//,/ }^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3746880Z ^[[36;1m  fi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3747090Z ^[[36;1m  if [[ -n $_srt_targets ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3747360Z ^[[36;1m    rustup target add ${_srt_targets//,/ }^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3747600Z ^[[36;1m  fi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3747770Z ^[[36;1melse^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3768710Z ^[[36;1m  if [[ -z "$_srt_toolchain" ]]^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3769160Z ^[[36;1m  then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3769330Z ^[[36;1m    _srt_toolchain=stable^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3769510Z ^[[36;1m  fi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3769900Z ^[[36;1m  rustup toolchain install ${_srt_toolchain//,/ }  --target aarch64-apple-darwin --profile minimal --no-self-update^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3770440Z ^[[36;1m  # Take the last element from the list^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3770720Z ^[[36;1m  if [[ "$_srt_override" == "true" ]]^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3770980Z ^[[36;1m  then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3771190Z ^[[36;1m    rustup override set ${_srt_toolchain//*,/ }^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3771420Z ^[[36;1m  fi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3771560Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3783720Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3784290Z env:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3784470Z   CARGO_INCREMENTAL: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3784680Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3784890Z   CARGO_TERM_COLOR: always
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3785060Z   RUST_BACKTRACE: short
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3785220Z   RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3785400Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3785620Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3785930Z   _srt_toolchain:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3786140Z   _srt_targets: aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3786370Z   _srt_components:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3786520Z   _srt_override: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3786700Z   _srt_rust_src_dir:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.3786850Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:19.8760730Z info: syncing channel updates for stable-aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:20.0316730Z info: latest update on 2026-09-03 for version 1.98.1 (48a229cea 2026-09-01)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:20.0412910Z info: removing previous version of component clippy
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:20.0431610Z info: removing previous version of component rustfmt
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:20.0445290Z info: removing previous version of component cargo
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:20.0517860Z info: removing previous version of component rust-std
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:20.0646890Z info: removing previous version of component rustc
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:20.0768430Z info: downloading 5 components
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.3208720Z
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.5656750Z   stable-aarch64-apple-darwin updated - rustc 1.98.1 (48a229cea 2026-09-01) (from rustc 1.98.0 (88d9e12ae 2026-08-18))
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.5660160Z info: self-update is disabled for this build of rustup
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.5660740Z
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.5679870Z info: any updates to rustup will need to be fetched with your system package manager
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6070270Z info: override toolchain for /Users/runner/work/vig/vig set to stable-aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6128730Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=8246]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6136500Z ##[start-action display=Print installed versions;id=__actions-rust-lang_setup-rust-toolchain.versions]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6212800Z ##[group]Run echo "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6215120Z ^[[36;1mecho "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6215810Z ^[[36;1mrustc --version --verbose^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6216890Z ^[[36;1mecho "cargo-version=$(cargo --version)" >> $GITHUB_OUTPUT^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6217350Z ^[[36;1mcargo --version --verbose^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6217750Z ^[[36;1mecho "rustup-version=$(rustup --version)" >> $GITHUB_OUTPUT^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6218250Z ^[[36;1mrustup --version^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6218640Z ^[[36;1m^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6219170Z ^[[36;1m_srt_DATE=$(rustc --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6220000Z ^[[36;1m_srt_HASH=$(rustc --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6220520Z ^[[36;1mecho "cachekey=$(echo $_srt_DATE$_srt_HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6239270Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6239800Z env:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6240150Z   CARGO_INCREMENTAL: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6240550Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6240950Z   CARGO_TERM_COLOR: always
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6241250Z   RUST_BACKTRACE: short
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6241590Z   RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6241850Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6242250Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.6242600Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.8100270Z rustc 1.98.1 (48a229cea 2026-09-01)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.8101960Z binary: rustc
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.8103340Z commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.8104400Z commit-date: 2026-09-01
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.8115860Z host: aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.8116520Z release: 1.98.1
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.8117280Z LLVM version: 22.1.8
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9175630Z cargo 1.98.1 (797e8a9bc 2026-08-05)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9180390Z release: 1.98.1
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9196630Z commit-hash: 797e8a9bca276c1c9f9f738d2a20f484fa4eea9d
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9199030Z commit-date: 2026-08-05
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9205120Z host: aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9206440Z libgit2: 1.9.4 (sys:0.21.0 vendored)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9207570Z libcurl: 8.7.1 (sys:0.4.90+curl-8.21.0 system ssl:(SecureTransport) LibreSSL/3.3.6)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9208850Z ssl: OpenSSL 3.6.3 9 Jun 2026
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9209810Z os: Mac OS 26.6.2 [64-bit]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9378820Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9584810Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9762500Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9763120Z rustup 1.29.0 (2026-03-05)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:27.9972590Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1031450Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.versions;outcome=success;conclusion=success;duration_ms=489]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1039360Z ##[start-action display=Downgrade registry access protocol when needed;id=__actions-rust-lang_setup-rust-toolchain.__run_6]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1077110Z ##[group]Run # Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1077760Z ^[[36;1m# Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1078280Z ^[[36;1m# On versions 1.66, 1.67, and 1.68.0-nightly the value "sparse" is still unstable.^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1078890Z ^[[36;1m# https://github.com/dtolnay/rust-toolchain/pull/69#discussion_r1107268108^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1079690Z ^[[36;1m# If we detect an incompatible value, set it to "git" which is always supported.^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1080460Z ^[[36;1mif [[ "rustc 1.98.1 (48a229cea 2026-09-01)" =~ ^rustc\ (1\.6[67]\.|1\.68\.0-nightly) && "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL}" == "sparse" ]]; then^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1081040Z ^[[36;1m  echo "Downgrade cargo registry protocol to git"^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1081500Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git" >> $GITHUB_ENV^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1081910Z ^[[36;1mfi^[[0m
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1093250Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1093670Z env:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1093890Z   CARGO_INCREMENTAL: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1094180Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1094460Z   CARGO_TERM_COLOR: always
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1094740Z   RUST_BACKTRACE: short
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1094980Z   RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1095660Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1095980Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1096380Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1510480Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=46]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1515140Z ##[start-action display=Setup Rust Caching;id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1623130Z ##[group]Run Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1623500Z with:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1623670Z   cache-on-failure: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1623910Z   cache-bin: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1624090Z   cache-provider: github
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1624290Z   cache-all-crates: false
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1624500Z   cache-workspace-crates: false
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1624740Z   cache-targets: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1624910Z   save-if: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1625080Z   prefix-key: v0-rust
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1625340Z   add-job-id-key: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1625590Z   add-rust-environment-hash-key: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1626290Z   lookup-only: false
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1626460Z   cmd-format: {0}
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1626620Z env:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1626760Z   CARGO_INCREMENTAL: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1627250Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1627470Z   CARGO_TERM_COLOR: always
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1627670Z   RUST_BACKTRACE: short
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1627860Z   RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1628100Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1628360Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.1628650Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.8696180Z (node:1901) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:28.8717450Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1496050Z ##[group]Cache Configuration
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1528460Z Cache Provider:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1531510Z     github
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1532990Z Workspaces:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1543200Z     /Users/runner/work/vig/vig
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1544300Z Cache Paths:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1545000Z     /Users/runner/.cargo/bin
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1546000Z     /Users/runner/.cargo/.crates.toml
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1565980Z     /Users/runner/.cargo/.crates2.json
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1571860Z     /Users/runner/.cargo/registry
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1572360Z     /Users/runner/.cargo/git
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1572730Z     /Users/runner/work/vig/vig/target
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1573100Z Restore Key:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1573410Z     v0-rust-test-Darwin-arm64-2aa5c948
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1573780Z Cache Key:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1574090Z     v0-rust-test-Darwin-arm64-2aa5c948-eb78a9df
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1574440Z .. Prefix:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1574730Z   - v0-rust-test-Darwin-arm64
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1575070Z .. Environment considered:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1575410Z   - Rust Versions:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1576410Z     - 1.98.1 aarch64-apple-darwin 48a229ceaefd4985c50990b14116b6d856af0985
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1576940Z     - 1.98.1 aarch64-apple-darwin 48a229ceaefd4985c50990b14116b6d856af0985
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1577250Z   - CARGO_INCREMENTAL
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1577470Z   - CARGO_PROFILE_DEV_DEBUG
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1577810Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1578090Z   - CARGO_TERM_COLOR
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1578280Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1578500Z   - RUST_BACKTRACE
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1578670Z   - RUSTFLAGS
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1578840Z .. Lockfiles considered:
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1579050Z   - /Users/runner/work/vig/vig/Cargo.lock
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1579290Z   - /Users/runner/work/vig/vig/Cargo.toml
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1579770Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1580660Z
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.1581010Z ... Restoring cache ...
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:29.2394710Z Cache hit for: v0-rust-test-Darwin-arm64-2aa5c948-eb78a9df
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:30.3101220Z Received 134217728 of 354038154 (37.9%), 124.5 MBs/sec
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:31.3260020Z Received 301989888 of 354038154 (85.3%), 141.1 MBs/sec
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:31.6050610Z Received 354038154 of 354038154 (100.0%), 145.3 MBs/sec
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:31.6058800Z Cache Size: ~338 MB (354038154 B)
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:31.6179470Z [command]/opt/homebrew/bin/gtar -xf /Users/runner/work/_temp/63f28e93-49da-4b33-ab57-07230dc9eab5/cache.tzst -P -C /Users/runner/work/vig/vig --delay-directory-restore --use-compress-program unzstd
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:36.6337470Z Cache restored successfully
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:36.6475260Z Restored from cache key "v0-rust-test-Darwin-arm64-2aa5c948-eb78a9df" full match: true.
+test (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:01:36.6838580Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=8531]
+test (aarch64-apple-darwin, macos-latest)	cargo test	﻿2026-09-08T10:01:36.7248910Z ##[group]Run cargo test --target aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7249350Z ^[[36;1mcargo test --target aarch64-apple-darwin^[[0m
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7266830Z shell: /opt/homebrew/bin/bash -e {0}
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7267220Z env:
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7267480Z   CARGO_INCREMENTAL: 0
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7267800Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7268110Z   CARGO_TERM_COLOR: always
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7268360Z   RUST_BACKTRACE: short
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7268700Z   RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7269020Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7269320Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7269780Z   CACHE_ON_FAILURE: true
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:36.7270010Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:37.2996690Z ^[[1m^[[92m    Updating^[[0m crates.io index
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:01:42.6833590Z ^[[1m^[[92m   Compiling^[[0m vig v0.12.0 (/Users/runner/work/vig/vig)
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:00.1874740Z ^[[1m^[[92m    Finished^[[0m `test` profile [unoptimized] target(s) in 23.27s
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:00.2495170Z ^[[1m^[[92m     Running^[[0m unittests src/main.rs (target/aarch64-apple-darwin/debug/deps/vig-e90b52a8a720b4ba)
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:00.2748900Z
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:00.2749790Z running 390 tests
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:00.2769380Z test core::api_budget::tests::thresholds ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:04.7706830Z test core::app::tests::page_keys_follow_the_builtin_app_block ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:04.7824450Z test core::app::tests::page_keys_helper_groups_by_page_in_insertion_order ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:04.7925850Z test core::app::tests::refresh_notice_reports_idle_and_off ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:04.8029900Z test core::app::tests::refresh_scale_compounds_idle_and_quota_and_stops ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:04.8666060Z test core::app::tests::app_keymap_resolves_page_switch_bindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1028460Z test core::app::tests::user_pages_disable_pages ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1130180Z test core::browser::tests::macos_launcher_uses_open ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1334960Z test core::config::constraint::tests::errors ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1433340Z test core::config::constraint::tests::length ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1535190Z test core::config::constraint::tests::min ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1639720Z test core::config::constraint::tests::percentage ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1741530Z test core::app::tests::page_keys_follow_user_rebindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1845920Z test core::config::guide_examples::extractor_tests::extracts_blocks_with_info_and_line_numbers ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.1985120Z test core::config::guide_examples::extractor_tests::finds_the_guide_chapters ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2094790Z test core::config::guide_examples::extractor_tests::ignore_annotation_is_a_distinct_info_string ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2196580Z test core::config::guide_examples::extractor_tests::indented_fences_and_unclosed_blocks ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2298610Z test core::config::guide_examples::extractor_tests::text_between_blocks_is_not_captured ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2400960Z test core::config::keymap_builder::tests::explicit_overrides_preset ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2503230Z test core::config::keymap_builder::tests::invalid_action_fails ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2605910Z test core::config::keymap_builder::tests::invalid_key_fails ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2707890Z test core::config::keymap_builder::tests::none_unbinds_key ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2809450Z test core::config::keymap_builder::tests::preset_nav_expands ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.2911620Z test core::config::keymap_builder::tests::preset_search_expands ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.3013550Z test core::config::keymap_builder::tests::unknown_preset_fails ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.3116280Z test core::config::loader::tests::app_entries_populated ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.4122400Z test core::config::loader::tests::builtin_pages_list_every_page_in_declaration_order ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.5387090Z test core::config::loader::tests::docker_page_ids_keys_and_bindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.7557670Z test core::config::loader::tests::empty_user_config_equals_builtin ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.9412070Z test core::config::loader::tests::files_page_ids_keys_and_bindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:09.9913440Z test core::config::loader::tests::git_bindings_correct ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:10.0717790Z test core::config::loader::tests::git_pane_ids_correct ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:10.1321560Z test core::config::loader::tests::git_pane_keys_present ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:10.3447220Z test core::config::loader::tests::github_auto_refresh_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:10.4049630Z test core::config::loader::tests::github_bindings_correct ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:10.4652460Z test core::config::loader::tests::github_bindings_distinct_instances ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:10.6458590Z test core::config::loader::tests::github_page_runs_column_ids_keys_and_bindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:10.7060340Z test core::config::loader::tests::github_pane_ids_correct ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:10.7662920Z test core::config::loader::tests::github_pane_keys_present ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:11.0472040Z test core::app::tests::user_pages_reorder_slots_and_keep_keys_by_name ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:11.2503590Z test core::config::loader::tests::icons_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:11.4135830Z test core::config::loader::tests::github_poll_interval_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:11.4668770Z test core::config::loader::tests::image_preview_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:11.4844000Z test core::config::loader::tests::load_git_page ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:11.5469560Z test core::config::loader::tests::load_github_page ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:11.7047780Z test core::config::loader::tests::markdown_preview_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:11.8456720Z test core::config::loader::tests::procs_page_ids_keys_and_bindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:12.1781660Z test core::config::loader::tests::procs_refresh_interval_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:12.1985330Z test core::config::loader::tests::procs_history_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:12.3260820Z test core::config::loader::tests::projects_page_ids_keys_and_bindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:12.5455060Z test core::config::loader::tests::removed_actions_page_fails_fast_with_a_hint ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:12.8218090Z test core::config::loader::tests::repo_config_kill_switch_parses_and_validates ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:12.9081590Z test core::config::loader::tests::projects_board_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:12.9324000Z test core::config::loader::tests::repo_layer_error_names_the_repo_file_and_leaves_base_usable ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:12.9834580Z test core::config::loader::tests::repo_layer_overrides_user ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.1079530Z test core::config::loader::tests::repo_layer_rejects_repo_config_node ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.1788430Z test core::config::loader::tests::user_app_keys_merge ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.2911360Z test core::config::loader::tests::theme_default_override_and_validation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.3659090Z test core::config::loader::tests::user_binding_to_disabled_or_unknown_page_fails ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.3760620Z test core::config::loader::tests::user_invalid_action_mentions_file_page_and_pane ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.4732730Z test core::config::loader::tests::user_layer_survives_where_repo_is_silent ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.5150090Z test core::config::loader::tests::user_layout_can_place_the_projects_list_pane ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.6657430Z test core::config::loader::tests::user_layout_may_leave_panes_unplaced ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.7936470Z test core::config::loader::tests::user_layout_replaces_without_renumbering_panes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.9182820Z test core::config::loader::tests::user_overrides_and_unbinds_pane_keys ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:13.9686940Z test core::config::loader::tests::user_layout_rejects_unknown_repeated_or_no_panes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.0289600Z test core::config::loader::tests::user_pages_reorder_and_disable ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.1776130Z test core::config::loader::tests::user_pages_errors_mention_file_and_page ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.4116810Z test core::config::loader::tests::user_slot_accepts_single_and_multi_case_forms ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.5182290Z test core::config::loader::tests::user_structural_errors_mention_file ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.5284500Z test core::config::merge::tests::app_keys_merge_per_key ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.5386420Z test core::config::merge::tests::github_poll_interval_replaced ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.5488910Z test core::config::merge::tests::layout_tabs_bind_replaced_wholesale ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.5597810Z test core::config::merge::tests::pages_replaced_wholesale ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.5700380Z test core::config::merge::tests::pane_keys_override_add_and_keep_presets ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.5800920Z test core::config::merge::tests::projects_board_replaced_wholesale ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.5902180Z test core::config::merge::tests::theme_replaced ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6003910Z test core::config::loader::tests::worktrees_page_ids_keys_and_bindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6104800Z test core::config::merge::tests::unknown_page_pane_and_blocks_fail ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6206540Z test core::config::repo::tests::classify_absent_disabled_untracked ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6307180Z test core::config::repo::tests::classify_tracked_consults_trust_store ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6408330Z test core::config::repo::tests::content_hash_is_sha256_hex ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6509860Z test core::config::repo::tests::interpret_ls_files_distinguishes_untracked_from_failure ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6610420Z test core::config::repo::tests::spawn_failure_is_undeterminable ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6812520Z test core::config::repo::tests::status_text_covers_every_outcome ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.6912390Z test core::config::repo::tests::undeterminable_tracking_fails_closed ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7014390Z test core::config::source::tests::explicit_path_wins ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7115880Z test core::config::source::tests::line_col_basic ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7216460Z test core::config::source::tests::parse_error_mentions_path_and_line ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7317400Z test core::config::trust::tests::changed_hash_invalidates_decision ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7421300Z test core::config::trust::tests::corrupt_or_missing_store_is_empty ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7523590Z test core::config::trust::tests::forget_by_normalized_listing_output_always_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7625670Z test core::config::trust::tests::forget_removes_one_entry ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7726010Z test core::config::trust::tests::format_unix_is_utc_civil ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7827010Z test core::config::trust::tests::roundtrip ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.7929270Z test core::config::trust::tests::trailing_slash_and_plain_paths_share_one_key ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8031770Z test core::keymap::tests::parse_ctrl_modifier ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8141850Z test core::keymap::tests::parse_invalid ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8243500Z test core::keymap::tests::parse_nav_action ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8344980Z test core::keymap::tests::parse_plain_char ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8446210Z test core::keymap::tests::parse_roundtrip ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8564730Z test core::keymap::tests::parse_search_action ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8673920Z test core::keymap::tests::parse_special_keys ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8777060Z test core::keymap::tests::parse_uppercase_char ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.8926040Z test core::keymap::tests::parse_view_action ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9036810Z test core::layout::tests::horizontal_split ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9138640Z test core::layout::tests::multi_case_slot_rule_takes_the_first_matching_case ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9239980Z test core::layout::tests::multiple_slot_rules ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9347760Z test core::layout::tests::nested_split ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9450000Z test core::layout::tests::page_frame_splits_correctly ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9549580Z test core::layout::tests::single_pane_fills_area ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9652120Z test core::layout::tests::slot_resolution ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9772330Z test core::layout::tests::slot_rule_trigger ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9873810Z test core::pane::focus_tests::unplaced_focus_falls_back_to_the_first_placed_tab_pane ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:14.9974660Z test core::tree::tests::children_follow_their_parent_with_guides ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0075600Z test core::tree::tests::cycles_do_not_drop_items ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0180210Z test core::tree::tests::flat_list_keeps_order ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0282280Z test core::tree::tests::guides_continue_past_siblings_with_children ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0384010Z test core::tree::tests::orphans_and_self_parent_are_top_level ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0486800Z test core::ui::markdown::tests::fit_widths_lowers_widest_columns_evenly ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0588570Z test core::ui::markdown::tests::narrowing_accounts_for_padding_and_wide_chars ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0692020Z test core::ui::markdown::tests::padding_is_prepended_to_table_lines ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0810100Z test core::ui::markdown::tests::table_between_paragraphs_keeps_surrounding_text ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.0913130Z test core::ui::markdown::tests::table_header_is_bold_and_inline_code_keeps_style ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1015250Z test core::ui::markdown::tests::table_honours_column_alignment ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1117260Z test core::ui::markdown::tests::table_renders_aligned_columns_with_header_rule ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1219150Z test core::ui::markdown::tests::table_with_too_many_columns_keeps_min_width ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1321630Z test core::ui::markdown::tests::wide_table_is_narrowed_to_fit_and_cells_truncated ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1434020Z test core::ui::tail_pane::tests::cap_evicts_oldest_and_keeps_paused_view_stable ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1535800Z test core::ui::tail_pane::tests::clear_and_set_lines_reset_state ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1637740Z test core::ui::tail_pane::tests::follows_the_end_as_lines_arrive ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1749500Z test core::ui::tail_pane::tests::half_page_and_top_navigation_clamp ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1851930Z test core::ui::tail_pane::tests::last_lines_returns_tail_in_order ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.1954090Z test core::ui::tail_pane::tests::manual_scroll_pauses_and_g_resumes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2055880Z test core::ui::tail_pane::tests::search_matches_are_case_insensitive_line_entries ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2157760Z test core::ui::tail_pane::tests::short_buffers_never_scroll ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2258820Z test docker::domain::client::tests::merges_streams_by_timestamp_and_strips_ansi ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2360010Z test docker::domain::client::tests::parses_container_inspect_without_env ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2464150Z test docker::domain::client::tests::parses_docker_images_json_lines ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2565890Z test docker::domain::client::tests::parses_docker_ps_json_lines ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2668170Z test docker::domain::client::tests::parses_image_inspect_without_env ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2781460Z test docker::domain::client::tests::split_timestamp_recognises_rfc3339_prefix ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.2904260Z test docker::domain::client::tests::strip_ansi_handles_csi_osc_and_bare_escapes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3010440Z test docker::domain::types::tests::container_state_parses_and_ranks ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3126750Z test docker::domain::types::tests::image_dangling_and_name ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3228910Z test docker::domain::types::tests::label_string_keeps_commas_inside_values ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3331840Z test docker::panes::containers::tests::groups_compose_members_under_a_project_row_running_first ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3434240Z test docker::panes::containers::tests::set_containers_keeps_selection_by_id ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3536870Z test docker::panes::detail::tests::container_lines_render_sections_and_never_env ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3673080Z test docker::panes::detail::tests::detail_pane_load_uses_cache_and_ignores_stale_results ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3815840Z test docker::panes::detail::tests::fmt_time_trims_nanos_and_hides_zero_time ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.3920030Z test docker::panes::detail::tests::short_id_strips_sha_prefix ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4054650Z test docker::panes::images::tests::dangling_images_sort_last ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4177490Z test docker::panes::images::tests::set_images_keeps_selection ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4301480Z test docker::panes::logs::tests::apply_tracks_last_timestamp_and_ignores_stale_requests ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4403000Z test docker::panes::logs::tests::since_filter_drops_old_and_duplicate_lines ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4504970Z test core::config::repo::tests::apply_error_degrades_and_names_the_file ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4607160Z test files::domain::fs::tests::git_file_hidden_and_symlinks_marked ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4708630Z test files::domain::fs::tests::human_size_formats ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4810580Z test files::domain::fs::tests::list_dir_sorts_dirs_first_and_hides_git ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.4912740Z test files::domain::fs::tests::preview_exactly_at_limit_is_not_truncated ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.5017020Z test files::domain::fs::tests::preview_kinds ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.5134960Z test files::domain::icons::tests::glyphs_are_single_column ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.5236210Z test files::domain::icons::tests::picks_dir_name_extension_and_fallbacks ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.5337730Z test files::domain::image::tests::image_paths_by_extension ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.5439720Z test files::domain::image::tests::mode_parsing_matches_the_listed_modes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.5558710Z test files::domain::image::tests::probe_reads_dimensions_and_rejects_non_images ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:15.5684370Z test docker::state::tests::docker_page_builds_from_builtin_config ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:16.1937930Z test files::panes::preview::tests::front_matter_is_kept_verbatim_and_body_rendered ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:16.8280380Z test core::config::guide_examples::every_guide_kdl_example_loads_as_a_user_config ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:17.5397130Z test files::panes::preview::tests::horizontal_scroll_clamps_to_the_longest_line ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:17.8827930Z test files::panes::preview::tests::jump_scrolls_the_match_into_view_both_ways ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:18.4298190Z test files::panes::preview::tests::content_search_finds_char_ranges_in_raw_and_rendered_text ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:18.9459000Z test files::panes::preview::tests::markdown_lines_reflow_on_width_change ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:18.9561200Z test files::panes::preview::tests::shift_and_highlight_drops_scrolled_chars_and_marks_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.5359020Z test files::panes::preview::tests::raw_default_needs_toggle_to_render ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.5460800Z test files::state::tests::open_with_prompt_confirms_trimmed_name_and_remembers_it ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.5600230Z test files::state::tests::open_with_prompt_esc_and_empty_enter_cancel ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.6003730Z test git::state::kdl_regression::bindings_match_expected_pairs ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.6717950Z test git::state::kdl_regression::branch_list_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.7403700Z test git::state::kdl_regression::diff_view_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.8032540Z test git::state::kdl_regression::file_tree_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.8672270Z test git::state::kdl_regression::git_log_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.9275230Z test git::state::kdl_regression::layout_tree_structure_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.9376340Z test files::panes::preview::tests::toggle_flips_markdown_and_resets_scroll ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:19.9894450Z test git::state::kdl_regression::reflog_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.0022250Z test git::state::kdl_regression::select_bindings_drive_sync_dispatch ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.0561500Z test git::state::kdl_regression::slot_rules_match ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.0665220Z test git::state::kdl_regression::tab_panes_match ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.0823050Z test github::domain::actions::client::tests::parses_jobs_json ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.0958700Z test github::domain::actions::client::tests::parses_run_list_json ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.1061300Z test github::domain::actions::log::tests::finds_failed_and_named_steps ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.1212530Z test github::domain::actions::log::tests::new_tail_extends_or_replaces ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.1355880Z test github::domain::actions::log::tests::parses_gh_columns_into_sections_and_text ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.1589380Z test github::domain::actions::log::tests::parses_rest_output_without_columns ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.1728770Z test github::domain::actions::log::tests::strips_ansi_and_marker_bytes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.1832760Z test github::domain::actions::time::tests::clock_of_extracts_hh_mm_ss ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.1833630Z test github::domain::actions::time::tests::duration_between_uses_now_for_running_objects ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.1935680Z test github::domain::actions::time::tests::formats_durations ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2039000Z test github::domain::actions::time::tests::formats_relative_times ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2141350Z test github::domain::actions::time::tests::parse_iso8601_rejects_impossible_dates ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2242920Z test github::domain::actions::time::tests::parses_iso8601_utc ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2344060Z test github::domain::actions::types::tests::state_from_status_and_conclusion ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2446840Z test github::domain::client::tests::recognises_rate_limit_messages ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2544080Z test github::domain::disk_cache::tests::test_cache_dir_resolves ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2645300Z test github::domain::disk_cache::tests::test_parse_github_nwo_https_with_git_suffix ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2748010Z test github::domain::disk_cache::tests::test_parse_github_nwo_https_without_git_suffix ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2849120Z test github::domain::disk_cache::tests::test_parse_github_nwo_invalid_url ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.2968490Z test github::domain::disk_cache::tests::test_parse_github_nwo_no_repo ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3069000Z test github::domain::disk_cache::tests::test_parse_github_nwo_ssh_with_git_suffix ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3170380Z test github::domain::disk_cache::tests::test_parse_github_nwo_ssh_without_git_suffix ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3271490Z test github::domain::disk_cache::tests::test_repo_nwo_resolves ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3372370Z test github::domain::disk_cache::tests::test_save_and_load_json_roundtrip ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3473150Z test github::domain::remote::tests::parses_the_common_github_remote_forms ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3547800Z test github::domain::remote::tests::rejects_non_github_or_malformed_urls ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3652410Z test github::panes::detail_view::jobs::tests::nav_and_search_over_rows ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3755280Z test github::panes::detail_view::jobs::tests::polls_only_while_the_run_is_active ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3857740Z test github::panes::detail_view::jobs::tests::selected_target_resolves_steps_to_their_job ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.3959480Z test github::panes::detail_view::jobs::tests::steps_nest_under_their_job ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4060890Z test github::panes::detail_view::log::tests::failed_step_jumps_wrap_around ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4162150Z test github::panes::detail_view::log::tests::load_apply_and_stale_requests ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4263410Z test github::panes::detail_view::log::tests::running_jobs_append_and_finish_with_a_final_fetch ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4364890Z test github::panes::detail_view::log::tests::search_matches_are_line_entries ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4466250Z test github::panes::detail_view::log::tests::step_jump_waits_for_the_log ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4567700Z test github::panes::detail_view::tests::enter_loads_the_selected_jobs_log_and_focuses_it ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4670310Z test github::panes::detail_view::tests::failed_step_jumps_report_when_there_is_no_log ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4773090Z test github::panes::detail_view::tests::loading_a_run_shows_jobs_first_and_keeps_the_same_run ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4875020Z test github::panes::detail_view::tests::open_item_falls_back_to_the_run_url ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.4977190Z test github::panes::detail_view::tests::run_actions_are_no_ops_for_issue_and_pr_content ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5057630Z test github::panes::detail_view::tests::run_sub_panes_switch_with_h_l_and_tab ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5159900Z test github::panes::detail_view::tests::search_targets_the_active_sub_pane ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5261770Z test github::panes::detail_view::view::tests::run_header_shows_title_state_branch_event_duration_and_age ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5363250Z test github::panes::gh_list::tests::copy_url_event_copies_or_explains ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5465680Z test github::panes::pr_list::tests::stack_entries_nest_under_the_closest_lower_position ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5567490Z test github::panes::run_list::tests::active_runs_are_counted ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5668740Z test github::panes::run_list::tests::identity_is_the_database_id_not_the_run_number ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5770710Z test github::panes::run_list::tests::refresh_keeps_the_selection_on_the_same_run ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5873140Z test github::panes::run_list::tests::row_shows_icon_workflow_number_branch_event_duration_and_age ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.5974900Z test github::panes::run_list::tests::search_covers_workflow_branch_and_event ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.6083510Z test git::state::kdl_regression::view_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.6184990Z test github::state::kdl_regression::active_tab_follows_focus_through_the_bindings ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.6286230Z test github::state::kdl_regression::bindings_match_expected_pairs ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.6585060Z test github::state::kdl_regression::detail_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.6686840Z test github::state::kdl_regression::gh_select_bindings_drive_sync_dispatch ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.7088900Z test github::state::kdl_regression::issue_list_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.7193240Z test github::state::kdl_regression::layout_tree_structure_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.7638750Z test github::state::kdl_regression::pane_ids_from_config ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.7755850Z test github::state::kdl_regression::pr_list_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.8217780Z test github::state::kdl_regression::run_detail_keymap_has_log_keys_and_search ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.8319180Z test github::state::kdl_regression::run_list_keymap_matches ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.8823130Z test github::state::kdl_regression::selecting_a_run_loads_its_jobs_into_the_run_detail ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.8924830Z test github::state::kdl_regression::slot_rules_match ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.9560180Z test github::state::kdl_regression::tab_cycles_the_three_list_columns ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:20.9667330Z test github::state::kdl_regression::tab_in_a_detail_pane_cycles_its_sub_panes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.0260460Z test github::state::kdl_regression::tab_panes_match ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.0589730Z test github::state::rate_limit::a_failed_retry_doubles_the_delay_and_success_clears_it ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.0719290Z test github::state::rate_limit::backoff_progression_doubles_to_the_cap ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.0920400Z test github::state::rate_limit::a_rate_limited_fetch_starts_the_backoff_not_the_error_line ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1020540Z test github::state::rate_limit::reset_time_formatting ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1222070Z test github::state::rate_limit::other_errors_still_reach_the_error_line ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1325190Z test procs::domain::history::tests::proc_history_new_pid_starts_fresh ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1423850Z test procs::domain::history::tests::proc_history_tracks_caps_and_prunes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1527130Z test procs::domain::history::tests::ring_capacity_is_at_least_one ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1627950Z test procs::domain::history::tests::ring_pushes_and_evicts_oldest ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1729680Z test procs::domain::ports::tests::host_port_split ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1833690Z test procs::domain::ports::tests::lsof_parses_listening_sockets_and_skips_the_rest ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.1935030Z test procs::domain::ports::tests::lsof_row_without_numeric_pid_is_kept_as_no_access ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.2056400Z test procs::domain::ports::tests::ss_parses_rows_and_marks_hidden_owners ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.2174230Z test procs::domain::ports::tests::ss_process_field ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.2304120Z test github::state::rate_limit::the_backoff_suspends_the_runs_watch ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.2426060Z test procs::domain::snapshot::tests::subtree_ignores_a_process_that_claims_to_be_its_own_parent ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.2553210Z test procs::domain::snapshot::tests::subtree_keeps_root_and_transitive_children_only ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.2678830Z test procs::domain::snapshot::tests::subtree_of_unknown_root_is_empty ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.2783120Z test procs::domain::types::tests::elapsed_formats ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.2893200Z test procs::domain::types::tests::port_entry_address ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3023660Z test procs::domain::types::tests::sort_key_cycles_cpu_mem_pid ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3140050Z test procs::domain::types::tests::sort_orders_by_key_with_pid_tie_break ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3259520Z test procs::panes::detail::tests::history_charts_sit_under_cpu_and_mem ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3360980Z test procs::panes::detail::tests::lines_cover_every_field_and_mark_no_access ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3462480Z test procs::panes::detail::tests::load_resets_scroll_only_on_a_different_pid ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3562190Z test procs::panes::detail::tests::wrap_splits_at_width ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3662360Z test procs::panes::graphs::tests::core_grid_lays_cores_out_in_columns ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3764880Z test procs::panes::graphs::tests::labels_format_ratios_and_percentages ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3864310Z test procs::panes::graphs::tests::record_caps_history_and_tracks_peak ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.3979910Z test procs::panes::graphs::tests::toggle_emits_event_and_esc_returns_to_processes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4081010Z test procs::panes::ports::tests::apply_keeps_selection_and_reports_notice ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4181440Z test procs::panes::ports::tests::jump_needs_a_visible_owner ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4281660Z test procs::panes::processes::tests::children_and_names ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4383380Z test procs::panes::processes::tests::rows_nest_children_under_parent_in_sorted_order ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4485510Z test procs::panes::processes::tests::selection_follows_pid_across_refresh_and_sort ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4585630Z test procs::panes::tests::area_chart_colors_columns_by_load ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4686220Z test procs::panes::tests::area_chart_fills_columns_bottom_up ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4787040Z test procs::panes::tests::area_chart_plain_uses_one_style ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4887580Z test procs::panes::tests::area_chart_right_aligns_and_keeps_newest ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.4987840Z test procs::panes::tests::area_chart_rounds_eighths_and_shows_tiny_loads ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5091050Z test procs::panes::tests::area_chart_scales_to_max_and_handles_degenerate_sizes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5216600Z test procs::panes::tests::truncate_marks_the_cut ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5318810Z test procs::domain::snapshot::tests::snapshot_contains_this_process_with_its_parent ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5320230Z test procs::state::tests::c_toggles_per_core_from_the_list_and_the_graphs_pane ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5421790Z test procs::state::tests::detail_gets_the_selected_pid_history ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5522940Z test procs::state::tests::enter_on_port_jumps_to_owner_and_focuses_processes ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5624600Z test procs::state::tests::help_lists_every_pane ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5725830Z test procs::state::tests::keys_from_default_kdl_match_hardcoded_defaults ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5827190Z test procs::state::tests::pane_ids_tabs_and_bindings_from_default_kdl ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.5928990Z test procs::state::tests::sort_cycles_and_keeps_selection ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6030870Z test projects::domain::client::tests::bigger_fetch_only_when_the_first_page_was_full ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6262000Z test projects::domain::client::tests::missing_cli_is_recognised ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6364080Z test projects::domain::client::tests::scope_errors_are_recognised ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6364800Z test projects::domain::disk_cache::tests::board_roundtrips_through_json_with_custom_fields ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6365500Z test projects::domain::filter::tests::field_values_lists_and_negation ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6366050Z test projects::domain::filter::tests::is_no_has_label_assignee_repo_text ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6467600Z test projects::domain::filter::tests::tokenizer_keeps_quoted_values_together ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6569380Z test projects::domain::filter::tests::unsupported_tokens_are_reported_not_applied ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6670770Z test projects::domain::graphql::tests::fields_take_the_field_list_shape ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6780450Z test projects::domain::graphql::tests::items_take_the_item_list_shape ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6882300Z test projects::domain::graphql::tests::queries_mention_every_value_type_and_page_by_cursor ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.6985470Z test projects::domain::graphql::tests::views_parse_and_skip_unknown_layouts ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7095870Z test projects::domain::roadmap::tests::civil_round_trip_and_parse ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7198410Z test projects::domain::roadmap::tests::item_spans_from_dates_and_iterations ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7300190Z test projects::domain::roadmap::tests::iterations_are_distinct_and_sorted ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7370420Z test projects::domain::roadmap::tests::span_spec_finds_start_and_iteration_fields ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7472170Z test projects::domain::roadmap::tests::zoom_scales_and_cycles ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7573200Z test projects::domain::types::tests::board_without_views_deserializes_from_old_cache ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7673100Z test projects::domain::types::tests::columns_follow_option_order_then_unknown_then_no_status ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7786260Z test projects::domain::types::tests::field_values_follow_field_order_with_status_first ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7883390Z test projects::domain::types::tests::group_rows_use_option_order_and_no_group_last ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.7985420Z test projects::domain::types::tests::parses_field_list_and_derives_item_keys ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8087300Z test projects::domain::types::tests::parses_item_list_with_issue_pr_draft_and_redacted_items ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8188830Z test projects::domain::types::tests::parses_repo_info_into_the_linked_projects ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8289220Z test projects::domain::types::tests::sort_items_dir_desc_keeps_empty_cells_last ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8414690Z test projects::domain::types::tests::table_columns_and_sorting ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8515300Z test projects::domain::types::tests::value_text_covers_every_gh_shape ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8615890Z test projects::domain::types::tests::view_layout_parses_graphql_enum ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8718090Z test projects::domain::types::tests::view_table_columns_follow_the_view ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8823770Z test projects::panes::board::roadmap_render_tests::selected_roadmap_row_keeps_its_bar ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.8942620Z test projects::panes::board::tests::a_notice_replaces_the_missing_board ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9025730Z test projects::panes::board::tests::board_view_columns_come_from_vertical_group_by ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9151950Z test projects::panes::board::tests::board_view_group_by_builds_swimlanes_and_j_crosses_them ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9253290Z test projects::panes::board::tests::board_view_sort_orders_cards_inside_columns ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9355140Z test projects::panes::board::tests::cards_of_other_repositories_carry_a_dimmed_prefix ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9456620Z test projects::panes::board::tests::cards_truncate_and_pad_to_the_column_width ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9561880Z test projects::panes::board::tests::columns_and_cards_navigate_with_hjkl ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9663970Z test projects::panes::board::tests::group_headers_offset_the_visual_selection ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9764950Z test projects::panes::board::tests::open_browser_uses_the_item_url_or_the_project_url ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9865550Z test projects::panes::board::tests::refresh_keeps_the_selection_by_item_id ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:21.9967280Z test projects::panes::board::tests::roadmap_view_drives_mode_zoom_and_scroll ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0068740Z test projects::panes::board::tests::search_matches_titles_and_numbers_across_columns ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0168540Z test projects::panes::board::tests::table_mode_keeps_the_selected_item_and_sorts ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0269370Z test projects::panes::board::tests::table_view_drives_mode_columns_sort_and_groups ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0370560Z test projects::panes::board::tests::v_cycles_saved_views_and_survives_refresh ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0471170Z test projects::panes::board::tests::view_filter_hides_items_in_every_layout_and_reports_unsupported ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0606510Z test projects::panes::detail::tests::a_failed_fetch_keeps_the_fields_and_shows_the_error ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0707900Z test projects::panes::detail::tests::drafts_show_fields_and_body_without_a_fetch ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0809240Z test projects::panes::detail::tests::issues_list_every_field_then_the_fetched_body_and_comments ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.0927750Z test projects::panes::projects::tests::enter_focuses_the_board_and_o_opens_the_project ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1030620Z test projects::panes::projects::tests::rows_show_number_title_owner_and_count ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1133700Z test projects::panes::projects::tests::selection_survives_refresh_and_counts_come_from_boards ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1134430Z test procs::state::tests::selection_drives_detail_with_children_and_ports ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1235650Z test projects::state::tests::a_failed_fetch_does_not_suppress_the_retry ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1337510Z test projects::state::tests::a_repository_without_linked_projects_shows_the_notice ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1445610Z test projects::state::tests::a_placed_list_pane_takes_focus_and_drives_the_board ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1547620Z test projects::state::tests::a_stale_board_is_refetched_on_activation_and_a_fresh_one_is_not ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1648890Z test projects::state::tests::an_unmatched_projects_board_pin_names_itself_in_the_notice ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1756750Z test projects::state::tests::enter_and_esc_walk_board_and_detail_without_the_list ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.1858350Z test projects::state::tests::linked_projects_drive_the_board_and_p_cycles_them ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.2238780Z test projects::state::tests::projects_board_pins_the_board_by_number ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.2439730Z test projects::state::tests::projects_board_pins_the_board_by_title_case_insensitively ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.3325880Z test projects::state::tests::projects_page_builds_from_builtin_config ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4086940Z test projects::state::tests::the_status_bar_shows_the_board_age ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4223110Z test worktrees::domain::stash::tests::falls_back_only_when_include_untracked_is_unknown ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4363830Z test worktrees::domain::stash::tests::parses_stash_list ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4422840Z test worktrees::domain::stash::tests::patch_buffer_becomes_side_by_side_files ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4526820Z test worktrees::domain::stash::tests::splits_subject_variants ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4628230Z test worktrees::domain::worktree::tests::current_worktree_is_detected ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4729360Z test worktrees::domain::worktree::tests::current_worktree_survives_symlinked_root ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4830560Z test worktrees::domain::worktree::tests::display_path_sibling_and_unrelated ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.4931030Z test worktrees::domain::worktree::tests::display_paths_are_relative_to_main ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.5032450Z test worktrees::domain::worktree::tests::parses_porcelain_entries ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.5132970Z test worktrees::domain::worktree::tests::parses_show_output ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.5234490Z test worktrees::domain::worktree::tests::unquotes_git_style_paths ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:22.5334970Z test projects::state::tests::scope_errors_replace_the_panes_with_the_notice ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:23.5794540Z test worktrees::panes::preview::tests::normal_and_visual_mode_keys_reach_the_diff_widget ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:23.5896040Z test worktrees::panes::preview::tests::summary_lines_layout ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:23.5997960Z test worktrees::panes::stashes::tests::right_column_degrades_gracefully ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:23.6099560Z test worktrees::panes::tests::fit_head_truncates ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:23.6201200Z test worktrees::panes::tests::fit_tail_pads_and_truncates ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:23.6303410Z test worktrees::panes::preview::tests::scroll_mode_uses_the_pane_keymap_only ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:23.6806190Z test worktrees::state::tests::default_kdl_wires_panes_bindings_and_keys ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:24.7602360Z test files::panes::preview::tests::markdown_detection_is_by_extension ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:25.2691330Z test worktrees::state::tests::page_loads_for_this_repository ... ok
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:25.2792980Z
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:25.2894840Z test result: ok. 390 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 24.99s
+test (aarch64-apple-darwin, macos-latest)	cargo test	2026-09-08T10:02:25.2994090Z
+test (aarch64-apple-darwin, macos-latest)	cargo build	﻿2026-09-08T10:02:25.3160620Z ##[group]Run cargo build --target aarch64-apple-darwin
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3161970Z ^[[36;1mcargo build --target aarch64-apple-darwin^[[0m
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3194410Z shell: /opt/homebrew/bin/bash -e {0}
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3194750Z env:
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3195210Z   CARGO_INCREMENTAL: 0
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3196470Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3198530Z   CARGO_TERM_COLOR: always
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3199590Z   RUST_BACKTRACE: short
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3199780Z   RUSTFLAGS: -D warnings
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3200000Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3200290Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3200590Z   CACHE_ON_FAILURE: true
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:25.3200770Z ##[endgroup]
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:26.3785310Z ^[[1m^[[92m   Compiling^[[0m vig v0.12.0 (/Users/runner/work/vig/vig)
+test (aarch64-apple-darwin, macos-latest)	cargo build	2026-09-08T10:02:36.7806260Z ^[[1m^[[92m    Finished^[[0m `dev` profile [unoptimized] target(s) in 11.29s
+test (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-09-08T10:02:36.8863680Z Post job cleanup.
+test (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:02:36.8869030Z ##[start-action display=Setup Rust Caching;id=__02faf9d8-fa3d-478a-8c10-1910f1c84571.__Swatinem_rust-cache]
+test (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:02:36.8978440Z Post job cleanup.
+test (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:02:37.6005460Z Cache up-to-date.
+test (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:02:37.6006900Z (node:3088) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:02:37.6008370Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-08T10:02:37.6135690Z ##[end-action id=__02faf9d8-fa3d-478a-8c10-1910f1c84571.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=726]
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	﻿2026-09-08T10:02:37.6235610Z Post job cleanup.
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.7595400Z [command]/opt/homebrew/bin/git version
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.7853930Z git version 2.55.0
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.7887530Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/6e7b2db6-2c08-45bc-83de-937be8397b9f/.gitconfig'
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.7898460Z Temporarily overriding HOME='/Users/runner/work/_temp/6e7b2db6-2c08-45bc-83de-937be8397b9f' before making global git config changes
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.7901820Z Adding repository directory to the temporary git global config as a safe directory
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.7902510Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/vig/vig
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.8044720Z Removing SSH command configuration
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.8049510Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.8132460Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.9701300Z Removing HTTP extra header
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.9710920Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:37.9818270Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1517720Z Removing includeIf entries pointing to credentials config files
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1580260Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1581020Z includeif.gitdir:/Users/runner/work/vig/vig/.git.path
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1581490Z includeif.gitdir:/Users/runner/work/vig/vig/.git/worktrees/*.path
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1581920Z includeif.gitdir:/github/workspace/.git.path
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1582330Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1583430Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/vig/vig/.git.path
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1584130Z /Users/runner/work/_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1585410Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/vig/vig/.git.path /Users/runner/work/_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1625880Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/vig/vig/.git/worktrees/*.path
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1691070Z /Users/runner/work/_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1698440Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/vig/vig/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1785870Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1861390Z /github/runner_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1868110Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.1967920Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.2037000Z /github/runner_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.2048130Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.2125760Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-08T10:02:38.3413540Z Removing credentials config '/Users/runner/work/_temp/git-credentials-0fae3646-33ac-4750-b8f8-a445777d0124.config'
+test (aarch64-apple-darwin, macos-latest)	Complete job	﻿2026-09-08T10:02:38.3529360Z Cleaning up orphan processes

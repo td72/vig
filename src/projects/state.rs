@@ -839,6 +839,78 @@ mod tests {
         state_with(&Config::builtin())
     }
 
+    /// Text of a rendered frame, one string per row.
+    fn render_rows(st: &mut ProjectsState) -> Vec<String> {
+        use ratatui::backend::TestBackend;
+        let mut term = ratatui::Terminal::new(TestBackend::new(120, 40)).unwrap();
+        let ctx = ctx();
+        term.draw(|f| st.render(f, &ctx, f.area())).unwrap();
+        let buf = term.backend().buffer().clone();
+        (0..buf.area.height)
+            .map(|y| {
+                (0..buf.area.width)
+                    .map(|x| buf[(x, y)].symbol().to_string())
+                    .collect()
+            })
+            .collect()
+    }
+
+    /// The whole page against the recorded `gh` output in `tape/fixtures`:
+    /// linked projects → board (GraphQL path) → views, no network.
+    #[test]
+    fn page_loads_a_board_from_recorded_fixtures() {
+        use crate::core::gh_fixture;
+        let Some(dir) = gh_fixture::recorded_dir() else {
+            return;
+        };
+        // Replay is process-global: hold the lock for the whole test and
+        // clear the directory again at the end.
+        let _guard = gh_fixture::REPLAY_LOCK
+            .lock()
+            .unwrap_or_else(|p| p.into_inner());
+        gh_fixture::set_replay_dir(Some(dir));
+        struct Reset;
+        impl Drop for Reset {
+            fn drop(&mut self) {
+                gh_fixture::set_replay_dir(None);
+            }
+        }
+        let _reset = Reset;
+        let mut st = ProjectsState::new(&Config::builtin()).expect("projects page");
+        st.use_disk_cache = false;
+        let mut c = ctx();
+        st.on_activate(&mut c);
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while st.panes.board.board.is_none() && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(20));
+            st.drain_background();
+        }
+        let board = st
+            .panes
+            .board
+            .board
+            .as_ref()
+            .expect("board loaded from fixtures");
+        assert_eq!(board.number, 2);
+        assert!(!board.items.is_empty());
+        assert!(!board.views.is_empty(), "saved views come with the board");
+        assert!(st
+            .panes
+            .projects
+            .items
+            .iter()
+            .any(|p| p.title == "vig demo board"));
+        let rows = render_rows(&mut st);
+        assert!(
+            rows.iter().any(|r| r.contains("vig demo board")),
+            "{rows:?}"
+        );
+        assert!(
+            rows.iter().any(|r| r.contains("View 1")),
+            "header names the view"
+        );
+    }
+
     /// A freshly-fetched cache entry.
     fn cached(board: Board) -> CachedBoard {
         CachedBoard {

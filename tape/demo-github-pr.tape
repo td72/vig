@@ -1,7 +1,6 @@
 Output assets/demo-github-pr.gif
 
 Require vig
-Require gh
 
 Set Shell "bash"
 Set FontSize 16

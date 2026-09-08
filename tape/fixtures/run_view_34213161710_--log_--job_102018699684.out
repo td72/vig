@@ -1,0 +1,71 @@
+deploy	Set up job	﻿2026-09-08T10:01:14.2833895Z Current runner version: '2.337.0'
+deploy	Set up job	2026-09-08T10:01:14.2862822Z ##[group]Runner Image Provisioner
+deploy	Set up job	2026-09-08T10:01:14.2863797Z Hosted Compute Agent
+deploy	Set up job	2026-09-08T10:01:14.2864442Z Version: 20260828.587
+deploy	Set up job	2026-09-08T10:01:14.2865402Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+deploy	Set up job	2026-09-08T10:01:14.2866176Z Build Date: 2026-08-28T16:44:25Z
+deploy	Set up job	2026-09-08T10:01:14.2866922Z Worker ID: {289150bd-8030-402f-8203-98a131783ff1}
+deploy	Set up job	2026-09-08T10:01:14.2867650Z Azure Region: northcentralus
+deploy	Set up job	2026-09-08T10:01:14.2868251Z ##[endgroup]
+deploy	Set up job	2026-09-08T10:01:14.2869660Z ##[group]Operating System
+deploy	Set up job	2026-09-08T10:01:14.2870278Z Ubuntu
+deploy	Set up job	2026-09-08T10:01:14.2870902Z 24.04.4
+deploy	Set up job	2026-09-08T10:01:14.2871430Z LTS
+deploy	Set up job	2026-09-08T10:01:14.2871994Z ##[endgroup]
+deploy	Set up job	2026-09-08T10:01:14.2872584Z ##[group]Runner Image
+deploy	Set up job	2026-09-08T10:01:14.2873195Z Image: ubuntu-24.04
+deploy	Set up job	2026-09-08T10:01:14.2874251Z Version: 20260831.293.1
+deploy	Set up job	2026-09-08T10:01:14.2875572Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260831.293/images/ubuntu/Ubuntu2404-Readme.md
+deploy	Set up job	2026-09-08T10:01:14.2877356Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260831.293
+deploy	Set up job	2026-09-08T10:01:14.2878328Z ##[endgroup]
+deploy	Set up job	2026-09-08T10:01:14.2879557Z ##[group]GITHUB_TOKEN Permissions
+deploy	Set up job	2026-09-08T10:01:14.2881908Z Contents: read
+deploy	Set up job	2026-09-08T10:01:14.2882535Z Metadata: read
+deploy	Set up job	2026-09-08T10:01:14.2883115Z Pages: write
+deploy	Set up job	2026-09-08T10:01:14.2883785Z ##[endgroup]
+deploy	Set up job	2026-09-08T10:01:14.2886173Z Secret source: Actions
+deploy	Set up job	2026-09-08T10:01:14.2887462Z Prepare workflow directory
+deploy	Set up job	2026-09-08T10:01:14.3270930Z Prepare all required actions
+deploy	Set up job	2026-09-08T10:01:14.3321421Z Getting action download info
+deploy	Set up job	2026-09-08T10:01:14.5509699Z Download action repository 'actions/deploy-pages@v4' (SHA:d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e)
+deploy	Set up job	2026-09-08T10:01:15.1960387Z Complete job name: deploy
+deploy	Run actions/deploy-pages@v4	﻿2026-09-08T10:01:15.2574731Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2583802Z ##[group]Run actions/deploy-pages@v4
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2584652Z with:
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2589027Z   token: ***
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2589623Z   timeout: 600000
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2590145Z   error_count: 10
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2590702Z   reporting_interval: 5000
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2591333Z   artifact_name: github-pages
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2591916Z   preview: false
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2592598Z env:
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2593083Z   MDBOOK_VERSION: 0.5.4
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2593863Z   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.2594780Z ##[endgroup]
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.4501149Z (node:2128) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.4503562Z (Use `node --trace-deprecation ...` to show where the warning was created)
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.5777324Z Fetching artifact metadata for "github-pages" in this workflow run
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.7056936Z Found 1 artifact(s)
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.7069280Z Creating Pages deployment with payload:
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.7070123Z {
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.7070646Z 	"artifact_id": 10050632869,
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.7071486Z 	"pages_build_version": "ca2b9890758636cb1cf92916180f91e2ef787106",
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.7108171Z 	"oidc_token": "***"
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:15.7108816Z }
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:16.0229264Z Created deployment for ca2b9890758636cb1cf92916180f91e2ef787106, ID: ca2b9890758636cb1cf92916180f91e2ef787106
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:21.0243416Z Getting Pages deployment status...
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:21.2192184Z Current status: updating_pages
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:26.2201263Z Getting Pages deployment status...
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:26.4118178Z Current status: updating_pages
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:31.4132831Z Getting Pages deployment status...
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:31.6084641Z Current status: updating_pages
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:36.6088702Z Getting Pages deployment status...
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:36.9277154Z Current status: updating_pages
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:41.9276799Z Getting Pages deployment status...
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:42.1435148Z Current status: updating_pages
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:47.1438203Z Getting Pages deployment status...
+deploy	Run actions/deploy-pages@v4	2026-09-08T10:01:47.2893675Z Reported success!
+deploy	Complete job	﻿2026-09-08T10:01:47.3150199Z Evaluate and set environment url
+deploy	Complete job	2026-09-08T10:01:47.3155607Z Evaluated environment url: https://td72.github.io/vig/
+deploy	Complete job	2026-09-08T10:01:47.3156866Z Cleaning up orphan processes
+deploy	Complete job	2026-09-08T10:01:47.3420550Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/deploy-pages@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
