@@ -150,11 +150,24 @@ fn write(dir: &Path, args: &[&str], stdout: &[u8]) -> std::io::Result<()> {
     std::fs::write(dir.join(name_for(args)), stdout)
 }
 
-/// Serialises the tests that point the global replay directory at the
-/// recordings (and clear it again): they must not overlap with each other
-/// or with a test that expects `gh` to be off.
+/// Run the `#[ignore]`d test `name` (its full path) in a child process of
+/// this test binary. Replay is process-global, so a test that turns it on
+/// must not share a process with the other tests — their worker threads
+/// would replay fixtures instead of calling `gh` and drift.
 #[cfg(test)]
-pub static REPLAY_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+pub fn run_isolated(name: &str) {
+    let exe = std::env::current_exe().expect("test binary path");
+    let out = std::process::Command::new(exe)
+        .args(["--exact", "--ignored", "--test-threads=1", name])
+        .output()
+        .expect("spawn the test binary");
+    assert!(
+        out.status.success(),
+        "isolated test {name} failed:\n{}\n{}",
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
+}
 
 #[cfg(test)]
 mod tests {

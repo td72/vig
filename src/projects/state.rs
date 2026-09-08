@@ -859,23 +859,19 @@ mod tests {
     /// linked projects → board (GraphQL path) → views, no network.
     #[test]
     fn page_loads_a_board_from_recorded_fixtures() {
+        crate::core::gh_fixture::run_isolated(
+            "projects::state::tests::page_loads_a_board_from_recorded_fixtures_isolated",
+        );
+    }
+
+    #[test]
+    #[ignore = "run through page_loads_a_board_from_recorded_fixtures (own process)"]
+    fn page_loads_a_board_from_recorded_fixtures_isolated() {
         use crate::core::gh_fixture;
         let Some(dir) = gh_fixture::recorded_dir() else {
             return;
         };
-        // Replay is process-global: hold the lock for the whole test and
-        // clear the directory again at the end.
-        let _guard = gh_fixture::REPLAY_LOCK
-            .lock()
-            .unwrap_or_else(|p| p.into_inner());
         gh_fixture::set_replay_dir(Some(dir));
-        struct Reset;
-        impl Drop for Reset {
-            fn drop(&mut self) {
-                gh_fixture::set_replay_dir(None);
-            }
-        }
-        let _reset = Reset;
         let mut st = ProjectsState::new(&Config::builtin()).expect("projects page");
         st.use_disk_cache = false;
         let mut c = ctx();
