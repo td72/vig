@@ -1,0 +1,6 @@
+github.com
+  ✓ Logged in to github.com account td72 (keyring)
+  - Active account: true
+  - Git operations protocol: ssh
+  - Token: gho_************************************
+  - Token scopes: 'admin:org', 'gist', 'project', 'repo'

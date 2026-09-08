@@ -1,6 +1,7 @@
 mod core;
 mod docker;
 mod files;
+mod fixtures;
 mod git;
 mod github;
 mod pages;
@@ -49,6 +50,23 @@ enum Commands {
         #[command(subcommand)]
         command: ConfigCommands,
     },
+    /// Record `gh` output for API-free demo recordings and tests
+    /// (development only, hidden from help)
+    #[command(hide = true)]
+    Fixtures {
+        #[command(subcommand)]
+        command: FixturesCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum FixturesCommands {
+    /// Run every `gh` command the GitHub / Projects pages issue and write
+    /// the output into DIR (replayed with VIG_GH_FIXTURE=DIR)
+    Record {
+        #[arg(value_name = "DIR")]
+        dir: PathBuf,
+    },
 }
 
 #[derive(Subcommand)]
@@ -73,6 +91,9 @@ fn main() -> Result<()> {
     match cli.command {
         Some(Commands::Update) => update::run()?,
         Some(Commands::Config { command }) => run_config(command, cli.config)?,
+        Some(Commands::Fixtures {
+            command: FixturesCommands::Record { dir },
+        }) => fixtures::record(&dir)?,
         None => {
             let cfg = crate::core::config::source::load(cli.config)?;
             run_tui(cfg)?

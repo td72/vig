@@ -1,7 +1,6 @@
 Output assets/demo-projects.gif
 
 Require vig
-Require gh
 
 Set Shell "bash"
 Set FontSize 16
@@ -25,15 +24,12 @@ Type@1ms "echo 'hello' > README.md && git add -A && git commit -q -m 'init'"
 Enter
 Sleep 500ms
 # The page shows the projects linked to this remote
-# (`gh repo view --json projectsV2`): td72/vig has exactly the demo board
-# (#2) linked, so the recording runs against the real gh CLI with no shims —
-# the board, fields and issue bodies are the real thing.
+# (`gh repo view --json projectsV2`). The recording replays recorded gh
+# output (VIG_GH_FIXTURE, set by the mise task) — the board, fields and
+# issue bodies are the real thing, captured with `mise run fixtures:refresh`.
 Type@1ms "git remote add origin https://github.com/td72/vig.git"
 Enter
 Sleep 300ms
-# Drop the disk cache so the recording shows a fresh load.
-Type@1ms "rm -rf ~/Library/Caches/vig/v1/td72/vig/projects ~/.cache/vig/v1/td72/vig/projects"
-Enter
 Type@1ms "clear"
 Enter
 Sleep 300ms
