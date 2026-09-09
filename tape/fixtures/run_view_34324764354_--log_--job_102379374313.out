@@ -1,0 +1,1208 @@
+build (aarch64-apple-darwin, macos-latest)	Set up job	﻿2026-09-09T07:37:24.0505910Z Current runner version: '2.337.0'
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0525670Z ##[group]Runner Image Provisioner
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0526460Z Hosted Compute Agent
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0526930Z Version: 20260828.587
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0527360Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0527860Z Build Date: 2026-08-28T16:44:25Z
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0528320Z Worker ID: {8f7b78aa-afec-485c-9647-305d6d6e90f1}
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0528900Z Azure Region: westus
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0529310Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0530470Z ##[group]Operating System
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0530900Z macOS
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0531250Z 26.6.2
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0531580Z 25G83
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0532000Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0532410Z ##[group]Runner Image
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0532880Z Image: macos-26-arm64
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0533280Z Version: 20260831.0337.3
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0534110Z Included Software: https://github.com/actions/runner-images/blob/macos-26-arm64/20260831.0337/images/macos/macos-26-arm64-Readme.md
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0535430Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-26-arm64%2F20260831.0337
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0536200Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0537030Z ##[group]GITHUB_TOKEN Permissions
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0538610Z Contents: read
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0539060Z Metadata: read
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0539440Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0541160Z Secret source: Actions
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0541950Z Prepare workflow directory
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0857330Z Prepare all required actions
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.0895730Z Getting action download info
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.4314040Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:24.7312780Z Download action repository 'actions-rust-lang/setup-rust-toolchain@v1' (SHA:166cdcfd11aee3cb47222f9ddb555ce30ddb9659)
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:25.0438920Z Download action repository 'actions/upload-artifact@v6' (SHA:b7c566a772e6b6bfb58ed0dc250532a479d7789f)
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:25.2973640Z Getting action download info
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:25.4322800Z Download action repository 'Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4' (SHA:c19371144df3bb44fab255c43d04cbc2ab54d1c4)
+build (aarch64-apple-darwin, macos-latest)	Set up job	2026-09-09T07:37:26.0345600Z Complete job name: build (aarch64-apple-darwin, macos-latest)
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	﻿2026-09-09T07:37:26.1020440Z ##[group]Run actions/checkout@v6
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1021720Z with:
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1022350Z   repository: td72/vig
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1030430Z   token: ***
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1031070Z   ssh-strict: true
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1032670Z   ssh-user: git
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1033400Z   persist-credentials: true
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1034040Z   clean: true
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1035120Z   sparse-checkout-cone-mode: true
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1036670Z   fetch-depth: 1
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1037270Z   fetch-tags: false
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1077090Z   show-progress: true
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1077810Z   lfs: false
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1078380Z   submodules: false
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1079020Z   set-safe-directory: true
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1079740Z   allow-unsafe-pr-checkout: false
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.1081430Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.5699770Z Syncing repository: td72/vig
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.5707620Z ##[group]Getting Git version info
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.5708560Z Working directory is '/Users/runner/work/vig/vig'
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.5710130Z [command]/opt/homebrew/bin/git version
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6332830Z git version 2.55.0
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6356190Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6369650Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/8297245f-7911-45cf-a081-ee93eafba1e1/.gitconfig'
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6374980Z Temporarily overriding HOME='/Users/runner/work/_temp/8297245f-7911-45cf-a081-ee93eafba1e1' before making global git config changes
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6379960Z Adding repository directory to the temporary git global config as a safe directory
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6383910Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/vig/vig
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6529430Z Deleting the contents of '/Users/runner/work/vig/vig'
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6554710Z ##[group]Determining repository object format
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6556640Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6557870Z ##[group]Initializing the repository
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6559180Z [command]/opt/homebrew/bin/git init /Users/runner/work/vig/vig
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6944490Z hint: Using 'master' as the name for the initial branch. This default branch name
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6950310Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6952080Z hint: to use in all of your new repositories, which will suppress this warning,
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6953200Z hint: call:
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6953810Z hint:
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6954980Z hint: 	git config --global init.defaultBranch <name>
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6956000Z hint:
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6957720Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6959360Z hint: 'development'. The just-created branch can be renamed via this command:
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6962830Z hint:
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6967760Z hint: 	git branch -m <name>
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6968560Z hint:
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6973660Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6975360Z Initialized empty Git repository in /Users/runner/work/vig/vig/.git/
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.6979150Z [command]/opt/homebrew/bin/git remote add origin https://github.com/td72/vig
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.7195990Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.7202220Z ##[group]Disabling automatic garbage collection
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.7207050Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.7294180Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.7295370Z ##[group]Setting up auth
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.7296850Z Removing SSH command configuration
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.7298260Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.7360290Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.8610000Z Removing HTTP extra header
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.8613290Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.8694690Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.9881060Z Removing includeIf entries pointing to credentials config files
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.9883100Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:26.9961860Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.1033300Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.1125680Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/vig/vig/.git.path /Users/runner/work/_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.1193260Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/vig/vig/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.1276480Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.1349330Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.1440110Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.1449360Z ##[group]Fetching the repository
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.1451460Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +762ba74f44154d3e403b30eeb31d8b646da23c35:refs/remotes/pull/179/merge
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7828950Z From https://github.com/td72/vig
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7833850Z  * [new ref]         762ba74f44154d3e403b30eeb31d8b646da23c35 -> pull/179/merge
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7835430Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7835830Z ##[group]Determining the checkout info
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7836330Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7836870Z [command]/opt/homebrew/bin/git sparse-checkout disable
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7918050Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7981450Z ##[group]Checking out the ref
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:27.7983990Z [command]/opt/homebrew/bin/git checkout --progress --force refs/remotes/pull/179/merge
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:28.0722290Z HEAD is now at 762ba74 Merge d8133819eab19a9b837d55207d786090922809b5 into 074bbad486d5e36c3d911ead96587dcb29057716
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:28.2082520Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:28.2181900Z [command]/opt/homebrew/bin/git log -1 --format=%H
+build (aarch64-apple-darwin, macos-latest)	Run actions/checkout@v6	2026-09-09T07:37:28.2278540Z 762ba74f44154d3e403b30eeb31d8b646da23c35
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-09-09T07:37:28.2714780Z ##[group]Run actions-rust-lang/setup-rust-toolchain@v1
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2715110Z with:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2715310Z   cache: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2715470Z   cache-on-failure: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2715640Z   cache-bin: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2715800Z   cache-provider: github
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2715980Z   cache-all-crates: false
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2716230Z   cache-workspace-crates: false
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2716420Z   cache-save-if: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2716580Z   cache-targets: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2716790Z   matcher: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2717020Z   rustflags: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2717210Z   override: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2717380Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2771280Z ##[start-action display=Unbork mac;id=__actions-rust-lang_setup-rust-toolchain.__run]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2890430Z ##[group]Run brew install bash
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2891290Z ^[[36;1mbrew install bash^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2967100Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:28.2967550Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.1042160Z ^[[32m==>^[[0m ^[[1mDownloading bottle manifests^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.1263030Z ✔︎ Bottle Manifest bash (5.3.15)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.1264780Z ^[[34m==>^[[0m ^[[1mWould install 1 formula:^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.1265870Z bash
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.1823480Z ^[[34m==>^[[0m ^[[1mWould install 1 dependency for bash:^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.1824370Z ncurses
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.2054210Z ^[[32m==>^[[0m ^[[1mFetching downloads for: ^[[32mbash^[[39m^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.4213620Z ✔︎ Bottle Manifest ncurses (6.6)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:31.6591250Z ✔︎ Bottle bash (5.3.15)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.0641940Z ✔︎ Bottle ncurses (6.6)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.0749310Z ^[[32m==>^[[0m ^[[1mInstalling bash dependency: ^[[32mncurses^[[39m^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.0775690Z ^[[34m==>^[[0m ^[[1mPouring ncurses--6.6.arm64_tahoe.bottle.tar.gz^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.6607980Z 🍺  /opt/homebrew/Cellar/ncurses/6.6: 4,086 files, 10.3MB
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.6610230Z ^[[32m==>^[[0m ^[[1mInstalling ^[[32mbash^[[39m^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.6612630Z ^[[34m==>^[[0m ^[[1mPouring bash--5.3.15.arm64_tahoe.bottle.tar.gz^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9257240Z 🍺  /opt/homebrew/Cellar/bash/5.3.15: 172 files, 13MB
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9274170Z ^[[32m==>^[[0m ^[[1mCaveats^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9275650Z ^[[34m==>^[[0m ^[[1mbash^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9277640Z DEFAULT_LOADABLE_BUILTINS_PATH: /opt/homebrew/lib/bash:/usr/local/lib/bash:/usr/lib/bash:/opt/local/lib/bash:/usr/pkg/lib/bash:/opt/pkg/lib/bash:.
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9434800Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=4666]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9465990Z ##[start-action display=Run : construct rustup command line;id=__actions-rust-lang_setup-rust-toolchain.flags]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9493730Z ##[group]Run : construct rustup command line
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9494190Z ^[[36;1m: construct rustup command line^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9494780Z ^[[36;1mecho "targets=$(for t in ${_srt_targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9495450Z ^[[36;1mecho "components=$(for c in ${_srt_components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9495900Z ^[[36;1mecho "downgrade=" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9506910Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9507300Z env:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9507470Z   _srt_targets: 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9507620Z   _srt_components: 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:32.9507820Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0130660Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=65]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0139700Z ##[start-action display=Setting Environment Variables;id=__actions-rust-lang_setup-rust-toolchain.__run_2]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0163500Z ##[group]Run if [[ ! -v CARGO_INCREMENTAL ]]; then
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0163870Z ^[[36;1mif [[ ! -v CARGO_INCREMENTAL ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0164150Z ^[[36;1m  echo "CARGO_INCREMENTAL=0" >> $GITHUB_ENV^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0164990Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0165200Z ^[[36;1mif [[ ! -v CARGO_PROFILE_DEV_DEBUG ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0165500Z ^[[36;1m  echo "CARGO_PROFILE_DEV_DEBUG=0" >> $GITHUB_ENV^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0165750Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0165930Z ^[[36;1mif [[ ! -v CARGO_TERM_COLOR ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0166200Z ^[[36;1m  echo "CARGO_TERM_COLOR=always" >> $GITHUB_ENV^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0166440Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0166670Z ^[[36;1mif [[ ! -v RUST_BACKTRACE ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0167020Z ^[[36;1m  echo "RUST_BACKTRACE=short" >> $GITHUB_ENV^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0167290Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0167510Z ^[[36;1mif [[ ( ! -v RUSTFLAGS ) && $_srt_NEW_RUSTFLAGS != "" ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0167890Z ^[[36;1m  echo "RUSTFLAGS=$_srt_NEW_RUSTFLAGS" >> $GITHUB_ENV^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0168330Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0168650Z ^[[36;1m# Enable faster sparse index on nightly^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0169030Z ^[[36;1m# The value is ignored on stable and causes no problems^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0169490Z ^[[36;1m# https://internals.rust-lang.org/t/call-for-testing-cargo-sparse-registry/16862^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0170000Z ^[[36;1mif [[ ! -v CARGO_UNSTABLE_SPARSE_REGISTRY ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0170340Z ^[[36;1m  echo "CARGO_UNSTABLE_SPARSE_REGISTRY=true" >> $GITHUB_ENV^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0170610Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0170830Z ^[[36;1mif [[ ! -v CARGO_REGISTRIES_CRATES_IO_PROTOCOL ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0171200Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0172220Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0201270Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0202100Z env:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0202700Z   _srt_NEW_RUSTFLAGS: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0203300Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0626230Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=48]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0628980Z ##[start-action display=Install Rust Problem Matcher;id=__actions-rust-lang_setup-rust-toolchain.__run_3]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0651850Z ##[group]Run echo "::add-matcher::/Users/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0652590Z ^[[36;1mecho "::add-matcher::/Users/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0713390Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0713710Z env:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0713920Z   CARGO_INCREMENTAL: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0714520Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0714710Z   CARGO_TERM_COLOR: always
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0714910Z   RUST_BACKTRACE: short
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0715190Z   RUSTFLAGS: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0716330Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0717040Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.0717300Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1125510Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=49]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1128720Z ##[start-action display=Install rustup, if needed;id=__actions-rust-lang_setup-rust-toolchain.__run_4]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1163130Z ##[group]Run if ! command -v rustup &> /dev/null ; then
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1163520Z ^[[36;1mif ! command -v rustup &> /dev/null ; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1164120Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1164730Z ^[[36;1m^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1165250Z ^[[36;1m  # Resolve the correct CARGO_HOME path depending on OS^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1165680Z ^[[36;1m  if [[ "$RUNNER_OS" == "Windows" ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1166130Z ^[[36;1m    echo "${CARGO_HOME:-$USERPROFILE/.cargo}/bin" | sed 's|/|\\|g' >> $GITHUB_PATH^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1167430Z ^[[36;1m  else^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1168460Z ^[[36;1m    echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1168780Z ^[[36;1m  fi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1168930Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1181540Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1181900Z env:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1182100Z   CARGO_INCREMENTAL: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1182310Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1182500Z   CARGO_TERM_COLOR: always
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1182740Z   RUST_BACKTRACE: short
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1182970Z   RUSTFLAGS: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1183150Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1183430Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1183710Z   RUNNER_OS: macOS
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1183980Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1568560Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=43]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1573020Z ##[start-action display=rustup toolchain install stable;id=__actions-rust-lang_setup-rust-toolchain.__run_5]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1595040Z ##[group]Run # Check if value is set
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1595410Z ^[[36;1m# Check if value is set^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1595640Z ^[[36;1mif [[ -n "$_srt_rust_src_dir" ]]^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1595890Z ^[[36;1mthen^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1596080Z ^[[36;1m  # If value is set the directory must exist^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1596350Z ^[[36;1m  if [[ -d "$_srt_rust_src_dir" ]]^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1596580Z ^[[36;1m  then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1596790Z ^[[36;1m    cd "$_srt_rust_src_dir"^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1597060Z ^[[36;1m  else^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1597390Z ^[[36;1m    echo "'rust-src-dir' does not point to an existing directory" >&2^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1597810Z ^[[36;1m    echo "The value of 'rust-src-dir' is: ${_srt_rust_src_dir}" >&2^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1598100Z ^[[36;1m    exit 1^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1598260Z ^[[36;1m  fi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1598440Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1598720Z ^[[36;1mif [[ -z "$_srt_toolchain" && ( -f "rust-toolchain" || -f "rust-toolchain.toml") ]]^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1599060Z ^[[36;1mthen^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1599280Z ^[[36;1m  # Install the toolchain as specified in the file^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1599620Z ^[[36;1m  # rustup show is the old way that implicitly installed a toolchain^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1599990Z ^[[36;1m  # rustup toolchain install is the new explicit way^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1600390Z ^[[36;1m  # https://github.com/rust-lang/rustup/issues/3635#issuecomment-2343511297^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1600830Z ^[[36;1m  rustup show active-toolchain || rustup toolchain install^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1601470Z ^[[36;1m  if [[ -n $_srt_components ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1601740Z ^[[36;1m    rustup component add ${_srt_components//,/ }^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1601990Z ^[[36;1m  fi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1602160Z ^[[36;1m  if [[ -n $_srt_targets ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1602460Z ^[[36;1m    rustup target add ${_srt_targets//,/ }^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1602720Z ^[[36;1m  fi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1602860Z ^[[36;1melse^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1603030Z ^[[36;1m  if [[ -z "$_srt_toolchain" ]]^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1603260Z ^[[36;1m  then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1603420Z ^[[36;1m    _srt_toolchain=stable^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1603620Z ^[[36;1m  fi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1603910Z ^[[36;1m  rustup toolchain install ${_srt_toolchain//,/ }  --profile minimal --no-self-update^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1604300Z ^[[36;1m  # Take the last element from the list^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1604560Z ^[[36;1m  if [[ "$_srt_override" == "true" ]]^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1604770Z ^[[36;1m  then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1605000Z ^[[36;1m    rustup override set ${_srt_toolchain//*,/ }^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1605230Z ^[[36;1m  fi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1605380Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1616350Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1616650Z env:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1616800Z   CARGO_INCREMENTAL: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1617200Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1617390Z   CARGO_TERM_COLOR: always
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1617580Z   RUST_BACKTRACE: short
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1617760Z   RUSTFLAGS: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1617950Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1618190Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1618430Z   _srt_toolchain: 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1618590Z   _srt_targets: 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1618740Z   _srt_components: 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1618920Z   _srt_override: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1619110Z   _srt_rust_src_dir: 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.1619300Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.5966540Z info: syncing channel updates for stable-aarch64-apple-darwin
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.8004310Z info: latest update on 2026-09-03 for version 1.98.1 (48a229cea 2026-09-01)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.8130660Z info: removing previous version of component clippy
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.8156550Z info: removing previous version of component rustfmt
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.8172330Z info: removing previous version of component cargo
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.8283520Z info: removing previous version of component rust-std
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.8450990Z info: removing previous version of component rustc
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:33.8595970Z info: downloading 5 components
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.3325860Z 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.3859900Z info: self-update is disabled for this build of rustup
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.3861720Z   stable-aarch64-apple-darwin updated - rustc 1.98.1 (48a229cea 2026-09-01) (from rustc 1.98.0 (88d9e12ae 2026-08-18))
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.3863900Z info: any updates to rustup will need to be fetched with your system package manager
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.3864800Z 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4196640Z info: override toolchain for /Users/runner/work/vig/vig set to stable-aarch64-apple-darwin
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4276630Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=7270]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4282900Z ##[start-action display=Print installed versions;id=__actions-rust-lang_setup-rust-toolchain.versions]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4319070Z ##[group]Run echo "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4319740Z ^[[36;1mecho "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4320190Z ^[[36;1mrustc --version --verbose^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4320600Z ^[[36;1mecho "cargo-version=$(cargo --version)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4320910Z ^[[36;1mcargo --version --verbose^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4321330Z ^[[36;1mecho "rustup-version=$(rustup --version)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4321680Z ^[[36;1mrustup --version^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4330030Z ^[[36;1m^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4330470Z ^[[36;1m_srt_DATE=$(rustc --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4331010Z ^[[36;1m_srt_HASH=$(rustc --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4331510Z ^[[36;1mecho "cachekey=$(echo $_srt_DATE$_srt_HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4345010Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4345440Z env:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4345660Z   CARGO_INCREMENTAL: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4345940Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4346140Z   CARGO_TERM_COLOR: always
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4346410Z   RUST_BACKTRACE: short
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4346680Z   RUSTFLAGS: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4346930Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4347240Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.4347560Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.5491250Z rustc 1.98.1 (48a229cea 2026-09-01)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.5492270Z binary: rustc
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.5492990Z commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.5493770Z commit-date: 2026-09-01
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.5494310Z host: aarch64-apple-darwin
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.5494960Z release: 1.98.1
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.5506510Z LLVM version: 22.1.8
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6305610Z cargo 1.98.1 (797e8a9bc 2026-08-05)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6309040Z release: 1.98.1
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6310260Z commit-hash: 797e8a9bca276c1c9f9f738d2a20f484fa4eea9d
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6311300Z commit-date: 2026-08-05
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6311910Z host: aarch64-apple-darwin
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6312640Z libgit2: 1.9.4 (sys:0.21.0 vendored)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6313580Z libcurl: 8.7.1 (sys:0.4.90+curl-8.21.0 system ssl:(SecureTransport) LibreSSL/3.3.6)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6314630Z ssl: OpenSSL 3.6.3 9 Jun 2026
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6315200Z os: Mac OS 26.6.2 [64-bit]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6423950Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6630190Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6775690Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.6776940Z rustup 1.29.0 (2026-03-05)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7021970Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7862370Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.versions;outcome=success;conclusion=success;duration_ms=357]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7865270Z ##[start-action display=Downgrade registry access protocol when needed;id=__actions-rust-lang_setup-rust-toolchain.__run_6]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7906580Z ##[group]Run # Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7907210Z ^[[36;1m# Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7907710Z ^[[36;1m# On versions 1.66, 1.67, and 1.68.0-nightly the value "sparse" is still unstable.^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7908310Z ^[[36;1m# https://github.com/dtolnay/rust-toolchain/pull/69#discussion_r1107268108^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7908790Z ^[[36;1m# If we detect an incompatible value, set it to "git" which is always supported.^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7909440Z ^[[36;1mif [[ "rustc 1.98.1 (48a229cea 2026-09-01)" =~ ^rustc\ (1\.6[67]\.|1\.68\.0-nightly) && "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL}" == "sparse" ]]; then^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7910170Z ^[[36;1m  echo "Downgrade cargo registry protocol to git"^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7910580Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git" >> $GITHUB_ENV^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7910940Z ^[[36;1mfi^[[0m
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7921540Z shell: /opt/homebrew/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7921960Z env:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7922170Z   CARGO_INCREMENTAL: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7922460Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7922980Z   CARGO_TERM_COLOR: always
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7923270Z   RUST_BACKTRACE: short
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7923530Z   RUSTFLAGS: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7923770Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7924120Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.7924400Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8413110Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=54]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8418740Z ##[start-action display=Setup Rust Caching;id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8492140Z ##[group]Run Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8492510Z with:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8492660Z   cache-on-failure: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8492850Z   cache-bin: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8493000Z   cache-provider: github
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8493190Z   cache-all-crates: false
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8493370Z   cache-workspace-crates: false
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8493620Z   cache-targets: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8493790Z   save-if: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8493950Z   prefix-key: v0-rust
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8494140Z   add-job-id-key: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8494360Z   add-rust-environment-hash-key: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8494640Z   lookup-only: false
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8494810Z   cmd-format: {0}
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8494950Z env:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8495560Z   CARGO_INCREMENTAL: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8495740Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8495940Z   CARGO_TERM_COLOR: always
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8496170Z   RUST_BACKTRACE: short
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8496390Z   RUSTFLAGS: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8496610Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8496850Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:40.8497070Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.4030110Z (node:1527) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.4032550Z (Use `node --trace-deprecation ...` to show where the warning was created)
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6655490Z ##[group]Cache Configuration
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6726440Z Cache Provider:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6728650Z     github
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6729110Z Workspaces:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6729640Z     /Users/runner/work/vig/vig
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6730100Z Cache Paths:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6730910Z     /Users/runner/.cargo/bin
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6731280Z     /Users/runner/.cargo/.crates.toml
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6732490Z     /Users/runner/.cargo/.crates2.json
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6732860Z     /Users/runner/.cargo/registry
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6733200Z     /Users/runner/.cargo/git
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6733480Z     /Users/runner/work/vig/vig/target
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6733700Z Restore Key:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6733930Z     v0-rust-build-Darwin-arm64-2aa5c948
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6734200Z Cache Key:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6734500Z     v0-rust-build-Darwin-arm64-2aa5c948-eb78a9df
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6734810Z .. Prefix:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6735020Z   - v0-rust-build-Darwin-arm64
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6735280Z .. Environment considered:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6735560Z   - Rust Versions:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6735830Z     - 1.98.1 aarch64-apple-darwin 48a229ceaefd4985c50990b14116b6d856af0985
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6736290Z     - 1.98.1 aarch64-apple-darwin 48a229ceaefd4985c50990b14116b6d856af0985
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6736610Z   - CARGO_INCREMENTAL
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6736810Z   - CARGO_PROFILE_DEV_DEBUG
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6737010Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6737240Z   - CARGO_TERM_COLOR
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6737420Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6737640Z   - RUST_BACKTRACE
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6737810Z   - RUSTFLAGS
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6737990Z .. Lockfiles considered:
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6738220Z   - /Users/runner/work/vig/vig/Cargo.lock
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6738480Z   - /Users/runner/work/vig/vig/Cargo.toml
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6739000Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6739090Z 
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.6739720Z ... Restoring cache ...
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.8341220Z No cache found.
+build (aarch64-apple-darwin, macos-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:37:41.8411310Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=999]
+build (aarch64-apple-darwin, macos-latest)	Build	﻿2026-09-09T07:37:41.8479580Z ##[group]Run cargo build --locked --release --features vendored
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8480020Z ^[[36;1mcargo build --locked --release --features vendored^[[0m
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8491850Z shell: /opt/homebrew/bin/bash -e {0}
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8492080Z env:
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8492240Z   CARGO_INCREMENTAL: 0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8492420Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8492600Z   CARGO_TERM_COLOR: always
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8492760Z   RUST_BACKTRACE: short
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8492920Z   RUSTFLAGS: -D warnings
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8493120Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8493360Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8493600Z   CACHE_ON_FAILURE: true
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:41.8493770Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:42.0254890Z ^[[1m^[[92m    Updating^[[0m crates.io index
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.0440030Z ^[[1m^[[92m Downloading^[[0m crates ...
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1254540Z ^[[1m^[[92m  Downloaded^[[0m adler2 v2.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1398010Z ^[[1m^[[92m  Downloaded^[[0m anstyle v1.0.13
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1458780Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.2.17
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1524000Z ^[[1m^[[92m  Downloaded^[[0m document-features v0.2.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1599280Z ^[[1m^[[92m  Downloaded^[[0m castaway v0.2.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1683420Z ^[[1m^[[92m  Downloaded^[[0m atomic v0.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1749730Z ^[[1m^[[92m  Downloaded^[[0m cfg_aliases v0.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1776280Z ^[[1m^[[92m  Downloaded^[[0m by_address v1.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1801140Z ^[[1m^[[92m  Downloaded^[[0m errno v0.3.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1853740Z ^[[1m^[[92m  Downloaded^[[0m anstyle-query v1.1.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1917350Z ^[[1m^[[92m  Downloaded^[[0m dirs-sys v0.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1936450Z ^[[1m^[[92m  Downloaded^[[0m potential_utf v0.1.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.1964950Z ^[[1m^[[92m  Downloaded^[[0m color_quant v1.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2055170Z ^[[1m^[[92m  Downloaded^[[0m fax v0.2.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2258730Z ^[[1m^[[92m  Downloaded^[[0m filedescriptor v0.8.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2260220Z ^[[1m^[[92m  Downloaded^[[0m fnv v1.0.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2260900Z ^[[1m^[[92m  Downloaded^[[0m futures-sink v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2287350Z ^[[1m^[[92m  Downloaded^[[0m clap_lex v1.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2329640Z ^[[1m^[[92m  Downloaded^[[0m atomic-waker v1.1.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2388740Z ^[[1m^[[92m  Downloaded^[[0m base64-simd v0.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2391340Z ^[[1m^[[92m  Downloaded^[[0m byteorder-lite v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2412920Z ^[[1m^[[92m  Downloaded^[[0m equivalent v1.0.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2445990Z ^[[1m^[[92m  Downloaded^[[0m bit-vec v0.6.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2500430Z ^[[1m^[[92m  Downloaded^[[0m block-buffer v0.10.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2589110Z ^[[1m^[[92m  Downloaded^[[0m colorchoice v1.0.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2623160Z ^[[1m^[[92m  Downloaded^[[0m darling_macro v0.23.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2637060Z ^[[1m^[[92m  Downloaded^[[0m form_urlencoded v1.2.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2653860Z ^[[1m^[[92m  Downloaded^[[0m futures-task v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2695030Z ^[[1m^[[92m  Downloaded^[[0m bit-set v0.5.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2738060Z ^[[1m^[[92m  Downloaded^[[0m dirs v6.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2741400Z ^[[1m^[[92m  Downloaded^[[0m fax_derive v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2784050Z ^[[1m^[[92m  Downloaded^[[0m futures-core v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2816270Z ^[[1m^[[92m  Downloaded^[[0m crypto-common v0.1.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2840680Z ^[[1m^[[92m  Downloaded^[[0m fastrand v2.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2885180Z ^[[1m^[[92m  Downloaded^[[0m fixedbitset v0.4.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2911210Z ^[[1m^[[92m  Downloaded^[[0m fsevent-sys v4.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.2925240Z ^[[1m^[[92m  Downloaded^[[0m funty v2.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3006870Z ^[[1m^[[92m  Downloaded^[[0m futures-io v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3041800Z ^[[1m^[[92m  Downloaded^[[0m generic-array v0.14.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3091700Z ^[[1m^[[92m  Downloaded^[[0m pulldown-cmark-escape v0.11.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3095950Z ^[[1m^[[92m  Downloaded^[[0m same-file v1.0.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3173970Z ^[[1m^[[92m  Downloaded^[[0m powerfmt v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3227080Z ^[[1m^[[92m  Downloaded^[[0m rustc_version v0.4.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3284530Z ^[[1m^[[92m  Downloaded^[[0m linked-hash-map v0.5.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3331660Z ^[[1m^[[92m  Downloaded^[[0m memoffset v0.9.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3453390Z ^[[1m^[[92m  Downloaded^[[0m bit-set v0.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3564100Z ^[[1m^[[92m  Downloaded^[[0m base64ct v1.8.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3630380Z ^[[1m^[[92m  Downloaded^[[0m bit-vec v0.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3631140Z ^[[1m^[[92m  Downloaded^[[0m bytemuck_derive v1.12.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3638480Z ^[[1m^[[92m  Downloaded^[[0m deranged v0.5.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3694880Z ^[[1m^[[92m  Downloaded^[[0m digest v0.10.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3746510Z ^[[1m^[[92m  Downloaded^[[0m displaydoc v0.2.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3851580Z ^[[1m^[[92m  Downloaded^[[0m ed25519 v2.2.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3929340Z ^[[1m^[[92m  Downloaded^[[0m either v1.15.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.3997910Z ^[[1m^[[92m  Downloaded^[[0m fdeflate v0.3.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4036000Z ^[[1m^[[92m  Downloaded^[[0m futures-channel v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4065490Z ^[[1m^[[92m  Downloaded^[[0m strum v0.27.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4091290Z ^[[1m^[[92m  Downloaded^[[0m subtle v2.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4138780Z ^[[1m^[[92m  Downloaded^[[0m notify-types v1.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4305470Z ^[[1m^[[92m  Downloaded^[[0m number_prefix v0.4.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4320510Z ^[[1m^[[92m  Downloaded^[[0m anstream v0.6.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4392990Z ^[[1m^[[92m  Downloaded^[[0m anstyle-parse v0.2.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4435220Z ^[[1m^[[92m  Downloaded^[[0m autocfg v1.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4560210Z ^[[1m^[[92m  Downloaded^[[0m bincode v1.3.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4597750Z ^[[1m^[[92m  Downloaded^[[0m bitflags v1.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4721800Z ^[[1m^[[92m  Downloaded^[[0m bitflags v2.11.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4929330Z ^[[1m^[[92m  Downloaded^[[0m cfg-if v1.0.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.4984040Z ^[[1m^[[92m  Downloaded^[[0m filetime v0.2.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5009710Z ^[[1m^[[92m  Downloaded^[[0m foldhash v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5070940Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.2.17
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5286580Z ^[[1m^[[92m  Downloaded^[[0m pin-project-lite v0.2.16
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5479810Z ^[[1m^[[92m  Downloaded^[[0m radium v0.7.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5586390Z ^[[1m^[[92m  Downloaded^[[0m rand_chacha v0.3.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5687330Z ^[[1m^[[92m  Downloaded^[[0m ref-cast-impl v1.0.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5805080Z ^[[1m^[[92m  Downloaded^[[0m rustc-hash v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5897870Z ^[[1m^[[92m  Downloaded^[[0m scopeguard v1.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5898430Z ^[[1m^[[92m  Downloaded^[[0m signature v2.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5899070Z ^[[1m^[[92m  Downloaded^[[0m siphasher v1.0.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5899590Z ^[[1m^[[92m  Downloaded^[[0m stable_deref_trait v1.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5900020Z ^[[1m^[[92m  Downloaded^[[0m strsim v0.11.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5906070Z ^[[1m^[[92m  Downloaded^[[0m sync_wrapper v1.0.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5924650Z ^[[1m^[[92m  Downloaded^[[0m time-core v0.1.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5953520Z ^[[1m^[[92m  Downloaded^[[0m phf_codegen v0.11.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.5974390Z ^[[1m^[[92m  Downloaded^[[0m phf_generator v0.11.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6006530Z ^[[1m^[[92m  Downloaded^[[0m untrusted v0.9.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6041960Z ^[[1m^[[92m  Downloaded^[[0m urlencoding v2.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6068230Z ^[[1m^[[92m  Downloaded^[[0m allocator-api2 v0.2.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6114340Z ^[[1m^[[92m  Downloaded^[[0m anyhow v1.0.101
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6219750Z ^[[1m^[[92m  Downloaded^[[0m bytemuck v1.25.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6292930Z ^[[1m^[[92m  Downloaded^[[0m chacha20 v0.10.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6337640Z ^[[1m^[[92m  Downloaded^[[0m clap v4.5.58
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6635250Z ^[[1m^[[92m  Downloaded^[[0m clap_derive v4.5.55
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6709110Z ^[[1m^[[92m  Downloaded^[[0m compact_str v0.9.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6799510Z ^[[1m^[[92m  Downloaded^[[0m console v0.15.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6890480Z ^[[1m^[[92m  Downloaded^[[0m const-oid v0.9.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6961690Z ^[[1m^[[92m  Downloaded^[[0m convert_case v0.10.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.6994000Z ^[[1m^[[92m  Downloaded^[[0m crc32fast v1.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7030940Z ^[[1m^[[92m  Downloaded^[[0m csscolorparser v0.6.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7088560Z ^[[1m^[[92m  Downloaded^[[0m darling v0.23.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7216000Z ^[[1m^[[92m  Downloaded^[[0m darling_core v0.23.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7334020Z ^[[1m^[[92m  Downloaded^[[0m der v0.7.10
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7477440Z ^[[1m^[[92m  Downloaded^[[0m dispatch2 v0.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7519950Z ^[[1m^[[92m  Downloaded^[[0m ed25519-dalek v2.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7576050Z ^[[1m^[[92m  Downloaded^[[0m find-msvc-tools v0.1.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7613350Z ^[[1m^[[92m  Downloaded^[[0m finl_unicode v1.4.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7669170Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.3.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7734200Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.4.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7856100Z ^[[1m^[[92m  Downloaded^[[0m gif v0.14.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7888750Z ^[[1m^[[92m  Downloaded^[[0m quick-error v2.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7922350Z ^[[1m^[[92m  Downloaded^[[0m litemap v0.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.7962460Z ^[[1m^[[92m  Downloaded^[[0m once_cell v1.21.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8006660Z ^[[1m^[[92m  Downloaded^[[0m ordered-float v5.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8036990Z ^[[1m^[[92m  Downloaded^[[0m pest_generator v2.8.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8063210Z ^[[1m^[[92m  Downloaded^[[0m phf v0.11.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8091960Z ^[[1m^[[92m  Downloaded^[[0m unicase v2.9.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8115820Z ^[[1m^[[92m  Downloaded^[[0m wezterm-input-types v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8170690Z ^[[1m^[[92m  Downloaded^[[0m wyz v0.5.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8191690Z ^[[1m^[[92m  Downloaded^[[0m xattr v1.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8232640Z ^[[1m^[[92m  Downloaded^[[0m heck v0.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8265980Z ^[[1m^[[92m  Downloaded^[[0m aho-corasick v1.1.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8364460Z ^[[1m^[[92m  Downloaded^[[0m arboard v3.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8418060Z ^[[1m^[[92m  Downloaded^[[0m base64 v0.22.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8495200Z ^[[1m^[[92m  Downloaded^[[0m bytes v1.11.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8618970Z ^[[1m^[[92m  Downloaded^[[0m cc v1.2.56
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8678210Z ^[[1m^[[92m  Downloaded^[[0m crossterm v0.28.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8812390Z ^[[1m^[[92m  Downloaded^[[0m crossterm v0.29.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.8989610Z ^[[1m^[[92m  Downloaded^[[0m derive_more v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9296320Z ^[[1m^[[92m  Downloaded^[[0m derive_more-impl v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9428260Z ^[[1m^[[92m  Downloaded^[[0m euclid v0.22.13
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9509610Z ^[[1m^[[92m  Downloaded^[[0m fancy-regex v0.11.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9586910Z ^[[1m^[[92m  Downloaded^[[0m fancy-regex v0.16.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9691930Z ^[[1m^[[92m  Downloaded^[[0m flate2 v1.1.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9802580Z ^[[1m^[[92m  Downloaded^[[0m rand_pcg v0.10.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9861150Z ^[[1m^[[92m  Downloaded^[[0m rand_xoshiro v0.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9907430Z ^[[1m^[[92m  Downloaded^[[0m ratatui-termwiz v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:43.9939150Z ^[[1m^[[92m  Downloaded^[[0m ref-cast v1.0.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0000230Z ^[[1m^[[92m  Downloaded^[[0m self-replace v1.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0039280Z ^[[1m^[[92m  Downloaded^[[0m self_cell v1.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0063030Z ^[[1m^[[92m  Downloaded^[[0m semver v1.0.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0141360Z ^[[1m^[[92m  Downloaded^[[0m serde_urlencoded v0.7.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0192670Z ^[[1m^[[92m  Downloaded^[[0m sha2 v0.10.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0285990Z ^[[1m^[[92m  Downloaded^[[0m signal-hook-mio v0.2.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0328640Z ^[[1m^[[92m  Downloaded^[[0m signal-hook-registry v1.4.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0389470Z ^[[1m^[[92m  Downloaded^[[0m spki v0.7.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0429680Z ^[[1m^[[92m  Downloaded^[[0m strum_macros v0.27.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0487390Z ^[[1m^[[92m  Downloaded^[[0m synstructure v0.13.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0506530Z ^[[1m^[[92m  Downloaded^[[0m tap v1.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0526360Z ^[[1m^[[92m  Downloaded^[[0m time-macros v0.2.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0603730Z ^[[1m^[[92m  Downloaded^[[0m mio v1.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0716130Z ^[[1m^[[92m  Downloaded^[[0m pest_meta v2.8.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0762070Z ^[[1m^[[92m  Downloaded^[[0m url v2.5.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0810680Z ^[[1m^[[92m  Downloaded^[[0m writeable v0.6.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0846800Z ^[[1m^[[92m  Downloaded^[[0m hex v0.4.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0876890Z ^[[1m^[[92m  Downloaded^[[0m http v1.4.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.0990960Z ^[[1m^[[92m  Downloaded^[[0m instability v0.3.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1022630Z ^[[1m^[[92m  Downloaded^[[0m instant v0.1.13
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1050470Z ^[[1m^[[92m  Downloaded^[[0m ipnet v2.11.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1085360Z ^[[1m^[[92m  Downloaded^[[0m is_terminal_polyfill v1.70.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1102960Z ^[[1m^[[92m  Downloaded^[[0m itoa v1.0.17
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1125430Z ^[[1m^[[92m  Downloaded^[[0m num_threads v0.1.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1147730Z ^[[1m^[[92m  Downloaded^[[0m bitvec v1.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1536950Z ^[[1m^[[92m  Downloaded^[[0m clap_builder v4.5.58
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1702900Z ^[[1m^[[92m  Downloaded^[[0m curve25519-dalek v4.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.1843200Z ^[[1m^[[92m  Downloaded^[[0m futures-util v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.2250820Z ^[[1m^[[92m  Downloaded^[[0m git2 v0.20.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.2500690Z ^[[1m^[[92m  Downloaded^[[0m ppv-lite86 v0.2.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.2523350Z ^[[1m^[[92m  Downloaded^[[0m quote v1.0.44
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.2629410Z ^[[1m^[[92m  Downloaded^[[0m rand_core v0.6.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.2655070Z ^[[1m^[[92m  Downloaded^[[0m objc2 v0.6.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.2862760Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.2.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.2939190Z ^[[1m^[[92m  Downloaded^[[0m wide v1.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.3113260Z ^[[1m^[[92m  Downloaded^[[0m winnow v0.7.15
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.3412180Z ^[[1m^[[92m  Downloaded^[[0m hashbrown v0.16.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.3534400Z ^[[1m^[[92m  Downloaded^[[0m iri-string v0.7.10
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.3680360Z ^[[1m^[[92m  Downloaded^[[0m itertools v0.14.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.3868980Z ^[[1m^[[92m  Downloaded^[[0m pest_derive v2.8.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.3972300Z ^[[1m^[[92m  Downloaded^[[0m tinyvec v1.10.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4041340Z ^[[1m^[[92m  Downloaded^[[0m rand_core v0.10.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4072860Z ^[[1m^[[92m  Downloaded^[[0m ratatui-crossterm v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4086260Z ^[[1m^[[92m  Downloaded^[[0m ratatui-macros v0.7.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4117790Z ^[[1m^[[92m  Downloaded^[[0m rustversion v1.0.22
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4177990Z ^[[1m^[[92m  Downloaded^[[0m shlex v1.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4210420Z ^[[1m^[[92m  Downloaded^[[0m simd-adler32 v0.3.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4245230Z ^[[1m^[[92m  Downloaded^[[0m slab v0.4.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4325860Z ^[[1m^[[92m  Downloaded^[[0m smallvec v1.15.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4381230Z ^[[1m^[[92m  Downloaded^[[0m static_assertions v1.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4413060Z ^[[1m^[[92m  Downloaded^[[0m terminfo v0.9.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4462870Z ^[[1m^[[92m  Downloaded^[[0m termios v0.3.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4507200Z ^[[1m^[[92m  Downloaded^[[0m thiserror v1.0.69
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4608840Z ^[[1m^[[92m  Downloaded^[[0m thiserror v2.0.18
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4779240Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v1.0.69
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4805790Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v2.0.18
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4840100Z ^[[1m^[[92m  Downloaded^[[0m tinystr v0.8.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4881160Z ^[[1m^[[92m  Downloaded^[[0m outref v0.5.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4901490Z ^[[1m^[[92m  Downloaded^[[0m jobserver v0.1.34
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.4945880Z ^[[1m^[[92m  Downloaded^[[0m kasuari v0.4.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5027320Z ^[[1m^[[92m  Downloaded^[[0m pest v2.8.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5104500Z ^[[1m^[[92m  Downloaded^[[0m tower-layer v0.3.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5121730Z ^[[1m^[[92m  Downloaded^[[0m tower-service v0.3.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5136260Z ^[[1m^[[92m  Downloaded^[[0m tracing-core v0.1.36
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5184810Z ^[[1m^[[92m  Downloaded^[[0m try-lock v0.2.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5200790Z ^[[1m^[[92m  Downloaded^[[0m typenum v1.19.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5250720Z ^[[1m^[[92m  Downloaded^[[0m ucd-trie v0.1.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5274780Z ^[[1m^[[92m  Downloaded^[[0m unicode-ident v1.0.23
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5338800Z ^[[1m^[[92m  Downloaded^[[0m unicode-segmentation v1.12.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5411940Z ^[[1m^[[92m  Downloaded^[[0m unicode-truncate v2.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5439020Z ^[[1m^[[92m  Downloaded^[[0m utf8_iter v1.0.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5462210Z ^[[1m^[[92m  Downloaded^[[0m utf8parse v0.2.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5485200Z ^[[1m^[[92m  Downloaded^[[0m proc-macro2 v1.0.106
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5543500Z ^[[1m^[[92m  Downloaded^[[0m quinn-udp v0.5.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5574330Z ^[[1m^[[92m  Downloaded^[[0m rustls-pki-types v1.14.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5628270Z ^[[1m^[[92m  Downloaded^[[0m ryu v1.0.23
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5726290Z ^[[1m^[[92m  Downloaded^[[0m self_update v0.42.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5772930Z ^[[1m^[[92m  Downloaded^[[0m serde_core v1.0.228
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.5921910Z ^[[1m^[[92m  Downloaded^[[0m signal-hook v0.3.18
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6121850Z ^[[1m^[[92m  Downloaded^[[0m socket2 v0.6.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6137310Z ^[[1m^[[92m  Downloaded^[[0m tempfile v3.25.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6189710Z ^[[1m^[[92m  Downloaded^[[0m tracing v0.1.44
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6490330Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.1.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6561640Z ^[[1m^[[92m  Downloaded^[[0m line-clipping v0.3.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6594820Z ^[[1m^[[92m  Downloaded^[[0m lru v0.16.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6612010Z ^[[1m^[[92m  Downloaded^[[0m lru-slab v0.1.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6626620Z ^[[1m^[[92m  Downloaded^[[0m mac_address v1.1.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6656730Z ^[[1m^[[92m  Downloaded^[[0m deltae v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.6954990Z ^[[1m^[[92m  Downloaded^[[0m quantette v0.6.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.7018250Z ^[[1m^[[92m  Downloaded^[[0m quinn v0.11.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.7076010Z ^[[1m^[[92m  Downloaded^[[0m ratatui v0.30.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.7142690Z ^[[1m^[[92m  Downloaded^[[0m rustls-webpki v0.103.15
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.7253600Z ^[[1m^[[92m  Downloaded^[[0m serde v1.0.228
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.7362700Z ^[[1m^[[92m  Downloaded^[[0m serde_derive v1.0.228
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.7437330Z ^[[1m^[[92m  Downloaded^[[0m tar v0.4.46
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.7495930Z ^[[1m^[[92m  Downloaded^[[0m libgit2-sys v0.18.3+1.9.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.8862980Z ^[[1m^[[92m  Downloaded^[[0m uuid v1.21.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.8917970Z ^[[1m^[[92m  Downloaded^[[0m icu_provider v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.8981670Z ^[[1m^[[92m  Downloaded^[[0m ident_case v1.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9010840Z ^[[1m^[[92m  Downloaded^[[0m idna v1.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9075130Z ^[[1m^[[92m  Downloaded^[[0m idna_adapter v1.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9117440Z ^[[1m^[[92m  Downloaded^[[0m image-webp v0.2.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9174760Z ^[[1m^[[92m  Downloaded^[[0m indicatif v0.17.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9257420Z ^[[1m^[[92m  Downloaded^[[0m indoc v2.0.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9311430Z ^[[1m^[[92m  Downloaded^[[0m lazy_static v1.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9342820Z ^[[1m^[[92m  Downloaded^[[0m litrs v1.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9427210Z ^[[1m^[[92m  Downloaded^[[0m lock_api v0.4.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9452590Z ^[[1m^[[92m  Downloaded^[[0m log v0.4.29
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9506440Z ^[[1m^[[92m  Downloaded^[[0m h2 v0.4.13
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9619790Z ^[[1m^[[92m  Downloaded^[[0m rand v0.8.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9680080Z ^[[1m^[[92m  Downloaded^[[0m rand v0.10.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9781900Z ^[[1m^[[92m  Downloaded^[[0m icu_properties_data v2.1.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:44.9982880Z ^[[1m^[[92m  Downloaded^[[0m image v0.25.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.0172590Z ^[[1m^[[92m  Downloaded^[[0m indexmap v2.13.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.0264510Z ^[[1m^[[92m  Downloaded^[[0m kdl v6.7.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1243490Z ^[[1m^[[92m  Downloaded^[[0m lab v0.11.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1276790Z ^[[1m^[[92m  Downloaded^[[0m png v0.18.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1353780Z ^[[1m^[[92m  Downloaded^[[0m ratatui-core v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1462700Z ^[[1m^[[92m  Downloaded^[[0m serde_json v1.0.149
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1621400Z ^[[1m^[[92m  Downloaded^[[0m memchr v2.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1714710Z ^[[1m^[[92m  Downloaded^[[0m pkcs8 v0.10.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1797520Z ^[[1m^[[92m  Downloaded^[[0m zerofrom v0.1.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1831990Z ^[[1m^[[92m  Downloaded^[[0m zerofrom-derive v0.1.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1847890Z ^[[1m^[[92m  Downloaded^[[0m zeroize v1.8.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1868500Z ^[[1m^[[92m  Downloaded^[[0m zipsign-api v0.1.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1920310Z ^[[1m^[[92m  Downloaded^[[0m zune-core v0.5.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.1988360Z ^[[1m^[[92m  Downloaded^[[0m http-body v1.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2009540Z ^[[1m^[[92m  Downloaded^[[0m http-body-util v0.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2046690Z ^[[1m^[[92m  Downloaded^[[0m pulldown-cmark v0.13.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2135260Z ^[[1m^[[92m  Downloaded^[[0m regex v1.12.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2215750Z ^[[1m^[[92m  Downloaded^[[0m reqwest v0.12.28
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2340880Z ^[[1m^[[92m  Downloaded^[[0m zerovec-derive v0.11.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2368440Z ^[[1m^[[92m  Downloaded^[[0m zmij v1.0.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2400120Z ^[[1m^[[92m  Downloaded^[[0m zune-core v0.4.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2432090Z ^[[1m^[[92m  Downloaded^[[0m memmem v0.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2448380Z ^[[1m^[[92m  Downloaded^[[0m notify-debouncer-mini v0.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2461700Z ^[[1m^[[92m  Downloaded^[[0m num-conv v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2477780Z ^[[1m^[[92m  Downloaded^[[0m num-derive v0.4.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2517350Z ^[[1m^[[92m  Downloaded^[[0m half v2.7.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2556830Z ^[[1m^[[92m  Downloaded^[[0m portable-atomic v1.13.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2704930Z ^[[1m^[[92m  Downloaded^[[0m quick-xml v0.37.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2800180Z ^[[1m^[[92m  Downloaded^[[0m quick-xml v0.38.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2957780Z ^[[1m^[[92m  Downloaded^[[0m notify v7.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.2986030Z ^[[1m^[[92m  Downloaded^[[0m objc2-io-surface v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3012710Z ^[[1m^[[92m  Downloaded^[[0m option-ext v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3031190Z ^[[1m^[[92m  Downloaded^[[0m palette_math v0.7.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3071770Z ^[[1m^[[92m  Downloaded^[[0m percent-encoding v2.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3096540Z ^[[1m^[[92m  Downloaded^[[0m phf_shared v0.11.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3122320Z ^[[1m^[[92m  Downloaded^[[0m pin-utils v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3154840Z ^[[1m^[[92m  Downloaded^[[0m num-traits v0.2.19
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3205630Z ^[[1m^[[92m  Downloaded^[[0m ordered-float v4.6.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3235360Z ^[[1m^[[92m  Downloaded^[[0m palette_derive v0.7.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3282350Z ^[[1m^[[92m  Downloaded^[[0m phf_macros v0.11.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3314750Z ^[[1m^[[92m  Downloaded^[[0m libm v0.2.16
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3572390Z ^[[1m^[[92m  Downloaded^[[0m miette v7.6.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3665550Z ^[[1m^[[92m  Downloaded^[[0m minimal-lexical v0.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3753740Z ^[[1m^[[92m  Downloaded^[[0m miniz_oxide v0.8.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3791740Z ^[[1m^[[92m  Downloaded^[[0m objc2-core-graphics v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3915830Z ^[[1m^[[92m  Downloaded^[[0m objc2-encode v4.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3935450Z ^[[1m^[[92m  Downloaded^[[0m objc2-open-directory v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.3982860Z ^[[1m^[[92m  Downloaded^[[0m parking_lot v0.12.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4022080Z ^[[1m^[[92m  Downloaded^[[0m parking_lot_core v0.9.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4064590Z ^[[1m^[[92m  Downloaded^[[0m zerotrie v0.2.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4123320Z ^[[1m^[[92m  Downloaded^[[0m zune-jpeg v0.4.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4215760Z ^[[1m^[[92m  Downloaded^[[0m zune-jpeg v0.5.15
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4275280Z ^[[1m^[[92m  Downloaded^[[0m ratatui-widgets v0.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4407320Z ^[[1m^[[92m  Downloaded^[[0m sysinfo v0.39.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4734840Z ^[[1m^[[92m  Downloaded^[[0m nom v7.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4825820Z ^[[1m^[[92m  Downloaded^[[0m openssl-sys v0.9.111
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.4965940Z ^[[1m^[[92m  Downloaded^[[0m zerocopy-derive v0.8.39
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.5176870Z ^[[1m^[[92m  Downloaded^[[0m quinn-proto v0.11.17
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.5322710Z ^[[1m^[[92m  Downloaded^[[0m syn v1.0.109
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.5493320Z ^[[1m^[[92m  Downloaded^[[0m time v0.3.47
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.5769100Z ^[[1m^[[92m  Downloaded^[[0m libc v0.2.182
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.6504080Z ^[[1m^[[92m  Downloaded^[[0m moxcms v0.7.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.6750300Z ^[[1m^[[92m  Downloaded^[[0m objc2-core-foundation v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.6934290Z ^[[1m^[[92m  Downloaded^[[0m tokio-rustls v0.26.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.6999610Z ^[[1m^[[92m  Downloaded^[[0m walkdir v2.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.7062780Z ^[[1m^[[92m  Downloaded^[[0m nix v0.29.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.7265750Z ^[[1m^[[92m  Downloaded^[[0m palette v0.7.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.7538080Z ^[[1m^[[92m  Downloaded^[[0m version_check v0.9.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.7563510Z ^[[1m^[[92m  Downloaded^[[0m zerovec v0.11.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.7672620Z ^[[1m^[[92m  Downloaded^[[0m objc2-io-kit v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.7800790Z ^[[1m^[[92m  Downloaded^[[0m plist v1.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.7933150Z ^[[1m^[[92m  Downloaded^[[0m syn v3.0.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.8138260Z ^[[1m^[[92m  Downloaded^[[0m syn v2.0.115
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.8361190Z ^[[1m^[[92m  Downloaded^[[0m objc2-foundation v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.8764370Z ^[[1m^[[92m  Downloaded^[[0m wezterm-dynamic-derive v0.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.8782970Z ^[[1m^[[92m  Downloaded^[[0m yaml-rust v0.4.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.8843670Z ^[[1m^[[92m  Downloaded^[[0m pkg-config v0.3.32
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.8909980Z ^[[1m^[[92m  Downloaded^[[0m vtparse v0.6.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.8923490Z ^[[1m^[[92m  Downloaded^[[0m regex-syntax v0.8.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.9057330Z ^[[1m^[[92m  Downloaded^[[0m rustls v0.23.36
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.9315050Z ^[[1m^[[92m  Downloaded^[[0m termwiz v0.23.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.9632400Z ^[[1m^[[92m  Downloaded^[[0m wezterm-blob-leases v0.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.9679710Z ^[[1m^[[92m  Downloaded^[[0m wezterm-color-types v0.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:45.9713060Z ^[[1m^[[92m  Downloaded^[[0m rustix v0.38.44
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.0582150Z ^[[1m^[[92m  Downloaded^[[0m rustix v1.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.1412070Z ^[[1m^[[92m  Downloaded^[[0m tinyvec_macros v0.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.1431690Z ^[[1m^[[92m  Downloaded^[[0m want v0.3.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.1449310Z ^[[1m^[[92m  Downloaded^[[0m zerocopy v0.8.39
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.2531720Z ^[[1m^[[92m  Downloaded^[[0m wezterm-dynamic v0.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.2560700Z ^[[1m^[[92m  Downloaded^[[0m yoke v0.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.2601740Z ^[[1m^[[92m  Downloaded^[[0m yoke-derive v0.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.2622780Z ^[[1m^[[92m  Downloaded^[[0m vsimd v0.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.2678080Z ^[[1m^[[92m  Downloaded^[[0m weezl v0.1.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.2742690Z ^[[1m^[[92m  Downloaded^[[0m wezterm-bidi v0.2.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.2802880Z ^[[1m^[[92m  Downloaded^[[0m tower-http v0.6.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.2994550Z ^[[1m^[[92m  Downloaded^[[0m tower v0.5.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.3652610Z ^[[1m^[[92m  Downloaded^[[0m webpki-roots v1.0.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.3700220Z ^[[1m^[[92m  Downloaded^[[0m tokio-util v0.7.18
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.3952820Z ^[[1m^[[92m  Downloaded^[[0m vcpkg v0.2.15
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.5226910Z ^[[1m^[[92m  Downloaded^[[0m objc2-app-kit v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.5925160Z ^[[1m^[[92m  Downloaded^[[0m regex-automata v0.4.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.6235840Z ^[[1m^[[92m  Downloaded^[[0m libssh2-sys v0.3.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.7214640Z ^[[1m^[[92m  Downloaded^[[0m icu_locale_core v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.7388990Z ^[[1m^[[92m  Downloaded^[[0m httparse v1.10.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.7438710Z ^[[1m^[[92m  Downloaded^[[0m hyper-rustls v0.27.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.7488910Z ^[[1m^[[92m  Downloaded^[[0m syntect v5.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.7646690Z ^[[1m^[[92m  Downloaded^[[0m pxfm v0.1.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.8278030Z ^[[1m^[[92m  Downloaded^[[0m libz-sys v1.1.23
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.8886470Z ^[[1m^[[92m  Downloaded^[[0m icu_properties v2.1.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.8950290Z ^[[1m^[[92m  Downloaded^[[0m icu_collections v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.9140230Z ^[[1m^[[92m  Downloaded^[[0m icu_normalizer v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.9241590Z ^[[1m^[[92m  Downloaded^[[0m icu_normalizer_data v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:46.9315860Z ^[[1m^[[92m  Downloaded^[[0m tokio v1.49.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:47.0670170Z ^[[1m^[[92m  Downloaded^[[0m hyper-util v0.1.20
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:47.0929180Z ^[[1m^[[92m  Downloaded^[[0m hyper v1.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:47.1121020Z ^[[1m^[[92m  Downloaded^[[0m tiff v0.10.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:47.1321710Z ^[[1m^[[92m  Downloaded^[[0m ring v0.17.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:47.2455450Z ^[[1m^[[92m  Downloaded^[[0m icy_sixel v0.5.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:47.2937310Z ^[[1m^[[92m  Downloaded^[[0m ratatui-image v11.0.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:47.3316920Z ^[[1m^[[92m  Downloaded^[[0m openssl-src v300.5.5+3.5.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:48.1785190Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.106
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:48.1795920Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.23
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:48.1796320Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.44
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:48.6841570Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.182
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:52.8092560Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:52.8659070Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.11.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:53.6751570Z ^[[1m^[[92m   Compiling^[[0m syn v2.0.115
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:53.7216030Z ^[[1m^[[92m   Compiling^[[0m shlex v1.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:53.8601530Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:54.0414200Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.17
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:54.1401840Z ^[[1m^[[92m   Compiling^[[0m jobserver v0.1.34
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:54.2011920Z ^[[1m^[[92m   Compiling^[[0m log v0.4.29
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:54.3510050Z ^[[1m^[[92m   Compiling^[[0m cc v1.2.56
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:54.4344580Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:54.4822130Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:55.0975120Z ^[[1m^[[92m   Compiling^[[0m allocator-api2 v0.2.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:55.4386220Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:55.5809130Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.16.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:55.7414350Z ^[[1m^[[92m   Compiling^[[0m mio v1.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:56.3482350Z ^[[1m^[[92m   Compiling^[[0m smallvec v1.15.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:56.4245190Z ^[[1m^[[92m   Compiling^[[0m errno v0.3.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:56.5588110Z ^[[1m^[[92m   Compiling^[[0m synstructure v0.13.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:56.5899000Z ^[[1m^[[92m   Compiling^[[0m stable_deref_trait v1.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:56.6303270Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:56.7617040Z ^[[1m^[[92m   Compiling^[[0m pin-project-lite v0.2.16
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:56.8088650Z ^[[1m^[[92m   Compiling^[[0m libm v0.2.16
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:57.0347900Z ^[[1m^[[92m   Compiling^[[0m bytes v1.11.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:57.0640320Z ^[[1m^[[92m   Compiling^[[0m typenum v1.19.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:57.3446380Z ^[[1m^[[92m   Compiling^[[0m thiserror v2.0.18
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:57.6048670Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:57.7327620Z ^[[1m^[[92m   Compiling^[[0m pkg-config v0.3.32
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:57.8142360Z ^[[1m^[[92m   Compiling^[[0m futures-core v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:57.8956130Z ^[[1m^[[92m   Compiling^[[0m zerofrom-derive v0.1.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:57.9169160Z ^[[1m^[[92m   Compiling^[[0m yoke-derive v0.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:58.1579360Z ^[[1m^[[92m   Compiling^[[0m zerovec-derive v0.11.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:58.7821570Z ^[[1m^[[92m   Compiling^[[0m displaydoc v0.2.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:58.9746610Z ^[[1m^[[92m   Compiling^[[0m zerofrom v0.1.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:59.0609330Z ^[[1m^[[92m   Compiling^[[0m yoke v0.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:59.1273770Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v2.0.18
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:59.1883070Z ^[[1m^[[92m   Compiling^[[0m zerovec v0.11.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:59.3419480Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:37:59.7711760Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:00.1180580Z ^[[1m^[[92m   Compiling^[[0m autocfg v1.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:00.4642250Z ^[[1m^[[92m   Compiling^[[0m num-traits v0.2.19
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:00.6730540Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:01.0089840Z ^[[1m^[[92m   Compiling^[[0m socket2 v0.6.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:01.0932130Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.2.17
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:01.2408780Z ^[[1m^[[92m   Compiling^[[0m zeroize v1.8.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:01.3678320Z ^[[1m^[[92m   Compiling^[[0m futures-sink v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:01.4601010Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.228
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:01.5035930Z ^[[1m^[[92m   Compiling^[[0m vcpkg v0.2.15
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:01.7398780Z ^[[1m^[[92m   Compiling^[[0m tokio v1.49.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:02.6918460Z ^[[1m^[[92m   Compiling^[[0m tinystr v0.8.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:02.8228300Z ^[[1m^[[92m   Compiling^[[0m simd-adler32 v0.3.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:02.9156370Z ^[[1m^[[92m   Compiling^[[0m zerocopy v0.8.39
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:03.2017680Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.2.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:03.4131080Z ^[[1m^[[92m   Compiling^[[0m objc2 v0.6.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:03.5919790Z ^[[1m^[[92m   Compiling^[[0m litemap v0.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:03.7647190Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:03.9516230Z ^[[1m^[[92m   Compiling^[[0m crc32fast v1.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:04.1561040Z ^[[1m^[[92m   Compiling^[[0m writeable v0.6.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:04.2842320Z ^[[1m^[[92m   Compiling^[[0m rustversion v1.0.22
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:04.3061130Z ^[[1m^[[92m   Compiling^[[0m ryu v1.0.23
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:04.4733900Z ^[[1m^[[92m   Compiling^[[0m icu_locale_core v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:05.8017160Z ^[[1m^[[92m   Compiling^[[0m potential_utf v0.1.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:05.9021150Z ^[[1m^[[92m   Compiling^[[0m zerotrie v0.2.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:06.2449890Z ^[[1m^[[92m   Compiling^[[0m zerocopy-derive v0.8.39
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:07.0413350Z ^[[1m^[[92m   Compiling^[[0m http v1.4.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:07.9139940Z ^[[1m^[[92m   Compiling^[[0m ring v0.17.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:07.9263220Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:08.1855140Z ^[[1m^[[92m   Compiling^[[0m objc2-encode v4.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:08.4236890Z ^[[1m^[[92m   Compiling^[[0m icu_properties_data v2.1.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:08.7230010Z ^[[1m^[[92m   Compiling^[[0m slab v0.4.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:08.8550020Z ^[[1m^[[92m   Compiling^[[0m ident_case v1.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:08.9455690Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.228
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:08.9560490Z ^[[1m^[[92m   Compiling^[[0m icu_normalizer_data v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:09.1302870Z ^[[1m^[[92m   Compiling^[[0m adler2 v2.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:09.3227300Z ^[[1m^[[92m   Compiling^[[0m either v1.15.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:09.3441770Z ^[[1m^[[92m   Compiling^[[0m miniz_oxide v0.8.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:09.4107110Z ^[[1m^[[92m   Compiling^[[0m darling_core v0.23.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:11.8192250Z ^[[1m^[[92m   Compiling^[[0m icu_provider v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:12.1024530Z ^[[1m^[[92m   Compiling^[[0m icu_collections v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:13.2144740Z ^[[1m^[[92m   Compiling^[[0m bytemuck_derive v1.12.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:14.2783140Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:14.4028360Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:14.4944310Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.228
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:14.5528860Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.13.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:15.2986580Z ^[[1m^[[92m   Compiling^[[0m openssl-src v300.5.5+3.5.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:15.5061430Z ^[[1m^[[92m   Compiling^[[0m signal-hook v0.3.18
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:15.6546150Z ^[[1m^[[92m   Compiling^[[0m pin-utils v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:15.7247200Z ^[[1m^[[92m   Compiling^[[0m percent-encoding v2.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:15.8801400Z ^[[1m^[[92m   Compiling^[[0m parking_lot_core v0.9.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:16.0559000Z ^[[1m^[[92m   Compiling^[[0m powerfmt v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:16.2089070Z ^[[1m^[[92m   Compiling^[[0m subtle v2.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:16.2975240Z ^[[1m^[[92m   Compiling^[[0m deranged v0.5.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:17.3021330Z ^[[1m^[[92m   Compiling^[[0m openssl-sys v0.9.111
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:17.4296280Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:17.5645660Z ^[[1m^[[92m   Compiling^[[0m bytemuck v1.25.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:17.7089790Z ^[[1m^[[92m   Compiling^[[0m castaway v0.2.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:17.7680900Z ^[[1m^[[92m   Compiling^[[0m flate2 v1.1.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:17.7783140Z ^[[1m^[[92m   Compiling^[[0m darling_macro v0.23.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:18.0422450Z ^[[1m^[[92m   Compiling^[[0m objc2-core-foundation v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:18.3553620Z ^[[1m^[[92m   Compiling^[[0m itertools v0.14.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:19.2939150Z ^[[1m^[[92m   Compiling^[[0m http-body v1.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:19.3849350Z ^[[1m^[[92m   Compiling^[[0m strum_macros v0.27.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:19.3951210Z ^[[1m^[[92m   Compiling^[[0m libz-sys v1.1.23
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:19.6529350Z ^[[1m^[[92m   Compiling^[[0m rustls-pki-types v1.14.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:20.1322180Z ^[[1m^[[92m   Compiling^[[0m tracing-core v0.1.36
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:20.2046520Z ^[[1m^[[92m   Compiling^[[0m signal-hook-registry v1.4.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:20.5171810Z ^[[1m^[[92m   Compiling^[[0m num_threads v0.1.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:20.5936870Z ^[[1m^[[92m   Compiling^[[0m untrusted v0.9.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:20.6780000Z ^[[1m^[[92m   Compiling^[[0m futures-task v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:20.7527020Z ^[[1m^[[92m   Compiling^[[0m unicode-segmentation v1.12.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:20.7902730Z ^[[1m^[[92m   Compiling^[[0m scopeguard v1.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:20.8427990Z ^[[1m^[[92m   Compiling^[[0m instability v0.3.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.0423760Z ^[[1m^[[92m   Compiling^[[0m futures-io v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.0637480Z ^[[1m^[[92m   Compiling^[[0m indoc v2.0.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.1376340Z ^[[1m^[[92m   Compiling^[[0m base64 v0.22.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.1426040Z ^[[1m^[[92m   Compiling^[[0m static_assertions v1.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.1982150Z ^[[1m^[[92m   Compiling^[[0m num-conv v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.2711430Z ^[[1m^[[92m   Compiling^[[0m fnv v1.0.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.3399760Z ^[[1m^[[92m   Compiling^[[0m httparse v1.10.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.3703090Z ^[[1m^[[92m   Compiling^[[0m time-core v0.1.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.5728100Z ^[[1m^[[92m   Compiling^[[0m semver v1.0.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.6405770Z ^[[1m^[[92m   Compiling^[[0m time v0.3.47
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.8081370Z ^[[1m^[[92m   Compiling^[[0m unicode-truncate v2.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.9017350Z ^[[1m^[[92m   Compiling^[[0m rustc_version v0.4.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:21.9156260Z ^[[1m^[[92m   Compiling^[[0m compact_str v0.9.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:22.0914310Z ^[[1m^[[92m   Compiling^[[0m futures-util v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:22.6021820Z ^[[1m^[[92m   Compiling^[[0m convert_case v0.10.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:22.8019850Z ^[[1m^[[92m   Compiling^[[0m strum v0.27.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:22.8853970Z ^[[1m^[[92m   Compiling^[[0m lock_api v0.4.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:24.2113210Z ^[[1m^[[92m   Compiling^[[0m tracing v0.1.44
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:25.0180010Z ^[[1m^[[92m   Compiling^[[0m icu_normalizer v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:25.4384380Z ^[[1m^[[92m   Compiling^[[0m icu_properties v2.1.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:26.0617080Z ^[[1m^[[92m   Compiling^[[0m darling v0.23.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:26.4916360Z ^[[1m^[[92m   Compiling^[[0m tokio-util v0.7.18
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:26.9496300Z ^[[1m^[[92m   Compiling^[[0m kasuari v0.4.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:27.3696160Z ^[[1m^[[92m   Compiling^[[0m lru v0.16.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:27.4979510Z ^[[1m^[[92m   Compiling^[[0m rustls v0.23.36
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:27.6619920Z ^[[1m^[[92m   Compiling^[[0m radium v0.7.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:27.8650180Z ^[[1m^[[92m   Compiling^[[0m tower-service v0.3.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:27.8888660Z ^[[1m^[[92m   Compiling^[[0m atomic-waker v1.1.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:27.9256820Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:27.9785070Z ^[[1m^[[92m   Compiling^[[0m try-lock v0.2.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:28.0330550Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:28.1449910Z ^[[1m^[[92m   Compiling^[[0m want v0.3.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:28.2570150Z ^[[1m^[[92m   Compiling^[[0m h2 v0.4.13
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:28.3438120Z ^[[1m^[[92m   Compiling^[[0m ratatui-core v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:31.5088740Z ^[[1m^[[92m   Compiling^[[0m idna_adapter v1.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:31.5956360Z ^[[1m^[[92m   Compiling^[[0m parking_lot v0.12.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:32.3552230Z ^[[1m^[[92m   Compiling^[[0m signal-hook-mio v0.2.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:32.4589090Z ^[[1m^[[92m   Compiling^[[0m rustls-webpki v0.103.15
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:32.5891960Z ^[[1m^[[92m   Compiling^[[0m derive_more-impl v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:33.2042400Z ^[[1m^[[92m   Compiling^[[0m curve25519-dalek v4.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:33.7381620Z ^[[1m^[[92m   Compiling^[[0m form_urlencoded v1.2.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:33.8807920Z ^[[1m^[[92m   Compiling^[[0m futures-channel v0.3.31
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:33.8894650Z ^[[1m^[[92m   Compiling^[[0m libssh2-sys v0.3.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:34.1128790Z ^[[1m^[[92m   Compiling^[[0m fax_derive v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:34.1732160Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:34.5208660Z ^[[1m^[[92m   Compiling^[[0m ref-cast v1.0.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:34.7635060Z ^[[1m^[[92m   Compiling^[[0m litrs v1.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:35.2251740Z ^[[1m^[[92m   Compiling^[[0m rand_core v0.10.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:35.3431610Z ^[[1m^[[92m   Compiling^[[0m utf8_iter v1.0.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:35.4544260Z ^[[1m^[[92m   Compiling^[[0m by_address v1.2.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:35.5143730Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.149
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:35.6731310Z ^[[1m^[[92m   Compiling^[[0m quick-error v2.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:35.7301950Z ^[[1m^[[92m   Compiling^[[0m weezl v0.1.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:36.3492560Z ^[[1m^[[92m   Compiling^[[0m tap v1.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:36.4485230Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:36.6910220Z ^[[1m^[[92m   Compiling^[[0m zune-core v0.4.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:36.8584510Z ^[[1m^[[92m   Compiling^[[0m zune-jpeg v0.4.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:37.8721460Z ^[[1m^[[92m   Compiling^[[0m wyz v0.5.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:38.0639010Z ^[[1m^[[92m   Compiling^[[0m palette_derive v0.7.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:38.7971050Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:40.3557120Z ^[[1m^[[92m   Compiling^[[0m idna v1.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:41.4597550Z ^[[1m^[[92m   Compiling^[[0m document-features v0.2.12
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:41.8937010Z ^[[1m^[[92m   Compiling^[[0m fax v0.2.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:42.1820300Z ^[[1m^[[92m   Compiling^[[0m hyper v1.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:44.5741910Z ^[[1m^[[92m   Compiling^[[0m derive_more v2.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:48.1884420Z ^[[1m^[[92m   Compiling^[[0m objc2-foundation v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:51.4418820Z ^[[1m^[[92m   Compiling^[[0m signature v2.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:51.5372920Z ^[[1m^[[92m   Compiling^[[0m half v2.7.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:52.0914640Z ^[[1m^[[92m   Compiling^[[0m pxfm v0.1.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:54.4055620Z ^[[1m^[[92m   Compiling^[[0m fdeflate v0.3.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:55.0477590Z ^[[1m^[[92m   Compiling^[[0m ref-cast-impl v1.0.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:55.6206580Z ^[[1m^[[92m   Compiling^[[0m palette_math v0.7.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:55.7455010Z ^[[1m^[[92m   Compiling^[[0m sync_wrapper v1.0.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:55.8129290Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:55.8943110Z ^[[1m^[[92m   Compiling^[[0m filetime v0.2.27
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:56.0291280Z ^[[1m^[[92m   Compiling^[[0m line-clipping v0.3.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:56.2047160Z ^[[1m^[[92m   Compiling^[[0m portable-atomic v1.13.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:56.5541090Z ^[[1m^[[92m   Compiling^[[0m zune-core v0.5.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:56.7759280Z ^[[1m^[[92m   Compiling^[[0m color_quant v1.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:56.9565210Z ^[[1m^[[92m   Compiling^[[0m rustix v0.38.44
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:57.2219190Z ^[[1m^[[92m   Compiling^[[0m funty v2.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:57.6173200Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:57.7156580Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:57.7702960Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:57.9892430Z ^[[1m^[[92m   Compiling^[[0m tower-layer v0.3.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:57.9899060Z ^[[1m^[[92m   Compiling^[[0m byteorder-lite v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:58.1649350Z ^[[1m^[[92m   Compiling^[[0m ipnet v2.11.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:58.2158230Z ^[[1m^[[92m   Compiling^[[0m image-webp v0.2.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:38:58.7971550Z ^[[1m^[[92m   Compiling^[[0m hyper-util v0.1.20
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:00.2974790Z ^[[1m^[[92m   Compiling^[[0m tower v0.5.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:00.8508370Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.25.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:01.4122030Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v0.2.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:01.4883600Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:01.5712140Z ^[[1m^[[92m   Compiling^[[0m bitvec v1.1.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:02.0157960Z ^[[1m^[[92m   Compiling^[[0m gif v0.14.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:03.1645620Z ^[[1m^[[92m   Compiling^[[0m zune-jpeg v0.5.15
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:04.1483010Z ^[[1m^[[92m   Compiling^[[0m ratatui-widgets v0.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:04.1705050Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:04.7080890Z ^[[1m^[[92m   Compiling^[[0m palette v0.7.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:07.3990920Z ^[[1m^[[92m   Compiling^[[0m png v0.18.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:09.2053780Z ^[[1m^[[92m   Compiling^[[0m moxcms v0.7.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:10.2681550Z ^[[1m^[[92m   Compiling^[[0m tiff v0.10.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:12.2921910Z ^[[1m^[[92m   Compiling^[[0m ed25519 v2.2.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:12.4514170Z ^[[1m^[[92m   Compiling^[[0m tokio-rustls v0.26.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:14.3019180Z ^[[1m^[[92m   Compiling^[[0m crossterm v0.29.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:16.8743100Z ^[[1m^[[92m   Compiling^[[0m url v2.5.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:18.2668710Z ^[[1m^[[92m   Compiling^[[0m rand_xoshiro v0.8.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:18.6231560Z ^[[1m^[[92m   Compiling^[[0m rand v0.10.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:19.1456280Z ^[[1m^[[92m   Compiling^[[0m webpki-roots v1.0.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:19.2224180Z ^[[1m^[[92m   Compiling^[[0m wide v1.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:24.6222640Z ^[[1m^[[92m   Compiling^[[0m ppv-lite86 v0.2.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:24.9410210Z ^[[1m^[[92m   Compiling^[[0m ordered-float v5.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:24.9752290Z ^[[1m^[[92m   Compiling^[[0m rand_core v0.6.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:25.1318750Z ^[[1m^[[92m   Compiling^[[0m libgit2-sys v0.18.3+1.9.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:25.1871010Z ^[[1m^[[92m   Compiling^[[0m instant v0.1.13
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:25.2406540Z ^[[1m^[[92m   Compiling^[[0m bit-vec v0.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:25.4831820Z ^[[1m^[[92m   Compiling^[[0m iri-string v0.7.10
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:25.4993430Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:25.5459760Z ^[[1m^[[92m   Compiling^[[0m thiserror v1.0.69
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:25.7796220Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.13
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:25.9732690Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:26.0347820Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:26.0928250Z ^[[1m^[[92m   Compiling^[[0m anstream v0.6.21
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:26.4234600Z ^[[1m^[[92m   Compiling^[[0m bit-set v0.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:26.5401630Z ^[[1m^[[92m   Compiling^[[0m notify-types v1.0.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:26.7513460Z ^[[1m^[[92m   Compiling^[[0m quantette v0.6.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:27.5066340Z ^[[1m^[[92m   Compiling^[[0m tower-http v0.6.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:28.2057150Z ^[[1m^[[92m   Compiling^[[0m rand_chacha v0.3.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:29.0944910Z ^[[1m^[[92m   Compiling^[[0m hyper-rustls v0.27.7
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:29.5924120Z ^[[1m^[[92m   Compiling^[[0m ed25519-dalek v2.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:29.8995980Z ^[[1m^[[92m   Compiling^[[0m ratatui-crossterm v0.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:30.1455730Z ^[[1m^[[92m   Compiling^[[0m image v0.25.9
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:30.1534070Z ^[[1m^[[92m   Compiling^[[0m ratatui-macros v0.7.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:32.1074360Z ^[[1m^[[92m   Compiling^[[0m serde_urlencoded v0.7.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:32.3332490Z ^[[1m^[[92m   Compiling^[[0m http-body-util v0.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:32.5457170Z ^[[1m^[[92m   Compiling^[[0m objc2-core-graphics v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:33.0563170Z ^[[1m^[[92m   Compiling^[[0m xattr v1.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:33.4146920Z ^[[1m^[[92m   Compiling^[[0m console v0.15.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:34.2598630Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v1.0.69
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:35.3232700Z ^[[1m^[[92m   Compiling^[[0m quick-xml v0.38.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:36.7950540Z ^[[1m^[[92m   Compiling^[[0m fsevent-sys v4.1.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:37.4438340Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:37.7161100Z ^[[1m^[[92m   Compiling^[[0m outref v0.5.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:37.7952360Z ^[[1m^[[92m   Compiling^[[0m self_update v0.42.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:37.9625480Z ^[[1m^[[92m   Compiling^[[0m pulldown-cmark v0.13.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:38.1275400Z ^[[1m^[[92m   Compiling^[[0m option-ext v0.2.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:38.1715590Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.101
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:38.4078020Z ^[[1m^[[92m   Compiling^[[0m linked-hash-map v0.5.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:38.5352240Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.1.14
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:38.6943420Z ^[[1m^[[92m   Compiling^[[0m vsimd v0.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:39.0224690Z ^[[1m^[[92m   Compiling^[[0m ratatui-image v11.0.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:39.1656900Z ^[[1m^[[92m   Compiling^[[0m number_prefix v0.4.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:39.2443140Z ^[[1m^[[92m   Compiling^[[0m indicatif v0.17.11
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:40.6427570Z ^[[1m^[[92m   Compiling^[[0m base64-simd v0.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:40.9080190Z ^[[1m^[[92m   Compiling^[[0m miette v7.6.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:41.7545300Z ^[[1m^[[92m   Compiling^[[0m yaml-rust v0.4.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:43.4936760Z ^[[1m^[[92m   Compiling^[[0m dirs-sys v0.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:43.5789740Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.5.58
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:44.2538280Z ^[[1m^[[92m   Compiling^[[0m notify v7.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:46.1692110Z ^[[1m^[[92m   Compiling^[[0m plist v1.8.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:47.4646280Z ^[[1m^[[92m   Compiling^[[0m tar v0.4.46
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:48.8631800Z ^[[1m^[[92m   Compiling^[[0m objc2-app-kit v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:48.8853180Z ^[[1m^[[92m   Compiling^[[0m reqwest v0.12.28
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:49.4710900Z ^[[1m^[[92m   Compiling^[[0m ratatui v0.30.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:49.8285190Z ^[[1m^[[92m   Compiling^[[0m zipsign-api v0.1.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:50.2194330Z ^[[1m^[[92m   Compiling^[[0m rand v0.8.8
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:50.9987360Z ^[[1m^[[92m   Compiling^[[0m icy_sixel v0.5.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:51.4776090Z ^[[1m^[[92m   Compiling^[[0m fancy-regex v0.16.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:53.4993160Z ^[[1m^[[92m   Compiling^[[0m self-replace v1.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:53.6504880Z ^[[1m^[[92m   Compiling^[[0m objc2-open-directory v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:53.8351260Z ^[[1m^[[92m   Compiling^[[0m regex v1.12.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:54.5435760Z ^[[1m^[[92m   Compiling^[[0m objc2-io-kit v0.3.2
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:54.7267410Z ^[[1m^[[92m   Compiling^[[0m bincode v1.3.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:55.0596460Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.5.55
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:56.2860840Z ^[[1m^[[92m   Compiling^[[0m quick-xml v0.37.5
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:57.2871850Z ^[[1m^[[92m   Compiling^[[0m unicase v2.9.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:57.5281020Z ^[[1m^[[92m   Compiling^[[0m winnow v0.7.15
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:57.7536880Z ^[[1m^[[92m   Compiling^[[0m self_cell v1.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:57.8455970Z ^[[1m^[[92m   Compiling^[[0m urlencoding v2.1.3
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:39:59.4334210Z ^[[1m^[[92m   Compiling^[[0m kdl v6.7.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:40:05.8399490Z ^[[1m^[[92m   Compiling^[[0m clap v4.5.58
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:40:05.8872590Z ^[[1m^[[92m   Compiling^[[0m syntect v5.3.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:40:07.7664670Z ^[[1m^[[92m   Compiling^[[0m sysinfo v0.39.6
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:40:09.0490520Z ^[[1m^[[92m   Compiling^[[0m arboard v3.6.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:40:11.6303030Z ^[[1m^[[92m   Compiling^[[0m notify-debouncer-mini v0.5.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:40:12.1395380Z ^[[1m^[[92m   Compiling^[[0m dirs v6.0.0
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:40:12.4707500Z ^[[1m^[[92m   Compiling^[[0m crossterm v0.28.1
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:41:17.5501760Z ^[[1m^[[92m   Compiling^[[0m git2 v0.20.4
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:41:21.8140870Z ^[[1m^[[92m   Compiling^[[0m vig v0.13.0 (/Users/runner/work/vig/vig)
+build (aarch64-apple-darwin, macos-latest)	Build	2026-09-09T07:42:45.3919040Z ^[[1m^[[92m    Finished^[[0m `release` profile [optimized] target(s) in 5m 03s
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-09-09T07:42:45.7003520Z Post job cleanup.
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:45.7017140Z ##[start-action display=Setup Rust Caching;id=__a068155c-1f47-4d60-9ab4-c1dd2312c735.__Swatinem_rust-cache]
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:45.7109960Z Post job cleanup.
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4975380Z ##[group]Cache Configuration
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4977880Z Cache Provider:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4978280Z     github
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4983650Z Workspaces:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4983960Z     /Users/runner/work/vig/vig
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4984290Z Cache Paths:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4984600Z     /Users/runner/.cargo/bin
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4984910Z     /Users/runner/.cargo/.crates.toml
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4985240Z     /Users/runner/.cargo/.crates2.json
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4985630Z     /Users/runner/.cargo/registry
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4986210Z     /Users/runner/.cargo/git
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4986500Z     /Users/runner/work/vig/vig/target
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4986810Z Restore Key:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4987080Z     v0-rust-build-Darwin-arm64-2aa5c948
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4987420Z Cache Key:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4988260Z     v0-rust-build-Darwin-arm64-2aa5c948-eb78a9df
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4988610Z .. Prefix:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4988890Z   - v0-rust-build-Darwin-arm64
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4989210Z .. Environment considered:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4989480Z   - Rust Versions:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4989850Z     - 1.98.1 aarch64-apple-darwin 48a229ceaefd4985c50990b14116b6d856af0985
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4990340Z     - 1.98.1 aarch64-apple-darwin 48a229ceaefd4985c50990b14116b6d856af0985
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4990740Z   - CARGO_INCREMENTAL
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4991030Z   - CARGO_PROFILE_DEV_DEBUG
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4991330Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4991650Z   - CARGO_TERM_COLOR
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4991940Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4992260Z   - RUST_BACKTRACE
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4992520Z   - RUSTFLAGS
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4992770Z .. Lockfiles considered:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4993060Z   - /Users/runner/work/vig/vig/Cargo.lock
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4993390Z   - /Users/runner/work/vig/vig/Cargo.toml
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4993880Z ##[endgroup]
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.4994070Z 
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.5006900Z (node:37845) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:46.5007770Z (Use `node --trace-deprecation ...` to show where the warning was created)
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:56.2612380Z ... Cleaning /Users/runner/work/vig/vig/target ...
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:56.2953790Z ... Cleaning cargo registry (cache-all-crates: false) ...
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:59.6820780Z ... Cleaning cargo/bin ...
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:59.6821090Z ... Cleaning cargo git cache ...
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:59.6821340Z ... Saving cache ...
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:42:59.7245360Z [command]/opt/homebrew/bin/gtar --posix -cf cache.tzst --exclude cache.tzst -P -C /Users/runner/work/vig/vig --files-from manifest.txt --delay-directory-restore --use-compress-program zstdmt
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:43:07.5643590Z Sent 0 of 379688574 (0.0%), 0.0 MBs/sec
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:43:08.5682230Z Sent 0 of 379688574 (0.0%), 0.0 MBs/sec
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:43:09.5808940Z Sent 44144254 of 379688574 (11.6%), 13.8 MBs/sec
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:43:10.5784370Z Sent 44144254 of 379688574 (11.6%), 10.4 MBs/sec
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:43:10.8794430Z Sent 379688574 of 379688574 (100.0%), 83.2 MBs/sec
+build (aarch64-apple-darwin, macos-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T07:43:11.1898220Z ##[end-action id=__a068155c-1f47-4d60-9ab4-c1dd2312c735.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=25482]
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	﻿2026-09-09T07:43:11.2761050Z Post job cleanup.
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.7511780Z [command]/opt/homebrew/bin/git version
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.7976800Z git version 2.55.0
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.8044540Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/086aabb4-53cf-48cd-b0dd-8cd06e22a43f/.gitconfig'
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.8056520Z Temporarily overriding HOME='/Users/runner/work/_temp/086aabb4-53cf-48cd-b0dd-8cd06e22a43f' before making global git config changes
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.8057970Z Adding repository directory to the temporary git global config as a safe directory
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.8065170Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/vig/vig
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.8244130Z Removing SSH command configuration
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.8251700Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:11.8392650Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.0489520Z Removing HTTP extra header
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.0494190Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.0599770Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.2714460Z Removing includeIf entries pointing to credentials config files
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.2720190Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.2825050Z includeif.gitdir:/Users/runner/work/vig/vig/.git.path
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.2903440Z includeif.gitdir:/Users/runner/work/vig/vig/.git/worktrees/*.path
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.2904250Z includeif.gitdir:/github/workspace/.git.path
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.2905520Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.2907430Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/vig/vig/.git.path
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3025440Z /Users/runner/work/_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3048250Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/vig/vig/.git.path /Users/runner/work/_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3232910Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/vig/vig/.git/worktrees/*.path
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3344430Z /Users/runner/work/_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3355880Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/vig/vig/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3528330Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3657360Z /github/runner_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3665150Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3856130Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3923390Z /github/runner_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.3937810Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.4080800Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build (aarch64-apple-darwin, macos-latest)	Post Run actions/checkout@v6	2026-09-09T07:43:12.6073970Z Removing credentials config '/Users/runner/work/_temp/git-credentials-852b2a1b-7d7a-4905-b70a-13569514948b.config'
+build (aarch64-apple-darwin, macos-latest)	Complete job	﻿2026-09-09T07:43:12.6196050Z Cleaning up orphan processes
