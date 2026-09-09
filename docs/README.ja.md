@@ -211,6 +211,7 @@ vig config path     # 設定レイヤー（builtin / user / repo-local）の状�
 GitHub の Issue・Pull Request・Actions のワークフロー実行を vig 内で閲覧可能。[GitHub CLI (`gh`)](https://cli.github.com/) のインストールと認証が必要。
 本文とコメントは Markdown としてレンダリングされる (見出し・リスト・タスクリスト・コード・可能な範囲でペイン幅に収まるよう縮めたテーブル)。
 sub-issue は親 issue の下に、GitHub Stack ([`gh stack`](https://github.com/github/gh-stack) で作るスタック PR) は下から順に土台の PR の下にツリー表示される。
+issue / PR の一覧は変化があったときだけ自動更新される: `github-poll-interval` ごとに条件付きリクエストを 1 回送り (`304` 応答は API ポイントを消費しない)、答えが変わったときだけ一覧を再取得する。
 
 3 列目には最新 50 件のワークフロー実行（`gh run list`）がステータス・ワークフロー名・実行番号・
 ブランチ・イベント・所要時間（実行中は経過時間）・経過日時とともに並び、queued / in progress の

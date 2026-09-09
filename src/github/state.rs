@@ -144,6 +144,8 @@ pub enum GhBgMessage {
     },
     /// Answer of the one-shot `gh api rate_limit` probe.
     RateLimitReset(Option<i64>),
+    /// The free change check behind the list auto-refresh.
+    ListCheck(Result<client::ListCheck, String>),
 }
 
 /// The error string of a failed fetch carried by `msg`, if any.
@@ -155,7 +157,8 @@ fn fetch_error(msg: &GhBgMessage) -> Option<&str> {
         | GhBgMessage::IssueDetail(Err(e))
         | GhBgMessage::PrDetail(Err(e))
         | GhBgMessage::RunJobs { result: Err(e), .. }
-        | GhBgMessage::RunLog { result: Err(e), .. } => Some(e),
+        | GhBgMessage::RunLog { result: Err(e), .. }
+        | GhBgMessage::ListCheck(Err(e)) => Some(e),
         _ => None,
     }
 }
@@ -172,6 +175,7 @@ fn fetch_succeeded(msg: &GhBgMessage) -> bool {
             | GhBgMessage::PrDetail(Ok(_))
             | GhBgMessage::RunJobs { result: Ok(_), .. }
             | GhBgMessage::RunLog { result: Ok(_), .. }
+            | GhBgMessage::ListCheck(Ok(_))
     )
 }
 
@@ -312,6 +316,15 @@ pub struct GitHubState {
     poll_interval: Duration,
     /// Active rate-limit backoff, if GitHub rejected a fetch.
     rate_limit: Option<RateLimitBackoff>,
+    /// What the last change check saw; `None` ETag until the first answer
+    /// (that first answer is the baseline, not a change).
+    list_watermark: client::ListWatermark,
+    list_check_inflight: bool,
+    last_list_check: Option<Instant>,
+    /// When the issue / PR lists last arrived (`lists 12s ago`).
+    lists_refreshed_at: Option<Instant>,
+    /// When a change check last triggered a refresh (`↻ updated` flash).
+    lists_updated_at: Option<Instant>,
     /// Whether entering a backoff probes `gh api rate_limit` for the reset
     /// time (tests turn it off).
     probe_reset: bool,
@@ -395,6 +408,11 @@ impl GitHubState {
             last_runs_refresh: None,
             poll_interval,
             rate_limit: None,
+            list_watermark: client::ListWatermark::default(),
+            list_check_inflight: false,
+            last_list_check: None,
+            lists_refreshed_at: None,
+            lists_updated_at: None,
             probe_reset: true,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
@@ -518,6 +536,9 @@ impl GitHubState {
                     }
                 },
                 GhBgMessage::IssueList(result) => {
+                    if result.is_ok() {
+                        self.lists_refreshed_at = Some(Instant::now());
+                    }
                     apply_list_result(
                         &mut self.panes.issue_tab.list,
                         result,
@@ -566,6 +587,12 @@ impl GitHubState {
                 GhBgMessage::RateLimitReset(reset) => {
                     if let Some(b) = &mut self.rate_limit {
                         b.reset_at = reset;
+                    }
+                }
+                GhBgMessage::ListCheck(result) => {
+                    self.list_check_inflight = false;
+                    if let Ok(client::ListCheck::Fresh(next)) = result {
+                        self.apply_list_check(next);
                     }
                 }
             }
@@ -649,6 +676,42 @@ impl GitHubState {
             GhTab::Pr => self.panes.pr_tab.sync_detail(tx),
             GhTab::Run => self.panes.run_tab.sync_detail(tx),
         }
+    }
+
+    /// A change check answered `200`: the first answer is the baseline;
+    /// a later one whose watermark moved re-fetches the lists and the
+    /// shown issue / PR detail.
+    fn apply_list_check(&mut self, next: client::ListWatermark) {
+        let baseline = self.list_watermark.etag.is_none();
+        let changed = !baseline && next != self.list_watermark;
+        self.list_watermark = next;
+        if !changed {
+            return;
+        }
+        self.lists_updated_at = Some(Instant::now());
+        if let Some(tx) = self.bg_tx.clone() {
+            self.panes.issue_tab.list.spawn_fetch(&tx);
+            self.panes.pr_tab.list.spawn_fetch(&tx);
+        }
+        if self.active_tab() != GhTab::Run {
+            self.refresh_detail();
+        }
+    }
+
+    /// Age of the issue / PR lists for the status bar: `lists 12s ago`.
+    pub fn lists_age(&self) -> Option<String> {
+        let secs = self.lists_refreshed_at?.elapsed().as_secs() as i64;
+        Some(format!(
+            "lists {}",
+            crate::github::domain::actions::time::format_relative(secs)
+        ))
+    }
+
+    /// `↻ updated` for a few seconds after a change check refreshed the lists.
+    pub fn lists_updated_notice(&self) -> Option<&'static str> {
+        self.lists_updated_at
+            .filter(|t| t.elapsed() < Duration::from_secs(4))
+            .map(|_| "↻ updated")
     }
 
     /// Refresh only the currently displayed detail item (cache-bust + re-fetch;
@@ -855,6 +918,17 @@ impl crate::core::app::PageState for GitHubState {
             self.spawn_runs(&tx);
         }
         self.panes.run_tab.detail.handle_run_tick(&tx);
+        // Issue / PR lists: one free conditional request per interval; a
+        // detected change re-fetches the lists (see drain).
+        let check_due = self.last_list_check.is_none_or(|t| t.elapsed() >= interval);
+        if check_due && !self.list_check_inflight {
+            self.list_check_inflight = true;
+            self.last_list_check = Some(Instant::now());
+            let prev = self.list_watermark.clone();
+            std::thread::spawn(move || {
+                let _ = tx.send(GhBgMessage::ListCheck(client::check_lists(&prev)));
+            });
+        }
     }
 
     fn on_activate(&mut self, _ctx: &mut AppContext) {
@@ -1192,6 +1266,39 @@ mod kdl_regression {
         st.bg_tx = Some(tx);
         st.probe_reset = false;
         st
+    }
+
+    /// The first `200` answer of the change check is only a baseline; a
+    /// later answer with a moved watermark re-fetches both lists and
+    /// raises the `↻ updated` notice, an unchanged one does nothing.
+    #[test]
+    fn change_check_baseline_then_change_refetches_lists() {
+        let mut st = state();
+        let first = client::ListWatermark {
+            etag: Some("W/\"a\"".into()),
+            updated_at: Some("2026-09-09T00:00:00Z".into()),
+        };
+        st.apply_list_check(first.clone());
+        assert_eq!(st.list_watermark, first);
+        assert!(
+            st.lists_updated_at.is_none(),
+            "the baseline is not a change"
+        );
+        assert!(!st.panes.issue_tab.list.is_loading());
+
+        st.apply_list_check(first.clone());
+        assert!(st.lists_updated_at.is_none(), "same watermark, no refetch");
+
+        let moved = client::ListWatermark {
+            etag: Some("W/\"b\"".into()),
+            updated_at: Some("2026-09-09T00:01:00Z".into()),
+        };
+        st.apply_list_check(moved.clone());
+        assert_eq!(st.list_watermark, moved);
+        assert!(st.lists_updated_at.is_some());
+        assert_eq!(st.lists_updated_notice(), Some("↻ updated"));
+        assert!(st.panes.issue_tab.list.is_loading());
+        assert!(st.panes.pr_tab.list.is_loading());
     }
 
     /// The whole page against the recorded `gh` output in `tape/fixtures`:

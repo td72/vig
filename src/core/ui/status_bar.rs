@@ -588,6 +588,16 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
                 Style::default().fg(Color::Yellow),
             ));
         }
+        // Age of the issue / PR lists, and a flash when the free change
+        // check just refreshed them.
+        if let Some(age) = gh.lists_age() {
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(age, Style::default().fg(Color::DarkGray)));
+        }
+        if let Some(flash) = gh.lists_updated_notice() {
+            spans.push(Span::raw("  "));
+            spans.push(Span::styled(flash, Style::default().fg(Color::Green)));
+        }
         if loading {
             // Background refresh with cached data visible
             spans.push(Span::raw("  "));

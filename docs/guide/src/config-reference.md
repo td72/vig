@@ -194,8 +194,10 @@ procs-history "5"
 
 How often the GitHub page polls while something is active — the Workflow
 Runs column while a run is queued or in progress, a PR's checks in watch
-mode (`w`), and the log of a running job. Polling pauses while another page
-is shown.
+mode (`w`), and the log of a running job — and how often it checks the
+issue / PR lists for changes (one conditional request whose `304` answer
+costs no API points; the lists are re-fetched only when it changes).
+Polling pauses while another page is shown.
 
 - **Form** — `github-poll-interval "<duration>"` — a number with `s` or
   `ms`, quoted; at least `"2s"`, so a config cannot burn through the API
