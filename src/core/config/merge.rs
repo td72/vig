@@ -35,6 +35,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "procs-history"
             | "github-poll-interval"
             | "github-auto-refresh"
+            | "projects-poll-interval"
             | "projects-board"
             | "pages"
             | "repo-config" => replace_single(default, unode),
@@ -44,7 +45,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
                  `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, \
-                 `projects-board`, `pages`, `repo-config`, `app`, or `page`)"
+                 `projects-poll-interval`, `projects-board`, `pages`, `repo-config`, `app`, or `page`)"
             ))
             }
         }
@@ -357,6 +358,18 @@ page "git" {
             .filter_map(arg0)
             .collect();
         assert_eq!(vals, vec!["10s"]);
+    }
+
+    #[test]
+    fn projects_poll_interval_replaced() {
+        let d = merged(r#"projects-poll-interval "60s""#).unwrap();
+        let vals: Vec<&str> = d
+            .nodes()
+            .iter()
+            .filter(|n| n.name().value() == "projects-poll-interval")
+            .filter_map(arg0)
+            .collect();
+        assert_eq!(vals, vec!["60s"]);
     }
 
     #[test]

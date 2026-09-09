@@ -95,6 +95,18 @@ counts what the filter hid (`(3 filtered out)`).
 | `/` `n` `N` | Search item titles / numbers across columns |
 | `r` | Re-read the linked projects, the board and the shown item |
 
+## Auto-refresh
+
+While the page is shown, vig asks GitHub every
+[`projects-poll-interval`](config-reference.md#projects-poll-interval)
+(30 seconds by default) whether the board changed. The probe reads only the
+project's `updatedAt` — one GraphQL point; moving a card or editing a
+field bumps it — and re-fetches the board only when it moved, keeping the
+selection, the view and the sort. The status bar shows the board's age
+(`board 12s ago`) and a brief `↻ updated` after such a refresh. Coming back
+to the page after five minutes still re-fetches a stale board. Both follow
+`github-auto-refresh`, the idle slow-down and the low-quota throttle.
+
 ## Constraints
 
 - `gh project` needs the `project` token scope. When it is missing the view

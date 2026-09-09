@@ -472,6 +472,10 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
                 spans.push(Span::raw("  "));
                 spans.push(Span::styled(age, Style::default().fg(Color::DarkGray)));
             }
+            if let Some(notice) = pj.board_updated_notice() {
+                spans.push(Span::raw("  "));
+                spans.push(Span::styled(notice, Style::default().fg(Color::Green)));
+            }
         }
         if pj.is_loading() {
             spans.push(Span::raw("  "));

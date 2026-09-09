@@ -76,6 +76,12 @@ pub enum ProjectsBgMessage {
         number: u64,
         result: Result<Board, String>,
     },
+    /// The change probe (`ProjectV2.updatedAt`, 1 point) behind the
+    /// board's auto-refresh.
+    Probe {
+        number: u64,
+        result: Result<Option<String>, String>,
+    },
     ItemDetail {
         key: String,
         result: Result<ItemDetail, String>,
@@ -143,9 +149,25 @@ pub struct ProjectsState {
     board_inflight: HashSet<u64>,
     /// Read / write the disk cache (tests turn it off).
     use_disk_cache: bool,
+    /// `projects-poll-interval`: how often the shown board is probed for
+    /// changes while the page is shown.
+    poll_interval: Duration,
+    last_probe: Option<Instant>,
+    probe_inflight: bool,
+    /// Probes paused after a rate-limited answer: since when, for how long
+    /// (doubling 30s → 10min like the GitHub page; any success clears it).
+    probe_backoff: Option<(Instant, Duration)>,
+    /// When a probe last triggered a board re-fetch (`↻ updated`).
+    board_updated_at: Option<Instant>,
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
 }
+
+/// First probe pause after a rate-limited answer.
+const PROBE_BASE_BACKOFF: Duration = Duration::from_secs(30);
+/// Longest interval automatic probes stretch to when idle / low on quota,
+/// and the longest rate-limit pause.
+const MAX_AUTO_INTERVAL: Duration = Duration::from_secs(600);
 
 impl pane::PageLayout for ProjectsState {
     type Panes = ProjectsPanes;
@@ -172,6 +194,7 @@ impl ProjectsState {
         let ids = ProjectsPaneIds::from_config(&page_cfg);
         let list_placed = page_cfg.is_placed("projects");
         let pinned = cfg.projects_board()?;
+        let poll_interval = cfg.projects_poll_interval()?;
         // Validates the bind declarations (projects → board while the list
         // is placed, board → detail).
         let _ = page_cfg.resolve_select_bindings();
@@ -216,6 +239,11 @@ impl ProjectsState {
             board_cache: HashMap::new(),
             board_inflight: HashSet::new(),
             use_disk_cache: true,
+            poll_interval,
+            last_probe: None,
+            probe_inflight: false,
+            probe_backoff: None,
+            board_updated_at: None,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
         })
@@ -298,6 +326,76 @@ impl ProjectsState {
         });
     }
 
+    /// Ask whether the shown board changed (see `on_tick`).
+    fn spawn_probe(&mut self, number: u64) {
+        let Some(tx) = self.bg_tx.clone() else {
+            return;
+        };
+        let Some((owner, owner_kind)) = self
+            .panes
+            .projects
+            .items
+            .iter()
+            .find(|p| p.number == number)
+            .map(|p| (p.owner.login.clone(), p.owner.kind.clone()))
+        else {
+            return;
+        };
+        self.probe_inflight = true;
+        self.last_probe = Some(Instant::now());
+        std::thread::spawn(move || {
+            let result = client::probe_updated_at(&owner, &owner_kind, number);
+            let _ = tx.send(ProjectsBgMessage::Probe { number, result });
+        });
+    }
+
+    /// A probe answered: re-fetch the board when `updatedAt` moved, or once
+    /// when it was never known (a board from the CLI path or an old disk
+    /// cache). A probe without a watermark cannot tell and does nothing.
+    fn apply_probe(&mut self, number: u64, updated_at: Option<String>) {
+        let Some(next) = updated_at else {
+            return;
+        };
+        let Some(cached) = self.board_cache.get_mut(&number) else {
+            return;
+        };
+        if cached.board.updated_at.as_deref() == Some(next.as_str()) {
+            return;
+        }
+        // Remember the watermark now: a board that cannot report one (the
+        // CLI path) must not be re-fetched on every probe.
+        cached.board.updated_at = Some(next);
+        if self.board_inflight.contains(&number) {
+            return;
+        }
+        self.board_updated_at = Some(Instant::now());
+        self.spawn_board(number);
+    }
+
+    /// Whether probes are paused after a rate-limited answer.
+    fn probe_suspended(&self) -> bool {
+        self.probe_backoff
+            .is_some_and(|(since, delay)| since.elapsed() < delay)
+    }
+
+    fn on_probe_rate_limited(&mut self) {
+        let delay = match self.probe_backoff {
+            Some((since, delay)) if since.elapsed() >= delay => {
+                delay.saturating_mul(2).min(MAX_AUTO_INTERVAL)
+            }
+            Some((_, delay)) => delay,
+            None => PROBE_BASE_BACKOFF,
+        };
+        self.probe_backoff = Some((Instant::now(), delay));
+    }
+
+    /// `↻ updated` for a few seconds after a probe re-fetched the board.
+    pub fn board_updated_notice(&self) -> Option<&'static str> {
+        self.board_updated_at
+            .filter(|t| t.elapsed() < Duration::from_secs(4))
+            .map(|_| "↻ updated")
+    }
+
     /// The cached board for `number` is missing or older than [`STALE_AFTER`].
     fn board_stale(&self, number: u64) -> bool {
         self.board_stale_for(number, STALE_AFTER)
@@ -363,6 +461,7 @@ impl ProjectsState {
             self.gh_available = None;
         }
         self.board_cache.clear();
+        self.probe_backoff = None;
         self.panes.detail.clear_cache();
         self.spawn_list();
         if let Some(number) = self.panes.projects.selected_number() {
@@ -555,7 +654,16 @@ impl ProjectsState {
                     }
                     let current = self.panes.projects.selected_number() == Some(number);
                     match result {
-                        Ok(board) => {
+                        Ok(mut board) => {
+                            self.probe_backoff = None;
+                            // The CLI path reports no `updatedAt`: keep the
+                            // watermark the probe taught us.
+                            if board.updated_at.is_none() {
+                                board.updated_at = self
+                                    .board_cache
+                                    .get(&number)
+                                    .and_then(|c| c.board.updated_at.clone());
+                            }
                             if self.use_disk_cache {
                                 disk_cache::save_board(&board);
                             }
@@ -583,6 +691,21 @@ impl ProjectsState {
                                 self.note_error(e);
                             }
                         }
+                    }
+                }
+                ProjectsBgMessage::Probe { number, result } => {
+                    self.probe_inflight = false;
+                    match result {
+                        Ok(updated_at) => {
+                            self.probe_backoff = None;
+                            self.apply_probe(number, updated_at);
+                        }
+                        // Any other failure is silent: the next probe
+                        // retries, and `r` always works.
+                        Err(e) if crate::github::domain::client::is_rate_limited(&e) => {
+                            self.on_probe_rate_limited();
+                        }
+                        Err(_) => {}
                     }
                 }
                 ProjectsBgMessage::ItemDetail { key, result } => {
@@ -792,6 +915,31 @@ impl PageState for ProjectsState {
         }
     }
 
+    fn on_tick(&mut self, ctx: &mut AppContext) {
+        if !self.initialized || self.gh_available != Some(true) || self.scope_missing {
+            return;
+        }
+        if self.probe_inflight || self.probe_suspended() {
+            return;
+        }
+        // Idle / low-quota scaling like every automatic poll (`None`: off).
+        let Some(interval) = ctx.scaled_interval(self.poll_interval, MAX_AUTO_INTERVAL) else {
+            return;
+        };
+        let Some(number) = self.panes.projects.selected_number() else {
+            return;
+        };
+        // Nothing to compare against until the board is in (its own fetch
+        // brings the current `updatedAt`).
+        if !self.board_cache.contains_key(&number) || self.board_inflight.contains(&number) {
+            return;
+        }
+        let due = self.last_probe.is_none_or(|t| t.elapsed() >= interval);
+        if due {
+            self.spawn_probe(number);
+        }
+    }
+
     fn drain_background(&mut self) {
         self.drain_bg_messages();
     }
@@ -905,6 +1053,25 @@ mod tests {
             rows.iter().any(|r| r.contains("View 1")),
             "header names the view"
         );
+        // The recorded probe answers the board's own `updatedAt`: no
+        // re-fetch, no notice.
+        let known = st
+            .panes
+            .board
+            .board
+            .as_ref()
+            .and_then(|b| b.updated_at.clone());
+        assert!(known.is_some(), "the meta query brings updatedAt");
+        st.on_tick(&mut c);
+        assert!(st.probe_inflight, "a probe is due right away");
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while st.probe_inflight && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(20));
+            st.drain_background();
+        }
+        assert!(!st.probe_inflight, "the probe answered");
+        assert!(!st.board_inflight.contains(&2), "unchanged: no re-fetch");
+        assert!(st.board_updated_notice().is_none());
     }
 
     /// A freshly-fetched cache entry.
@@ -1260,6 +1427,119 @@ mod tests {
         st.on_activate(&mut c);
         assert!(st.board_inflight.contains(&2));
         assert_eq!(st.panes.board.board.as_ref().map(|b| b.number), Some(2));
+    }
+
+    /// The change probe: an unchanged `updatedAt` leaves the board alone,
+    /// a moved one re-fetches it and raises `↻ updated`; a rate-limited
+    /// answer pauses probing until a fetch succeeds.
+    #[test]
+    fn a_probe_refetches_the_board_only_when_updated_at_moved() {
+        let mut st = state();
+        let tx = st.bg_tx.clone().unwrap();
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(board()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        let known = board().updated_at;
+        assert!(known.is_some());
+
+        tx.send(ProjectsBgMessage::Probe {
+            number: 2,
+            result: Ok(known.clone()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(!st.board_inflight.contains(&2), "unchanged: no re-fetch");
+        assert!(st.board_updated_notice().is_none());
+
+        tx.send(ProjectsBgMessage::Probe {
+            number: 2,
+            result: Ok(Some("2026-09-09T12:00:00Z".into())),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(st.board_inflight.contains(&2), "moved: re-fetched");
+        assert_eq!(st.board_updated_notice(), Some("↻ updated"));
+        assert_eq!(
+            st.panes.board.board.as_ref().map(|b| b.number),
+            Some(2),
+            "the old board stays shown meanwhile"
+        );
+
+        // Rate limited: probes pause; the next successful fetch resumes them.
+        tx.send(ProjectsBgMessage::Probe {
+            number: 2,
+            result: Err("HTTP 403: API rate limit exceeded for user ID 1".into()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(st.probe_suspended());
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(board()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(!st.probe_suspended());
+    }
+
+    /// A board whose `updatedAt` is unknown (CLI path, an old disk cache)
+    /// is re-fetched by the first probe — once: the probe's watermark is
+    /// kept even when the fetched board cannot report one. A probe without
+    /// a watermark does nothing.
+    #[test]
+    fn a_probe_refetches_a_board_without_a_known_updated_at_once() {
+        let mut st = state();
+        let tx = st.bg_tx.clone().unwrap();
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        let mut cli_board = board();
+        cli_board.updated_at = None;
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(cli_board.clone()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        tx.send(ProjectsBgMessage::Probe {
+            number: 2,
+            result: Ok(None),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(
+            !st.board_inflight.contains(&2),
+            "no watermark: nothing to do"
+        );
+
+        tx.send(ProjectsBgMessage::Probe {
+            number: 2,
+            result: Ok(Some("2026-09-09T00:00:00Z".into())),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(
+            st.board_inflight.contains(&2),
+            "unknown baseline: re-fetched"
+        );
+        // The CLI path answers without `updatedAt` again …
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(cli_board),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(!st.board_inflight.contains(&2));
+        // … and the same watermark no longer triggers a fetch.
+        tx.send(ProjectsBgMessage::Probe {
+            number: 2,
+            result: Ok(Some("2026-09-09T00:00:00Z".into())),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(!st.board_inflight.contains(&2), "watermark kept: no loop");
     }
 
     #[test]

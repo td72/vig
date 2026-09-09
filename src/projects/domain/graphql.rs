@@ -33,11 +33,23 @@ const VIEWS_SELECTION: &str = "views(first: 20) { nodes { \
 fn meta_query(root: &str) -> String {
     format!(
         "query($login: String!, $number: Int!) {{ {root}(login: $login) {{ projectV2(number: $number) {{ \
+           updatedAt \
            fields(first: {FIELD_CAP}) {{ nodes {{ __typename \
              ... on ProjectV2FieldCommon {{ id name }} \
              ... on ProjectV2SingleSelectField {{ options {{ id name }} }} }} }} \
            {VIEWS_SELECTION} \
            items {{ totalCount }} }} }} \
+         rateLimit {{ cost remaining }} }}"
+    )
+}
+
+/// Only `ProjectV2.updatedAt`: the cheapest question (1 point) that
+/// tells whether a board needs re-fetching. Item field edits and moves
+/// bump it; the items' own issues need not change for that.
+fn probe_query(root: &str) -> String {
+    format!(
+        "query($login: String!, $number: Int!) {{ {root}(login: $login) {{ projectV2(number: $number) {{ \
+           updatedAt }} }} \
          rateLimit {{ cost remaining }} }}"
     )
 }
@@ -133,9 +145,34 @@ pub fn fetch_board(owner: &str, owner_kind: &str, number: u64) -> Result<Board, 
     }
 }
 
+/// The project's `updatedAt` for the change probe (see [`probe_query`]).
+pub fn probe_updated_at(
+    owner: &str,
+    owner_kind: &str,
+    number: u64,
+) -> Result<Option<String>, String> {
+    let probe = |root: &str| {
+        let base = [("login", owner.to_string()), ("number", number.to_string())];
+        run(root, &probe_query(root), &base).map(|v| updated_at_from(&v))
+    };
+    match owner_kind {
+        "User" => probe("user"),
+        "Organization" => probe("organization"),
+        _ => probe("user").or_else(|_| probe("organization")),
+    }
+}
+
+fn updated_at_from(project: &Value) -> Option<String> {
+    project
+        .get("updatedAt")
+        .and_then(Value::as_str)
+        .map(str::to_string)
+}
+
 fn fetch_as(root: &str, owner: &str, number: u64) -> Result<Board, String> {
     let base = [("login", owner.to_string()), ("number", number.to_string())];
     let meta = run(root, &meta_query(root), &base)?;
+    let updated_at = updated_at_from(&meta);
     let fields = fields_from(meta.pointer("/fields/nodes").unwrap_or(&Value::Null));
     let views = views_from(meta.get("views").unwrap_or(&Value::Null));
     let total_count = meta
@@ -176,6 +213,7 @@ fn fetch_as(root: &str, owner: &str, number: u64) -> Result<Board, String> {
         items,
         total_count,
         views,
+        updated_at,
     })
 }
 

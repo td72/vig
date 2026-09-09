@@ -70,6 +70,9 @@ pub fn record(dir: &Path) -> Result<()> {
         step(&format!("project #{} ({})", project.number, project.title));
         let board = graphql::fetch_board(&project.owner.login, &project.owner.kind, project.number)
             .map_err(anyhow::Error::msg)?;
+        // The change probe: replayed unchanged, so the demo never re-fetches.
+        graphql::probe_updated_at(&project.owner.login, &project.owner.kind, project.number)
+            .map_err(anyhow::Error::msg)?;
         for item in &board.items {
             let Some(number) = item.number() else {
                 continue;

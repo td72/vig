@@ -33,6 +33,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`procs-history`](#procs-history) | `"120"` | 置換 |
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | 置換 |
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
+| [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
 | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
 | [`pages`](#pages) | 全 7 ページ | 丸ごと置換 |
 | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
@@ -51,6 +52,7 @@ procs-refresh-interval "2s"
 procs-history "120"
 github-poll-interval "5s"
 github-auto-refresh "on"
+projects-poll-interval "30s"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 repo-config "on"
 app {
@@ -65,7 +67,8 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `projects-board`, `pages`, `repo-config`, `app`, or `page`)
+//   `projects-poll-interval`, `projects-board`, `pages`, `repo-config`,
+//   `app`, or `page`)
 ```
 
 ## トップレベルノード
@@ -215,11 +218,37 @@ API ポイントを消費しない条件付きリクエスト 1 回。変化し�
 github-poll-interval "10s"
 ```
 
+### `projects-poll-interval`
+
+Projects ページを表示している間、表示中のボードに変更があったかを
+GitHub に尋ねる間隔。プローブはプロジェクトの `updatedAt` だけを読み
+（GraphQL 1 ポイント。アイテムの移動やフィールド編集で動きます）、
+動いたときだけボードを再取得します。他のページを表示中は止まります。
+
+- **書式** — `projects-poll-interval "<duration>"` — `s` か `ms` 付きの
+  数値をクォートして書く。最小 `"5s"`（プローブ 1 回が 1 ポイントのため）
+- **デフォルト** — `"30s"`（ページを開いたままで 120 ポイント/時、
+  アイドル時は 20）
+- **マージ** — デフォルトを置換。
+
+プローブは [`github-auto-refresh`](#github-auto-refresh) とアイドル /
+残量による間隔延長に従い、レート制限された応答は GitHub ページと同じ
+バックオフで休みます。
+
+```kdl
+projects-poll-interval "60s"
+```
+
+```kdl,ignore
+projects-poll-interval "2s"
+// → bad projects-poll-interval "2s"; expected a duration such as "30s" or "60s" (at least 5000ms)
+```
+
 ### `github-auto-refresh`
 
 vig が GitHub のデータを自動で更新するか: GitHub ページのポーリング
-（実行、watch モード、実行中ジョブのログ）と、Projects ページに戻った
-ときの stale 再取得。
+（実行、watch モード、実行中ジョブのログ、issue / PR 一覧の変更チェック）
+と、Projects ページに戻ったときの stale 再取得およびボードの変更プローブ。
 
 - **書式** — `github-auto-refresh "<mode>"` — `"on"` か `"off"`
 - **デフォルト** — `"on"`
