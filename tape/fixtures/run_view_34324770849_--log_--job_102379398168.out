@@ -1,0 +1,513 @@
+copilot-pull-request-reviewer	Set up job	﻿2026-09-09T07:37:27.3748474Z Current runner version: '2.337.0'
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3774768Z ##[group]Runner Image Provisioner
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3775745Z Hosted Compute Agent
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3776412Z Version: 20260828.587
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3777229Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3778068Z Build Date: 2026-08-28T16:44:25Z
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3778871Z Worker ID: {f68f8d9f-f15a-438c-9eb7-13f8b3c42143}
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3779893Z Azure Region: westus
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3780571Z ##[endgroup]
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3782148Z ##[group]Operating System
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3782915Z Ubuntu
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3783577Z 24.04.4
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3784159Z LTS
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3784795Z ##[endgroup]
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3785426Z ##[group]Runner Image
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3786102Z Image: ubuntu-24.04
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3786814Z Version: 20260831.293.1
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3787936Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260831.293/images/ubuntu/Ubuntu2404-Readme.md
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3790069Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260831.293
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3791197Z ##[endgroup]
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3792368Z ##[group]GITHUB_TOKEN Permissions
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3794391Z Deployments: write
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3795049Z Metadata: read
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3795777Z ##[endgroup]
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3797874Z Secret source: AgentSecrets
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.3799191Z Prepare workflow directory
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.4247394Z Prepare all required actions
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.4294675Z Getting action download info
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:27.7833655Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+copilot-pull-request-reviewer	Set up job	2026-09-09T07:37:28.0670610Z Complete job name: copilot-pull-request-reviewer
+copilot-pull-request-reviewer	Initialize	﻿2026-09-09T07:37:28.1461650Z ##[group]Run NONCE=$(jq -r '.inputs.COPILOT_AGENT_INPUTS | fromjson | .COPILOT_JOB_NONCE' "$GITHUB_EVENT_PATH")
+copilot-pull-request-reviewer	Initialize	2026-09-09T07:37:28.1463115Z ^[[36;1mNONCE=$(jq -r '.inputs.COPILOT_AGENT_INPUTS | fromjson | .COPILOT_JOB_NONCE' "$GITHUB_EVENT_PATH")^[[0m
+copilot-pull-request-reviewer	Initialize	2026-09-09T07:37:28.1464107Z ^[[36;1mecho "::add-mask::$NONCE"^[[0m
+copilot-pull-request-reviewer	Initialize	2026-09-09T07:37:28.1504789Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+copilot-pull-request-reviewer	Initialize	2026-09-09T07:37:28.1505773Z env:
+copilot-pull-request-reviewer	Initialize	2026-09-09T07:37:28.1506236Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Initialize	2026-09-09T07:37:28.1506733Z ##[endgroup]
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	﻿2026-09-09T07:37:28.1878347Z ##[group]Run if ! command -v npm &> /dev/null; then
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1879153Z ^[[36;1mif ! command -v npm &> /dev/null; then^[[0m
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1880606Z ^[[36;1m  echo "Warning: npm is not available on this runner. Skipping Playwright MCP pre-download. The MCP server may be installed later if needed."^[[0m
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1881772Z ^[[36;1m  exit 0^[[0m
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1882233Z ^[[36;1mfi^[[0m
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1882849Z ^[[36;1mecho "Starting background pre-cache of @playwright/mcp..."^[[0m
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1883753Z ^[[36;1mnpm cache add @playwright/mcp@0.0.40 > /dev/null 2>&1 & disown^[[0m
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1884704Z ^[[36;1mecho "Started pre-caching @playwright/mcp@0.0.40 in the background"^[[0m
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1918364Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1919074Z env:
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1919692Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1920223Z   PLAYWRIGHT_VERSION: 0.0.40
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1920751Z ##[endgroup]
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1977742Z Starting background pre-cache of @playwright/mcp...
+copilot-pull-request-reviewer	Pre-cache Playwright MCP server in the background (Linux)	2026-09-09T07:37:28.1982548Z Started pre-caching @playwright/mcp@0.0.40 in the background
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	﻿2026-09-09T07:37:28.2119234Z ##[group]Run set -o pipefail
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2120086Z ^[[36;1mset -o pipefail^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2120660Z ^[[36;1mecho "Preparing Copilot..." && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2121420Z ^[[36;1mecho "Runtime version: $COPILOT_AGENT_RUNTIME_VERSION" && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2122329Z ^[[36;1mecho "COPILOT_AGENT_START_TIME_SEC=$(date +%s)" >> $GITHUB_ENV^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2123170Z ^[[36;1mecho "COPILOT_AGENT_TIMEOUT_MIN=20" >> $GITHUB_ENV^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2124183Z ^[[36;1mmkdir -p "runtime-logs" "cca-mcp-debug-logs" && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2124892Z ^[[36;1mMAX_RETRIES=3 && RETRY_COUNT=0 && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2125564Z ^[[36;1mwhile [ $RETRY_COUNT -lt $MAX_RETRIES ]; do \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2126366Z ^[[36;1m  if [ -n "$GITHUB_COPILOT_ACTION_OVERRIDE_DOWNLOAD_URL" ]; then \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2128332Z ^[[36;1m    curl -f --max-time 600 -D "runtime-logs/download.log" -H "Authorization: ***" $GITHUB_COPILOT_ACTION_OVERRIDE_DOWNLOAD_URL 2>> "runtime-logs/download.log" | tar -zxv >> "runtime-logs/download.log" 2>&1; \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2130171Z ^[[36;1m  else \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2131411Z ^[[36;1m    curl -f --max-time 600 -D "runtime-logs/download.log" $GITHUB_COPILOT_ACTION_DOWNLOAD_URL 2>> "runtime-logs/download.log" | tar -zxv >> "runtime-logs/download.log" 2>&1; \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2132701Z ^[[36;1m  fi; \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2133212Z ^[[36;1m  if [ $? -eq 0 ]; then break; fi; \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2133866Z ^[[36;1m  RETRY_COUNT=$((RETRY_COUNT + 1)); \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2134479Z ^[[36;1m  sleep 1; \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2134962Z ^[[36;1mdone && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2135908Z ^[[36;1mif [ $RETRY_COUNT -eq $MAX_RETRIES ]; then echo "Failed to download runtime after $MAX_RETRIES attempts"; exit 80; fi && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2137078Z ^[[36;1mecho "Finished downloading and extracting runtime" && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2138545Z ^[[36;1mif [ ! -d "***-action-main" ]; then mv ***-action-* ***-action-main >> "runtime-logs/download.log" 2>&1; fi && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2139996Z ^[[36;1m./***-action-main/script/setup.sh "/home/runner/work/_temp/ghcca-node" && \^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2141084Z ^[[36;1mecho "Copilot prepared successfully." 2>&1 | tee -a "runtime-logs/download.log"^[[0m
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2175039Z shell: /usr/bin/bash -e {0}
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2175591Z env:
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2176028Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2182978Z   GITHUB_COPILOT_ACTION_DOWNLOAD_URL: ***
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2183659Z   COPILOT_AGENT_SOURCE_ENVIRONMENT: production
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2184334Z   GITHUB_COPILOT_ACTION_OVERRIDE_DOWNLOAD_URL: 
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2185147Z   GITHUB_COPILOT_API_TOKEN: ***
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2186208Z   COPILOT_AGENT_RUNTIME_VERSION: runtime-copilot-pull-request-reviewer-vendored-5608fdeae906662b27c4efed9999328906d65a13
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2187282Z ##[endgroup]
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:28.2243374Z Preparing Copilot...
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:41.5240907Z Runtime version: runtime-copilot-pull-request-reviewer-vendored-5608fdeae906662b27c4efed9999328906d65a13
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:41.5243203Z Finished downloading and extracting runtime
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:41.5332393Z Using node from tool cache.
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:41.5866825Z v24.20.0
+copilot-pull-request-reviewer	Prepare Copilot (Linux)	2026-09-09T07:37:41.5940948Z Copilot prepared successfully.
+copilot-pull-request-reviewer	Download Autofind (Linux)	﻿2026-09-09T07:37:41.6002943Z ##[group]Run if [ -z "$GITHUB_COPILOT_AUTOFIND_DOWNLOAD_URL" ]; then
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6003547Z ^[[36;1mif [ -z "$GITHUB_COPILOT_AUTOFIND_DOWNLOAD_URL" ]; then^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6004064Z ^[[36;1m  echo "Autofind download URL not configured, skipping."^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6004485Z ^[[36;1m  exit 0^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6004752Z ^[[36;1mfi^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6005098Z ^[[36;1mecho "Starting background download of Autofind..."^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6005495Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6006220Z ^[[36;1m# Download and extract in background, then move to ***-action-main^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6006683Z ^[[36;1m(^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6006950Z ^[[36;1m  START_TIME=$(date +%s.%N)^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6007495Z ^[[36;1m  echo "Starting Autofind download at $(date)" > runtime-logs/download-autofind.log^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6008432Z ^[[36;1m  curl -f --max-time 300 "$GITHUB_COPILOT_AUTOFIND_DOWNLOAD_URL" 2>> runtime-logs/download-autofind.log | tar -zxv >> runtime-logs/download-autofind.log 2>&1^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6009452Z ^[[36;1m  mv autofind ***-action-main/ >> runtime-logs/download-autofind.log 2>&1^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6010278Z ^[[36;1m  END_TIME=$(date +%s.%N)^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6010893Z ^[[36;1m  ELAPSED=$(echo "$END_TIME - $START_TIME" | bc)^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6011477Z ^[[36;1m  echo "Autofind download completed in ${ELAPSED}s" >> runtime-logs/download-autofind.log^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6012010Z ^[[36;1m) & disown^[[0m
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6106383Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6106833Z env:
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6107107Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6107427Z   COPILOT_AGENT_START_TIME_SEC: 1788939448
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6107805Z   COPILOT_AGENT_TIMEOUT_MIN: 20
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6108143Z   GITHUB_COPILOT_AUTOFIND_DOWNLOAD_URL: 
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6108492Z ##[endgroup]
+copilot-pull-request-reviewer	Download Autofind (Linux)	2026-09-09T07:37:41.6166916Z Autofind download URL not configured, skipping.
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	﻿2026-09-09T07:37:41.6222425Z ##[group]Run if [ "$COPILOT_AGENT_FIREWALL_ENABLED" != "true" ]; then
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6223027Z ^[[36;1mif [ "$COPILOT_AGENT_FIREWALL_ENABLED" != "true" ]; then^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6223552Z ^[[36;1m  echo "Firewall disabled, skipping mkcert CA pre-generation."^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6224013Z ^[[36;1m  exit 0^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6224278Z ^[[36;1mfi^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6224816Z ^[[36;1mMKCERT_BIN="/home/runner/work/_temp/***-action-main/ebpf/in-path/mkcert"^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6225391Z ^[[36;1mMKCERT_CA_DST="/home/runner/work/_temp/runtime-logs/mkcert"^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6225835Z ^[[36;1mif [ ! -f "$MKCERT_BIN" ]; then^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6226282Z ^[[36;1m  echo "mkcert binary not found, skipping background keygen."^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6226708Z ^[[36;1m  exit 0^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6226965Z ^[[36;1mfi^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6227275Z ^[[36;1mif [ -f "$MKCERT_CA_DST/rootCA.pem" ]; then^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6227715Z ^[[36;1m  echo "CA already exists, skipping background keygen."^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6228143Z ^[[36;1m  exit 0^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6228407Z ^[[36;1mfi^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6228677Z ^[[36;1mmkdir -p "$MKCERT_CA_DST"^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6229082Z ^[[36;1mecho "Starting mkcert CA keygen in background..."^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6229871Z ^[[36;1m# Use setsid to fully detach from the Actions runner so the step^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6230460Z ^[[36;1m# finishes immediately instead of waiting for the background process.^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6231022Z ^[[36;1mMKCERT_LOCK="/home/runner/work/_temp/mkcert-install.lock"^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6231633Z ^[[36;1msetsid bash -c 'flock "$1" bash -c "CAROOT=\"$2\" \"$3\" -install && touch \"$2/.mkcert-bg-done\""' \^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6232262Z ^[[36;1m  _ "$MKCERT_LOCK" "$MKCERT_CA_DST" "$MKCERT_BIN" > /dev/null 2>&1 &^[[0m
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6267060Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6267492Z env:
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6267761Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6268076Z   COPILOT_AGENT_START_TIME_SEC: 1788939448
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6268452Z   COPILOT_AGENT_TIMEOUT_MIN: 20
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6268788Z   COPILOT_AGENT_FIREWALL_ENABLED: false
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6269126Z ##[endgroup]
+copilot-pull-request-reviewer	Generate agent firewall CA (Linux)	2026-09-09T07:37:41.6325044Z Firewall disabled, skipping mkcert CA pre-generation.
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	﻿2026-09-09T07:37:41.6428137Z ##[group]Run echo "Starting MCP servers..." && \
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6428638Z ^[[36;1mecho "Starting MCP servers..." && \^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6429024Z ^[[36;1mexport HOME="$(realpath ~)"^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6429415Z ^[[36;1mexport RUNNER_PATH="/home/runner/work/_temp"^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6430007Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6430418Z ^[[36;1m# Secrets listed here are piped via stdin so they never appear in /proc^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6431020Z ^[[36;1msecrets=$("$RUNNER_PATH/ghcca-node/node/bin/node" -p "JSON.stringify({^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6431637Z ^[[36;1m  GITHUB_COPILOT_GITHUB_TOKEN: process.env.GITHUB_COPILOT_GITHUB_TOKEN || '',^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6432277Z ^[[36;1m  GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_PERSONAL_ACCESS_TOKEN || '',^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6432893Z ^[[36;1m  GITHUB_COPILOT_API_TOKEN: process.env.GITHUB_COPILOT_API_TOKEN || '',^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6433533Z ^[[36;1m  GITHUB_COPILOT_INTEGRATION_ID: process.env.GITHUB_COPILOT_INTEGRATION_ID || '',^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6434352Z ^[[36;1m  COPILOT_JOB_NONCE: process.env.COPILOT_JOB_NONCE || ''^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6434765Z ^[[36;1m})")^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6435382Z ^[[36;1munset GITHUB_COPILOT_GITHUB_TOKEN GITHUB_PERSONAL_ACCESS_TOKEN GITHUB_COPILOT_API_TOKEN GITHUB_COPILOT_INTEGRATION_ID COPILOT_JOB_NONCE^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6436374Z ^[[36;1mprintf '%s' "$secrets" | "$RUNNER_PATH/***-action-main/script/start-mcp-servers.sh"^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6436865Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6437129Z ^[[36;1mecho "Ending MCP step"^[[0m
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6471062Z shell: /usr/bin/bash -e {0}
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6471403Z env:
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6471660Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6471977Z   COPILOT_AGENT_START_TIME_SEC: 1788939448
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6472324Z   COPILOT_AGENT_TIMEOUT_MIN: 20
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6472646Z   COPILOT_MCP_READ_ONLY_MODE: true
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6473069Z   COPILOT_API_URL: https://api.business.githubcopilot.com
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6473774Z   GITHUB_COPILOT_GITHUB_TOKEN: ***
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6474270Z   GITHUB_PERSONAL_ACCESS_TOKEN: ***
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6474724Z   GITHUB_COPILOT_API_TOKEN: ***
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6475053Z   GITHUB_COPILOT_3P_MCP_ENABLED: false
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6475466Z   COPILOT_AGENT_MCP_SERVER_TEMP: /home/runner/work/_temp/mcp-server
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6475909Z   GITHUB_COPILOT_MCP_JSON_FROM_INPUT: 
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6476256Z   GITHUB_COPILOT_REMOTE_MCP_ENABLED: true
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6476683Z   GITHUB_COPILOT_INTERACTION_ID: 015e0ca9-86f8-42dc-a0b4-9d98fd89567f
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6482808Z   COPILOT_FEATURE_FLAGS: copilot_inject_integration_headers,copilot_swe_agent_blackbird_tool_use,copilot_swe_agent_cap_claude_opus_token_limits,copilot_swe_agent_cleanup_partial_clone,copilot_swe_agent_clone_session_logging,copilot_swe_agent_failure_recovery_before_shutdown,copilot_swe_agent_firewall_enabled_by_default,copilot_swe_agent_vision,copilot_swe_agent_parallel_tool_execution,copilot_swe_agent_enable_security_tool,copilot_swe_agent_code_review,copilot_swe_agent_cca_session_attribution,copilot_swe_agent_validation_agent_dependencies,copilot_swe_agent_validation_tool_settings,copilot_swe_agent_secret_scanning_hook,copilot_swe_agent_new_out_proc_mcp,copilot_swe_agent_mcp_builtin_provenance,copilot_swe_agent_enable_dependabot_checker,copilot_swe_agent_use_non_blocking_callbacks,coding_agent_plan_tags,copilot_swe_agent_trivial_change,copilot_swe_agent_trivial_change_code_review_disable,copilot_swe_agent_trivial_change_skip,copilot_swe_agent_unified_task_tool,copilot_swe_agent_error_annotations,copilot_swe_agent_codex_error_classification,copilot_swe_agent_claude_error_classification,copilot_swe_agent_runtime_timing_telemetry,copilot_swe_agent_parallel_validation,copilot_swe_agent_3p_security_prompt,copilot_swe_agent_new_security_tools,copilot_swe_agent_oidc_token_exchange,copilot_swe_agent_logs_url_trailer,copilot_swe_agent_sandbox_server_token_cleanup,copilot_swe_agent_use_attachment_proxy,copilot_swe_agent_co_author_hook,copilot_feature_agentic_memory_user_scoped,copilot_feature_agentic_memory_user_scoped_cfi,copilot_swe_agent_chronicle,copilot-feature-agentic-memory
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6489199Z   COPILOT_EXPERIMENTS: mcp_permission_gate:true
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6489726Z   COPILOT_EXPERIMENT_ASSIGNMENT_CONTEXT: 
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6490500Z   COPILOT_AGENT_REQUEST_HEADERS: {"X-Copilot-Client-Exp-Assignment-Context":"fe38h306:1241318;ccr_pr_nudge_auto_review:1319472;jidc7660:1370295;14b85561:1348997;"}
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6491345Z   GITHUB_COPILOT_INTEGRATION_ID: ***
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6491688Z   COPILOT_USE_SESSIONS: true
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6492003Z   COPILOT_USE_ASYNC_SESSIONS: true
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6492347Z   COPILOT_MCP_EMIT_PENDING_SETUP_LOGS: true
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6492771Z   COPILOT_AGENT_SESSION_ID: 015e0ca9-86f8-42dc-a0b4-9d98fd89567f
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6493188Z   COPILOT_AGENT_RESUME_SESSION_ID: 
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6493633Z   COPILOT_AGENT_MCP_DEBUG_LOGS_PATH: /home/runner/work/_temp/cca-mcp-debug-logs
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6494415Z   COPILOT_AGENT_CALLBACK_URL: https://api.business.githubcopilot.com/agents/swe/agent
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6495041Z   COPILOT_AGENT_JOB_ID: 12109493-1154733606-15b2f6f3-f0d9-44cc-862b-9c25f7fc11c4
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6495671Z   COPILOT_JOB_NONCE: ***
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6495971Z   GITHUB_REPOSITORY_ID: 1154733606
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6496304Z   GITHUB_REPOSITORY_OWNER_ID: 12109493
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6496642Z   COPILOT_AGENT_INJECTED_SECRET_NAMES: 
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6496970Z ##[endgroup]
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.6574600Z Starting MCP servers...
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.8033267Z Waiting for MCP servers to be ready...
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:41.8093617Z MCP servers not ready yet. Retrying in 300ms... (1/200)
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:42.1178441Z MCP servers not ready yet. Retrying in 300ms... (2/200)
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:42.4251253Z MCP servers not ready yet. Retrying in 300ms... (3/200)
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:42.7323010Z MCP servers not ready yet. Retrying in 300ms... (4/200)
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:43.0519068Z MCP servers are ready.
+copilot-pull-request-reviewer	Start MCP Servers (Linux)	2026-09-09T07:37:43.0525054Z Ending MCP step
+copilot-pull-request-reviewer	Setup Agent (Linux)	﻿2026-09-09T07:37:43.0602381Z ##[group]Run echo "Setting up the agent..."
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0602805Z ^[[36;1mecho "Setting up the agent..."^[[0m
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0603117Z ^[[36;1mnpm config get prefix^[[0m
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0603658Z ^[[36;1mnode ***-action-main/dist-autofind-ts/ts/autofind.js cca-setup^[[0m
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0642308Z shell: /usr/bin/bash -e {0}
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0642594Z env:
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0642807Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0643084Z   COPILOT_AGENT_START_TIME_SEC: 1788939448
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0643405Z   COPILOT_AGENT_TIMEOUT_MIN: 20
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0643667Z ##[endgroup]
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.0703452Z Setting up the agent...
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.1909361Z /opt/hostedtoolcache/node/24.20.0/x64
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.9641402Z autofind.js version 0.1.125
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.9932669Z Found bundled copilot CLI, skipping npm installation
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.9933489Z Preparing environment variables for CCA...
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:43.9969287Z Starting octokit proxy...
+copilot-pull-request-reviewer	Setup Agent (Linux)	2026-09-09T07:37:44.8733781Z Setup complete.
+copilot-pull-request-reviewer	Download git-proxy (Linux)	﻿2026-09-09T07:37:44.9365042Z ##[group]Run set -euo pipefail
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9365435Z ^[[36;1mset -euo pipefail^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9365712Z ^[[36;1mARCH=$(uname -m)^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9365969Z ^[[36;1mcase "$ARCH" in^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9366292Z ^[[36;1m  x86_64)  ARTIFACT="git-proxy-linux-x64.tar.gz" ;;^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9366726Z ^[[36;1m  aarch64) ARTIFACT="git-proxy-linux-arm64.tar.gz" ;;^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9367153Z ^[[36;1m  *) echo "Unsupported architecture: $ARCH"; exit 1 ;;^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9367494Z ^[[36;1mesac^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9367719Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9367941Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9368129Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9368759Z ^[[36;1mecho "A matching pre-installed git-proxy was not found; falling through to download."^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9369318Z ^[[36;1mecho "Downloading git-proxy ($ARTIFACT)..."^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9369897Z ^[[36;1mMAX_RETRIES=3^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9370146Z ^[[36;1mRETRY_COUNT=0^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9370446Z ^[[36;1mwhile [ $RETRY_COUNT -lt $MAX_RETRIES ]; do^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9371107Z ^[[36;1m  if curl -fsSL --max-time 60 -H "Authorization: ***" \^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9371715Z ^[[36;1m    "https://api.business.githubcopilot.com/agents/swe/runtime-artifacts/$ARTIFACT" | tar -xz; then^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9372247Z ^[[36;1m    break^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9372465Z ^[[36;1m  fi^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9372702Z ^[[36;1m  RETRY_COUNT=$((RETRY_COUNT + 1))^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9373000Z ^[[36;1m  sleep 1^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9373211Z ^[[36;1mdone^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9373701Z ^[[36;1mif [ $RETRY_COUNT -eq $MAX_RETRIES ]; then echo "Failed to download git-proxy after $MAX_RETRIES attempts"; exit 81; fi^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9374266Z ^[[36;1mchmod +x git-proxy^[[0m
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9411929Z shell: /usr/bin/bash -e {0}
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9412218Z env:
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9412649Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9412928Z   COPILOT_AGENT_START_TIME_SEC: 1788939448
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9413243Z   COPILOT_AGENT_TIMEOUT_MIN: 20
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9413515Z   NODE_USE_ENV_PROXY: 1
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9414263Z   AUTOFIND_COPILOT_CLI_PATH: /home/runner/work/_temp/***-action-main/dist-autofind-ts/ts/copilot-cli/node_modules/@github/copilot/npm-loader.js
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9415035Z   COPILOT_AGENT_JOB_ID: 12109493-1154733606-15b2f6f3-f0d9-44cc-862b-9c25f7fc11c4
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9415550Z   COPILOT_AGENT_MODEL: sweagent-capi:gpt-5.2[ReasoningEffort=medium]
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9416012Z   COPILOT_API_URL: https://api.business.githubcopilot.com
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9416548Z   COPILOT_JOB_NONCE: ***
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9416813Z   COPILOT_AGENT_ACTOR_ID: 12109493
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9417097Z   COPILOT_ENABLE_SECRET_FILTERING: true
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9417478Z   AUTOFIND_OCTOKIT_PROXY_URL: http://127.0.0.1:35689
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9417932Z   AUTOFIND_OCTOKIT_PROXY_SECRET: ***
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9418378Z   GITHUB_COPILOT_API_TOKEN: ***
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:44.9418647Z ##[endgroup]
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:45.2381435Z A matching pre-installed git-proxy was not found; falling through to download.
+copilot-pull-request-reviewer	Download git-proxy (Linux)	2026-09-09T07:37:45.2387704Z Downloading git-proxy (git-proxy-linux-x64.tar.gz)...
+copilot-pull-request-reviewer	Processing Request (Linux)	﻿2026-09-09T07:37:46.0919036Z ##[group]Run set -euo pipefail
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0919476Z ^[[36;1mset -euo pipefail^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0920114Z ^[[36;1mecho "RUNNER_TEMP=$RUNNER_TEMP"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0920622Z ^[[36;1mfind "$RUNNER_TEMP" -maxdepth 1 -type f -name 'git-credentials-*.config' -print -delete^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0921115Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0921599Z ^[[36;1m# Generate a unique token and stop processing workflow commands to prevent the runtime from injecting commands^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0922217Z ^[[36;1mSTOP_TOKEN=$(cat /proc/sys/kernel/random/uuid)^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0922545Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0922869Z ^[[36;1m# Use a trap to ensure we always resume command processing and check for^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0923442Z ^[[36;1m# fallback error annotations, even if the runtime exits with a non-zero code^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0924025Z ^[[36;1m# (which would otherwise cause set -e to abort the shell before we get here).^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0924491Z ^[[36;1m# The trap preserves the original exit code.^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0924856Z ^[[36;1mcopilot_cleanup() {^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0925107Z ^[[36;1m  ^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0925446Z ^[[36;1m  if [ -n "${GIT_PROXY_PID:-}" ] && kill -0 "$GIT_PROXY_PID" 2>/dev/null; then^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0925923Z ^[[36;1m    echo "Stopping git-proxy (pid=$GIT_PROXY_PID)..."^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0926317Z ^[[36;1m    kill "$GIT_PROXY_PID" 2>/dev/null || true^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0926629Z ^[[36;1m    for _ in {1..25}; do^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0926977Z ^[[36;1m      if ! kill -0 "$GIT_PROXY_PID" 2>/dev/null; then break; fi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0927345Z ^[[36;1m      sleep 0.2^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0927590Z ^[[36;1m    done^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0927877Z ^[[36;1m    if kill -0 "$GIT_PROXY_PID" 2>/dev/null; then^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0928333Z ^[[36;1m      echo "git-proxy did not stop gracefully; forcing termination."^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0928796Z ^[[36;1m      kill -KILL "$GIT_PROXY_PID" 2>/dev/null || true^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0929128Z ^[[36;1m    fi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0929389Z ^[[36;1m    wait "$GIT_PROXY_PID" 2>/dev/null || true^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0929954Z ^[[36;1m  fi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0930175Z ^[[36;1m  ^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0930392Z ^[[36;1m  echo "::$STOP_TOKEN::"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0930768Z ^[[36;1m  FALLBACK_FILE="${RUNNER_TEMP}/copilot-fallback-error.txt"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0931170Z ^[[36;1m  if [ -f "$FALLBACK_FILE" ]; then^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0931558Z ^[[36;1m    FALLBACK_MSG=$(head -c 500 "$FALLBACK_FILE" | tr -d '\n\r')^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0932002Z ^[[36;1m    echo "::error title=Copilot Error::${FALLBACK_MSG}"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0932356Z ^[[36;1m    rm -f "$FALLBACK_FILE"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0932818Z ^[[36;1m  fi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0933018Z ^[[36;1m}^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0933241Z ^[[36;1mtrap copilot_cleanup EXIT^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0933507Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0933735Z ^[[36;1mecho "::stop-commands::$STOP_TOKEN"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0934028Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0934224Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0934535Z ^[[36;1m# Keep the proxy and runtime in one Actions step so their lifetimes^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0935009Z ^[[36;1m# are coupled consistently on Linux and Windows.^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0935375Z ^[[36;1mecho "Starting git-proxy..."^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0935713Z ^[[36;1mGIT_PROXY_LOG="$RUNNER_TEMP/git-proxy.log"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0936067Z ^[[36;1mecho "git-proxy logs: $GIT_PROXY_LOG"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0936403Z ^[[36;1mprintf '%s\n' "$GITHUB_TOKEN" | env \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0936768Z ^[[36;1m  GITHUB_AGENT_ACTOR="$COPILOT_GIT_PROXY_ACTOR" \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0937179Z ^[[36;1m  GITHUB_REPOSITORY="$COPILOT_GIT_PROXY_REPOSITORY" \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0937634Z ^[[36;1m  GITHUB_AGENT_BRANCH_NAME="$COPILOT_GIT_PROXY_BRANCH_NAME" \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0938056Z ^[[36;1m  GITHUB_SERVER_URL="$GITHUB_SERVER_URL" \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0938433Z ^[[36;1m  GITHUB_GIT_PROXY_PORT="$COPILOT_GIT_PROXY_PORT" \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0938840Z ^[[36;1m  "$RUNNER_TEMP/git-proxy" > "$GIT_PROXY_LOG" 2>&1 &^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0939357Z ^[[36;1mGIT_PROXY_PID=$!^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0939840Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0940064Z ^[[36;1mPROXY_READY=false^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0940315Z ^[[36;1mfor _ in {1..50}; do^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0940617Z ^[[36;1m  if ! kill -0 "$GIT_PROXY_PID" 2>/dev/null; then^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0940938Z ^[[36;1m    break^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0941161Z ^[[36;1m  fi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0941513Z ^[[36;1m  if (exec 3&lt;>"/dev/tcp/127.0.0.1/${COPILOT_GIT_PROXY_PORT}") 2>/dev/null; then^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0941940Z ^[[36;1m    PROXY_READY=true^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0942191Z ^[[36;1m    break^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0942408Z ^[[36;1m  fi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0942619Z ^[[36;1m  sleep 0.2^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0942851Z ^[[36;1mdone^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0943084Z ^[[36;1mif [ "$PROXY_READY" != "true" ]; then^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0943456Z ^[[36;1m  if [ -f "$GIT_PROXY_LOG" ]; then cat "$GIT_PROXY_LOG"; fi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0943866Z ^[[36;1m  if ! kill -0 "$GIT_PROXY_PID" 2>/dev/null; then^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0944330Z ^[[36;1m    echo "git-proxy exited before listening on port $COPILOT_GIT_PROXY_PORT"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0944754Z ^[[36;1m  else^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0945099Z ^[[36;1m    echo "git-proxy did not start listening on port $COPILOT_GIT_PROXY_PORT"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0945511Z ^[[36;1m  fi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0945936Z ^[[36;1m  exit 1^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0946278Z ^[[36;1mfi^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0946723Z ^[[36;1mecho "git-proxy started (pid=$GIT_PROXY_PID)"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0947167Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0947636Z ^[[36;1m# Keep proxy-only configuration out of the runtime environment.^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0948410Z ^[[36;1munset COPILOT_GIT_PROXY_ACTOR COPILOT_GIT_PROXY_REPOSITORY COPILOT_GIT_PROXY_BRANCH_NAME COPILOT_GIT_PROXY_PORT^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0949067Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0949660Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0950009Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0950385Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0950845Z ^[[36;1m# Secrets listed here are piped via stdin so they never appear in /proc^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0951577Z ^[[36;1msecrets=$("/home/runner/work/_temp/ghcca-node/node/bin/node" -p "JSON.stringify({^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0952188Z ^[[36;1m  ^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0952571Z ^[[36;1m  GITHUB_TOKEN: process.env.GITHUB_TOKEN || '',^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0965568Z ^[[36;1m  GITHUB_COPILOT_GITHUB_TOKEN: process.env.GITHUB_COPILOT_GITHUB_TOKEN || '',^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0966061Z ^[[36;1m  ^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0966418Z ^[[36;1m  GITHUB_COPILOT_API_TOKEN: process.env.GITHUB_COPILOT_API_TOKEN || '',^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0966869Z ^[[36;1m  ^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0967484Z ^[[36;1m  GITHUB_COPILOT_INFERENCE_TOKEN: process.env.GITHUB_COPILOT_INFERENCE_TOKEN || '',^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0967937Z ^[[36;1m  ^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0968312Z ^[[36;1m  GITHUB_COPILOT_INTEGRATION_ID: process.env.GITHUB_COPILOT_INTEGRATION_ID || '',^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0968938Z ^[[36;1m  COPILOT_INTEGRATION_ID_OVERRIDE: process.env.COPILOT_INTEGRATION_ID_OVERRIDE || '',^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0969745Z ^[[36;1m  CAPI_HMAC_KEY_OVERRIDE: process.env.CAPI_HMAC_KEY_OVERRIDE || '',^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0970277Z ^[[36;1m  COPILOT_JOB_NONCE: process.env.COPILOT_JOB_NONCE || ''^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0970630Z ^[[36;1m})")^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0971449Z ^[[36;1munset GITHUB_TOKEN GITHUB_COPILOT_GITHUB_TOKEN GITHUB_COPILOT_API_TOKEN GITHUB_COPILOT_INFERENCE_TOKEN GITHUB_COPILOT_INTEGRATION_ID COPILOT_INTEGRATION_ID_OVERRIDE CAPI_HMAC_KEY_OVERRIDE COPILOT_JOB_NONCE^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0972325Z ^[[36;1m^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0972557Z ^[[36;1mecho "Processing requests..." && \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0972883Z ^[[36;1mprintf '%s' "$secrets" | \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0973599Z ^[[36;1m"/home/runner/work/_temp/***-action-main/ebpf/launch.sh" \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0974484Z ^[[36;1m  "/home/runner/work/_temp/ghcca-node/node/bin/node --enable-source-maps /home/runner/work/_temp/***-action-main/dist-autofind-ts/ts/autofind.js" \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0975389Z ^[[36;1m  "/home/runner/work/_temp/runtime-logs" \^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.0975720Z ^[[36;1m  "false"^[[0m
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1011392Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1011757Z env:
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1011962Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1012223Z   COPILOT_AGENT_START_TIME_SEC: 1788939448
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1012512Z   COPILOT_AGENT_TIMEOUT_MIN: 20
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1012779Z   NODE_USE_ENV_PROXY: 1
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1013501Z   AUTOFIND_COPILOT_CLI_PATH: /home/runner/work/_temp/***-action-main/dist-autofind-ts/ts/copilot-cli/node_modules/@github/copilot/npm-loader.js
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1014277Z   COPILOT_AGENT_JOB_ID: 12109493-1154733606-15b2f6f3-f0d9-44cc-862b-9c25f7fc11c4
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1014784Z   COPILOT_AGENT_MODEL: sweagent-capi:gpt-5.2[ReasoningEffort=medium]
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1015249Z   COPILOT_API_URL: https://api.business.githubcopilot.com
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1015776Z   COPILOT_JOB_NONCE: ***
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1016043Z   COPILOT_AGENT_ACTOR_ID: 12109493
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1016335Z   COPILOT_ENABLE_SECRET_FILTERING: true
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1016673Z   AUTOFIND_OCTOKIT_PROXY_URL: http://127.0.0.1:35689
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1017099Z   AUTOFIND_OCTOKIT_PROXY_SECRET: ***
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1017501Z   GITHUB_TOKEN: ***
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1017757Z   COPILOT_GIT_PROXY_REPOSITORY: td72/vig
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1018063Z   COPILOT_GIT_PROXY_ACTOR: td72
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1018415Z   COPILOT_GIT_PROXY_BRANCH_NAME: feat/github-list-autorefresh
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1018778Z   COPILOT_GIT_PROXY_PORT: 26831
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1019174Z   GITHUB_COPILOT_GITHUB_TOKEN: ***
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1019872Z   GITHUB_COPILOT_API_TOKEN: ***
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1020159Z   GITHUB_COPILOT_INFERENCE_TOKEN: 
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1020486Z   COPILOT_AGENT_INFERENCE_IDENTITY: actor
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1020866Z   GITHUB_COPILOT_INTEGRATION_ID: ***
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1021163Z   COPILOT_AGENT_FIREWALL_ENABLED: false
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1021547Z   COPILOT_AGENT_FIREWALL_STATUS_REASON: firewall_setting_disabled
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1036916Z   COPILOT_AGENT_FIREWALL_RULESET_ALLOW_LIST: H4sIAAAAAAAA/7ycS48bNxKA7/MrCOWwu4CbY9nJ2J6bsS8fNthgnZwWAVJNlro5YpM0i5TcXux/D9gtaZ6ZkZpsnTyYNr96kKwqvuaiqqqLDXpS1lyz1/w1X174qJGuLxir2FoZec2Uq9LvLhhjzECH1wy+RY9VhwEkBKiUG74pd82WV+/51Vu+fPOBL68ujsK3IdwREL2+Zv9j0nagzDUTXr/lUjVKoA9c2I79/4Sm309sagW5iU0DVcJrviVOfQcmoDi5/SB9MiBJb9AGH2mK1dOaJqGhhW3ACSKnNEwCN+gVqcZMEDmt6eBabWvQE8VObSy8Jk6kJ4g8uVUyUkk0UwfQxLZJLKEIqrFTrJzSMomMhH6qpRPbDhNb1FMayV2jiWFbWrFGXwnbOUtY1V7JBu9G78Xy3Ru+fJ94i5c0I9Figv53kT7T4tdXB2WbVniu7MvWPcPw2CgKvudtrPmo+Gke27VR9hUDre22AtNXFOtDoPURT6YJ22XhnjHYeSujCMoaLrSNcqXB40mWPwOXmq/fU26fuHVDJThfIvS5jE543inhLdnVkRPwuRGbP2BdrLUSHIXnsKUsFMTQ8sP4PXa+nyrFxAYDt77JG1mKAi+DAqcKkUaKWze8USEFkOz5Y4PBUHDADVNJ4oYPpXQ2ro5KS+LF1RyBQitea5vc6JFvlZF2S9xgeIE9/MCO6Kp9sN+8SVFwkqwXhlbyMiF40VaRjCg1Yu9hqRRWCk7oN0og8Y2iCJpClOrI8ub57sx2pbRboy3I+5rNMeQG76JsMFtnoXgJ07fbbUFDrcGhjDyWONZwi4+p+mBpYapWSkBA5nFjBaTKgWlFgdkN+qHt4uFMvK/N4tfdr/caLR4ZuNj9DwehvWaLS7dW1tGl8PpyMU9Wcqncw01uKuYSfNBgmiMm45POoUfeoWA9NMgbaxuN4BQlDz10UKwrB2INDdLl8zV0SbHJ2iqFIbXBrJ45FERD3kwrHGFNQBPmLH09bPmTAvPmV32DItAMZL2iUoXFiKmGin8GTe/h6S2HDr5ZA1vKJgsrcUgDhRyReF90KRoJMEaZpko1ZSFmQnXClSspxQmj6MhgEV3qk7vcB4FCWKe0DZeihXAJIYBoOzRhjFXfsX+q8CnW7OOwDiW2tX69SunGR8MgZRwQYR+RGAhhownE/vwxZWqWyrbDRzTSWZW+3i5sPVLUgQheV8sPfymyVr5FzlA1PiFmeR4xb84j5u15xHx/HjE/nEfM1XnEvDuPmPfnEfPhTNPzXGHgTHFgeaZAsDxTJFieKRQszxQLlmcKBsszRYPlmcLB8o/jwVCH/HUsU1hAjR0G37PdhshtXVGiXNpVQ9VBzNMleAlRtyKUkWqjZIR9tbvTorykOpIySDS3HDQBvfOK8AlJs+wSNDZ7k6CxR24PvDi4v/a8EIxiVwo1bH6X8NJo4IuHI0U3UZLIanREZX1TpQgy14aTR41ASLwFapWw3hVYKQY+A7aP3RzYw0lrQO9hZX0346FTC7RGrY8b3reNhg01fqfxXFtRDYaqaUV0/CRNj9gvpwfEWdy73W75DWwge1DcyPUIyj55cYqDtC6o2OXDSoHGMxvewQZNdg+PFHAgWsyGeXSWFycui5p60sHq/hBw9+8TKeLV4dM9MZVAEzxovssZ1eHk6X7y2DfPt2vkZs+dvatBFIDdiKG64rVKzujzd8WJOFkDoXeFBis5r0yTe32i8SB1vkaHc9NCPKdjo0xpXLXfSy0GHnqi8aA0FctYHIVWjvKVOwDvzYlZEuANWVMN3yFb7cTiIyuFIDwmcX/H/oOdMhL9NfuXDcTsiv0GLvw29BCpYL1CYtKaPwUWCdmnn3/+iRHiqB5dX15SdOjTCjT56fJLRBo24y+Xb3+4evf+6jLW0YRYgQvVtu0r8FiFFiuPdCugAiGQCGVlN+irhB4X1r8MjU9zyuIVeyIVj4eNfNRmSlh6EksoolehL811DriGaETrQE4pH56krrFPAQd9aXXHW0Ez+TiVZGTACQ+rsKv109j4G9YKTAEBEmsuB9iUOfj8uCjMXWM/ZK/C2P0VgNLcHa4Dx1dAQffSTNqf+4NxEbjWm24f59KY+AdK6yHv5ulqYDhvb1DkX47qlPfWU2HqIUU9hR23JNGEf3/OVpynes7mJ+kNRB3uwwY1P2qnDGZ1WCWk4TBwtDLxa5G9qMe8UV0v2nyfpkBZRtWHpEHJz798/nuR8sehoXgoqHblgmSfIOTcnJCGe5Qt7K+L7HbQu84a9tMYiNiP46zJ6cSRNF4lyb0rvQ+Pu3svd9ddg/Y/7i+hsc82eoEFFKdHF+3muVXtupv82T1Siu3szYLLXqqtVSfrQroZ15W87z1cRXdd9ksHYyUWcFUP3iTrivVgOaCzp8Hu1ojJOzTM7/yLbhi4S4Mgs8PqaDi1eaUEGss1GFmmq2q7xezHKbUykNaF3HlFHYwmzhL/hJtW7j7axi4C6jBAEdAAeUCb6TjKWT6mLEX5dW05UoNh93DQz2m/09BvvWrawA91k/P0OHvnFUx3xeTeNr9FlXuxcAutYA0dlHwNcYe9Qa++WXMSvORJr2i97bBaWV8FpKBMU43v6OZ6XdA7xV0fWpsfEgZWNkQ57noHRx+wv6BSsqy1FFDOeUq6UjrlkgfS8jKUtYGCh2Pd8dJtciOB18pQAJ8f/AcaGBh/yDa1kFrFFLoNtH2wXrRlTiOENUGZGLNrsoF2MHbGtZuPdd9gl1+vp+VDMdgBVHB9U0cjNfpySg6QRFtZ3+SfGB1w1pQ501JG4tdy5orhZD7hquNvax06dNO9+GcJ5qnNPQTMXtOOrizDogBBiVKwlvtIITru897f77RKsLvdO0ufHGIvbdUqv0ovQxFWWHBWFpgo0vCHtN8DAAD//yLY1dB1SgAA
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1052748Z   COPILOT_AGENT_FIREWALL_ENABLE_RULESET_ALLOW_LIST: false
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1062264Z   COPILOT_AGENT_FIREWALL_ALLOW_LIST: localhost,https://github.com/,githubusercontent.com,https://raw.githubusercontent.com/,https://objects.githubusercontent.com/,https://codeload.github.com/,https://uploads.github.com/user-attachments/assets/,https://api.github.com/internal/user-attachments/assets/,https://api.github.com/advisories,https://api.github.com/copilot_internal/user,https://api.github.com/copilot/mcp_registry,https://api.github.com/user,https://api.github.com/cmc_internal/api/agents/environments,https://api.github.com/repos/td72/vig/copilot_internal/,https://api.github.com/repos/td72/vig/compare/,https://api.github.com/repos/td72/vig/code-scanning/codeql/databases/,https://api.github.com/embeddings/code/search,https://github.githubassets.com/assets,https://*.githubusercontent.com,https://uploads.github.com,172.18.0.1,168.63.129.16,host.docker.internal,https://lfs.github.com/,https://github-cloud.githubusercontent.com/,https://github-cloud.s3.amazonaws.com/,https://api.github.com/repos/github/codeql-action/releases/,https://api.github.com/repos/dependabot/cli/releases/,https://productionresultssa0.blob.core.windows.net/,https://productionresultssa1.blob.core.windows.net/,https://productionresultssa2.blob.core.windows.net/,https://productionresultssa3.blob.core.windows.net/,https://productionresultssa4.blob.core.windows.net/,https://productionresultssa5.blob.core.windows.net/,https://productionresultssa6.blob.core.windows.net/,https://productionresultssa7.blob.core.windows.net/,https://productionresultssa8.blob.core.windows.net/,https://productionresultssa9.blob.core.windows.net/,https://productionresultssa10.blob.core.windows.net/,https://productionresultssa11.blob.core.windows.net/,https://productionresultssa12.blob.core.windows.net/,https://productionresultssa13.blob.core.windows.net/,https://productionresultssa14.blob.core.windows.net/,https://productionresultssa15.blob.core.windows.net/,https://productionresultssa16.blob.core.windows.net/,https://productionresultssa17.blob.core.windows.net/,https://productionresultssa18.blob.core.windows.net/,https://productionresultssa19.blob.core.windows.net/,https://production-copilot-host.webpubsub.azure.com/,https://queryconsoleprod.blob.core.windows.net/github-codeql-query-console-prod/,https://api.githubcopilot.com/,https://api.githubcopilot.com/,api.business.githubcopilot.com,,https://github.com
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1072088Z   COPILOT_AGENT_BACKGROUND_MKCERT: true
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1072418Z   COPILOT_AGENT_SOURCE_ENVIRONMENT: production
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1072850Z   GITHUB_UPLOADS_URL: https://uploads.github.com/user-attachments/assets
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1073395Z   GITHUB_DOWNLOADS_URL: https://api.github.com/internal/user-attachments/assets
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1073942Z   SECRET_SCANNING_URL: https://scanning-api.github.com/api/v1/scan/multipart
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1074695Z   COPILOT_AGENT_RUNTIME_VERSION: runtime-copilot-pull-request-reviewer-vendored-5608fdeae906662b27c4efed9999328906d65a13
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1075456Z   COPILOT_AGENT_DEBUG: false
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1075722Z   COPILOT_MCP_ENABLED: true
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1076000Z   COPILOT_MCP_READ_ONLY_MODE: true
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1076362Z   COPILOT_AGENT_MCP_SERVER_TEMP: /home/runner/work/_temp/mcp-server
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1076753Z   COPILOT_AGENT_INJECTED_SECRET_NAMES: 
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1077294Z   CPD_SAVE_TRAJECTORY_OUTPUT: /home/runner/work/_temp/***-action-main/dist/trajectory.md
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1077775Z   COPILOT_AGENT_ONLINE_EVALUATION_DISABLED: true
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1083638Z   COPILOT_FEATURE_FLAGS: copilot_inject_integration_headers,copilot_swe_agent_blackbird_tool_use,copilot_swe_agent_cap_claude_opus_token_limits,copilot_swe_agent_cleanup_partial_clone,copilot_swe_agent_clone_session_logging,copilot_swe_agent_failure_recovery_before_shutdown,copilot_swe_agent_firewall_enabled_by_default,copilot_swe_agent_vision,copilot_swe_agent_parallel_tool_execution,copilot_swe_agent_enable_security_tool,copilot_swe_agent_code_review,copilot_swe_agent_cca_session_attribution,copilot_swe_agent_validation_agent_dependencies,copilot_swe_agent_validation_tool_settings,copilot_swe_agent_secret_scanning_hook,copilot_swe_agent_new_out_proc_mcp,copilot_swe_agent_mcp_builtin_provenance,copilot_swe_agent_enable_dependabot_checker,copilot_swe_agent_use_non_blocking_callbacks,coding_agent_plan_tags,copilot_swe_agent_trivial_change,copilot_swe_agent_trivial_change_code_review_disable,copilot_swe_agent_trivial_change_skip,copilot_swe_agent_unified_task_tool,copilot_swe_agent_error_annotations,copilot_swe_agent_codex_error_classification,copilot_swe_agent_claude_error_classification,copilot_swe_agent_runtime_timing_telemetry,copilot_swe_agent_parallel_validation,copilot_swe_agent_3p_security_prompt,copilot_swe_agent_new_security_tools,copilot_swe_agent_oidc_token_exchange,copilot_swe_agent_logs_url_trailer,copilot_swe_agent_sandbox_server_token_cleanup,copilot_swe_agent_use_attachment_proxy,copilot_swe_agent_co_author_hook,copilot_feature_agentic_memory_user_scoped,copilot_feature_agentic_memory_user_scoped_cfi,copilot_swe_agent_chronicle,copilot-feature-agentic-memory
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1090067Z   COPILOT_EXPERIMENTS: mcp_permission_gate:true
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1090413Z   COPILOT_EXPERIMENT_ASSIGNMENT_CONTEXT: 
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1090746Z   COPILOT_PERMISSION_GATE_REASON: ineligible_app
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1091061Z   COPILOT_PERMISSION_MODE: 
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1091737Z   COPILOT_AGENT_REQUEST_HEADERS: {"X-Copilot-Client-Exp-Assignment-Context":"fe38h306:1241318;ccr_pr_nudge_auto_review:1319472;jidc7660:1370295;14b85561:1348997;"}
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1092523Z   COPILOT_AGENT_SESSION_ID: 015e0ca9-86f8-42dc-a0b4-9d98fd89567f
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1093053Z   COPILOT_AGENT_RESUME_SESSION_ID: 
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1093328Z ##[endgroup]
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1151439Z RUNNER_TEMP=/home/runner/work/_temp
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1183871Z ::stop-commands::***
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1184318Z Starting git-proxy...
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.1184912Z git-proxy logs: /home/runner/work/_temp/git-proxy.log
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.3222804Z git-proxy started (pid=2288)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.3496491Z Processing requests...
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.3567521Z Launcher version: 0287a6ec8ebbf758fcd54b52480d287b355a596a, 0.0.55, 1.4.4
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:46.6049307Z Firewall disabled.
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:47.2718952Z Loaded 5 secret(s) from stdin
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:47.8970597Z Using integration ID from job details: copilot-pr-reviews
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:47.8971833Z Analyzing td72/vig PR #179, request-id EED3:16700C:37880B:44D504:6AA10CAA (autofind.js version: 0.1.125)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:47.9085891Z Fetching PR metadata for td72/vig#179
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:48.5652069Z Fetched PR metadata for td72/vig#179 (object format: sha1).
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:48.5667009Z [fork-gate] td72/vig#179: isForked=false, loading instructions/skills from head checkout.
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:48.5673246Z Fetching diff 074bbad486d5e36c3d911ead96587dcb29057716...d8133819eab19a9b837d55207d786090922809b5 for td72/vig
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:48.5674646Z Preparing repository...
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:48.5851979Z Repository is not checked out at /home/runner/work/vig/vig. Checking out a fresh copy.
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:48.5862247Z Checking out td72/vig at SHA d8133819eab19a9b837d55207d786090922809b5 into /home/runner/work/vig/vig
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:49.3224453Z [customInstructions] Built 1 custom instruction(s) for td72/vig; names=["CLAUDE.md"]
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:49.3232582Z Running detector: ccr[ApplyContentExclusions=true;ContextAgentModelName=;ContextV2Prompt=false;CostBudgetUsd=1;CostHardThresholdRatio=0.95;CostSoftThresholdRatio=0.5;DedupModelName=capi-prod-gpt-5.6-luna;EnableAgenticTools=true;EnableAutoApproval=true;EnableCommentTool=true;EnableContextPlanTool=false;EnableFeedbackInUserMessage=true;EnableMcpProxy=true;EnableMemoryStorage=true;EnableMemoryUsage=true;EnablePlanTool=false;EnableRestrictedResultPublication=true;EnableSemanticIssueSearchTool=false;EnableSemanticIssueSearchToolIssuesOnly=false;EnableSemanticIssuesInject=false;EnableSkills=true;FixGeneratorMaxExpansionLines=20;GenerateFixesInStoreComment=true;GroupingWithinReviewModelName=capi-prod-gpt-5.4-mini[ReasoningEffort=none];InlineApprovalReadinessReasoning=true;LateFindsCurationModelName=gpt-5.4-mini;MaxPromptTokens=110000;MemoryLimit=0;MoreThorough=true;MustUseSemanticIssueSearchTool=false;QueryAgentModelName=;ResolutionVerificationModelName=capi-prod-gpt-5.6-luna;SeverityClassifierModelName=gpt-5.4-mini;SkipRegionFiltering=false;SplitLinesMaxGap=3;UseCliBashTool=false;UseCliFileTools=true;UseGPT5Model=true;VerificationModelName=] (autofind.js version: 0.1.125)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:49.3243818Z [memory] CCA path: building memoryApiConfig (pull_request_id=4482384781, job_id=12109493-1154733606-15b2f6f3-f0d9-44cc-862b-9c25f7fc11c4, exp_flight_names_present=false)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:49.3245357Z Resolved repo directory: /home/runner/work/vig/vig
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:49.3245956Z Running in CCA: true
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:49.3751562Z [debug] Using copilot CLI path: /home/runner/work/_temp/***-action-main/dist-autofind-ts/ts/copilot-cli/node_modules/@github/copilot/npm-loader.js
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:49.8752232Z Using default CAPI authentication (token)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:52.1146646Z Using existing session ID from COPILOT_AGENT_SESSION_ID: 015e0ca9-86f8-42dc-a0b4-9d98fd89567f
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.6456833Z Fetching Copilot content exclusions for https://github.com/td72/vig
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.8757093Z HttpError: Not Found - https://docs.github.com/rest
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.8758450Z     at tB (file:///home/runner/work/_temp/***-action-main/dist-autofind-ts/ts/autofind.js:509:9237)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.8759920Z     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.8761934Z     at async MsI (file:///home/runner/work/_temp/***-action-main/dist-autofind-ts/ts/autofind.js:511:91574)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.8763570Z     at async Y.doExecute (file:///home/runner/work/_temp/***-action-main/dist-autofind-ts/ts/autofind.js:22:13856)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.8766090Z content exclusion policy fetch failed for td72/vig; proceeding without exclusions: Failed to fetch Copilot content exclusions for https://github.com/td72/vig (status=404, x-github-request-id=F403:83CF8:4239ED:4CA64B:6AA10CD1): HttpError: Not Found - https://docs.github.com/rest
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.8768422Z [memory] retrieval started (repo=td72/vig, exp_flight_names_present=false)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:53.8769981Z [memory] enabled check: assignment context present, no flights — control arm
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:54.3591351Z [memory] enabled check: enabled=false disabled_reason=policy
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:54.3592801Z [memory] retrieval completed (repo=td72/vig, success=false, not_enabled=true, disabled_reason=policy, duration_ms=483)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:54.3831450Z [skills] session=github/copilot-code-review catalogEntries=0 droppedUnreadable=0 droppedInvalidMetadata=0 droppedExcluded=0 droppedTruncated=0 incomplete=false
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:56.2348768Z Built prompt with 82799 tokens
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:56.2394902Z Creating copilot-sdk session with model: gpt-5.2[ReasoningEffort=medium] and clientName: github/copilot-code-review and contextTier: default
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:37:56.2397764Z [skills] session=github/copilot-code-review enabled=true source=head-checkout configuredDirectories=0
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:40:06.7559251Z [cost-jit] firing rule="ccr_cost_soft_kill" spent=$0.5094 budget=$1.00 threshold=0.5
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:01.9113317Z CCR Agent: Invoking store_comment tool
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:01.9191675Z CCR Agent: Comment stored (id=001, type=bug, file=src/github/state.rs, start=538, end=542, fixed=false, severity=moderate)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:01.9192809Z CCR Agent: Inline fix stored for comment [ID: 001]
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:01.9194062Z CCR Agent: Invoking store_comment tool
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:01.9204634Z CCR Agent: Invoking store_comment tool
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:01.9218795Z CCR Agent: Comment stored (id=002, type=bug, file=src/fixtures.rs, start=43, end=46, fixed=false, severity=moderate)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:01.9233896Z CCR Agent: Inline fix stored for comment [ID: 002]
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:01.9234838Z CCR Agent: Invoking store_comment tool
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:13.6121717Z CCR Agent: Invoking store_comment tool
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:13.6131279Z CCR Agent: Comment stored (id=003, type=bug, file=src/github/domain/client.rs, start=160, end=165, fixed=false, severity=moderate)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:13.6132523Z CCR Agent: Inline fix stored for comment [ID: 003]
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:52.2561455Z Cost-JIT nudge telemetry sent (kind=code-review.cost-jit-nudge.v1, rule=ccr_cost_soft_kill).
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:52.2620277Z Fetching PR metadata for td72/vig#179
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:54.3200034Z Creating sub-agent session with model: capi-prod-gpt-5.4-mini[ReasoningEffort=none] and clientName: github/copilot-code-review/grouping-within-review
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:55.5032083Z Creating sub-agent session with model: gpt-5.4-mini[ReasoningEffort=low] and clientName: github/copilot-code-review/severity
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:58.8736160Z Severity classifier: 3/3 classified (moderate=3)
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:59.6851795Z Reporting results to sweagentd...
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:41:59.9013296Z Results successfully reported to sweagentd.
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:42:00.5094665Z Stopping git-proxy (pid=2288)...
+copilot-pull-request-reviewer	Processing Request (Linux)	2026-09-09T07:42:00.7112539Z ::***::
+copilot-pull-request-reviewer	Clean Up (Linux)	﻿2026-09-09T07:42:00.7165232Z ##[group]Run echo "Cleaning up..." && \
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7165626Z ^[[36;1mecho "Cleaning up..." && \^[[0m
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7166000Z ^[[36;1mmkdir -p "/home/runner/work/_temp/runtime-logs" && \^[[0m
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7166823Z ^[[36;1mcurl -L -H "Content-Type: application/json" -H "Accept: application/json" --data '{"oid":'$GITHUB_REPOSITORY_OWNER_ID',"rid":'$GITHUB_REPOSITORY_ID',"wid":'$GITHUB_RUN_ID'}' \^[[0m
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7168546Z ^[[36;1m  -H "Authorization: ***" -H "X-GitHub-Copilot-Cleanup-List: ***,***,***," \^[[0m
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7169498Z ^[[36;1m  "https://api.business.githubcopilot.com/agents/swe/agent/cleanup" > "/home/runner/work/_temp/runtime-logs/clean.log" 2>&1^[[0m
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7204954Z shell: /usr/bin/bash -e {0}
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7205219Z env:
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7205427Z   SHOULD_CONTINUE: true
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7205699Z   COPILOT_AGENT_START_TIME_SEC: 1788939448
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7206004Z   COPILOT_AGENT_TIMEOUT_MIN: 20
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7206267Z   NODE_USE_ENV_PROXY: 1
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7207011Z   AUTOFIND_COPILOT_CLI_PATH: /home/runner/work/_temp/***-action-main/dist-autofind-ts/ts/copilot-cli/node_modules/@github/copilot/npm-loader.js
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7207783Z   COPILOT_AGENT_JOB_ID: 12109493-1154733606-15b2f6f3-f0d9-44cc-862b-9c25f7fc11c4
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7208293Z   COPILOT_AGENT_MODEL: sweagent-capi:gpt-5.2[ReasoningEffort=medium]
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7208754Z   COPILOT_API_URL: https://api.business.githubcopilot.com
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7209286Z   COPILOT_JOB_NONCE: ***
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7209831Z   COPILOT_AGENT_ACTOR_ID: 12109493
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7210149Z   COPILOT_ENABLE_SECRET_FILTERING: true
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7210498Z   AUTOFIND_OCTOKIT_PROXY_URL: http://127.0.0.1:35689
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7210931Z   AUTOFIND_OCTOKIT_PROXY_SECRET: ***
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7211210Z ##[endgroup]
+copilot-pull-request-reviewer	Clean Up (Linux)	2026-09-09T07:42:00.7266395Z Cleaning up...
+copilot-pull-request-reviewer	Complete job	﻿2026-09-09T07:42:01.3338799Z Cleaning up orphan processes
+copilot-pull-request-reviewer	Complete job	2026-09-09T07:42:01.3689749Z Terminate orphan process: pid (2197) (MainThread)
+copilot-pull-request-reviewer	Complete job	2026-09-09T07:42:01.3720841Z Terminate orphan process: pid (2218) (npm exec @playw)
+copilot-pull-request-reviewer	Complete job	2026-09-09T07:42:01.3744560Z Terminate orphan process: pid (2259) (MainThread)
+copilot-pull-request-reviewer	Complete job	2026-09-09T07:42:01.3788265Z Terminate orphan process: pid (2274) (sh)
+copilot-pull-request-reviewer	Complete job	2026-09-09T07:42:01.3847200Z Terminate orphan process: pid (2275) (MainThread)

@@ -106,6 +106,88 @@ pub fn commit_url(hash: &str) -> Option<String> {
     origin_github_nwo().map(|nwo| format!("https://github.com/{nwo}/commit/{hash}"))
 }
 
+/// What the last change check saw: the ETag GitHub gave for "the most
+/// recently updated issue or PR" and that item's `updated_at`.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ListWatermark {
+    pub etag: Option<String>,
+    pub updated_at: Option<String>,
+}
+
+/// Outcome of a change check.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ListCheck {
+    /// `304 Not Modified`: nothing changed — and the request was free.
+    NotModified,
+    /// `200`: the current watermark (which may still equal the previous one).
+    Fresh(ListWatermark),
+}
+
+/// The free change check behind the issue / PR list auto-refresh: one
+/// conditional REST request for the single most recently updated issue or
+/// PR (`/issues` covers both). With `prev.etag` sent as `If-None-Match`,
+/// an unchanged repository answers `304` at no cost against the quota.
+pub fn check_lists(prev: &ListWatermark) -> Result<ListCheck, String> {
+    // A replayed recording holds one unconditional answer; the header
+    // would name a fixture that was never written.
+    let etag = prev
+        .etag
+        .as_deref()
+        .filter(|_| !crate::core::gh_fixture::active());
+    let args = check_lists_args(etag);
+    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
+    let out = run_gh(&refs, "gh api (change check) failed")?;
+    parse_list_check(&String::from_utf8_lossy(&out))
+}
+
+/// The `gh` arguments of the change check, conditional on `etag` when given
+/// (also names its fixture for the recorder).
+pub fn check_lists_args(etag: Option<&str>) -> Vec<String> {
+    let mut args: Vec<String> = vec!["api".into(), "-i".into()];
+    if let Some(etag) = etag {
+        args.push("-H".into());
+        args.push(format!("If-None-Match: {etag}"));
+    }
+    args.push(
+        "repos/{owner}/{repo}/issues?state=all&sort=updated&direction=desc&per_page=1".into(),
+    );
+    args
+}
+
+/// Parse a `gh api -i` response: the status line, the headers up to the
+/// blank line, then the JSON body.
+pub fn parse_list_check(raw: &str) -> Result<ListCheck, String> {
+    let mut lines = raw.lines();
+    let status = lines.next().unwrap_or("");
+    let code = status
+        .starts_with("HTTP/")
+        .then(|| status.split_whitespace().nth(1))
+        .flatten();
+    match code {
+        Some("304") => return Ok(ListCheck::NotModified),
+        Some("200") => {}
+        _ => return Err(format!("change check: unexpected response {status:?}")),
+    }
+    let mut etag = None;
+    let mut body = String::new();
+    let mut in_body = false;
+    for line in lines {
+        if in_body {
+            body.push_str(line);
+        } else if line.trim().is_empty() {
+            in_body = true;
+        } else if let Some((name, value)) = line.split_once(':') {
+            if name.eq_ignore_ascii_case("etag") {
+                etag = Some(value.trim().to_string());
+            }
+        }
+    }
+    let updated_at = serde_json::from_str::<serde_json::Value>(&body)
+        .ok()
+        .and_then(|v| v.get(0)?.get("updated_at")?.as_str().map(str::to_string));
+    Ok(ListCheck::Fresh(ListWatermark { etag, updated_at }))
+}
+
 pub fn check_gh_available() -> Result<(), String> {
     run_gh(&["auth", "status"], "gh not found").map(|_| ())
 }
@@ -300,6 +382,34 @@ pub fn repo_nwo() -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn change_check_parses_304_and_200() {
+        assert_eq!(
+            parse_list_check("HTTP/2.0 304 Not Modified\r\nEtag: \"abc\"\r\n\r\n").unwrap(),
+            ListCheck::NotModified
+        );
+        let raw = "HTTP/2.0 200 OK\r\nContent-Type: application/json\r\nETag: W/\"deadbeef\"\r\n\r\n[{\"number\":7,\"updated_at\":\"2026-09-09T01:02:03Z\"}]\n";
+        assert_eq!(
+            parse_list_check(raw).unwrap(),
+            ListCheck::Fresh(ListWatermark {
+                etag: Some("W/\"deadbeef\"".into()),
+                updated_at: Some("2026-09-09T01:02:03Z".into()),
+            })
+        );
+        // An empty repository: 200 with no items.
+        assert_eq!(
+            parse_list_check("HTTP/2.0 200 OK\r\nETag: \"e\"\r\n\r\n[]").unwrap(),
+            ListCheck::Fresh(ListWatermark {
+                etag: Some("\"e\"".into()),
+                updated_at: None,
+            })
+        );
+        assert!(parse_list_check("garbage").is_err());
+        // Any other status is an error, not a watermark.
+        assert!(parse_list_check("HTTP/2.0 500 Internal Server Error\r\n\r\n{}").is_err());
+        assert!(parse_list_check("HTTP/2.0 404 Not Found\r\nETag: \"x\"\r\n\r\n[]").is_err());
+    }
 
     #[test]
     fn recognises_rate_limit_messages() {

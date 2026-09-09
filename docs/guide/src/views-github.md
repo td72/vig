@@ -24,6 +24,15 @@ browser. In an issue or PR detail, `w` toggles **watch mode**: vig re-fetches
 the open item about every 10 seconds so a conversation or CI status you are
 waiting on stays current.
 
+The issue and PR lists also keep themselves current without spending API
+points: every `github-poll-interval` vig sends one *conditional* request
+for the repository's most recently updated issue or PR (a `304 Not
+Modified` answer is free), and only when that answer changes does it
+re-fetch both lists and the open detail. The status bar shows the lists'
+age (`lists 12s ago`) and a brief `↻ updated` after such a refresh. The
+check follows `github-auto-refresh`, the idle slow-down and the low-quota
+throttle like every other poll.
+
 ## Workflow Runs
 
 The third column lists the latest 50 workflow runs (`gh run list`) with their
