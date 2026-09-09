@@ -426,7 +426,7 @@ press `r`. Nothing in this view adds, moves, edits or deletes anything.
 | `t` (board) | Toggle table mode |
 | `s` (board, table mode) | Cycle the sort column |
 | `Enter` / `i` (board) | Focus the detail |
-| `v` / `V` | Next / previous saved view of the project |
+| `v` / `V` | Next / previous view of the project (saved on GitHub, or a local `projects-view` from the config) |
 | `Space` | Collapse / expand the selected swimlane (grouped board views) |
 | `+` / `-` | Zoom the roadmap time scale in / out |
 | `o` | Open the project / item in the browser |

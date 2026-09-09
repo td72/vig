@@ -496,9 +496,15 @@ pub struct ProjectView {
     /// Visible fields in the view's column order.
     #[serde(default)]
     pub visible_fields: Vec<String>,
+    /// Defined in the config (`projects-view`), not saved on GitHub.
+    #[serde(default)]
+    pub local: bool,
+    /// `projects-view … default=#true`: the view a board opens on.
+    #[serde(default)]
+    pub initial: bool,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct ViewSort {
     pub field: String,
     /// `true` for descending (`DESC`).
@@ -820,6 +826,8 @@ pub(crate) mod tests {
                 desc: true,
             }],
             visible_fields: vec!["Title".into(), "Status".into()],
+            local: false,
+            initial: false,
         });
         let json = serde_json::to_string(&b).unwrap();
         let back: Board = serde_json::from_str(&json).unwrap();
@@ -848,6 +856,8 @@ pub(crate) mod tests {
                 "Estimate".into(),
                 "Assignees".into(),
             ],
+            local: false,
+            initial: false,
         };
         let cols = view_table_columns(&v, &b.fields);
         let headers: Vec<&str> = cols.iter().map(TableColumn::header).collect();

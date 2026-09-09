@@ -10,7 +10,7 @@
 //! the list's selection drives the board.
 
 use crate::core::app::{AppContext, PageState};
-use crate::core::config::{Config, LoadedPageConfig, ProjectsBoard};
+use crate::core::config::{Config, LoadedPageConfig, ProjectsBoard, ProjectsView};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::PageAction;
@@ -138,6 +138,9 @@ pub struct ProjectsState {
     /// The `projects-board` config pin: only the matching project is shown
     /// and `p` / `P` do not cycle.
     pinned: Option<ProjectsBoard>,
+    /// `projects-view` nodes: appended to every board's saved views (or to
+    /// the one board they name) when the board is shown.
+    local_views: Vec<ProjectsView>,
     bg_rx: Option<mpsc::Receiver<ProjectsBgMessage>>,
     bg_tx: Option<mpsc::Sender<ProjectsBgMessage>>,
     initialized: bool,
@@ -162,6 +165,10 @@ pub struct ProjectsState {
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
 }
+
+/// View numbers given to local views (`projects-view`), above anything
+/// GitHub hands out, so the pane tells them apart from saved views.
+const LOCAL_VIEW_BASE: u64 = 1 << 40;
 
 /// First probe pause after a rate-limited answer.
 const PROBE_BASE_BACKOFF: Duration = Duration::from_secs(30);
@@ -194,6 +201,7 @@ impl ProjectsState {
         let ids = ProjectsPaneIds::from_config(&page_cfg);
         let list_placed = page_cfg.is_placed("projects");
         let pinned = cfg.projects_board()?;
+        let local_views = cfg.projects_views()?;
         let poll_interval = cfg.projects_poll_interval()?;
         // Validates the bind declarations (projects → board while the list
         // is placed, board → detail).
@@ -232,6 +240,7 @@ impl ProjectsState {
             list_placed,
             links_known: false,
             pinned,
+            local_views,
             bg_rx: None,
             bg_tx: None,
             initialized: false,
@@ -396,6 +405,31 @@ impl ProjectsState {
             .map(|_| "↻ updated")
     }
 
+    /// Show `board` in the pane with the config's local views appended to
+    /// its saved ones (the cached / on-disk board stays as fetched).
+    fn show_board(&mut self, mut board: Board) {
+        let title = self
+            .panes
+            .projects
+            .items
+            .iter()
+            .find(|p| p.number == board.number)
+            .map(|p| p.title.as_str())
+            .unwrap_or_default();
+        let local = self
+            .local_views
+            .iter()
+            .enumerate()
+            .filter(|(_, v)| {
+                v.board
+                    .as_ref()
+                    .is_none_or(|b| b.matches(board.number, title))
+            })
+            .map(|(i, v)| v.to_view(LOCAL_VIEW_BASE + i as u64));
+        board.views.extend(local);
+        self.panes.board.set_board(board);
+    }
+
     /// The cached board for `number` is missing or older than [`STALE_AFTER`].
     fn board_stale(&self, number: u64) -> bool {
         self.board_stale_for(number, STALE_AFTER)
@@ -441,7 +475,7 @@ impl ProjectsState {
             },
         );
         if current {
-            self.panes.board.set_board(board);
+            self.show_board(board);
             self.sync_detail();
         }
         true
@@ -544,7 +578,7 @@ impl ProjectsState {
         let shown = self.panes.board.board.as_ref().map(|b| b.number);
         if shown != Some(number) {
             match self.board_cache.get(&number) {
-                Some(c) => self.panes.board.set_board(c.board.clone()),
+                Some(c) => self.show_board(c.board.clone()),
                 None => self.panes.board.clear(),
             }
         }
@@ -678,7 +712,7 @@ impl ProjectsState {
                                 },
                             );
                             if current {
-                                self.panes.board.set_board(board);
+                                self.show_board(board);
                                 self.sync_detail();
                             }
                         }
@@ -1578,6 +1612,73 @@ mod tests {
         let mut c = ctx();
         st.on_activate(&mut c);
         assert!(st.board_inflight.contains(&2), "the board is retried");
+    }
+
+    /// `projects-view` nodes follow the saved views of every board they
+    /// apply to, a `default` one opens first, and the cached board stays
+    /// as fetched.
+    #[test]
+    fn local_views_join_the_saved_ones_and_a_default_one_opens_first() {
+        let doc: kdl::KdlDocument = r#"
+            projects-view "Mine" default=#true {
+                filter "-status:Done"
+                group-by "Status"
+            }
+            projects-view "Elsewhere" {
+                board 99
+            }
+            projects-view "Here" {
+                layout "table"
+                board 2
+            }
+        "#
+        .parse()
+        .unwrap();
+        let cfg = Config::with_user(&doc, std::path::PathBuf::from("/u/config.kdl")).unwrap();
+        let mut st = state_with(&cfg);
+        let tx = st.bg_tx.clone().unwrap();
+        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
+        let mut fetched = board();
+        let mut saved = cfg.projects_views().unwrap()[0].to_view(1);
+        saved.name = "All".into();
+        saved.local = false;
+        saved.initial = false;
+        fetched.views = vec![saved];
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(fetched),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+
+        let names: Vec<String> = st
+            .panes
+            .board
+            .board
+            .as_ref()
+            .unwrap()
+            .views
+            .iter()
+            .map(|v| v.name.clone())
+            .collect();
+        assert_eq!(names, vec!["All", "Mine", "Here"], "scoped to board 2");
+        assert_eq!(st.panes.board.view_label().map(|l| l.0), Some("Mine"));
+        assert!(st.panes.board.current_view_is_local());
+        assert_eq!(
+            st.board_cache.get(&2).unwrap().board.views.len(),
+            1,
+            "the cache holds the board as fetched"
+        );
+        let rows = render_rows(&mut st);
+        assert!(rows.iter().any(|r| r.contains("Mine (local)")), "{rows:?}");
+        // A refresh keeps the shown local view.
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(board()),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert_eq!(st.panes.board.view_label().map(|l| l.0), Some("Mine"));
     }
 
     #[test]

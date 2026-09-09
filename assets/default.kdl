@@ -39,6 +39,14 @@ github-poll-interval "5s"
 // "30s", "5s", ...; at least 5s. Probing pauses on the other pages.
 projects-poll-interval "30s"
 
+// Local views of the Projects page: a filter / grouping / sort / layout
+// defined here instead of saved on GitHub. They follow the project's saved
+// views in the `v` / `V` cycle. See the Config Reference for every child.
+// projects-view "Mine" default=#true {
+//     filter "assignee:@me -status:Done"
+//     group-by "Status"
+// }
+
 // Pages in tab order: the position here is the slot shown in the header
 // (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
 // wholesale; pages left out are disabled. `app` bindings address pages by name.

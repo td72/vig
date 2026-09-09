@@ -35,6 +35,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
 | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
+| [`projects-view`](#projects-view) | なし | 同名は置換、他は追加 |
 | [`pages`](#pages) | 全 7 ページ | 丸ごと置換 |
 | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
 | [`app`](#app) | `Ctrl+c` 終了、`1`…`7` ページ切替 | キー単位マージ |
@@ -67,8 +68,8 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `projects-poll-interval`, `projects-board`, `pages`, `repo-config`,
-//   `app`, or `page`)
+//   `projects-poll-interval`, `projects-board`, `projects-view`, `pages`,
+//   `repo-config`, `app`, or `page`)
 ```
 
 ## トップレベルノード
@@ -294,6 +295,58 @@ projects-board "Roadmap" 2
 // → bad projects-board (one argument required); expected exactly one
 //   argument, a board title (`projects-board "Roadmap"`) or a project
 //   number (`projects-board 2`)
+```
+
+### `projects-view`
+
+GitHub に保存するのではなく、ここで定義する Projects ボードのビュー:
+フィルタ・グループ化・ソート・レイアウトを手元だけで持てます（プロジェクト
+への書き込み権限は不要）。ローカルビューはプロジェクトの保存済みビューの
+後ろに並んで `v` / `V` で巡回でき、ヘッダに `(local)` と出ます。
+
+- **書式** — `projects-view "<name>" { … }`。ビューごとに 1 つ、複数
+  書けます。プロパティ `default=#true` を付けるとボードはそのビューで
+  開きます（1 つまで）。子ノードはすべて省略可:
+  - `layout "board" | "table" | "roadmap"` — 既定 `"board"`
+  - `filter "<式>"` — 保存済みビューのフィルタ構文
+    （[Projects ビュー](views-projects.md#保存済みビュー)参照）を手元で評価
+  - `columns "<field>"` — ボードの列にする単一選択フィールド（既定 `Status`）
+  - `group-by "<field>"` — ボードではスイムレーン、テーブルではグループ行
+  - `sort "<field>" "asc" | "desc"` — 複数可。先頭がボードのカード順と
+    テーブルの初期ソート
+  - `fields "<field>" …` — テーブルの列（この順）
+  - `board "<title>"` または `board <number>` — そのリンク済みプロジェクト
+    にだけ適用（省略で全ボード）
+- **デフォルト** — なし
+- **マージ** — 同名のビューは置換、それ以外は追加。
+
+フィールド名は GitHub で表示されるプロジェクトのフィールド名（`Status`、
+`Priority`、`Target date`、…）です。ボードに無い名前はエラーにならず、
+ステータスバーに `⚠ view "Mine": no field "…"` と出てその設定だけ無視
+されます。
+
+```kdl
+projects-view "Mine" default=#true {
+    filter "assignee:@me -status:Done"
+    group-by "Status"
+    sort "Target date" "asc"
+}
+
+projects-view "Backlog" {
+    layout "table"
+    filter "status:Todo is:issue"
+    fields "Title" "Priority" "Assignees"
+    sort "Priority" "desc"
+    board "Roadmap"
+}
+```
+
+```kdl,ignore
+projects-view "Mine" {
+    layout "kanban"
+}
+// → bad projects-view "Mine" (layout: unknown layout "kanban"; expected
+//   "board", "table" or "roadmap")
 ```
 
 ### `pages`

@@ -30,6 +30,25 @@ Sleep 500ms
 Type@1ms "git remote add origin https://github.com/td72/vig.git"
 Enter
 Sleep 300ms
+# A local view for the page: defined in the config rather than on GitHub
+# (`projects-view`), passed with --config below.
+Type@1ms "cat > vig.kdl <<'K'"
+Enter
+Type@1ms 'projects-view "Open work" {'
+Enter
+Type@1ms '  layout "table"'
+Enter
+Type@1ms '  filter "-status:Done"'
+Enter
+Type@1ms '  fields "Title" "Status" "Target date"'
+Enter
+Type@1ms '  sort "Target date" "asc"'
+Enter
+Type@1ms "}"
+Enter
+Type@1ms "K"
+Enter
+Sleep 300ms
 Type@1ms "clear"
 Enter
 Sleep 300ms
@@ -38,7 +57,7 @@ Show
 
 # --- Demo: Projects View ---
 
-Type "vig"
+Type "vig --config vig.kdl"
 Enter
 Sleep 2s
 
@@ -108,6 +127,12 @@ Sleep 1.5s
 # Back to the board
 Escape
 Sleep 1.5s
+
+# `v` once more: a view defined in the config (`projects-view`), not on
+# GitHub — a table of the open items sorted by target date, `(local)` in
+# the header
+Type "v"
+Sleep 3.5s
 
 # Quit
 Type "q"

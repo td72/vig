@@ -74,6 +74,25 @@ wildcards and `is:open|closed` cannot be evaluated: the status bar says
 `⚠ filter: unsupported "…"` and those tokens are ignored. The status bar also
 counts what the filter hid (`(3 filtered out)`).
 
+## Local views
+
+Views need not come from GitHub: a top-level
+[`projects-view`](config-reference.md#projects-view) node in the config
+defines one locally — its filter, grouping, sort, table columns and layout —
+with no write access to the project. Local views follow the saved ones in
+the `v` / `V` cycle, the header marks them `(local)`, and one can be the
+view a board opens on (`default=#true`). A view can be limited to one
+linked project (`board "<title>"` / `board <number>`); a field name the
+board does not have is reported in the status bar and ignored rather than
+being an error.
+
+```kdl
+projects-view "Mine" default=#true {
+    filter "assignee:@me -status:Done"
+    group-by "Status"
+}
+```
+
 ## Key bindings
 
 | Key | Action |

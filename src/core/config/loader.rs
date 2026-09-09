@@ -73,6 +73,93 @@ impl ProjectsBoard {
     }
 }
 
+/// A `projects-view` node: a view of a Projects board defined in the
+/// config rather than saved on GitHub. Field references are names,
+/// resolved against the board when it is shown.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProjectsView {
+    pub name: String,
+    pub layout: crate::projects::domain::types::ViewLayout,
+    /// `filter "<expression>"` — the saved-view syntax, evaluated locally.
+    pub filter: Option<String>,
+    /// `columns "<field>"` — the single-select field behind the board columns.
+    pub columns: Option<String>,
+    /// `group-by "<field>"` — swimlanes (board) / group rows (table).
+    pub group_by: Option<String>,
+    /// `sort "<field>" "asc"|"desc"` lines, in order.
+    pub sort: Vec<crate::projects::domain::types::ViewSort>,
+    /// `fields "…" "…"` — the table columns.
+    pub fields: Vec<String>,
+    /// `board "<title>"` / `board <number>`: only that linked project gets
+    /// the view (`None`: every board).
+    pub board: Option<ProjectsBoard>,
+    /// `default=#true`: the view a board opens on.
+    pub initial: bool,
+}
+
+impl ProjectsView {
+    /// The view as the board pane consumes it, tagged local; `number` must
+    /// not collide with GitHub's view numbers.
+    pub fn to_view(&self, number: u64) -> crate::projects::domain::types::ProjectView {
+        crate::projects::domain::types::ProjectView {
+            number,
+            name: self.name.clone(),
+            layout: self.layout,
+            filter: self.filter.clone(),
+            group_by: self.group_by.iter().cloned().collect(),
+            vertical_group_by: self.columns.iter().cloned().collect(),
+            sort_by: self.sort.clone(),
+            visible_fields: self.fields.clone(),
+            local: true,
+            initial: self.initial,
+        }
+    }
+}
+
+/// A `board` reference as `projects-board` and `projects-view { board }`
+/// take it: a title string or a positive project number. `Err` names
+/// what is wrong with the arguments.
+fn board_ref(node: &KdlNode) -> std::result::Result<ProjectsBoard, &'static str> {
+    let [entry] = node.entries() else {
+        return Err("one argument required");
+    };
+    if entry.name().is_some() {
+        return Err("a property is not an argument");
+    }
+    if let Some(title) = entry.value().as_string() {
+        if title.trim().is_empty() {
+            return Err("empty title");
+        }
+        return Ok(ProjectsBoard::ByTitle(title.to_string()));
+    }
+    if let Some(n) = entry.value().as_integer() {
+        return match u64::try_from(n) {
+            Ok(n) if n > 0 => Ok(ProjectsBoard::ByNumber(n)),
+            _ => Err("a project number is positive"),
+        };
+    }
+    Err("not a string or integer")
+}
+
+/// The string arguments of `node` (`fields "A" "B"`), or what is wrong.
+fn string_args(node: &KdlNode) -> std::result::Result<Vec<String>, &'static str> {
+    let mut out = Vec::new();
+    for entry in node.entries() {
+        if entry.name().is_some() {
+            return Err("a property is not an argument");
+        }
+        match entry.value().as_string() {
+            Some(s) if !s.trim().is_empty() => out.push(s.to_string()),
+            Some(_) => return Err("empty string"),
+            None => return Err("not a string"),
+        }
+    }
+    if out.is_empty() {
+        return Err("one argument required");
+    }
+    Ok(out)
+}
+
 /// The pin as written in the config — `"Roadmap"` or `2` — for messages
 /// naming it.
 impl std::fmt::Display for ProjectsBoard {
@@ -315,6 +402,7 @@ impl Config {
         self.github_auto_refresh()?;
         self.projects_poll_interval()?;
         self.projects_board()?;
+        self.projects_views()?;
         self.repo_config()?;
         Ok(())
     }
@@ -606,33 +694,155 @@ impl Config {
         else {
             return Ok(None);
         };
-        let invalid = |what: &str| {
+        board_ref(node).map(Some).map_err(|what| {
             anyhow!(
                 "invalid {}: bad projects-board ({what}); expected exactly one argument, \
                  a board title (`projects-board \"Roadmap\"`) or a project number \
                  (`projects-board 2`)",
                 self.describe()
             )
-        };
-        let [entry] = node.entries() else {
-            return Err(invalid("one argument required"));
-        };
-        if entry.name().is_some() {
-            return Err(invalid("a property is not an argument"));
-        }
-        if let Some(title) = entry.value().as_string() {
-            if title.trim().is_empty() {
-                return Err(invalid("empty title"));
-            }
-            return Ok(Some(ProjectsBoard::ByTitle(title.to_string())));
-        }
-        if let Some(n) = entry.value().as_integer() {
-            return match u64::try_from(n) {
-                Ok(n) if n > 0 => Ok(Some(ProjectsBoard::ByNumber(n))),
-                _ => Err(invalid("a project number is positive")),
+        })
+    }
+
+    /// The local views of the Projects page (`projects-view "<name>" { … }`
+    /// nodes), in config order. Names are unique; at most one is `default`.
+    pub fn projects_views(&self) -> Result<Vec<ProjectsView>> {
+        use crate::projects::domain::types::{ViewLayout, ViewSort};
+        let mut views: Vec<ProjectsView> = Vec::new();
+        for node in self
+            .doc
+            .nodes()
+            .iter()
+            .filter(|n| n.name().value() == "projects-view")
+        {
+            let name = node
+                .get(0usize)
+                .and_then(|v| v.as_string())
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .ok_or_else(|| {
+                    anyhow!(
+                        "invalid {}: bad projects-view (a name is required): \
+                         `projects-view \"Mine\" {{ … }}`",
+                        self.describe()
+                    )
+                })?
+                .to_string();
+            let invalid = |what: String| {
+                anyhow!(
+                    "invalid {}: bad projects-view {name:?} ({what})",
+                    self.describe()
+                )
             };
+            if views.iter().any(|v| v.name == name) {
+                return Err(invalid("defined twice".into()));
+            }
+            let mut initial = false;
+            for entry in node.entries() {
+                match entry.name().map(|n| n.value()) {
+                    None => {}
+                    Some("default") => {
+                        initial = entry
+                            .value()
+                            .as_bool()
+                            .ok_or_else(|| invalid("default expects #true or #false".into()))?;
+                    }
+                    Some(other) => {
+                        return Err(invalid(format!(
+                            "unknown property {other:?}; only default=#true is accepted"
+                        )))
+                    }
+                }
+            }
+            if initial && views.iter().any(|v| v.initial) {
+                return Err(invalid("only one projects-view can be the default".into()));
+            }
+            let mut view = ProjectsView {
+                name: name.clone(),
+                layout: ViewLayout::Board,
+                filter: None,
+                columns: None,
+                group_by: None,
+                sort: Vec::new(),
+                fields: Vec::new(),
+                board: None,
+                initial,
+            };
+            let children = node.children().map(|c| c.nodes()).unwrap_or(&[]);
+            for child in children {
+                let key = child.name().value();
+                let bad = |what: &str| invalid(format!("{key}: {what}"));
+                match key {
+                    "layout" => {
+                        let args = string_args(child).map_err(bad)?;
+                        let [layout] = args.as_slice() else {
+                            return Err(bad("one argument required"));
+                        };
+                        view.layout = match layout.as_str() {
+                            "board" => ViewLayout::Board,
+                            "table" => ViewLayout::Table,
+                            "roadmap" => ViewLayout::Roadmap,
+                            other => {
+                                return Err(bad(&format!(
+                                    "unknown layout {other:?}; expected \"board\", \"table\" or \"roadmap\""
+                                )))
+                            }
+                        };
+                    }
+                    "filter" | "columns" | "group-by" => {
+                        let args = string_args(child).map_err(bad)?;
+                        let [value] = args.as_slice() else {
+                            return Err(bad("one argument required"));
+                        };
+                        let slot = match key {
+                            "filter" => &mut view.filter,
+                            "columns" => &mut view.columns,
+                            _ => &mut view.group_by,
+                        };
+                        if slot.is_some() {
+                            return Err(bad("given twice"));
+                        }
+                        *slot = Some(value.clone());
+                    }
+                    "sort" => {
+                        let args = string_args(child).map_err(bad)?;
+                        let (field, desc) = match args.as_slice() {
+                            [field] => (field.clone(), false),
+                            [field, dir] => match dir.as_str() {
+                                "asc" => (field.clone(), false),
+                                "desc" => (field.clone(), true),
+                                other => {
+                                    return Err(bad(&format!(
+                                        "unknown direction {other:?}; expected \"asc\" or \"desc\""
+                                    )))
+                                }
+                            },
+                            _ => {
+                                return Err(bad(
+                                    "expected a field name and optionally \"asc\" / \"desc\"",
+                                ))
+                            }
+                        };
+                        view.sort.push(ViewSort { field, desc });
+                    }
+                    "fields" => view.fields.extend(string_args(child).map_err(bad)?),
+                    "board" => {
+                        if view.board.is_some() {
+                            return Err(bad("given twice"));
+                        }
+                        view.board = Some(board_ref(child).map_err(bad)?);
+                    }
+                    other => {
+                        return Err(invalid(format!(
+                            "unknown node {other:?}; expected layout, filter, columns, \
+                             group-by, sort, fields or board"
+                        )))
+                    }
+                }
+            }
+            views.push(view);
         }
-        Err(invalid("not a string or integer"))
+        Ok(views)
     }
 
     /// How the Files view previews images (`image-preview "auto"` / `"halfblocks"` / `"none"`).
@@ -2354,6 +2564,88 @@ mod tests {
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown icons mode \"emoji\""), "{msg}");
         assert!(msg.contains("nerd, none"), "{msg}");
+    }
+
+    #[test]
+    fn projects_views_parse_and_validate() {
+        use crate::projects::domain::types::ViewLayout;
+        assert!(Config::builtin().projects_views().unwrap().is_empty());
+        let cfg = user(
+            r#"
+            projects-view "Mine" default=#true {
+                layout "board"
+                filter "assignee:@me -status:Done"
+                columns "Status"
+                group-by "Priority"
+                sort "Target date" "asc"
+                sort "Title" "desc"
+                fields "Title" "Status"
+                fields "Target date"
+                board "Roadmap"
+            }
+            projects-view "All" {
+                layout "table"
+                board 2
+            }
+            "#,
+        )
+        .unwrap();
+        let views = cfg.projects_views().unwrap();
+        assert_eq!(views.len(), 2);
+        let mine = &views[0];
+        assert_eq!(mine.name, "Mine");
+        assert!(mine.initial);
+        assert_eq!(mine.layout, ViewLayout::Board);
+        assert_eq!(mine.filter.as_deref(), Some("assignee:@me -status:Done"));
+        assert_eq!(mine.columns.as_deref(), Some("Status"));
+        assert_eq!(mine.group_by.as_deref(), Some("Priority"));
+        assert_eq!(mine.sort.len(), 2);
+        assert_eq!(mine.sort[0].field, "Target date");
+        assert!(!mine.sort[0].desc);
+        assert!(mine.sort[1].desc);
+        assert_eq!(mine.fields, vec!["Title", "Status", "Target date"]);
+        assert_eq!(mine.board, Some(ProjectsBoard::ByTitle("Roadmap".into())));
+        let all = &views[1];
+        assert!(!all.initial);
+        assert_eq!(all.layout, ViewLayout::Table);
+        assert_eq!(all.board, Some(ProjectsBoard::ByNumber(2)));
+        assert!(all.filter.is_none() && all.fields.is_empty());
+        // The board pane's shape: local, columns → vertical group, sort kept.
+        let v = mine.to_view(7);
+        assert!(v.local && v.initial);
+        assert_eq!(v.vertical_group_by, vec!["Status"]);
+        assert_eq!(v.group_by, vec!["Priority"]);
+        assert_eq!(v.sort_by.len(), 2);
+
+        for (bad, what) in [
+            (r#"projects-view { layout "board" }"#, "a name is required"),
+            (r#"projects-view "" { }"#, "a name is required"),
+            (
+                r#"projects-view "A" default=#true { }; projects-view "B" default=#true { }"#,
+                "only one",
+            ),
+            (r#"projects-view "A" default="yes" { }"#, "default expects"),
+            (r#"projects-view "A" pinned=#true { }"#, "unknown property"),
+            (r#"projects-view "A" { layout "kanban" }"#, "unknown layout"),
+            (
+                r#"projects-view "A" { filter "a"; filter "b" }"#,
+                "given twice",
+            ),
+            (
+                r#"projects-view "A" { sort "Title" "up" }"#,
+                "unknown direction",
+            ),
+            (r#"projects-view "A" { sort }"#, "one argument required"),
+            (r#"projects-view "A" { fields 3 }"#, "not a string"),
+            (r#"projects-view "A" { board 0 }"#, "positive"),
+            (r#"projects-view "A" { swimlane "Status" }"#, "unknown node"),
+        ] {
+            let msg = user(bad).expect_err("expected an error").to_string();
+            assert!(
+                msg.contains("projects-view") && msg.contains(what),
+                "{bad}: {msg}"
+            );
+        }
     }
 
     #[test]

@@ -8,7 +8,7 @@ pub mod repo;
 pub mod source;
 pub mod trust;
 
-pub use loader::{Config, LoadedPageConfig, ProjectsBoard};
+pub use loader::{Config, LoadedPageConfig, ProjectsBoard, ProjectsView};
 
 #[cfg(test)]
 pub use keymap_builder::build_keymap;

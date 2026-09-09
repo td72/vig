@@ -76,6 +76,25 @@ API 呼び出しなし）。どのレイアウトでもグループ化・ソー�
 ステータスバーに `⚠ filter: unsupported "…"` と出して無視します。フィルタ
 で隠れた件数もステータスバーに `(3 filtered out)` と表示されます。
 
+## ローカルビュー
+
+ビューは GitHub 由来でなくても構いません。設定のトップレベルに
+[`projects-view`](config-reference.md#projects-view) ノードを書くと、
+フィルタ・グループ化・ソート・テーブルの列・レイアウトを手元だけで
+定義できます（プロジェクトへの書き込み権限は不要）。ローカルビューは
+保存済みビューの後ろに並んで `v` / `V` で巡回でき、ヘッダに `(local)` と
+出ます。`default=#true` を付けたものはボードを開いたときのビューになり
+ます。`board "<title>"` / `board <number>` で特定のリンク済みプロジェクト
+に限定でき、ボードに無いフィールド名はエラーではなくステータスバーで
+知らせたうえで無視されます。
+
+```kdl
+projects-view "Mine" default=#true {
+    filter "assignee:@me -status:Done"
+    group-by "Status"
+}
+```
+
 ## キーバインド
 
 | キー | 操作 |

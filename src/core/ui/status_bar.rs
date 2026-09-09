@@ -381,6 +381,12 @@ pub fn render_projects_header(f: &mut Frame, ctx: &AppContext, pj: &ProjectsStat
                 view.to_string(),
                 Style::default().fg(Color::White),
             ));
+            if pj.panes.board.current_view_is_local() {
+                spans.push(Span::styled(
+                    " (local)",
+                    Style::default().fg(Color::DarkGray),
+                ));
+            }
             if let Some(v) = pj.panes.board.current_view() {
                 spans.push(Span::styled(
                     format!(" [{}]", v.layout.label()),
@@ -465,6 +471,10 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
                 ));
             }
             if let Some(notice) = pj.panes.board.filter_notice() {
+                spans.push(Span::raw("  "));
+                spans.push(Span::styled(notice, Style::default().fg(Color::Yellow)));
+            }
+            if let Some(notice) = pj.panes.board.view_notice() {
                 spans.push(Span::raw("  "));
                 spans.push(Span::styled(notice, Style::default().fg(Color::Yellow)));
             }

@@ -37,6 +37,7 @@ Conventions used below:
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
 | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
+| [`projects-view`](#projects-view) | none | replaced by name, else appended |
 | [`pages`](#pages) | all seven pages | replaced wholesale |
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
 | [`app`](#app) | `Ctrl+c` quit, `1`…`7` page switch | merged per key |
@@ -69,8 +70,8 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `projects-poll-interval`, `projects-board`, `pages`, `repo-config`,
-//   `app`, or `page`)
+//   `projects-poll-interval`, `projects-board`, `projects-view`, `pages`,
+//   `repo-config`, `app`, or `page`)
 ```
 
 ## Top-level nodes
@@ -300,6 +301,60 @@ projects-board "Roadmap" 2
 // → bad projects-board (one argument required); expected exactly one
 //   argument, a board title (`projects-board "Roadmap"`) or a project
 //   number (`projects-board 2`)
+```
+
+### `projects-view`
+
+A view of a Projects board defined here rather than saved on GitHub: a
+filter, grouping, sort and layout of your own, with no write access to the
+project needed. Local views follow the project's saved views in the `v` /
+`V` cycle and the header marks them `(local)`.
+
+- **Form** — `projects-view "<name>" { … }`, repeatable, one per view; an
+  optional `default=#true` property makes the board open on that view
+  (at most one). Children, all optional:
+  - `layout "board" | "table" | "roadmap"` — default `"board"`
+  - `filter "<expression>"` — the saved-view filter syntax (see the
+    [Projects view](views-projects.md#saved-views)), evaluated locally
+  - `columns "<field>"` — the single-select field whose options become the
+    board columns (default `Status`)
+  - `group-by "<field>"` — swimlanes on the board, group rows in the table
+  - `sort "<field>" "asc" | "desc"` — repeatable; the first is the board's
+    card order and the table's initial sort
+  - `fields "<field>" …` — the table columns, in order
+  - `board "<title>"` or `board <number>` — apply to that linked project
+    only (absent: every board)
+- **Default** — none
+- **Merge** — a view with the same name replaces it; other names are
+  appended.
+
+Field names are the project's field names as GitHub shows them (`Status`,
+`Priority`, `Target date`, …). A name the board does not have is not an
+error: the status bar says `⚠ view "Mine": no field "…"` and that setting
+is ignored for the board.
+
+```kdl
+projects-view "Mine" default=#true {
+    filter "assignee:@me -status:Done"
+    group-by "Status"
+    sort "Target date" "asc"
+}
+
+projects-view "Backlog" {
+    layout "table"
+    filter "status:Todo is:issue"
+    fields "Title" "Priority" "Assignees"
+    sort "Priority" "desc"
+    board "Roadmap"
+}
+```
+
+```kdl,ignore
+projects-view "Mine" {
+    layout "kanban"
+}
+// → bad projects-view "Mine" (layout: unknown layout "kanban"; expected
+//   "board", "table" or "roadmap")
 ```
 
 ### `pages`
