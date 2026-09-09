@@ -547,6 +547,9 @@ impl GitHubState {
                     );
                 }
                 GhBgMessage::PrList(result) => {
+                    if result.is_ok() {
+                        self.lists_refreshed_at = Some(Instant::now());
+                    }
                     apply_list_result(
                         &mut self.panes.pr_tab.list,
                         result,

@@ -159,11 +159,14 @@ pub fn check_lists_args(etag: Option<&str>) -> Vec<String> {
 pub fn parse_list_check(raw: &str) -> Result<ListCheck, String> {
     let mut lines = raw.lines();
     let status = lines.next().unwrap_or("");
-    if status.split_whitespace().nth(1) == Some("304") {
-        return Ok(ListCheck::NotModified);
-    }
-    if !status.starts_with("HTTP/") {
-        return Err(format!("change check: unexpected response {status:?}"));
+    let code = status
+        .starts_with("HTTP/")
+        .then(|| status.split_whitespace().nth(1))
+        .flatten();
+    match code {
+        Some("304") => return Ok(ListCheck::NotModified),
+        Some("200") => {}
+        _ => return Err(format!("change check: unexpected response {status:?}")),
     }
     let mut etag = None;
     let mut body = String::new();
@@ -403,6 +406,9 @@ mod tests {
             })
         );
         assert!(parse_list_check("garbage").is_err());
+        // Any other status is an error, not a watermark.
+        assert!(parse_list_check("HTTP/2.0 500 Internal Server Error\r\n\r\n{}").is_err());
+        assert!(parse_list_check("HTTP/2.0 404 Not Found\r\nETag: \"x\"\r\n\r\n[]").is_err());
     }
 
     #[test]
