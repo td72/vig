@@ -523,6 +523,11 @@ pub struct Board {
     /// failed or the project has none — the fixed Status kanban is shown).
     #[serde(default)]
     pub views: Vec<ProjectView>,
+    /// `ProjectV2.updatedAt` at fetch time (GraphQL path only): the change
+    /// probe compares against it. `None` on the CLI path and in disk
+    /// caches written before it existed — the first probe then re-fetches.
+    #[serde(default)]
+    pub updated_at: Option<String>,
 }
 
 impl Board {
@@ -899,6 +904,7 @@ pub(crate) mod tests {
             items: items.items,
             total_count: items.total_count,
             views: vec![],
+            updated_at: Some("2026-09-09T00:00:00Z".into()),
         }
     }
 

@@ -29,6 +29,10 @@ const MAX_PROCS_HISTORY: usize = 10_000;
 const DEFAULT_GITHUB_POLL_INTERVAL: &str = "5s";
 /// Polling GitHub faster than this would burn through the API quota.
 const MIN_GITHUB_POLL_MS: u64 = 2000;
+/// Used when the config has no `projects-poll-interval` node.
+const DEFAULT_PROJECTS_POLL_INTERVAL: &str = "30s";
+/// Each Projects probe costs a GraphQL point, hence the higher floor.
+const MIN_PROJECTS_POLL_MS: u64 = 5000;
 
 /// Parse `"2s"`, `"1.5s"` or `"500ms"` into a duration of at least
 /// [`MIN_PROCS_REFRESH_MS`]. `None` for anything else.
@@ -309,6 +313,7 @@ impl Config {
         self.procs_history()?;
         self.github_poll_interval()?;
         self.github_auto_refresh()?;
+        self.projects_poll_interval()?;
         self.projects_board()?;
         self.repo_config()?;
         Ok(())
@@ -553,6 +558,38 @@ impl Config {
                      \"5s\" or \"10s\" (at least {}ms)",
                     self.describe(),
                     MIN_GITHUB_POLL_MS
+                )
+            })
+    }
+
+    /// How often the Projects page asks whether the shown board changed
+    /// (`projects-poll-interval "30s"`; at least 5s — each probe costs a
+    /// GraphQL point).
+    pub fn projects_poll_interval(&self) -> Result<Duration> {
+        let raw = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "projects-poll-interval")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| {
+                        anyhow!("projects-poll-interval block missing interval argument")
+                    })
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| DEFAULT_PROJECTS_POLL_INTERVAL.to_string());
+        parse_interval(&raw)
+            .filter(|d| d.as_millis() >= u128::from(MIN_PROJECTS_POLL_MS))
+            .ok_or_else(|| {
+                anyhow!(
+                    "invalid {}: bad projects-poll-interval {raw:?}; expected a duration such as \
+                     \"30s\" or \"60s\" (at least {}ms)",
+                    self.describe(),
+                    MIN_PROJECTS_POLL_MS
                 )
             })
     }
@@ -2346,6 +2383,29 @@ mod tests {
             let msg = format!("{:#}", user(bad).expect_err("expected an error"));
             assert!(msg.contains("bad projects-board"), "{bad}: {msg}");
             assert!(msg.contains("config file /u/config.kdl"), "{bad}: {msg}");
+        }
+    }
+
+    #[test]
+    fn projects_poll_interval_default_override_and_validation() {
+        assert_eq!(
+            Config::builtin().projects_poll_interval().unwrap(),
+            Duration::from_secs(30)
+        );
+        assert_eq!(
+            user(r#"projects-poll-interval "5s""#)
+                .unwrap()
+                .projects_poll_interval()
+                .unwrap(),
+            Duration::from_secs(5)
+        );
+        for bad in [
+            r#"projects-poll-interval "slow""#,
+            r#"projects-poll-interval "4s""#,
+            r#"projects-poll-interval "30""#,
+        ] {
+            let msg = user(bad).expect_err("expected an error").to_string();
+            assert!(msg.contains("projects-poll-interval"), "{bad}: {msg}");
         }
     }
 

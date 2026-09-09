@@ -95,6 +95,8 @@ pub fn name_for(args: &[&str]) -> String {
 fn query_tag(query: &str) -> &'static str {
     if query.contains("pullRequests(states: OPEN") {
         "pr-stacks"
+    } else if query.contains("{ updatedAt } }") {
+        "project-probe"
     } else if query.contains("items { totalCount }") {
         "project-meta"
     } else if query.contains("items(first: $first") {

@@ -62,6 +62,7 @@ mod tests {
             items: items.items,
             total_count: 1,
             views: vec![],
+            updated_at: None,
         };
         let tmp = std::env::temp_dir().join("vig_test_projects_cache");
         let _ = std::fs::remove_dir_all(&tmp);

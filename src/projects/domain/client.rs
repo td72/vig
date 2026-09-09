@@ -114,7 +114,18 @@ pub fn fetch_board(owner: &str, owner_kind: &str, number: u64) -> Result<Board, 
         items: items.items,
         total_count: items.total_count,
         views,
+        updated_at: None,
     })
+}
+
+/// `ProjectV2.updatedAt` (1 point): the change probe behind the board's
+/// auto-refresh. GraphQL only — `gh project` has no equivalent.
+pub fn probe_updated_at(
+    owner: &str,
+    owner_kind: &str,
+    number: u64,
+) -> Result<Option<String>, String> {
+    crate::projects::domain::graphql::probe_updated_at(owner, owner_kind, number)
 }
 
 /// The project's saved views via GraphQL (`ProjectV2.views` — `gh project`

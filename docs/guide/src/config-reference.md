@@ -35,6 +35,7 @@ Conventions used below:
 | [`procs-history`](#procs-history) | `"120"` | replaced |
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | replaced |
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
+| [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
 | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
 | [`pages`](#pages) | all seven pages | replaced wholesale |
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
@@ -53,6 +54,7 @@ procs-refresh-interval "2s"
 procs-history "120"
 github-poll-interval "5s"
 github-auto-refresh "on"
+projects-poll-interval "30s"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 repo-config "on"
 app {
@@ -67,7 +69,8 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `projects-board`, `pages`, `repo-config`, `app`, or `page`)
+//   `projects-poll-interval`, `projects-board`, `pages`, `repo-config`,
+//   `app`, or `page`)
 ```
 
 ## Top-level nodes
@@ -218,11 +221,39 @@ for the full story.
 github-poll-interval "10s"
 ```
 
+### `projects-poll-interval`
+
+How often the Projects page asks GitHub whether the shown board changed
+while the page is displayed. Each probe reads only the project's
+`updatedAt` (one GraphQL point — item moves and field edits bump it) and
+the board is re-fetched only when it moved. Probing pauses while another
+page is shown.
+
+- **Form** — `projects-poll-interval "<duration>"` — a number with `s` or
+  `ms`, quoted; at least `"5s"`, since every probe costs a point
+- **Default** — `"30s"` (120 points an hour with the page open, 20 when
+  idle)
+- **Merge** — replaces the default.
+
+The probe follows [`github-auto-refresh`](#github-auto-refresh) and its
+idle / low-quota scaling; a rate-limited answer pauses it with the same
+backoff as the GitHub page.
+
+```kdl
+projects-poll-interval "60s"
+```
+
+```kdl,ignore
+projects-poll-interval "2s"
+// → bad projects-poll-interval "2s"; expected a duration such as "30s" or "60s" (at least 5000ms)
+```
+
 ### `github-auto-refresh`
 
 Whether vig refreshes GitHub data on its own: the GitHub page's polling
-(runs, watch mode, a running job's log) and the Projects page's stale
-re-fetch when the page is shown again.
+(runs, watch mode, a running job's log, the issue / PR list change check)
+and the Projects page's stale re-fetch when the page is shown again plus
+its board change probe.
 
 - **Form** — `github-auto-refresh "<mode>"` — `"on"` or `"off"`
 - **Default** — `"on"`

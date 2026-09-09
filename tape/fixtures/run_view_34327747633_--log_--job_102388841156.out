@@ -1,0 +1,1069 @@
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	﻿2026-09-09T08:11:21.9365519Z Current runner version: '2.337.0'
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9393130Z ##[group]Runner Image Provisioner
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9393997Z Hosted Compute Agent
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9394682Z Version: 20260828.587
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9395370Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9396164Z Build Date: 2026-08-28T16:44:25Z
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9396895Z Worker ID: {b2e34ba6-8b44-427c-90c5-28bf80411b74}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9397833Z Azure Region: westus3
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9398495Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9400150Z ##[group]Operating System
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9401220Z Ubuntu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9401880Z 24.04.4
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9402454Z LTS
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9403001Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9403610Z ##[group]Runner Image
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9404217Z Image: ubuntu-24.04
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9404856Z Version: 20260831.293.1
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9405925Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260831.293/images/ubuntu/Ubuntu2404-Readme.md
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9408075Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260831.293
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9409336Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9410712Z ##[group]GITHUB_TOKEN Permissions
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9412656Z Contents: read
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9413440Z Metadata: read
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9414049Z Packages: read
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9414650Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9416712Z Secret source: Actions
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9418195Z Prepare workflow directory
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9779083Z Prepare all required actions
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:21.9828367Z Getting action download info
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:22.3189022Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:22.4178135Z Download action repository 'actions-rust-lang/setup-rust-toolchain@v1' (SHA:166cdcfd11aee3cb47222f9ddb555ce30ddb9659)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:22.6745727Z Download action repository 'awalsh128/cache-apt-pkgs-action@v1' (SHA:553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:23.7795265Z Getting action download info
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:23.8968898Z Download action repository 'Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4' (SHA:c19371144df3bb44fab255c43d04cbc2ab54d1c4)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:24.8638483Z Getting action download info
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:24.9966756Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:25.1041206Z Download action repository 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f' (SHA:bbbca2ddaa5d8feaa63e36b76fdaad77386f024f)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-09-09T08:11:25.2454102Z Complete job name: test (x86_64-unknown-linux-gnu, ubuntu-latest)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	﻿2026-09-09T08:11:25.3237358Z ##[group]Run actions/checkout@v6
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3238253Z with:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3238478Z   repository: td72/vig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3240883Z   token: ***
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3241099Z   ssh-strict: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3241320Z   ssh-user: git
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3241555Z   persist-credentials: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3241800Z   clean: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3242018Z   sparse-checkout-cone-mode: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3242293Z   fetch-depth: 1
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3242505Z   fetch-tags: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3242711Z   show-progress: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3242922Z   lfs: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3243116Z   submodules: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3243331Z   set-safe-directory: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3243580Z   allow-unsafe-pr-checkout: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.3244033Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4275648Z Syncing repository: td72/vig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4278157Z ##[group]Getting Git version info
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4278775Z Working directory is '/home/runner/work/vig/vig'
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4279689Z [command]/usr/bin/git version
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4297472Z git version 2.55.0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4321721Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4336756Z Temporarily overriding HOME='/home/runner/work/_temp/59258755-8bbb-407d-a6f5-45f2c951702c' before making global git config changes
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4339068Z Adding repository directory to the temporary git global config as a safe directory
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4342257Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4397126Z Deleting the contents of '/home/runner/work/vig/vig'
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4403966Z ##[group]Determining repository object format
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4405550Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4406443Z ##[group]Initializing the repository
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4411313Z [command]/usr/bin/git init /home/runner/work/vig/vig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4516932Z hint: Using 'master' as the name for the initial branch. This default branch name
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4518656Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4520031Z hint: to use in all of your new repositories, which will suppress this warning,
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4520987Z hint: call:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4521834Z hint:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4522578Z hint: 	git config --global init.defaultBranch <name>
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4523348Z hint:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4524132Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4525389Z hint: 'development'. The just-created branch can be renamed via this command:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4526380Z hint:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4527015Z hint: 	git branch -m <name>
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4527802Z hint:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4528645Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4529844Z Initialized empty Git repository in /home/runner/work/vig/vig/.git/
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4532643Z [command]/usr/bin/git remote add origin https://github.com/td72/vig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4575570Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4576285Z ##[group]Disabling automatic garbage collection
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4581131Z [command]/usr/bin/git config --local gc.auto 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4613403Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4614092Z ##[group]Setting up auth
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4614773Z Removing SSH command configuration
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4621687Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.4654393Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5008332Z Removing HTTP extra header
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5018061Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5061199Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5293958Z Removing includeIf entries pointing to credentials config files
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5303079Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5341320Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5567315Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5609093Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5644015Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5681256Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5750799Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5781601Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5782210Z ##[group]Fetching the repository
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:25.5790734Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c2562a1eb56bd4aef0f6d8b30c9cecafb407f03f:refs/remotes/origin/main
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5024214Z From https://github.com/td72/vig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5025005Z  * [new ref]         c2562a1eb56bd4aef0f6d8b30c9cecafb407f03f -> origin/main
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5035869Z [command]/usr/bin/git branch --list --remote origin/main
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5064598Z   origin/main
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5075972Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5105111Z c2562a1eb56bd4aef0f6d8b30c9cecafb407f03f
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5118848Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5119580Z ##[group]Determining the checkout info
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5120389Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5122502Z [command]/usr/bin/git sparse-checkout disable
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5171078Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5203270Z ##[group]Checking out the ref
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:26.5206368Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:27.0013441Z Switched to a new branch 'main'
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:27.0017288Z branch 'main' set up to track 'origin/main'.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:27.0351698Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:27.0404076Z [command]/usr/bin/git log -1 --format=%H
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-09-09T08:11:27.0434991Z c2562a1eb56bd4aef0f6d8b30c9cecafb407f03f
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-09-09T08:11:27.0799765Z ##[group]Run actions-rust-lang/setup-rust-toolchain@v1
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0800158Z with:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0800380Z   target: x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0800639Z   cache: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0800846Z   cache-on-failure: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0801080Z   cache-bin: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0801310Z   cache-provider: github
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0801550Z   cache-all-crates: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0801792Z   cache-workspace-crates: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0802042Z   cache-save-if: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0802278Z   cache-targets: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0802484Z   matcher: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0802702Z   rustflags: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0802925Z   override: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0803133Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0861437Z ##[start-action display=Unbork mac;id=__actions-rust-lang_setup-rust-toolchain.__run]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0879424Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run;outcome=skipped;conclusion=skipped;duration_ms=0]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0918190Z ##[start-action display=Run : construct rustup command line;id=__actions-rust-lang_setup-rust-toolchain.flags]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0952653Z ##[group]Run : construct rustup command line
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0953059Z ^[[36;1m: construct rustup command line^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0953596Z ^[[36;1mecho "targets=$(for t in ${_srt_targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0954288Z ^[[36;1mecho "components=$(for c in ${_srt_components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0954806Z ^[[36;1mecho "downgrade=" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0993779Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0994149Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0994372Z   _srt_targets: x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0994674Z   _srt_components: 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.0994932Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1108883Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=18]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1114420Z ##[start-action display=Setting Environment Variables;id=__actions-rust-lang_setup-rust-toolchain.__run_2]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1129585Z ##[group]Run if [[ ! -v CARGO_INCREMENTAL ]]; then
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1130167Z ^[[36;1mif [[ ! -v CARGO_INCREMENTAL ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1130500Z ^[[36;1m  echo "CARGO_INCREMENTAL=0" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1130794Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1131029Z ^[[36;1mif [[ ! -v CARGO_PROFILE_DEV_DEBUG ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1131372Z ^[[36;1m  echo "CARGO_PROFILE_DEV_DEBUG=0" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1131675Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1131891Z ^[[36;1mif [[ ! -v CARGO_TERM_COLOR ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1132215Z ^[[36;1m  echo "CARGO_TERM_COLOR=always" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1132510Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1132719Z ^[[36;1mif [[ ! -v RUST_BACKTRACE ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1133043Z ^[[36;1m  echo "RUST_BACKTRACE=short" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1133334Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1133598Z ^[[36;1mif [[ ( ! -v RUSTFLAGS ) && $_srt_NEW_RUSTFLAGS != "" ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1134006Z ^[[36;1m  echo "RUSTFLAGS=$_srt_NEW_RUSTFLAGS" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1134322Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1134544Z ^[[36;1m# Enable faster sparse index on nightly^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1134907Z ^[[36;1m# The value is ignored on stable and causes no problems^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1135450Z ^[[36;1m# https://internals.rust-lang.org/t/call-for-testing-cargo-sparse-registry/16862^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1135994Z ^[[36;1mif [[ ! -v CARGO_UNSTABLE_SPARSE_REGISTRY ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1136398Z ^[[36;1m  echo "CARGO_UNSTABLE_SPARSE_REGISTRY=true" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1136735Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1136995Z ^[[36;1mif [[ ! -v CARGO_REGISTRIES_CRATES_IO_PROTOCOL ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1137429Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1138320Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1170066Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1170417Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1170626Z   _srt_NEW_RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1170888Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1231392Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=11]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1233614Z ##[start-action display=Install Rust Problem Matcher;id=__actions-rust-lang_setup-rust-toolchain.__run_3]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1250954Z ##[group]Run echo "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1251740Z ^[[36;1mecho "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1283288Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1283644Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1283842Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1284085Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1284330Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1284570Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1284796Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1285041Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1285356Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1310441Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1390355Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=15]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1393508Z ##[start-action display=Install rustup, if needed;id=__actions-rust-lang_setup-rust-toolchain.__run_4]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1444345Z ##[group]Run if ! command -v rustup &> /dev/null ; then
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1445028Z ^[[36;1mif ! command -v rustup &> /dev/null ; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1445766Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1446800Z ^[[36;1m^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1488833Z ^[[36;1m  # Resolve the correct CARGO_HOME path depending on OS^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1489253Z ^[[36;1m  if [[ "$RUNNER_OS" == "Windows" ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1489715Z ^[[36;1m    echo "${CARGO_HOME:-$USERPROFILE/.cargo}/bin" | sed 's|/|\\|g' >> $GITHUB_PATH^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1490337Z ^[[36;1m  else^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1490623Z ^[[36;1m    echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1490961Z ^[[36;1m  fi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1491153Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1523788Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1524156Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1524354Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1524591Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1524838Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1525073Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1525302Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1525548Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1525864Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1526152Z   RUNNER_OS: Linux
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1526358Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1589141Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=19]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1594657Z ##[start-action display=rustup toolchain install stable;id=__actions-rust-lang_setup-rust-toolchain.__run_5]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1611788Z ##[group]Run # Check if value is set
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1612120Z ^[[36;1m# Check if value is set^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1612406Z ^[[36;1mif [[ -n "$_srt_rust_src_dir" ]]^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1612689Z ^[[36;1mthen^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1612936Z ^[[36;1m  # If value is set the directory must exist^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1613274Z ^[[36;1m  if [[ -d "$_srt_rust_src_dir" ]]^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1613555Z ^[[36;1m  then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1613769Z ^[[36;1m    cd "$_srt_rust_src_dir"^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1614015Z ^[[36;1m  else^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1614512Z ^[[36;1m    echo "'rust-src-dir' does not point to an existing directory" >&2^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1614994Z ^[[36;1m    echo "The value of 'rust-src-dir' is: ${_srt_rust_src_dir}" >&2^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1615356Z ^[[36;1m    exit 1^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1615571Z ^[[36;1m  fi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1615757Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1616096Z ^[[36;1mif [[ -z "$_srt_toolchain" && ( -f "rust-toolchain" || -f "rust-toolchain.toml") ]]^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1616502Z ^[[36;1mthen^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1616757Z ^[[36;1m  # Install the toolchain as specified in the file^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1617180Z ^[[36;1m  # rustup show is the old way that implicitly installed a toolchain^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1617785Z ^[[36;1m  # rustup toolchain install is the new explicit way^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1618273Z ^[[36;1m  # https://github.com/rust-lang/rustup/issues/3635#issuecomment-2343511297^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1618802Z ^[[36;1m  rustup show active-toolchain || rustup toolchain install^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1619186Z ^[[36;1m  if [[ -n $_srt_components ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1619525Z ^[[36;1m    rustup component add ${_srt_components//,/ }^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1619842Z ^[[36;1m  fi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1620054Z ^[[36;1m  if [[ -n $_srt_targets ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1620372Z ^[[36;1m    rustup target add ${_srt_targets//,/ }^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1620659Z ^[[36;1m  fi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1620843Z ^[[36;1melse^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1621053Z ^[[36;1m  if [[ -z "$_srt_toolchain" ]]^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1621327Z ^[[36;1m  then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1621538Z ^[[36;1m    _srt_toolchain=stable^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1621782Z ^[[36;1m  fi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1622266Z ^[[36;1m  rustup toolchain install ${_srt_toolchain//,/ }  --target x86_64-unknown-linux-gnu --profile minimal --no-self-update^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1622850Z ^[[36;1m  # Take the last element from the list^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1623169Z ^[[36;1m  if [[ "$_srt_override" == "true" ]]^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1623455Z ^[[36;1m  then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1623702Z ^[[36;1m    rustup override set ${_srt_toolchain//*,/ }^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1624008Z ^[[36;1m  fi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1624202Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1656034Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1656545Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1656752Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1656994Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1657242Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1657478Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1657873Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1658121Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1658422Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1658707Z   _srt_toolchain: 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1658934Z   _srt_targets: x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1659208Z   _srt_components: 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1659422Z   _srt_override: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1659631Z   _srt_rust_src_dir: 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.1659847Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.4200893Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.7083873Z info: latest update on 2026-09-03 for version 1.98.1 (48a229cea 2026-09-01)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.7287408Z info: removing previous version of component clippy
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.7302230Z info: removing previous version of component rustfmt
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.7312813Z info: removing previous version of component cargo
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.7355851Z info: removing previous version of component rust-std
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.7400470Z info: removing previous version of component rustc
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:27.7454096Z info: downloading 5 components
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:35.9922168Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0045898Z   stable-x86_64-unknown-linux-gnu updated - rustc 1.98.1 (48a229cea 2026-09-01) (from rustc 1.98.0 (88d9e12ae 2026-08-18))
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0046809Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0203030Z info: override toolchain for /home/runner/work/vig/vig set to stable-x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0229585Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=8863]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0233961Z ##[start-action display=Print installed versions;id=__actions-rust-lang_setup-rust-toolchain.versions]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0254281Z ##[group]Run echo "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0254787Z ^[[36;1mecho "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0255145Z ^[[36;1mrustc --version --verbose^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0255472Z ^[[36;1mecho "cargo-version=$(cargo --version)" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0255819Z ^[[36;1mcargo --version --verbose^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0256150Z ^[[36;1mecho "rustup-version=$(rustup --version)" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0256521Z ^[[36;1mrustup --version^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0256747Z ^[[36;1m^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0257195Z ^[[36;1m_srt_DATE=$(rustc --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0258183Z ^[[36;1m_srt_HASH=$(rustc --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0258698Z ^[[36;1mecho "cachekey=$(echo $_srt_DATE$_srt_HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0294427Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0294775Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0294976Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0295208Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0295447Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0295673Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0295899Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0296146Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0296442Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0296731Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0602230Z rustc 1.98.1 (48a229cea 2026-09-01)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0603274Z binary: rustc
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0604006Z commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0604718Z commit-date: 2026-09-01
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0605211Z host: x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0605537Z release: 1.98.1
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0605805Z LLVM version: 22.1.8
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0886598Z cargo 1.98.1 (797e8a9bc 2026-08-05)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0887245Z release: 1.98.1
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0888020Z commit-hash: 797e8a9bca276c1c9f9f738d2a20f484fa4eea9d
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0888675Z commit-date: 2026-08-05
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0889188Z host: x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0889695Z libgit2: 1.9.4 (sys:0.21.0 vendored)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0890393Z libcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0891089Z ssl: OpenSSL 3.6.3 9 Jun 2026
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0891397Z os: Ubuntu 24.4.0 (noble) [64-bit]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.0937093Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1035644Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1108210Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1109088Z rustup 1.29.0 (28d1352db 2026-03-05)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1192513Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1483298Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.versions;outcome=success;conclusion=success;duration_ms=124]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1486304Z ##[start-action display=Downgrade registry access protocol when needed;id=__actions-rust-lang_setup-rust-toolchain.__run_6]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1504948Z ##[group]Run # Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1505531Z ^[[36;1m# Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1506067Z ^[[36;1m# On versions 1.66, 1.67, and 1.68.0-nightly the value "sparse" is still unstable.^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1506833Z ^[[36;1m# https://github.com/dtolnay/rust-toolchain/pull/69#discussion_r1107268108^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1507410Z ^[[36;1m# If we detect an incompatible value, set it to "git" which is always supported.^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1508596Z ^[[36;1mif [[ "rustc 1.98.1 (48a229cea 2026-09-01)" =~ ^rustc\ (1\.6[67]\.|1\.68\.0-nightly) && "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL}" == "sparse" ]]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1509272Z ^[[36;1m  echo "Downgrade cargo registry protocol to git"^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1509696Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1510053Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1545638Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1545985Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1546185Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1546422Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1546671Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1546908Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1547134Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1547396Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1547978Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1548278Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1716723Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=22]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1720178Z ##[start-action display=Setup Rust Caching;id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1773555Z ##[group]Run Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1773944Z with:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1774147Z   cache-on-failure: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1774374Z   cache-bin: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1774583Z   cache-provider: github
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1774813Z   cache-all-crates: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1775057Z   cache-workspace-crates: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1775306Z   cache-targets: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1775514Z   save-if: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1775716Z   prefix-key: v0-rust
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1775943Z   add-job-id-key: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1776177Z   add-rust-environment-hash-key: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1776445Z   lookup-only: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1776648Z   cmd-format: {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1776837Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1777198Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1777418Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1777830Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1778064Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1778287Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1778527Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1778819Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.1779100Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.4718471Z (node:2370) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.4720008Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6347969Z ##[group]Cache Configuration
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6348668Z Cache Provider:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6349027Z     github
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6349350Z Workspaces:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6349680Z     /home/runner/work/vig/vig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6350065Z Cache Paths:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6350413Z     /home/runner/.cargo/bin
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6350828Z     /home/runner/.cargo/.crates.toml
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6351273Z     /home/runner/.cargo/.crates2.json
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6351709Z     /home/runner/.cargo/registry
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6352108Z     /home/runner/.cargo/git
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6352566Z     /home/runner/work/vig/vig/target
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6353005Z Restore Key:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6353362Z     v0-rust-test-Linux-x64-09ed3713
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6353798Z Cache Key:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6354179Z     v0-rust-test-Linux-x64-09ed3713-eb78a9df
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6354805Z .. Prefix:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6355173Z   - v0-rust-test-Linux-x64
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6355604Z .. Environment considered:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6356014Z   - Rust Versions:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6357043Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6358198Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6358920Z   - CARGO_INCREMENTAL
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6359329Z   - CARGO_PROFILE_DEV_DEBUG
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6359767Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6360232Z   - CARGO_TERM_COLOR
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6360624Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6361067Z   - RUST_BACKTRACE
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6361669Z   - RUSTFLAGS
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6362025Z .. Lockfiles considered:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6362460Z   - /home/runner/work/vig/vig/Cargo.lock
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6362956Z   - /home/runner/work/vig/vig/Cargo.toml
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6363726Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6363926Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.6364081Z ... Restoring cache ...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:36.8533551Z Cache hit for: v0-rust-test-Linux-x64-09ed3713-eb78a9df
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:38.0594559Z Received 29360128 of 356787076 (8.2%), 28.0 MBs/sec
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:39.0609214Z Received 176160768 of 356787076 (49.4%), 84.0 MBs/sec
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:40.0601374Z Received 343932928 of 356787076 (96.4%), 109.3 MBs/sec
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:40.1580895Z Received 356787076 of 356787076 (100.0%), 109.8 MBs/sec
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:40.1582124Z Cache Size: ~340 MB (356787076 B)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:40.1752528Z [command]/usr/bin/tar -xf /home/runner/work/_temp/ff04178f-7d80-476c-b4db-6dbd1b1021f5/cache.tzst -P -C /home/runner/work/vig/vig --use-compress-program unzstd
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:42.2337531Z Cache restored successfully
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:42.2493188Z Restored from cache key "v0-rust-test-Linux-x64-09ed3713-eb78a9df" full match: true.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:11:42.2639789Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=6091]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	﻿2026-09-09T08:11:42.2786116Z ##[group]Run awalsh128/cache-apt-pkgs-action@v1
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2786493Z with:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2786738Z   packages: libgit2-dev libssl-dev pkg-config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2787054Z   execute_install_scripts: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2787321Z   empty_packages_behavior: error
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2787575Z   debug: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2788059Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2788473Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2788704Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2788942Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2789179Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2789409Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2789658Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2789957Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2790264Z   CACHE_ON_FAILURE: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2790490Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2797965Z ##[start-action display=Run ${GITHUB_ACTION_PATH}/pre_cache_action.sh \;id=__awalsh128_cache-apt-pkgs-action.pre-cache]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2812545Z ##[group]Run ${GITHUB_ACTION_PATH}/pre_cache_action.sh \
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2812966Z ^[[36;1m${GITHUB_ACTION_PATH}/pre_cache_action.sh \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2813291Z ^[[36;1m  ~/cache-apt-pkgs \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2813547Z ^[[36;1m  "$VERSION" \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2813788Z ^[[36;1m  "$EXEC_INSTALL_SCRIPTS" \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2814070Z ^[[36;1m  "$DEBUG" \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2814295Z ^[[36;1m  "$ADD_REPOSITORY" \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2814541Z ^[[36;1m  "$PACKAGES"^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2814819Z ^[[36;1mif [ -f ~/cache-apt-pkgs/cache_key.md5 ]; then^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2815266Z ^[[36;1m  echo "CACHE_KEY=$(cat ~/cache-apt-pkgs/cache_key.md5)" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2815648Z ^[[36;1melse^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2815870Z ^[[36;1m  echo "CACHE_KEY=" >> $GITHUB_ENV^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2816141Z ^[[36;1mfi^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2852208Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2852555Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2852762Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2852996Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2853240Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2853493Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2853725Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2853972Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2854271Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2854570Z   CACHE_ON_FAILURE: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2854794Z   VERSION: 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2855001Z   EXEC_INSTALL_SCRIPTS: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2855271Z   EMPTY_PACKAGES_BEHAVIOR: error
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2855527Z   DEBUG: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2855728Z   ADD_REPOSITORY: 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2855971Z   PACKAGES: libgit2-dev libssl-dev pkg-config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.2856260Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:42.5031181Z Normalizing package list...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7643747Z done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7660460Z Validating action arguments (version='', packages='libgit2-dev=1.7.2+ds-1ubuntu3.1 libssl-dev=3.0.13-0ubuntu3.15 pkg-config=1.8.1-2build1')...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7676964Z done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7678005Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7678232Z Creating cache key...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7706432Z - CPU architecture is 'x86_64'.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7708341Z - Value to hash is 'libgit2-dev=1.7.2+ds-1ubuntu3.1 libssl-dev=3.0.13-0ubuntu3.15 pkg-config=1.8.1-2build1 @  3'.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7749732Z - Value hashed as 'f383ff6fc98053745e76aa2f6d3abfb7'.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7750722Z done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7751716Z Hash value written to /home/runner/cache-apt-pkgs/cache_key.md5
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7781837Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.pre-cache;outcome=success;conclusion=success;duration_ms=1498]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7787469Z ##[start-action display=Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9;id=__awalsh128_cache-apt-pkgs-action.load-cache]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7840214Z ##[group]Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7840828Z with:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7841040Z   path: ~/cache-apt-pkgs
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7841335Z   key: cache-apt-pkgs_f383ff6fc98053745e76aa2f6d3abfb7
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7841669Z   enableCrossOsArchive: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7841933Z   fail-on-cache-miss: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7842172Z   lookup-only: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7842381Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7842714Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7842941Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7843188Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7843420Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7843646Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7843898Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7844200Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7844494Z   CACHE_ON_FAILURE: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7844742Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:43.7845020Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:44.1286441Z Cache hit for: cache-apt-pkgs_f383ff6fc98053745e76aa2f6d3abfb7
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2195200Z Received 2668034 of 2668034 (100.0%), 3.0 MBs/sec
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2195886Z Cache Size: ~3 MB (2668034 B)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2224624Z [command]/usr/bin/tar -xf /home/runner/work/_temp/9bfef6b1-50d0-4fb6-a699-95ae5d5e3383/cache.tzst -P -C /home/runner/work/vig/vig --use-compress-program unzstd
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2433801Z Cache restored successfully
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2513105Z Cache restored from key: cache-apt-pkgs_f383ff6fc98053745e76aa2f6d3abfb7
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2584058Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.load-cache;outcome=success;conclusion=success;duration_ms=1479]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2590521Z ##[start-action display=Run ${GITHUB_ACTION_PATH}/post_cache_action.sh \;id=__awalsh128_cache-apt-pkgs-action.post-cache]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2619090Z ##[group]Run ${GITHUB_ACTION_PATH}/post_cache_action.sh \
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2619903Z ^[[36;1m${GITHUB_ACTION_PATH}/post_cache_action.sh \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2620540Z ^[[36;1m  ~/cache-apt-pkgs \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2621037Z ^[[36;1m  / \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2621434Z ^[[36;1m  "$CACHE_HIT" \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2621901Z ^[[36;1m  "$EXEC_INSTALL_SCRIPTS" \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2622411Z ^[[36;1m  "$DEBUG" \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2622834Z ^[[36;1m  "$ADD_REPOSITORY" \^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2623319Z ^[[36;1m  "$PACKAGES"^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2624247Z ^[[36;1mfunction create_list { local list=$(cat ~/cache-apt-pkgs/manifest_${1}.log | tr '\n' ','); echo ${list:0:-1}; };^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2625598Z ^[[36;1mecho "package-version-list=$(create_list main)" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2626594Z ^[[36;1mecho "all-package-version-list=$(create_list all)" >> $GITHUB_OUTPUT^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2679317Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2679975Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2680373Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2680829Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2681304Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2681804Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2682247Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2682720Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2683294Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2683857Z   CACHE_ON_FAILURE: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2684311Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2684848Z   CACHE_HIT: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2685249Z   EXEC_INSTALL_SCRIPTS: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2685706Z   DEBUG: false
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2686079Z   ADD_REPOSITORY: 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2686521Z   PACKAGES: libgit2-dev libssl-dev pkg-config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2687055Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2882186Z Found 9 files in the cache.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2894063Z - cache_key.md5
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2906368Z - install.log
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2918221Z - libgit2-1.7=1.7.2+ds-1ubuntu3.1.tar
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2930803Z - libgit2-dev=1.7.2+ds-1ubuntu3.1.tar
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2942932Z - libhttp-parser-dev=2.9.4-6build1.tar
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2955606Z - libhttp-parser2.9=2.9.4-6build1.tar
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2967472Z - libssh2-1-dev=1.11.0-4.1ubuntu0.24.04.3.tar
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2979518Z - manifest_all.log
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2991253Z - manifest_main.log
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2991557Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.2991853Z Reading from main requested packages manifest...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3025732Z - libgit2-dev=1.7.2+ds-1ubuntu3.1
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3041846Z - libssl-dev=3.0.13-0ubuntu3.15
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3059135Z - pkg-config=1.8.1-2build1
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3059669Z done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3059871Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3100260Z Restoring 5 packages from cache...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3113057Z - libgit2-1.7=1.7.2+ds-1ubuntu3.1.tar restoring...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3207444Z   done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3220503Z - libgit2-dev=1.7.2+ds-1ubuntu3.1.tar restoring...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3406485Z   done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3421565Z - libhttp-parser-dev=2.9.4-6build1.tar restoring...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3519943Z   done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3534435Z - libhttp-parser2.9=2.9.4-6build1.tar restoring...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3616372Z   done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3629624Z - libssh2-1-dev=1.11.0-4.1ubuntu0.24.04.3.tar restoring...
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3896668Z   done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3897150Z done
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3899928Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3953743Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.post-cache;outcome=success;conclusion=success;duration_ms=136]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3957022Z ##[start-action display=Run actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f;id=__awalsh128_cache-apt-pkgs-action.upload-logs]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3963696Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.upload-logs;outcome=skipped;conclusion=skipped;duration_ms=0]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3966210Z ##[start-action display=Run actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9;id=__awalsh128_cache-apt-pkgs-action.save-cache]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3974663Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.save-cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3976875Z ##[start-action display=Run rm -rf ~/cache-apt-pkgs;id=__awalsh128_cache-apt-pkgs-action.clean-cache]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3993526Z ##[group]Run rm -rf ~/cache-apt-pkgs
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.3993897Z ^[[36;1mrm -rf ~/cache-apt-pkgs^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4030035Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4030410Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4030613Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4030855Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4031113Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4031349Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4031602Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4031851Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4032164Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4032466Z   CACHE_ON_FAILURE: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4032724Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4033012Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Install dependencies (Linux)	2026-09-09T08:11:45.4143044Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.clean-cache;outcome=success;conclusion=success;duration_ms=16]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	﻿2026-09-09T08:11:45.4172525Z ##[group]Run cargo test --target x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4173001Z ^[[36;1mcargo test --target x86_64-unknown-linux-gnu^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4209353Z shell: /usr/bin/bash -e {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4209625Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4209845Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4210101Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4210363Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4210610Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4210845Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4211097Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4211413Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4211711Z   CACHE_ON_FAILURE: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4211971Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4212262Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:45.4747788Z ^[[1m^[[92m    Updating^[[0m crates.io index
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:47.1466118Z ^[[1m^[[92m   Compiling^[[0m vig v0.13.0 (/home/runner/work/vig/vig)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:55.0162022Z ^[[1m^[[92m    Finished^[[0m `test` profile [unoptimized] target(s) in 9.58s
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:55.0373158Z ^[[1m^[[92m     Running^[[0m unittests src/main.rs (target/x86_64-unknown-linux-gnu/debug/deps/vig-d6baa7a97e573de7)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:55.0404901Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:55.0405638Z running 398 tests
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:55.0433794Z test core::api_budget::tests::thresholds ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:55.0468419Z test core::app::tests::page_keys_helper_groups_by_page_in_insertion_order ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:55.0498350Z test core::app::tests::refresh_notice_reports_idle_and_off ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:11:55.0499303Z test core::app::tests::refresh_scale_compounds_idle_and_quota_and_stops ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.0718812Z test core::app::tests::page_keys_follow_the_builtin_app_block ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.2331702Z test core::app::tests::app_keymap_resolves_page_switch_bindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.2332725Z test core::browser::tests::unix_launcher_uses_xdg_open_or_the_app ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.2333481Z test core::config::constraint::tests::errors ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.2358371Z test core::config::constraint::tests::length ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.2359136Z test core::config::constraint::tests::min ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.2418184Z test core::config::constraint::tests::percentage ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4213654Z test core::app::tests::user_pages_disable_pages ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4248896Z test core::config::guide_examples::extractor_tests::extracts_blocks_with_info_and_line_numbers ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4278686Z test core::config::guide_examples::extractor_tests::finds_the_guide_chapters ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4308586Z test core::config::guide_examples::extractor_tests::ignore_annotation_is_a_distinct_info_string ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4338516Z test core::config::guide_examples::extractor_tests::indented_fences_and_unclosed_blocks ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4368416Z test core::config::guide_examples::extractor_tests::text_between_blocks_is_not_captured ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4398539Z test core::config::keymap_builder::tests::explicit_overrides_preset ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4428394Z test core::config::keymap_builder::tests::invalid_action_fails ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4458313Z test core::config::keymap_builder::tests::invalid_key_fails ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4488304Z test core::config::keymap_builder::tests::none_unbinds_key ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4518324Z test core::config::keymap_builder::tests::preset_nav_expands ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4540032Z test core::config::keymap_builder::tests::preset_search_expands ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.4558382Z test core::config::keymap_builder::tests::unknown_preset_fails ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.5628928Z test core::config::loader::tests::app_entries_populated ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:01.8221492Z test core::config::loader::tests::builtin_pages_list_every_page_in_declaration_order ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:02.0525765Z test core::config::loader::tests::docker_page_ids_keys_and_bindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:02.4078907Z test core::config::loader::tests::empty_user_config_equals_builtin ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:02.6388708Z test core::config::loader::tests::files_page_ids_keys_and_bindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:02.7542321Z test core::config::loader::tests::git_bindings_correct ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:02.8718563Z test core::config::loader::tests::git_pane_ids_correct ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:02.9839921Z test core::config::loader::tests::git_pane_keys_present ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:03.3737853Z test core::config::loader::tests::github_auto_refresh_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:03.5049043Z test core::config::loader::tests::github_bindings_correct ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:03.6248900Z test core::config::loader::tests::github_bindings_distinct_instances ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:03.9968786Z test core::config::loader::tests::github_page_runs_column_ids_keys_and_bindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:04.1218347Z test core::config::loader::tests::github_pane_ids_correct ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:04.2448338Z test core::config::loader::tests::github_pane_keys_present ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:05.1838881Z test core::config::loader::tests::github_poll_interval_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:05.5518793Z test core::config::loader::tests::icons_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:05.9138967Z test core::config::loader::tests::image_preview_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:06.0358539Z test core::config::loader::tests::load_git_page ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:06.1458595Z test core::config::loader::tests::load_github_page ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:06.5101779Z test core::config::loader::tests::markdown_preview_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:06.7858908Z test core::app::tests::page_keys_follow_user_rebindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:07.0538876Z test core::config::loader::tests::procs_page_ids_keys_and_bindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:07.6668964Z test core::config::loader::tests::procs_refresh_interval_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:07.7153338Z test core::config::loader::tests::procs_history_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:07.9652640Z test core::config::loader::tests::projects_page_ids_keys_and_bindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:08.3434646Z test core::app::tests::user_pages_reorder_slots_and_keep_keys_by_name ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:08.4769082Z test core::config::loader::tests::removed_actions_page_fails_fast_with_a_hint ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:08.6338799Z test core::config::loader::tests::repo_layer_error_names_the_repo_file_and_leaves_base_usable ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:08.7868560Z test core::config::loader::tests::repo_layer_overrides_user ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:08.8969804Z test core::config::loader::tests::repo_config_kill_switch_parses_and_validates ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.0722772Z test core::config::loader::tests::projects_board_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.0750938Z test core::config::loader::tests::repo_layer_rejects_repo_config_node ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.2068534Z test core::config::loader::tests::user_app_keys_merge ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.3408613Z test core::config::loader::tests::user_invalid_action_mentions_file_page_and_pane ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.4111810Z test core::config::loader::tests::theme_default_override_and_validation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.4769007Z test core::config::loader::tests::user_binding_to_disabled_or_unknown_page_fails ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.4958750Z test core::config::loader::tests::user_layer_survives_where_repo_is_silent ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.6772535Z test core::config::loader::tests::user_layout_can_place_the_projects_list_pane ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.8728935Z test core::config::loader::tests::user_layout_may_leave_panes_unplaced ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:09.9428899Z test core::config::loader::tests::user_layout_replaces_without_renumbering_panes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.1348597Z test core::config::loader::tests::user_overrides_and_unbinds_pane_keys ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.2688692Z test core::config::loader::tests::user_pages_reorder_and_disable ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.3918757Z test core::config::loader::tests::user_layout_rejects_unknown_repeated_or_no_panes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.4354219Z test core::config::loader::tests::user_pages_errors_mention_file_and_page ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.6878419Z test core::config::loader::tests::worktrees_page_ids_keys_and_bindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.6988514Z test core::config::merge::tests::app_keys_merge_per_key ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.7028369Z test core::config::merge::tests::github_poll_interval_replaced ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.7078388Z test core::config::merge::tests::layout_tabs_bind_replaced_wholesale ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.7148324Z test core::config::merge::tests::pages_replaced_wholesale ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.7198559Z test core::config::merge::tests::pane_keys_override_add_and_keep_presets ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.7258368Z test core::config::merge::tests::projects_board_replaced_wholesale ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.7318266Z test core::config::merge::tests::theme_replaced ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.7558383Z test core::config::merge::tests::unknown_page_pane_and_blocks_fail ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.8998769Z test core::config::repo::tests::apply_error_degrades_and_names_the_file ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9008550Z test core::config::repo::tests::classify_absent_disabled_untracked ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9028566Z test core::config::repo::tests::classify_tracked_consults_trust_store ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9058366Z test core::config::repo::tests::content_hash_is_sha256_hex ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9068843Z test core::config::repo::tests::interpret_ls_files_distinguishes_untracked_from_failure ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9098455Z test core::config::repo::tests::spawn_failure_is_undeterminable ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9118457Z test core::config::repo::tests::status_text_covers_every_outcome ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9148414Z test core::config::repo::tests::undeterminable_tracking_fails_closed ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9158281Z test core::config::source::tests::explicit_path_wins ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9180245Z test core::config::source::tests::line_col_basic ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9195838Z test core::config::source::tests::parse_error_mentions_path_and_line ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9200339Z test core::config::trust::tests::changed_hash_invalidates_decision ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9202503Z test core::config::trust::tests::corrupt_or_missing_store_is_empty ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9205384Z test core::config::trust::tests::forget_by_normalized_listing_output_always_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9210429Z test core::config::trust::tests::forget_removes_one_entry ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9211795Z test core::config::trust::tests::format_unix_is_utc_civil ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9215315Z test core::config::trust::tests::roundtrip ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9220614Z test core::config::trust::tests::trailing_slash_and_plain_paths_share_one_key ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9223285Z test core::gh_fixture::tests::names_are_deterministic_and_filesystem_safe ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9224510Z test core::gh_fixture::tests::replay_reads_recordings_and_flags_missing_files ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9226957Z test core::keymap::tests::parse_ctrl_modifier ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9228005Z test core::keymap::tests::parse_invalid ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9230454Z test core::keymap::tests::parse_nav_action ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9231352Z test core::keymap::tests::parse_plain_char ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9233525Z test core::keymap::tests::parse_roundtrip ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9234228Z test core::keymap::tests::parse_search_action ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9234905Z test core::keymap::tests::parse_special_keys ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9235553Z test core::keymap::tests::parse_uppercase_char ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9236192Z test core::keymap::tests::parse_view_action ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9236837Z test core::layout::tests::horizontal_split ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9258086Z test core::layout::tests::multi_case_slot_rule_takes_the_first_matching_case ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9259374Z test core::layout::tests::multiple_slot_rules ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9260075Z test core::layout::tests::nested_split ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9260781Z test core::layout::tests::page_frame_splits_correctly ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9261570Z test core::layout::tests::single_pane_fills_area ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9262271Z test core::layout::tests::slot_resolution ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9262927Z test core::layout::tests::slot_rule_trigger ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9263845Z test core::pane::focus_tests::unplaced_focus_falls_back_to_the_first_placed_tab_pane ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9264894Z test core::tree::tests::children_follow_their_parent_with_guides ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9265716Z test core::tree::tests::cycles_do_not_drop_items ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9266431Z test core::tree::tests::flat_list_keeps_order ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9267227Z test core::tree::tests::guides_continue_past_siblings_with_children ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9268588Z test core::tree::tests::orphans_and_self_parent_are_top_level ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9269504Z test core::ui::markdown::tests::fit_widths_lowers_widest_columns_evenly ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9270441Z test core::ui::markdown::tests::narrowing_accounts_for_padding_and_wide_chars ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9271637Z test core::ui::markdown::tests::padding_is_prepended_to_table_lines ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9272584Z test core::ui::markdown::tests::table_between_paragraphs_keeps_surrounding_text ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9273590Z test core::ui::markdown::tests::table_header_is_bold_and_inline_code_keeps_style ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9274512Z test core::ui::markdown::tests::table_honours_column_alignment ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9275404Z test core::ui::markdown::tests::table_renders_aligned_columns_with_header_rule ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9276374Z test core::ui::markdown::tests::table_with_too_many_columns_keeps_min_width ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9277367Z test core::ui::markdown::tests::wide_table_is_narrowed_to_fit_and_cells_truncated ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9299041Z test core::ui::tail_pane::tests::cap_evicts_oldest_and_keeps_paused_view_stable ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9299999Z test core::ui::tail_pane::tests::clear_and_set_lines_reset_state ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9300879Z test core::ui::tail_pane::tests::follows_the_end_as_lines_arrive ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9301696Z test core::ui::tail_pane::tests::half_page_and_top_navigation_clamp ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9302548Z test core::ui::tail_pane::tests::last_lines_returns_tail_in_order ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9303409Z test core::ui::tail_pane::tests::manual_scroll_pauses_and_g_resumes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9304334Z test core::ui::tail_pane::tests::search_matches_are_case_insensitive_line_entries ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9305251Z test core::ui::tail_pane::tests::short_buffers_never_scroll ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9306158Z test docker::domain::client::tests::merges_streams_by_timestamp_and_strips_ansi ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9307210Z test docker::domain::client::tests::parses_container_inspect_without_env ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9308374Z test docker::domain::client::tests::parses_docker_images_json_lines ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9309283Z test docker::domain::client::tests::parses_docker_ps_json_lines ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9310195Z test docker::domain::client::tests::parses_image_inspect_without_env ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9311185Z test docker::domain::client::tests::split_timestamp_recognises_rfc3339_prefix ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9312222Z test docker::domain::client::tests::strip_ansi_handles_csi_osc_and_bare_escapes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9313234Z test docker::domain::types::tests::container_state_parses_and_ranks ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9314139Z test docker::domain::types::tests::image_dangling_and_name ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9315042Z test docker::domain::types::tests::label_string_keeps_commas_inside_values ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9316230Z test docker::panes::containers::tests::groups_compose_members_under_a_project_row_running_first ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9317916Z test docker::panes::containers::tests::set_containers_keeps_selection_by_id ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9318990Z test docker::panes::detail::tests::container_lines_render_sections_and_never_env ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9320149Z test docker::panes::detail::tests::detail_pane_load_uses_cache_and_ignores_stale_results ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9321243Z test docker::panes::detail::tests::fmt_time_trims_nanos_and_hides_zero_time ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9322178Z test docker::panes::detail::tests::short_id_strips_sha_prefix ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9323014Z test docker::panes::images::tests::dangling_images_sort_last ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9323843Z test docker::panes::images::tests::set_images_keeps_selection ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9324807Z test docker::panes::logs::tests::apply_tracks_last_timestamp_and_ignores_stale_requests ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:10.9325872Z test docker::panes::logs::tests::since_filter_drops_old_and_duplicate_lines ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.0948056Z test core::config::loader::tests::user_slot_accepts_single_and_multi_case_forms ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.0988575Z test files::domain::fs::tests::git_file_hidden_and_symlinks_marked ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1018410Z test files::domain::fs::tests::human_size_formats ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1028702Z test files::domain::fs::tests::list_dir_sorts_dirs_first_and_hides_git ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1030193Z test docker::state::tests::docker_page_builds_from_builtin_config ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1031740Z test files::domain::fs::tests::preview_kinds ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1049346Z test files::domain::fs::tests::preview_exactly_at_limit_is_not_truncated ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1073337Z test files::domain::icons::tests::picks_dir_name_extension_and_fallbacks ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1074880Z test files::domain::image::tests::image_paths_by_extension ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1100079Z test files::domain::image::tests::mode_parsing_matches_the_listed_modes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1133501Z test files::domain::icons::tests::glyphs_are_single_column ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1158619Z test files::domain::image::tests::probe_reads_dimensions_and_rejects_non_images ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:11.1813547Z test core::config::loader::tests::user_structural_errors_mention_file ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:12.9108909Z test files::panes::preview::tests::front_matter_is_kept_verbatim_and_body_rendered ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:12.9588791Z test files::panes::preview::tests::horizontal_scroll_clamps_to_the_longest_line ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:13.5229336Z test core::config::guide_examples::every_guide_kdl_example_loads_as_a_user_config ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:14.7348863Z test files::panes::preview::tests::jump_scrolls_the_match_into_view_both_ways ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:15.1819425Z test files::panes::preview::tests::markdown_lines_reflow_on_width_change ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:15.1829223Z test files::panes::preview::tests::shift_and_highlight_drops_scrolled_chars_and_marks_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.4842477Z test files::panes::preview::tests::raw_default_needs_toggle_to_render ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.4868477Z test files::state::tests::open_with_prompt_confirms_trimmed_name_and_remembers_it ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.4898349Z test files::state::tests::open_with_prompt_esc_and_empty_enter_cancel ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.5978475Z test git::state::kdl_regression::bindings_match_expected_pairs ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.6098824Z test files::panes::preview::tests::content_search_finds_char_ranges_in_raw_and_rendered_text ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.7279778Z test git::state::kdl_regression::diff_view_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.7388695Z test git::state::kdl_regression::branch_list_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.8555544Z test git::state::kdl_regression::git_log_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.8621809Z test files::panes::preview::tests::toggle_flips_markdown_and_resets_scroll ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.8708477Z test git::state::kdl_regression::file_tree_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.9818721Z test git::state::kdl_regression::layout_tree_structure_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.9928809Z test git::state::kdl_regression::select_bindings_drive_sync_dispatch ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:16.9968547Z test git::state::kdl_regression::reflog_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1148573Z test git::state::kdl_regression::slot_rules_match ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1178499Z test github::domain::actions::client::tests::parses_jobs_json ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1184631Z test github::domain::actions::client::tests::parses_run_list_json ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1201027Z test github::domain::actions::log::tests::finds_failed_and_named_steps ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1227070Z test github::domain::actions::log::tests::new_tail_extends_or_replaces ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1228491Z test github::domain::actions::log::tests::parses_gh_columns_into_sections_and_text ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1229131Z test github::domain::actions::log::tests::parses_rest_output_without_columns ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1229719Z test github::domain::actions::log::tests::strips_ansi_and_marker_bytes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1230257Z test github::domain::actions::time::tests::clock_of_extracts_hh_mm_ss ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1231049Z test github::domain::actions::time::tests::duration_between_uses_now_for_running_objects ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1231606Z test github::domain::actions::time::tests::formats_durations ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1232071Z test github::domain::actions::time::tests::formats_relative_times ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1232594Z test github::domain::actions::time::tests::parse_iso8601_rejects_impossible_dates ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1233133Z test github::domain::actions::time::tests::parses_iso8601_utc ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1233628Z test github::domain::actions::types::tests::state_from_status_and_conclusion ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1234149Z test github::domain::client::tests::change_check_parses_304_and_200 ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1234629Z test github::domain::client::tests::recognises_rate_limit_messages ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1235111Z test github::domain::disk_cache::tests::test_cache_dir_resolves ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1235639Z test github::domain::disk_cache::tests::test_parse_github_nwo_https_with_git_suffix ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1236131Z test git::state::kdl_regression::tab_panes_match ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1236626Z test github::domain::disk_cache::tests::test_parse_github_nwo_https_without_git_suffix ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1237192Z test github::domain::disk_cache::tests::test_parse_github_nwo_invalid_url ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1238129Z test github::domain::disk_cache::tests::test_parse_github_nwo_no_repo ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1239457Z test github::domain::disk_cache::tests::test_parse_github_nwo_ssh_with_git_suffix ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1240653Z test github::domain::disk_cache::tests::test_parse_github_nwo_ssh_without_git_suffix ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1243073Z test github::domain::disk_cache::tests::test_repo_nwo_resolves ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1244106Z test github::domain::remote::tests::parses_the_common_github_remote_forms ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1245129Z test github::domain::remote::tests::rejects_non_github_or_malformed_urls ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1246131Z test github::panes::detail_view::jobs::tests::nav_and_search_over_rows ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1247147Z test github::domain::disk_cache::tests::test_save_and_load_json_roundtrip ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1248419Z test github::panes::detail_view::jobs::tests::polls_only_while_the_run_is_active ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1249154Z test github::panes::detail_view::jobs::tests::selected_target_resolves_steps_to_their_job ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1249876Z test github::panes::detail_view::jobs::tests::steps_nest_under_their_job ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1250855Z test github::panes::detail_view::log::tests::failed_step_jumps_wrap_around ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1251901Z test github::panes::detail_view::log::tests::load_apply_and_stale_requests ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1253180Z test git::state::kdl_regression::view_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1254061Z test github::panes::detail_view::log::tests::search_matches_are_line_entries ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1255207Z test github::panes::detail_view::log::tests::running_jobs_append_and_finish_with_a_final_fetch ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1256001Z test github::panes::detail_view::log::tests::step_jump_waits_for_the_log ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1257123Z test github::panes::detail_view::tests::enter_loads_the_selected_jobs_log_and_focuses_it ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1258640Z test github::panes::detail_view::tests::loading_a_run_shows_jobs_first_and_keeps_the_same_run ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1259889Z test github::panes::detail_view::tests::run_actions_are_no_ops_for_issue_and_pr_content ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1261113Z test github::panes::detail_view::tests::open_item_falls_back_to_the_run_url ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1263405Z test github::panes::detail_view::tests::search_targets_the_active_sub_pane ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1266138Z test github::panes::detail_view::view::tests::run_header_shows_title_state_branch_event_duration_and_age ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1267879Z test github::panes::gh_list::tests::copy_url_event_copies_or_explains ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1269524Z test github::panes::detail_view::tests::run_sub_panes_switch_with_h_l_and_tab ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1270994Z test github::panes::detail_view::tests::failed_step_jumps_report_when_there_is_no_log ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1272626Z test github::panes::run_list::tests::active_runs_are_counted ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1273873Z test github::panes::run_list::tests::identity_is_the_database_id_not_the_run_number ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1275382Z test github::panes::pr_list::tests::stack_entries_nest_under_the_closest_lower_position ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1276899Z test github::panes::run_list::tests::row_shows_icon_workflow_number_branch_event_duration_and_age ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1278828Z test github::panes::run_list::tests::search_covers_workflow_branch_and_event ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.1283586Z test github::panes::run_list::tests::refresh_keeps_the_selection_on_the_same_run ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.2592422Z test github::state::kdl_regression::active_tab_follows_focus_through_the_bindings ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.2685700Z test github::state::kdl_regression::bindings_match_expected_pairs ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.2738649Z test github::state::kdl_regression::change_check_baseline_then_change_refetches_lists ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.3924013Z test github::state::kdl_regression::gh_select_bindings_drive_sync_dispatch ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.4029462Z test github::state::kdl_regression::detail_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.4138714Z test github::state::kdl_regression::issue_list_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.4140551Z test github::state::kdl_regression::page_loads_lists_from_recorded_fixtures_isolated ... ignored, run through page_loads_lists_from_recorded_fixtures (own process)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.5361190Z test github::state::kdl_regression::pane_ids_from_config ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.5408572Z test github::state::kdl_regression::layout_tree_structure_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.6018818Z test github::state::kdl_regression::page_loads_lists_from_recorded_fixtures ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.6618806Z test github::state::kdl_regression::pr_list_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.6652596Z test github::state::kdl_regression::run_detail_keymap_has_log_keys_and_search ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.7357061Z test github::state::kdl_regression::run_list_keymap_matches ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.7942318Z test github::state::kdl_regression::selecting_a_run_loads_its_jobs_into_the_run_detail ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.8058651Z test github::state::kdl_regression::slot_rules_match ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.8659235Z test github::state::kdl_regression::tab_cycles_the_three_list_columns ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.9387311Z test github::state::kdl_regression::tab_panes_match ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.9537161Z test github::state::kdl_regression::tab_in_a_detail_pane_cycles_its_sub_panes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:17.9896533Z test github::state::rate_limit::backoff_progression_doubles_to_the_cap ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3039035Z test github::state::rate_limit::a_failed_retry_doubles_the_delay_and_success_clears_it ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3068307Z test github::state::rate_limit::reset_time_formatting ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3113589Z test github::state::rate_limit::other_errors_still_reach_the_error_line ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3148620Z test procs::domain::history::tests::proc_history_new_pid_starts_fresh ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3149838Z test procs::domain::history::tests::proc_history_tracks_caps_and_prunes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3150993Z test procs::domain::history::tests::ring_capacity_is_at_least_one ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3152070Z test procs::domain::history::tests::ring_pushes_and_evicts_oldest ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3153079Z test procs::domain::ports::tests::host_port_split ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3180254Z test procs::domain::ports::tests::lsof_parses_listening_sockets_and_skips_the_rest ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3181585Z test procs::domain::ports::tests::lsof_row_without_numeric_pid_is_kept_as_no_access ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3208791Z test procs::domain::ports::tests::ss_parses_rows_and_marks_hidden_owners ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.3209739Z test procs::domain::ports::tests::ss_process_field ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4065582Z test github::state::rate_limit::a_rate_limited_fetch_starts_the_backoff_not_the_error_line ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4138772Z test procs::domain::snapshot::tests::subtree_ignores_a_process_that_claims_to_be_its_own_parent ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4140919Z test procs::domain::snapshot::tests::subtree_keeps_root_and_transitive_children_only ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4156974Z test procs::domain::snapshot::tests::subtree_of_unknown_root_is_empty ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4159132Z test procs::domain::types::tests::elapsed_formats ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4160446Z test procs::domain::types::tests::port_entry_address ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4161558Z test procs::domain::types::tests::sort_key_cycles_cpu_mem_pid ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4162954Z test procs::domain::types::tests::sort_orders_by_key_with_pid_tie_break ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4164153Z test procs::panes::detail::tests::history_charts_sit_under_cpu_and_mem ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4165342Z test procs::panes::detail::tests::lines_cover_every_field_and_mark_no_access ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4166551Z test procs::panes::detail::tests::load_resets_scroll_only_on_a_different_pid ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4167766Z test procs::panes::detail::tests::wrap_splits_at_width ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4168837Z test procs::panes::graphs::tests::core_grid_lays_cores_out_in_columns ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4170483Z test procs::panes::graphs::tests::labels_format_ratios_and_percentages ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4171642Z test procs::panes::graphs::tests::record_caps_history_and_tracks_peak ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4172892Z test procs::panes::graphs::tests::toggle_emits_event_and_esc_returns_to_processes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4174162Z test procs::panes::ports::tests::apply_keeps_selection_and_reports_notice ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4619951Z test procs::panes::ports::tests::jump_needs_a_visible_owner ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4704737Z test procs::panes::processes::tests::children_and_names ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4842668Z test procs::panes::processes::tests::rows_nest_children_under_parent_in_sorted_order ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4898930Z test procs::panes::processes::tests::selection_follows_pid_across_refresh_and_sort ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4922701Z test procs::panes::tests::area_chart_colors_columns_by_load ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4939640Z test procs::panes::tests::area_chart_fills_columns_bottom_up ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4958890Z test procs::panes::tests::area_chart_plain_uses_one_style ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.4988659Z test procs::panes::tests::area_chart_right_aligns_and_keeps_newest ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.5018642Z test procs::panes::tests::area_chart_rounds_eighths_and_shows_tiny_loads ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.5038445Z test procs::panes::tests::area_chart_scales_to_max_and_handles_degenerate_sizes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.5048537Z test procs::panes::tests::truncate_marks_the_cut ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.5078539Z test procs::domain::snapshot::tests::snapshot_contains_this_process_with_its_parent ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.5529470Z test github::state::rate_limit::the_backoff_suspends_the_runs_watch ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.6198719Z test procs::state::tests::c_toggles_per_core_from_the_list_and_the_graphs_pane ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.6708628Z test procs::state::tests::detail_gets_the_selected_pid_history ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.7131529Z test procs::state::tests::enter_on_port_jumps_to_owner_and_focuses_processes ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.7463750Z test procs::state::tests::help_lists_every_pane ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.7946189Z test procs::state::tests::keys_from_default_kdl_match_hardcoded_defaults ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8328374Z test procs::state::tests::pane_ids_tabs_and_bindings_from_default_kdl ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8343056Z test projects::domain::client::tests::bigger_fetch_only_when_the_first_page_was_full ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8368513Z test projects::domain::client::tests::missing_cli_is_recognised ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8381591Z test projects::domain::client::tests::scope_errors_are_recognised ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8418595Z test projects::domain::disk_cache::tests::board_roundtrips_through_json_with_custom_fields ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8478808Z test projects::domain::filter::tests::field_values_lists_and_negation ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8505476Z test projects::domain::filter::tests::is_no_has_label_assignee_repo_text ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8507957Z test projects::domain::filter::tests::tokenizer_keeps_quoted_values_together ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8509358Z test projects::domain::filter::tests::unsupported_tokens_are_reported_not_applied ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8511294Z test projects::domain::graphql::tests::fields_take_the_field_list_shape ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8512599Z test projects::domain::graphql::tests::items_take_the_item_list_shape ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8514074Z test projects::domain::graphql::tests::queries_mention_every_value_type_and_page_by_cursor ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8515491Z test projects::domain::graphql::tests::views_parse_and_skip_unknown_layouts ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8516722Z test projects::domain::roadmap::tests::civil_round_trip_and_parse ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8518337Z test projects::domain::roadmap::tests::item_spans_from_dates_and_iterations ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8522896Z test projects::domain::roadmap::tests::iterations_are_distinct_and_sorted ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8524500Z test projects::domain::roadmap::tests::span_spec_finds_start_and_iteration_fields ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8526291Z test projects::domain::roadmap::tests::zoom_scales_and_cycles ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8527815Z test projects::domain::types::tests::board_without_views_deserializes_from_old_cache ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8529294Z test projects::domain::types::tests::columns_follow_option_order_then_unknown_then_no_status ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8530793Z test projects::domain::types::tests::field_values_follow_field_order_with_status_first ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8532168Z test projects::domain::types::tests::group_rows_use_option_order_and_no_group_last ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8533488Z test projects::domain::types::tests::parses_field_list_and_derives_item_keys ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8534882Z test projects::domain::types::tests::parses_item_list_with_issue_pr_draft_and_redacted_items ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8536315Z test projects::domain::types::tests::parses_repo_info_into_the_linked_projects ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8537904Z test projects::domain::types::tests::sort_items_dir_desc_keeps_empty_cells_last ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8539171Z test projects::domain::types::tests::table_columns_and_sorting ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8540650Z test projects::domain::types::tests::value_text_covers_every_gh_shape ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8541849Z test projects::domain::types::tests::view_layout_parses_graphql_enum ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8543777Z test projects::domain::types::tests::view_table_columns_follow_the_view ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8545181Z test projects::panes::board::roadmap_render_tests::selected_roadmap_row_keeps_its_bar ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8546514Z test projects::panes::board::tests::a_notice_replaces_the_missing_board ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8548160Z test projects::panes::board::tests::board_view_columns_come_from_vertical_group_by ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8549602Z test projects::panes::board::tests::board_view_group_by_builds_swimlanes_and_j_crosses_them ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8569020Z test projects::panes::board::tests::board_view_sort_orders_cards_inside_columns ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8570489Z test projects::panes::board::tests::cards_of_other_repositories_carry_a_dimmed_prefix ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8598605Z test projects::panes::board::tests::cards_truncate_and_pad_to_the_column_width ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8628466Z test projects::panes::board::tests::columns_and_cards_navigate_with_hjkl ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8629790Z test projects::panes::board::tests::group_headers_offset_the_visual_selection ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8658480Z test projects::panes::board::tests::open_browser_uses_the_item_url_or_the_project_url ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8659664Z test projects::panes::board::tests::refresh_keeps_the_selection_by_item_id ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8688406Z test projects::panes::board::tests::roadmap_view_drives_mode_zoom_and_scroll ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8718638Z test projects::panes::board::tests::search_matches_titles_and_numbers_across_columns ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8719806Z test projects::panes::board::tests::table_mode_keeps_the_selected_item_and_sorts ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8764073Z test projects::panes::board::tests::table_view_drives_mode_columns_sort_and_groups ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8789381Z test projects::panes::board::tests::v_cycles_saved_views_and_survives_refresh ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8815337Z test projects::panes::board::tests::view_filter_hides_items_in_every_layout_and_reports_unsupported ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8828902Z test projects::panes::detail::tests::a_failed_fetch_keeps_the_fields_and_shows_the_error ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8858549Z test projects::panes::detail::tests::drafts_show_fields_and_body_without_a_fetch ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8869765Z test projects::panes::detail::tests::issues_list_every_field_then_the_fetched_body_and_comments ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8898574Z test projects::panes::projects::tests::enter_focuses_the_board_and_o_opens_the_project ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8899826Z test projects::panes::projects::tests::rows_show_number_title_owner_and_count ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8901035Z test projects::panes::projects::tests::selection_survives_refresh_and_counts_come_from_boards ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.8902276Z test procs::state::tests::selection_drives_detail_with_children_and_ports ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:18.9308634Z test procs::state::tests::sort_cycles_and_keeps_selection ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.0449198Z test projects::state::tests::a_placed_list_pane_takes_focus_and_drives_the_board ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.0928871Z test projects::state::tests::a_repository_without_linked_projects_shows_the_notice ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.1489536Z test projects::state::tests::a_failed_fetch_does_not_suppress_the_retry ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.2846466Z test projects::state::tests::a_stale_board_is_refetched_on_activation_and_a_fresh_one_is_not ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.4880414Z test projects::state::tests::an_unmatched_projects_board_pin_names_itself_in_the_notice ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.5086315Z test projects::state::tests::enter_and_esc_walk_board_and_detail_without_the_list ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.5088261Z test projects::state::tests::page_loads_a_board_from_recorded_fixtures_isolated ... ignored, run through page_loads_a_board_from_recorded_fixtures (own process)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.5210120Z test projects::state::tests::linked_projects_drive_the_board_and_p_cycles_them ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.7345404Z test projects::state::tests::projects_board_pins_the_board_by_title_case_insensitively ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.7804025Z test projects::state::tests::page_loads_a_board_from_recorded_fixtures ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.8319128Z test projects::state::tests::projects_board_pins_the_board_by_number ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9838953Z test projects::state::tests::projects_page_builds_from_builtin_config ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9889408Z test worktrees::domain::stash::tests::falls_back_only_when_include_untracked_is_unknown ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9890398Z test worktrees::domain::stash::tests::parses_stash_list ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9891296Z test worktrees::domain::stash::tests::patch_buffer_becomes_side_by_side_files ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9892280Z test worktrees::domain::stash::tests::splits_subject_variants ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9893157Z test worktrees::domain::worktree::tests::current_worktree_is_detected ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9894211Z test worktrees::domain::worktree::tests::current_worktree_survives_symlinked_root ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9895641Z test worktrees::domain::worktree::tests::display_path_sibling_and_unrelated ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:19.9958596Z test worktrees::domain::worktree::tests::display_paths_are_relative_to_main ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.0009254Z test worktrees::domain::worktree::tests::parses_porcelain_entries ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.0062417Z test worktrees::domain::worktree::tests::parses_show_output ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.0113496Z test worktrees::domain::worktree::tests::unquotes_git_style_paths ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.0922925Z test projects::state::tests::the_status_bar_shows_the_board_age ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.3442153Z test projects::state::tests::scope_errors_replace_the_panes_with_the_notice ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.3444077Z test worktrees::panes::preview::tests::summary_lines_layout ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.3468656Z test worktrees::panes::stashes::tests::right_column_degrades_gracefully ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.3469583Z test worktrees::panes::tests::fit_head_truncates ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.3498395Z test worktrees::panes::tests::fit_tail_pads_and_truncates ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:20.4818832Z test worktrees::state::tests::default_kdl_wires_panes_bindings_and_keys ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:21.8154212Z test worktrees::panes::preview::tests::normal_and_visual_mode_keys_reach_the_diff_widget ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:21.9328880Z test worktrees::panes::preview::tests::scroll_mode_uses_the_pane_keymap_only ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:22.3108817Z test worktrees::state::tests::page_loads_for_this_repository ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:22.5346317Z test files::panes::preview::tests::markdown_detection_is_by_extension ... ok
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:22.5346748Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:22.5347067Z test result: ok. 396 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 27.49s
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo test	2026-09-09T08:12:22.5347443Z 
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	﻿2026-09-09T08:12:22.5531191Z ##[group]Run cargo build --target x86_64-unknown-linux-gnu
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5531697Z ^[[36;1mcargo build --target x86_64-unknown-linux-gnu^[[0m
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5566220Z shell: /usr/bin/bash -e {0}
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5566494Z env:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5566695Z   CARGO_INCREMENTAL: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5566944Z   CARGO_PROFILE_DEV_DEBUG: 0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5567209Z   CARGO_TERM_COLOR: always
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5567457Z   RUST_BACKTRACE: short
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5567940Z   RUSTFLAGS: -D warnings
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5568252Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5568561Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5568860Z   CACHE_ON_FAILURE: true
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5569116Z   CACHE_KEY: f383ff6fc98053745e76aa2f6d3abfb7
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.5569406Z ##[endgroup]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:22.7874916Z ^[[1m^[[92m   Compiling^[[0m vig v0.13.0 (/home/runner/work/vig/vig)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	cargo build	2026-09-09T08:12:28.7366733Z ^[[1m^[[92m    Finished^[[0m `dev` profile [unoptimized] target(s) in 6.16s
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-09-09T08:12:28.7828477Z Post job cleanup.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:12:28.7832301Z ##[start-action display=Setup Rust Caching;id=__8e3baceb-28af-4423-8ed7-5eacb65c3358.__Swatinem_rust-cache]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:12:28.7874206Z Post job cleanup.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:12:29.0749897Z Cache up-to-date.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:12:29.0752925Z (node:3478) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:12:29.0753904Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-09T08:12:29.0896093Z ##[end-action id=__8e3baceb-28af-4423-8ed7-5eacb65c3358.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=306]
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	﻿2026-09-09T08:12:29.1000924Z Post job cleanup.
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.1958594Z [command]/usr/bin/git version
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.1993886Z git version 2.55.0
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2055562Z Temporarily overriding HOME='/home/runner/work/_temp/b3a3a2c7-1189-41af-9e3c-e764db35aeff' before making global git config changes
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2057426Z Adding repository directory to the temporary git global config as a safe directory
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2066240Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2119728Z Removing SSH command configuration
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2120723Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2176093Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2524283Z Removing HTTP extra header
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2525394Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2564707Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2824379Z Removing includeIf entries pointing to credentials config files
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2834300Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2878924Z includeif.gitdir:/home/runner/work/vig/vig/.git.path
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2879591Z includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2880036Z includeif.gitdir:/github/workspace/.git.path
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2880453Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2881396Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git.path
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2911189Z /home/runner/work/_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2925601Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.2984163Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3013876Z /home/runner/work/_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3026379Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3074505Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3113332Z /github/runner_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3122625Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3164308Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3190839Z /github/runner_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3200855Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3248356Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-09-09T08:12:29.3478116Z Removing credentials config '/home/runner/work/_temp/git-credentials-a71b5840-9aee-49cf-9bb9-5547017ea72f.config'
+test (x86_64-unknown-linux-gnu, ubuntu-latest)	Complete job	﻿2026-09-09T08:12:29.3622775Z Cleaning up orphan processes
