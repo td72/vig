@@ -349,16 +349,22 @@ impl ProjectsState {
         });
     }
 
-    /// A probe answered: re-fetch the board when `updatedAt` moved (or was
-    /// never known, e.g. a board from the CLI path or an old disk cache).
+    /// A probe answered: re-fetch the board when `updatedAt` moved, or once
+    /// when it was never known (a board from the CLI path or an old disk
+    /// cache). A probe without a watermark cannot tell and does nothing.
     fn apply_probe(&mut self, number: u64, updated_at: Option<String>) {
-        let Some(cached) = self.board_cache.get(&number) else {
+        let Some(next) = updated_at else {
             return;
         };
-        let known = cached.board.updated_at.as_deref();
-        if updated_at.is_some() && updated_at.as_deref() == known {
+        let Some(cached) = self.board_cache.get_mut(&number) else {
+            return;
+        };
+        if cached.board.updated_at.as_deref() == Some(next.as_str()) {
             return;
         }
+        // Remember the watermark now: a board that cannot report one (the
+        // CLI path) must not be re-fetched on every probe.
+        cached.board.updated_at = Some(next);
         if self.board_inflight.contains(&number) {
             return;
         }
@@ -648,8 +654,16 @@ impl ProjectsState {
                     }
                     let current = self.panes.projects.selected_number() == Some(number);
                     match result {
-                        Ok(board) => {
+                        Ok(mut board) => {
                             self.probe_backoff = None;
+                            // The CLI path reports no `updatedAt`: keep the
+                            // watermark the probe taught us.
+                            if board.updated_at.is_none() {
+                                board.updated_at = self
+                                    .board_cache
+                                    .get(&number)
+                                    .and_then(|c| c.board.updated_at.clone());
+                            }
                             if self.use_disk_cache {
                                 disk_cache::save_board(&board);
                             }
@@ -1473,27 +1487,59 @@ mod tests {
     }
 
     /// A board whose `updatedAt` is unknown (CLI path, an old disk cache)
-    /// is re-fetched by the first probe so the comparison has a baseline.
+    /// is re-fetched by the first probe — once: the probe's watermark is
+    /// kept even when the fetched board cannot report one. A probe without
+    /// a watermark does nothing.
     #[test]
-    fn a_probe_refetches_a_board_without_a_known_updated_at() {
+    fn a_probe_refetches_a_board_without_a_known_updated_at_once() {
         let mut st = state();
         let tx = st.bg_tx.clone().unwrap();
         tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
-        let mut old = board();
-        old.updated_at = None;
+        let mut cli_board = board();
+        cli_board.updated_at = None;
         tx.send(ProjectsBgMessage::Board {
             number: 2,
-            result: Ok(old),
+            result: Ok(cli_board.clone()),
         })
         .unwrap();
         st.drain_bg_messages();
+        tx.send(ProjectsBgMessage::Probe {
+            number: 2,
+            result: Ok(None),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(
+            !st.board_inflight.contains(&2),
+            "no watermark: nothing to do"
+        );
+
         tx.send(ProjectsBgMessage::Probe {
             number: 2,
             result: Ok(Some("2026-09-09T00:00:00Z".into())),
         })
         .unwrap();
         st.drain_bg_messages();
-        assert!(st.board_inflight.contains(&2));
+        assert!(
+            st.board_inflight.contains(&2),
+            "unknown baseline: re-fetched"
+        );
+        // The CLI path answers without `updatedAt` again …
+        tx.send(ProjectsBgMessage::Board {
+            number: 2,
+            result: Ok(cli_board),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(!st.board_inflight.contains(&2));
+        // … and the same watermark no longer triggers a fetch.
+        tx.send(ProjectsBgMessage::Probe {
+            number: 2,
+            result: Ok(Some("2026-09-09T00:00:00Z".into())),
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(!st.board_inflight.contains(&2), "watermark kept: no loop");
     }
 
     #[test]
