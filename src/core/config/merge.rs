@@ -39,13 +39,14 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "projects-board"
             | "pages"
             | "repo-config" => replace_single(default, unode),
+            "projects-view" => replace_named(default, unode),
             "app" => merge_app(default, unode)?,
             "page" => merge_page(default, unode)?,
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
                  `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, \
-                 `projects-poll-interval`, `projects-board`, `pages`, `repo-config`, `app`, or `page`)"
+                 `projects-poll-interval`, `projects-board`, `projects-view`, `pages`, `repo-config`, `app`, or `page`)"
             ))
             }
         }
@@ -58,6 +59,21 @@ fn replace_single(target: &mut KdlDocument, node: &KdlNode) {
     let name = node.name().value();
     let nodes = target.nodes_mut();
     match nodes.iter_mut().find(|n| n.name().value() == name) {
+        Some(existing) => *existing = node.clone(),
+        None => nodes.push(node.clone()),
+    }
+}
+
+/// Replace the node with the same name *and* first argument (`projects-view
+/// "Mine"`), else append: several may coexist, one per name.
+fn replace_named(target: &mut KdlDocument, node: &KdlNode) {
+    let name = node.name().value();
+    let key = arg0(node);
+    let nodes = target.nodes_mut();
+    match nodes
+        .iter_mut()
+        .find(|n| n.name().value() == name && arg0(n) == key)
+    {
         Some(existing) => *existing = node.clone(),
         None => nodes.push(node.clone()),
     }
@@ -370,6 +386,30 @@ page "git" {
             .filter_map(arg0)
             .collect();
         assert_eq!(vals, vec!["60s"]);
+    }
+
+    #[test]
+    fn projects_views_replace_by_name_else_append() {
+        let mut d =
+            merged(r#"projects-view "Mine" { layout "table" }; projects-view "All" { }"#).unwrap();
+        let user: KdlDocument =
+            r#"projects-view "Mine" { layout "board" }; projects-view "New" { }"#
+                .parse()
+                .unwrap();
+        merge_user_config(&mut d, &user).unwrap();
+        let views: Vec<(&str, Option<&str>)> = d
+            .nodes()
+            .iter()
+            .filter(|n| n.name().value() == "projects-view")
+            .map(|n| {
+                let layout = n.children().and_then(|c| c.get("layout")).and_then(arg0);
+                (arg0(n).unwrap(), layout)
+            })
+            .collect();
+        assert_eq!(
+            views,
+            vec![("Mine", Some("board")), ("All", None), ("New", None)]
+        );
     }
 
     #[test]

@@ -314,6 +314,8 @@ pub(crate) fn views_from(views: &Value) -> Vec<ProjectView> {
                             })
                             .unwrap_or_default(),
                         visible_fields: names(v.get("fields").unwrap_or(&Value::Null)),
+                        local: false,
+                        initial: false,
                     })
                 })
                 .collect()

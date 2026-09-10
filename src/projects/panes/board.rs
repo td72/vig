@@ -335,10 +335,17 @@ impl BoardPane {
     /// still there (a refresh may move it to another column).
     pub fn set_board(&mut self, board: Board) {
         let keep = self.selected_item().map(|i| i.id.clone());
-        // Keep the shown view across a refresh of the same project; another
-        // project starts on its first view.
+        // Keep the shown view (by number: the saved views may have changed)
+        // across a refresh of the same project; another project starts on
+        // its default local view, else its first view.
         if self.board.as_ref().map(|b| b.number) != Some(board.number) {
-            self.view_idx = 0;
+            self.view_idx = board.views.iter().position(|v| v.initial).unwrap_or(0);
+        } else if let Some(idx) = board
+            .views
+            .iter()
+            .position(|v| Some(v.number) == self.applied_view)
+        {
+            self.view_idx = idx;
         }
         self.view_idx = self.view_idx.min(board.views.len().saturating_sub(1));
         let same_project = self.board.as_ref().map(|b| b.number) == Some(board.number);
@@ -482,6 +489,45 @@ impl BoardPane {
     /// The shown saved view, when the project has any.
     pub fn current_view(&self) -> Option<&ProjectView> {
         self.board.as_ref()?.views.get(self.view_idx)
+    }
+
+    /// The shown view comes from the config (`projects-view`), not GitHub.
+    pub fn current_view_is_local(&self) -> bool {
+        self.current_view().is_some_and(|v| v.local)
+    }
+
+    /// `⚠ view "Mine": no field "Foo"` when the current view names fields
+    /// the board does not have (those settings are ignored).
+    pub fn view_notice(&self) -> Option<String> {
+        let board = self.board.as_ref()?;
+        let view = self.current_view()?;
+        let known = |name: &String| {
+            matches!(name.as_str(), "Title" | "Assignees")
+                || board.fields.iter().any(|f| &f.name == name)
+        };
+        // Each name once, in first-seen order (a field may be named in
+        // several settings).
+        let mut missing: Vec<&String> = Vec::new();
+        for name in view
+            .vertical_group_by
+            .iter()
+            .chain(view.group_by.iter())
+            .chain(view.sort_by.iter().map(|s| &s.field))
+            .chain(view.visible_fields.iter())
+        {
+            if !known(name) && !missing.contains(&name) {
+                missing.push(name);
+            }
+        }
+        if missing.is_empty() {
+            return None;
+        }
+        let list: Vec<String> = missing.iter().map(|n| format!("{n:?}")).collect();
+        Some(format!(
+            "⚠ view {:?}: no field {}",
+            view.name,
+            list.join(", ")
+        ))
     }
 
     /// `(view name, position, count)` for the header.
@@ -1653,6 +1699,8 @@ mod tests {
             vertical_group_by: vec![],
             sort_by: vec![],
             visible_fields: vec![],
+            local: false,
+            initial: false,
         }
     }
 
@@ -1927,6 +1975,40 @@ mod tests {
         other.views = vec![view(1, "Only")];
         p.set_board(other);
         assert_eq!(p.view_label(), Some(("Only", 1, 1)));
+    }
+
+    /// A local `default` view opens first; fields it names that the board
+    /// lacks are reported, and a saved view carries neither mark.
+    #[test]
+    fn a_local_default_view_opens_first_and_missing_fields_are_noticed() {
+        let mut p = pane();
+        let sh = shared();
+        let mut b = board();
+        b.number = 5; // another project than the helper's: opens fresh
+        let mut mine = view(2, "Mine");
+        mine.local = true;
+        mine.initial = true;
+        mine.layout = crate::projects::domain::types::ViewLayout::Board;
+        mine.group_by = vec!["Ghost".into()];
+        mine.sort_by = vec![crate::projects::domain::types::ViewSort {
+            field: "Title".into(),
+            desc: false,
+        }];
+        // "Ghost" twice, apart: listed once.
+        mine.visible_fields = vec!["Status".into(), "Phantom".into(), "Ghost".into()];
+        b.views = vec![view(1, "All"), mine];
+        p.set_board(b);
+        assert_eq!(p.view_label(), Some(("Mine", 2, 2)));
+        assert!(p.current_view_is_local());
+        assert_eq!(p.mode, BoardMode::Board);
+        assert_eq!(
+            p.view_notice().as_deref(),
+            Some("⚠ view \"Mine\": no field \"Ghost\", \"Phantom\"")
+        );
+        p.execute(&sh, BoardAction::PrevView);
+        assert_eq!(p.view_label(), Some(("All", 1, 2)));
+        assert!(!p.current_view_is_local());
+        assert_eq!(p.view_notice(), None);
     }
 
     #[test]
