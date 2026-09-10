@@ -128,8 +128,16 @@ pub enum GhDetailPane {
 
 pub enum GhBgMessage {
     AuthStatus(Result<(), String>),
-    IssueList(Result<Vec<GhIssueListItem>, String>),
-    PrList(Result<Vec<GhPrListItem>, String>),
+    /// A list fetch; `show_closed` is the variant it asked for, so a
+    /// result that no longer matches the pane (after `x`) is dropped.
+    IssueList {
+        result: Result<Vec<GhIssueListItem>, String>,
+        show_closed: bool,
+    },
+    PrList {
+        result: Result<Vec<GhPrListItem>, String>,
+        show_closed: bool,
+    },
     RunList(Result<Vec<WorkflowRun>, String>),
     IssueDetail(Result<GhIssueDetail, String>),
     PrDetail(Result<GhPrDetail, String>),
@@ -151,8 +159,8 @@ pub enum GhBgMessage {
 /// The error string of a failed fetch carried by `msg`, if any.
 fn fetch_error(msg: &GhBgMessage) -> Option<&str> {
     match msg {
-        GhBgMessage::IssueList(Err(e))
-        | GhBgMessage::PrList(Err(e))
+        GhBgMessage::IssueList { result: Err(e), .. }
+        | GhBgMessage::PrList { result: Err(e), .. }
         | GhBgMessage::RunList(Err(e))
         | GhBgMessage::IssueDetail(Err(e))
         | GhBgMessage::PrDetail(Err(e))
@@ -168,8 +176,8 @@ fn fetch_error(msg: &GhBgMessage) -> Option<&str> {
 fn fetch_succeeded(msg: &GhBgMessage) -> bool {
     matches!(
         msg,
-        GhBgMessage::IssueList(Ok(_))
-            | GhBgMessage::PrList(Ok(_))
+        GhBgMessage::IssueList { result: Ok(_), .. }
+            | GhBgMessage::PrList { result: Ok(_), .. }
             | GhBgMessage::RunList(Ok(_))
             | GhBgMessage::IssueDetail(Ok(_))
             | GhBgMessage::PrDetail(Ok(_))
@@ -542,7 +550,15 @@ impl GitHubState {
                         self.panes.run_tab.list.set_loading(false);
                     }
                 },
-                GhBgMessage::IssueList(result) => {
+                GhBgMessage::IssueList {
+                    result,
+                    show_closed,
+                } => {
+                    // `x` flipped while this fetch ran: its replacement is
+                    // in flight, this one is stale.
+                    if show_closed != self.panes.issue_tab.list.show_closed {
+                        continue;
+                    }
                     if result.is_ok() {
                         self.lists_refreshed_at = Some(Instant::now());
                     }
@@ -553,7 +569,13 @@ impl GitHubState {
                         &mut self.gh_error,
                     );
                 }
-                GhBgMessage::PrList(result) => {
+                GhBgMessage::PrList {
+                    result,
+                    show_closed,
+                } => {
+                    if show_closed != self.panes.pr_tab.list.show_closed {
+                        continue;
+                    }
                     if result.is_ok() {
                         self.lists_refreshed_at = Some(Instant::now());
                     }
@@ -1334,6 +1356,29 @@ mod kdl_regression {
             .status_message
             .as_deref()
             .is_some_and(|m| m.contains("shown")));
+        // The open-only fetch that was in flight lands now: stale, dropped
+        // (the list keeps loading for the all-items fetch).
+        let tx = st.bg_tx.clone().unwrap();
+        let (tx2, rx2) = mpsc::channel();
+        st.bg_rx = Some(rx2);
+        drop(tx);
+        tx2.send(GhBgMessage::IssueList {
+            result: Ok(vec![]),
+            show_closed: false,
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(st.panes.issue_tab.list.is_loading(), "stale result ignored");
+        tx2.send(GhBgMessage::IssueList {
+            result: Ok(vec![]),
+            show_closed: true,
+        })
+        .unwrap();
+        st.drain_bg_messages();
+        assert!(
+            !st.panes.issue_tab.list.is_loading(),
+            "matching result applied"
+        );
         st.process_events(&mut c, vec![PaneEvent::ToggleClosed])
             .unwrap();
         assert!(!st.show_closed());
@@ -1622,8 +1667,11 @@ mod rate_limit {
         let (mut st, tx) = state();
         tx.send(GhBgMessage::RunList(Err(REST_LIMIT.into())))
             .unwrap();
-        tx.send(GhBgMessage::PrList(Err(REST_LIMIT.into())))
-            .unwrap();
+        tx.send(GhBgMessage::PrList {
+            result: Err(REST_LIMIT.into()),
+            show_closed: false,
+        })
+        .unwrap();
         st.drain_bg_messages();
         assert!(st.polling_suspended());
         assert_eq!(st.gh_error, None, "rate limits show the warning instead");
@@ -1654,8 +1702,11 @@ mod rate_limit {
             .unwrap();
         st.drain_bg_messages();
         // Same burst: a second rejection inside the window changes nothing.
-        tx.send(GhBgMessage::IssueList(Err(REST_LIMIT.into())))
-            .unwrap();
+        tx.send(GhBgMessage::IssueList {
+            result: Err(REST_LIMIT.into()),
+            show_closed: false,
+        })
+        .unwrap();
         st.drain_bg_messages();
         assert_eq!(
             st.rate_limit.as_ref().unwrap().delay,
@@ -1685,8 +1736,11 @@ mod rate_limit {
     #[test]
     fn other_errors_still_reach_the_error_line() {
         let (mut st, tx) = state();
-        tx.send(GhBgMessage::IssueList(Err("HTTP 404: Not Found".into())))
-            .unwrap();
+        tx.send(GhBgMessage::IssueList {
+            result: Err("HTTP 404: Not Found".into()),
+            show_closed: false,
+        })
+        .unwrap();
         st.drain_bg_messages();
         assert!(st.rate_limit.is_none());
         assert_eq!(st.gh_error.as_deref(), Some("HTTP 404: Not Found"));

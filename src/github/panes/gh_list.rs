@@ -82,7 +82,9 @@ pub trait GhListItem: Sized + Send + 'static {
     /// The list; with `show_closed` the closed / merged items too (lists
     /// without a state ignore it).
     fn fetch_list(show_closed: bool) -> Result<Vec<Self>, String>;
-    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage;
+    /// The background message carrying a fetch, tagged with the variant
+    /// it asked for.
+    fn wrap_bg_message(result: Result<Vec<Self>, String>, show_closed: bool) -> GhBgMessage;
 }
 
 /// Reorder `items` into their nested display order.
@@ -195,7 +197,7 @@ impl<T: GhListItem> GhListPane<T> {
         let tx = tx.clone();
         let show_closed = self.show_closed;
         std::thread::spawn(move || {
-            let _ = tx.send(T::wrap_bg_message(T::fetch_list(show_closed)));
+            let _ = tx.send(T::wrap_bg_message(T::fetch_list(show_closed), show_closed));
         });
     }
 

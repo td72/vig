@@ -76,8 +76,11 @@ impl GhListItem for GhIssueListItem {
         client::list_issues(50, show_closed)
     }
 
-    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage {
-        GhBgMessage::IssueList(result)
+    fn wrap_bg_message(result: Result<Vec<Self>, String>, show_closed: bool) -> GhBgMessage {
+        GhBgMessage::IssueList {
+            result,
+            show_closed,
+        }
     }
 }
 

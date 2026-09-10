@@ -136,8 +136,11 @@ impl GhListItem for GhPrListItem {
         Ok(prs)
     }
 
-    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage {
-        GhBgMessage::PrList(result)
+    fn wrap_bg_message(result: Result<Vec<Self>, String>, show_closed: bool) -> GhBgMessage {
+        GhBgMessage::PrList {
+            result,
+            show_closed,
+        }
     }
 }
 

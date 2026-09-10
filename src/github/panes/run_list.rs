@@ -126,7 +126,7 @@ impl GhListItem for WorkflowRun {
         client::list_runs(client::RUN_LIST_LIMIT)
     }
 
-    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage {
+    fn wrap_bg_message(result: Result<Vec<Self>, String>, _show_closed: bool) -> GhBgMessage {
         GhBgMessage::RunList(result)
     }
 }
