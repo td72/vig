@@ -321,15 +321,10 @@ impl ItemKind {
 impl ProjectItem {
     /// The content's state; unknown (drafts, the CLI path) counts as open.
     pub fn state(&self) -> ItemState {
-        match self
-            .content
-            .as_ref()
-            .and_then(|c| c.state.as_deref())
-            .map(str::to_ascii_uppercase)
-            .as_deref()
-        {
-            Some("CLOSED") => ItemState::Closed,
-            Some("MERGED") => ItemState::Merged,
+        let state = self.content.as_ref().and_then(|c| c.state.as_deref());
+        match state {
+            Some(s) if s.eq_ignore_ascii_case("CLOSED") => ItemState::Closed,
+            Some(s) if s.eq_ignore_ascii_case("MERGED") => ItemState::Merged,
             _ => ItemState::Open,
         }
     }

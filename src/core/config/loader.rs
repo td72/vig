@@ -2640,6 +2640,8 @@ mod tests {
         for (bad, what) in [
             (r#"projects-filter"#, "projects-filter"),
             (r#"projects-filter "a" "b""#, "one argument required"),
+            (r#"projects-filter """#, "empty string"),
+            (r#"projects-filter "   ""#, "empty string"),
             (r#"projects-filter 3"#, "not a string"),
             (
                 r#"projects-hide-closed "yes""#,

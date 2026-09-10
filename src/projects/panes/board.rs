@@ -184,8 +184,10 @@ pub struct BoardPane {
     /// The view number the pane last applied (mode / sort seeded from it);
     /// seeing a different one re-applies.
     applied_view: Option<u64>,
-    /// The current view's filter expression, parsed (`None` when the view
-    /// has none); items failing it are left out of every layout.
+    /// The filter in force, parsed: the current view's expression, the
+    /// config's `projects-filter` and the closed toggle joined into one
+    /// (`None` when all are off); items failing it are left out of every
+    /// layout. Rebuilt by `apply_view`.
     filter: Option<Filter>,
     /// The signed-in login, for `assignee:@me` in filters.
     viewer: Option<String>,
