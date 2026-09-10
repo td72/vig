@@ -1,0 +1,1227 @@
+publish	Set up job	﻿2026-09-10T05:24:09.3372196Z Current runner version: '2.337.0'
+publish	Set up job	2026-09-10T05:24:09.3408637Z ##[group]Runner Image Provisioner
+publish	Set up job	2026-09-10T05:24:09.3409990Z Hosted Compute Agent
+publish	Set up job	2026-09-10T05:24:09.3410982Z Version: 20260828.587
+publish	Set up job	2026-09-10T05:24:09.3412053Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+publish	Set up job	2026-09-10T05:24:09.3413753Z Build Date: 2026-08-28T16:44:25Z
+publish	Set up job	2026-09-10T05:24:09.3414936Z Worker ID: {ac73ed9d-b63a-4156-9d85-38aa6c4b1ec5}
+publish	Set up job	2026-09-10T05:24:09.3416236Z Azure Region: eastus
+publish	Set up job	2026-09-10T05:24:09.3417194Z ##[endgroup]
+publish	Set up job	2026-09-10T05:24:09.3419478Z ##[group]Operating System
+publish	Set up job	2026-09-10T05:24:09.3420609Z Ubuntu
+publish	Set up job	2026-09-10T05:24:09.3421516Z 24.04.4
+publish	Set up job	2026-09-10T05:24:09.3422453Z LTS
+publish	Set up job	2026-09-10T05:24:09.3423323Z ##[endgroup]
+publish	Set up job	2026-09-10T05:24:09.3425024Z ##[group]Runner Image
+publish	Set up job	2026-09-10T05:24:09.3426103Z Image: ubuntu-24.04
+publish	Set up job	2026-09-10T05:24:09.3427002Z Version: 20260831.293.1
+publish	Set up job	2026-09-10T05:24:09.3428889Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260831.293/images/ubuntu/Ubuntu2404-Readme.md
+publish	Set up job	2026-09-10T05:24:09.3431940Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260831.293
+publish	Set up job	2026-09-10T05:24:09.3433861Z ##[endgroup]
+publish	Set up job	2026-09-10T05:24:09.3435750Z ##[group]GITHUB_TOKEN Permissions
+publish	Set up job	2026-09-10T05:24:09.3438718Z Contents: read
+publish	Set up job	2026-09-10T05:24:09.3439658Z Metadata: read
+publish	Set up job	2026-09-10T05:24:09.3440644Z ##[endgroup]
+publish	Set up job	2026-09-10T05:24:09.3443779Z Secret source: Actions
+publish	Set up job	2026-09-10T05:24:09.3445500Z Cache mode: write
+publish	Set up job	2026-09-10T05:24:09.3446941Z Prepare workflow directory
+publish	Set up job	2026-09-10T05:24:09.3919270Z Prepare all required actions
+publish	Set up job	2026-09-10T05:24:09.3990912Z Getting action download info
+publish	Set up job	2026-09-10T05:24:09.6613217Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+publish	Set up job	2026-09-10T05:24:09.7930243Z Download action repository 'actions-rust-lang/setup-rust-toolchain@v1' (SHA:166cdcfd11aee3cb47222f9ddb555ce30ddb9659)
+publish	Set up job	2026-09-10T05:24:09.8874918Z Download action repository 'rust-lang/crates-io-auth-action@v1' (SHA:c6f97d42243bad5fab37ca0427f495c86d5b1a18)
+publish	Set up job	2026-09-10T05:24:10.1300754Z Getting action download info
+publish	Set up job	2026-09-10T05:24:10.1976122Z Download action repository 'Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4' (SHA:c19371144df3bb44fab255c43d04cbc2ab54d1c4)
+publish	Set up job	2026-09-10T05:24:10.4447309Z Complete job name: publish
+publish	Run actions/checkout@v6	﻿2026-09-10T05:24:10.5208635Z ##[group]Run actions/checkout@v6
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5209511Z with:
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5209937Z   ref: v0.15.0
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5210516Z   repository: td72/vig
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5214752Z   token: ***
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5215192Z   ssh-strict: true
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5215649Z   ssh-user: git
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5216080Z   persist-credentials: true
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5216554Z   clean: true
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5217007Z   sparse-checkout-cone-mode: true
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5217516Z   fetch-depth: 1
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5217933Z   fetch-tags: false
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5218358Z   show-progress: true
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5218798Z   lfs: false
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5219202Z   submodules: false
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5219658Z   set-safe-directory: true
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5220151Z   allow-unsafe-pr-checkout: false
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.5220934Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6232043Z Syncing repository: td72/vig
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6234213Z ##[group]Getting Git version info
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6234927Z Working directory is '/home/runner/work/vig/vig'
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6235951Z [command]/usr/bin/git version
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6343759Z git version 2.55.0
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6370048Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6385004Z Temporarily overriding HOME='/home/runner/work/_temp/9b854a82-ea8d-494d-b853-cf7863b1aff6' before making global git config changes
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6387413Z Adding repository directory to the temporary git global config as a safe directory
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6390296Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6444668Z Deleting the contents of '/home/runner/work/vig/vig'
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.6449163Z ##[group]Determining repository object format
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8114865Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8146349Z ##[group]Initializing the repository
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8148985Z [command]/usr/bin/git init /home/runner/work/vig/vig
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8268366Z hint: Using 'master' as the name for the initial branch. This default branch name
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8272293Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8286890Z hint: to use in all of your new repositories, which will suppress this warning,
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8288697Z hint: call:
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8291289Z hint:
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8292603Z hint: 	git config --global init.defaultBranch <name>
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8294440Z hint:
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8295845Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8297891Z hint: 'development'. The just-created branch can be renamed via this command:
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8299664Z hint:
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8300725Z hint: 	git branch -m <name>
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8302062Z hint:
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8304481Z hint: Disable this message with "git config set advice.defaultBranchName false"
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8308128Z Initialized empty Git repository in /home/runner/work/vig/vig/.git/
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8313015Z [command]/usr/bin/git remote add origin https://github.com/td72/vig
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8367902Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8369541Z ##[group]Disabling automatic garbage collection
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8374603Z [command]/usr/bin/git config --local gc.auto 0
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8416417Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8417469Z ##[group]Setting up auth
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8418429Z Removing SSH command configuration
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8424780Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8466667Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8802821Z Removing HTTP extra header
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8809431Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.8850384Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9080513Z Removing includeIf entries pointing to credentials config files
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9086954Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9127101Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9358454Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9408001Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9445031Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9484266Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9519377Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9550698Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9551663Z ##[group]Fetching the repository
+publish	Run actions/checkout@v6	2026-09-10T05:24:10.9559814Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/v0.15.0*:refs/remotes/origin/v0.15.0* +refs/tags/v0.15.0*:refs/tags/v0.15.0*
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3721880Z From https://github.com/td72/vig
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3723983Z  * [new tag]         v0.15.0    -> v0.15.0
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3731715Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3734015Z ##[group]Determining the checkout info
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3828764Z [command]/usr/bin/git branch --list --remote origin/v0.15.0
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3833022Z [command]/usr/bin/git tag --list v0.15.0
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3845628Z v0.15.0
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3858589Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3859825Z [command]/usr/bin/git sparse-checkout disable
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3923859Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3971287Z ##[group]Checking out the ref
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.3974832Z [command]/usr/bin/git checkout --progress --force refs/tags/v0.15.0
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5172651Z Note: switching to 'refs/tags/v0.15.0'.
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5173766Z 
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5174897Z You are in 'detached HEAD' state. You can look around, make experimental
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5177131Z changes and commit them, and you can discard any commits you make in this
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5179321Z state without impacting any branches by switching back to a branch.
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5180253Z 
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5180913Z If you want to create a new branch to retain commits you create, you may
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5182345Z do so (now or later) by using -c with the switch command. Example:
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5183227Z 
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5184060Z   git switch -c <new-branch-name>
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5184729Z 
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5185258Z Or undo this operation with:
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5185895Z 
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5186382Z   git switch -
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5186939Z 
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5187615Z Turn off this advice by setting config variable advice.detachedHead to false
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5188423Z 
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5189108Z HEAD is now at 1bd14ef Merge pull request #184 from td72/release/0.15.0
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5457219Z ##[endgroup]
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5509760Z [command]/usr/bin/git log -1 --format=%H
+publish	Run actions/checkout@v6	2026-09-10T05:24:11.5541517Z 1bd14efedbab67c12b4e48f234008c581d850d59
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-09-10T05:24:11.6084093Z ##[group]Run actions-rust-lang/setup-rust-toolchain@v1
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6085149Z with:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6085957Z   cache: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6086777Z   cache-on-failure: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6087663Z   cache-bin: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6088491Z   cache-provider: github
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6089352Z   cache-all-crates: false
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6090263Z   cache-workspace-crates: false
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6091149Z   cache-save-if: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6091984Z   cache-targets: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6092797Z   matcher: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6093769Z   rustflags: -D warnings
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6094625Z   override: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6095432Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6170210Z ##[start-action display=Unbork mac;id=__actions-rust-lang_setup-rust-toolchain.__run]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6196413Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run;outcome=skipped;conclusion=skipped;duration_ms=0]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6239167Z ##[start-action display=Run : construct rustup command line;id=__actions-rust-lang_setup-rust-toolchain.flags]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6292997Z ##[group]Run : construct rustup command line
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6294310Z ^[[36;1m: construct rustup command line^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6295537Z ^[[36;1mecho "targets=$(for t in ${_srt_targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6297007Z ^[[36;1mecho "components=$(for c in ${_srt_components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6298269Z ^[[36;1mecho "downgrade=" >> $GITHUB_OUTPUT^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6341119Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6342136Z env:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6342910Z   _srt_targets: 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6343919Z   _srt_components: 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6344967Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6472519Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=23]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6481560Z ##[start-action display=Setting Environment Variables;id=__actions-rust-lang_setup-rust-toolchain.__run_2]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6515907Z ##[group]Run if [[ ! -v CARGO_INCREMENTAL ]]; then
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6516975Z ^[[36;1mif [[ ! -v CARGO_INCREMENTAL ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6517983Z ^[[36;1m  echo "CARGO_INCREMENTAL=0" >> $GITHUB_ENV^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6518933Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6519886Z ^[[36;1mif [[ ! -v CARGO_PROFILE_DEV_DEBUG ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6520958Z ^[[36;1m  echo "CARGO_PROFILE_DEV_DEBUG=0" >> $GITHUB_ENV^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6521923Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6522770Z ^[[36;1mif [[ ! -v CARGO_TERM_COLOR ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6524123Z ^[[36;1m  echo "CARGO_TERM_COLOR=always" >> $GITHUB_ENV^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6525097Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6525961Z ^[[36;1mif [[ ! -v RUST_BACKTRACE ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6526952Z ^[[36;1m  echo "RUST_BACKTRACE=short" >> $GITHUB_ENV^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6527895Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6528844Z ^[[36;1mif [[ ( ! -v RUSTFLAGS ) && $_srt_NEW_RUSTFLAGS != "" ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6529961Z ^[[36;1m  echo "RUSTFLAGS=$_srt_NEW_RUSTFLAGS" >> $GITHUB_ENV^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6530925Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6531788Z ^[[36;1m# Enable faster sparse index on nightly^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6532848Z ^[[36;1m# The value is ignored on stable and causes no problems^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6534355Z ^[[36;1m# https://internals.rust-lang.org/t/call-for-testing-cargo-sparse-registry/16862^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6535626Z ^[[36;1mif [[ ! -v CARGO_UNSTABLE_SPARSE_REGISTRY ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6536737Z ^[[36;1m  echo "CARGO_UNSTABLE_SPARSE_REGISTRY=true" >> $GITHUB_ENV^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6537746Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6538661Z ^[[36;1mif [[ ! -v CARGO_REGISTRIES_CRATES_IO_PROTOCOL ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6539815Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6540838Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6576954Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6577976Z env:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6578796Z   _srt_NEW_RUSTFLAGS: -D warnings
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6579678Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6655256Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=17]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6660643Z ##[start-action display=Install Rust Problem Matcher;id=__actions-rust-lang_setup-rust-toolchain.__run_3]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6701130Z ##[group]Run echo "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6702690Z ^[[36;1mecho "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6738476Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6739501Z env:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6740296Z   CARGO_INCREMENTAL: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6741162Z   CARGO_PROFILE_DEV_DEBUG: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6742039Z   CARGO_TERM_COLOR: always
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6742885Z   RUST_BACKTRACE: short
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6743862Z   RUSTFLAGS: -D warnings
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6744750Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6745698Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6746595Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6837811Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=17]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6844424Z ##[start-action display=Install rustup, if needed;id=__actions-rust-lang_setup-rust-toolchain.__run_4]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6877358Z ##[group]Run if ! command -v rustup &> /dev/null ; then
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6878419Z ^[[36;1mif ! command -v rustup &> /dev/null ; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6879983Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6881279Z ^[[36;1m^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6882177Z ^[[36;1m  # Resolve the correct CARGO_HOME path depending on OS^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6883232Z ^[[36;1m  if [[ "$RUNNER_OS" == "Windows" ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6884619Z ^[[36;1m    echo "${CARGO_HOME:-$USERPROFILE/.cargo}/bin" | sed 's|/|\\|g' >> $GITHUB_PATH^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6885697Z ^[[36;1m  else^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6886589Z ^[[36;1m    echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6887543Z ^[[36;1m  fi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6888312Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6923900Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6924889Z env:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6925654Z   CARGO_INCREMENTAL: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6926476Z   CARGO_PROFILE_DEV_DEBUG: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6927313Z   CARGO_TERM_COLOR: always
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6928140Z   RUST_BACKTRACE: short
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6928942Z   RUSTFLAGS: -D warnings
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6929788Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6930704Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6931597Z   RUNNER_OS: Linux
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.6932368Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7007114Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=16]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7016580Z ##[start-action display=rustup toolchain install stable;id=__actions-rust-lang_setup-rust-toolchain.__run_5]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7051405Z ##[group]Run # Check if value is set
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7052345Z ^[[36;1m# Check if value is set^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7053238Z ^[[36;1mif [[ -n "$_srt_rust_src_dir" ]]^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7054394Z ^[[36;1mthen^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7055251Z ^[[36;1m  # If value is set the directory must exist^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7056216Z ^[[36;1m  if [[ -d "$_srt_rust_src_dir" ]]^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7057118Z ^[[36;1m  then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7057926Z ^[[36;1m    cd "$_srt_rust_src_dir"^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7058791Z ^[[36;1m  else^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7059750Z ^[[36;1m    echo "'rust-src-dir' does not point to an existing directory" >&2^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7061099Z ^[[36;1m    echo "The value of 'rust-src-dir' is: ${_srt_rust_src_dir}" >&2^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7062109Z ^[[36;1m    exit 1^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7062916Z ^[[36;1m  fi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7063914Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7064923Z ^[[36;1mif [[ -z "$_srt_toolchain" && ( -f "rust-toolchain" || -f "rust-toolchain.toml") ]]^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7065983Z ^[[36;1mthen^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7066856Z ^[[36;1m  # Install the toolchain as specified in the file^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7067958Z ^[[36;1m  # rustup show is the old way that implicitly installed a toolchain^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7069069Z ^[[36;1m  # rustup toolchain install is the new explicit way^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7070227Z ^[[36;1m  # https://github.com/rust-lang/rustup/issues/3635#issuecomment-2343511297^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7071429Z ^[[36;1m  rustup show active-toolchain || rustup toolchain install^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7072468Z ^[[36;1m  if [[ -n $_srt_components ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7073675Z ^[[36;1m    rustup component add ${_srt_components//,/ }^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7074630Z ^[[36;1m  fi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7075448Z ^[[36;1m  if [[ -n $_srt_targets ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7076397Z ^[[36;1m    rustup target add ${_srt_targets//,/ }^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7077281Z ^[[36;1m  fi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7078041Z ^[[36;1melse^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7078852Z ^[[36;1m  if [[ -z "$_srt_toolchain" ]]^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7079716Z ^[[36;1m  then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7080527Z ^[[36;1m    _srt_toolchain=stable^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7081363Z ^[[36;1m  fi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7082373Z ^[[36;1m  rustup toolchain install ${_srt_toolchain//,/ }  --profile minimal --no-self-update^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7083738Z ^[[36;1m  # Take the last element from the list^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7084890Z ^[[36;1m  if [[ "$_srt_override" == "true" ]]^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7085784Z ^[[36;1m  then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7086667Z ^[[36;1m    rustup override set ${_srt_toolchain//*,/ }^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7087580Z ^[[36;1m  fi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7088335Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7124791Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7125753Z env:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7126517Z   CARGO_INCREMENTAL: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7127361Z   CARGO_PROFILE_DEV_DEBUG: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7128202Z   CARGO_TERM_COLOR: always
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7129020Z   RUST_BACKTRACE: short
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7129842Z   RUSTFLAGS: -D warnings
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7130698Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7131620Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7132505Z   _srt_toolchain: 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7133268Z   _srt_targets: 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7134465Z   _srt_components: 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7135280Z   _srt_override: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7136082Z   _srt_rust_src_dir: 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.7136873Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:11.9138562Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:12.0292181Z info: latest update on 2026-09-03 for version 1.98.1 (48a229cea 2026-09-01)
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:12.0437840Z info: removing previous version of component clippy
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:12.0456903Z info: removing previous version of component rustfmt
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:12.0469797Z info: removing previous version of component cargo
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:12.0521007Z info: removing previous version of component rust-std
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:12.0571678Z info: removing previous version of component rustc
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:12.0630362Z info: downloading 5 components
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0194107Z 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0291723Z   stable-x86_64-unknown-linux-gnu updated - rustc 1.98.1 (48a229cea 2026-09-01) (from rustc 1.98.0 (88d9e12ae 2026-08-18))
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0292481Z 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0411373Z info: override toolchain for /home/runner/work/vig/vig set to stable-x86_64-unknown-linux-gnu
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0435548Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=8341]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0440193Z ##[start-action display=Print installed versions;id=__actions-rust-lang_setup-rust-toolchain.versions]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0469787Z ##[group]Run echo "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0470278Z ^[[36;1mecho "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0470631Z ^[[36;1mrustc --version --verbose^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0470967Z ^[[36;1mecho "cargo-version=$(cargo --version)" >> $GITHUB_OUTPUT^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0471311Z ^[[36;1mcargo --version --verbose^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0471638Z ^[[36;1mecho "rustup-version=$(rustup --version)" >> $GITHUB_OUTPUT^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0472015Z ^[[36;1mrustup --version^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0472239Z ^[[36;1m^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0472693Z ^[[36;1m_srt_DATE=$(rustc --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0473312Z ^[[36;1m_srt_HASH=$(rustc --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0474137Z ^[[36;1mecho "cachekey=$(echo $_srt_DATE$_srt_HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0511798Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0512144Z env:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0512344Z   CARGO_INCREMENTAL: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0512577Z   CARGO_PROFILE_DEV_DEBUG: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0512828Z   CARGO_TERM_COLOR: always
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0513057Z   RUST_BACKTRACE: short
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0513287Z   RUSTFLAGS: -D warnings
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0513784Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0514086Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0514384Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0810777Z rustc 1.98.1 (48a229cea 2026-09-01)
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0811847Z binary: rustc
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0812289Z commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0812852Z commit-date: 2026-09-01
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0813120Z host: x86_64-unknown-linux-gnu
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0813842Z release: 1.98.1
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.0814072Z LLVM version: 22.1.8
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1090520Z cargo 1.98.1 (797e8a9bc 2026-08-05)
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1091049Z release: 1.98.1
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1091505Z commit-hash: 797e8a9bca276c1c9f9f738d2a20f484fa4eea9d
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1092053Z commit-date: 2026-08-05
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1092490Z host: x86_64-unknown-linux-gnu
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1092911Z libgit2: 1.9.4 (sys:0.21.0 vendored)
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1094004Z libcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1094687Z ssl: OpenSSL 3.6.3 9 Jun 2026
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1095158Z os: Ubuntu 24.4.0 (noble) [64-bit]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1145046Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1225346Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1275697Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1276324Z rustup 1.29.0 (28d1352db 2026-03-05)
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1354475Z info: the currently active `rustc` version is `rustc 1.98.1 (48a229cea 2026-09-01)`
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1640588Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.versions;outcome=success;conclusion=success;duration_ms=119]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1643940Z ##[start-action display=Downgrade registry access protocol when needed;id=__actions-rust-lang_setup-rust-toolchain.__run_6]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1664657Z ##[group]Run # Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1665224Z ^[[36;1m# Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1665747Z ^[[36;1m# On versions 1.66, 1.67, and 1.68.0-nightly the value "sparse" is still unstable.^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1666332Z ^[[36;1m# https://github.com/dtolnay/rust-toolchain/pull/69#discussion_r1107268108^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1666905Z ^[[36;1m# If we detect an incompatible value, set it to "git" which is always supported.^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1667816Z ^[[36;1mif [[ "rustc 1.98.1 (48a229cea 2026-09-01)" =~ ^rustc\ (1\.6[67]\.|1\.68\.0-nightly) && "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL}" == "sparse" ]]; then^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1668439Z ^[[36;1m  echo "Downgrade cargo registry protocol to git"^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1668841Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git" >> $GITHUB_ENV^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1669188Z ^[[36;1mfi^[[0m
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1707081Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1707429Z env:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1707627Z   CARGO_INCREMENTAL: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1707858Z   CARGO_PROFILE_DEV_DEBUG: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1708097Z   CARGO_TERM_COLOR: always
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1708343Z   RUST_BACKTRACE: short
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1708569Z   RUSTFLAGS: -D warnings
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1708808Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1709105Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1709397Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1776303Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=13]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1778616Z ##[start-action display=Setup Rust Caching;id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1902686Z ##[group]Run Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1903336Z with:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1904111Z   cache-on-failure: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1904508Z   cache-bin: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1904862Z   cache-provider: github
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1905269Z   cache-all-crates: false
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1905682Z   cache-workspace-crates: false
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1906102Z   cache-targets: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1906693Z   save-if: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1907033Z   prefix-key: v0-rust
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1907373Z   add-job-id-key: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1907784Z   add-rust-environment-hash-key: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1908262Z   lookup-only: false
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1908619Z   cmd-format: {0}
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1908944Z env:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1909254Z   CARGO_INCREMENTAL: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1909639Z   CARGO_PROFILE_DEV_DEBUG: 0
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1910056Z   CARGO_TERM_COLOR: always
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1910315Z   RUST_BACKTRACE: short
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1910545Z   RUSTFLAGS: -D warnings
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1910785Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1911079Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.1911362Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.4882309Z (node:2445) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.4883904Z (Use `node --trace-deprecation ...` to show where the warning was created)
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6474496Z ##[group]Cache Configuration
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6475183Z Cache Provider:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6475619Z     github
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6476012Z Workspaces:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6476512Z     /home/runner/work/vig/vig
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6477124Z Cache Paths:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6477552Z     /home/runner/.cargo/bin
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6478143Z     /home/runner/.cargo/.crates.toml
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6478792Z     /home/runner/.cargo/.crates2.json
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6479418Z     /home/runner/.cargo/registry
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6479922Z     /home/runner/.cargo/git
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6480477Z     /home/runner/work/vig/vig/target
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6481059Z Restore Key:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6481545Z     v0-rust-publish-Linux-x64-09ed3713
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6482130Z Cache Key:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6482641Z     v0-rust-publish-Linux-x64-09ed3713-eb78a9df
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6483275Z .. Prefix:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6483962Z   - v0-rust-publish-Linux-x64
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6484584Z .. Environment considered:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6485137Z   - Rust Versions:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6485804Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6487093Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6487784Z   - CARGO_INCREMENTAL
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6488258Z   - CARGO_PROFILE_DEV_DEBUG
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6488843Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6489444Z   - CARGO_TERM_COLOR
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6489913Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6490501Z   - RUST_BACKTRACE
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6490930Z   - RUSTFLAGS
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6491335Z .. Lockfiles considered:
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6491891Z   - /home/runner/work/vig/vig/Cargo.lock
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6492503Z   - /home/runner/work/vig/vig/Cargo.toml
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6494009Z ##[endgroup]
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6494151Z 
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.6494257Z ... Restoring cache ...
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.7225097Z No cache found.
+publish	Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:24:20.7381631Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=560]
+publish	Authenticate with crates.io	﻿2026-09-10T05:24:20.7454236Z ##[group]Run rust-lang/crates-io-auth-action@v1
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7454595Z with:
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7454807Z   url: https://crates.io
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7455038Z env:
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7455224Z   CARGO_INCREMENTAL: 0
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7455451Z   CARGO_PROFILE_DEV_DEBUG: 0
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7455687Z   CARGO_TERM_COLOR: always
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7455916Z   RUST_BACKTRACE: short
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7456144Z   RUSTFLAGS: -D warnings
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7456394Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7456695Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7456977Z   CACHE_ON_FAILURE: true
+publish	Authenticate with crates.io	2026-09-10T05:24:20.7457188Z ##[endgroup]
+publish	Authenticate with crates.io	2026-09-10T05:24:20.8193105Z Retrieving GitHub Actions JWT token with audience: crates.io
+publish	Authenticate with crates.io	2026-09-10T05:24:20.8931315Z Retrieved JWT token successfully
+publish	Authenticate with crates.io	2026-09-10T05:24:20.8932354Z Requesting token from: https://crates.io/api/v1/trusted_publishing/tokens. User agent: crates-io-auth-action/1.0.1
+publish	Authenticate with crates.io	2026-09-10T05:24:21.0414612Z Retrieved token successfully
+publish	Publish to crates.io	﻿2026-09-10T05:24:21.0888206Z ##[group]Run cargo publish
+publish	Publish to crates.io	2026-09-10T05:24:21.0888538Z ^[[36;1mcargo publish^[[0m
+publish	Publish to crates.io	2026-09-10T05:24:21.0925312Z shell: /usr/bin/bash -e {0}
+publish	Publish to crates.io	2026-09-10T05:24:21.0925577Z env:
+publish	Publish to crates.io	2026-09-10T05:24:21.0925779Z   CARGO_INCREMENTAL: 0
+publish	Publish to crates.io	2026-09-10T05:24:21.0926027Z   CARGO_PROFILE_DEV_DEBUG: 0
+publish	Publish to crates.io	2026-09-10T05:24:21.0926286Z   CARGO_TERM_COLOR: always
+publish	Publish to crates.io	2026-09-10T05:24:21.0926519Z   RUST_BACKTRACE: short
+publish	Publish to crates.io	2026-09-10T05:24:21.0926753Z   RUSTFLAGS: -D warnings
+publish	Publish to crates.io	2026-09-10T05:24:21.0927002Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+publish	Publish to crates.io	2026-09-10T05:24:21.0927308Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+publish	Publish to crates.io	2026-09-10T05:24:21.0927600Z   CACHE_ON_FAILURE: true
+publish	Publish to crates.io	2026-09-10T05:24:21.0928172Z   CARGO_REGISTRY_TOKEN: ***
+publish	Publish to crates.io	2026-09-10T05:24:21.0928421Z ##[endgroup]
+publish	Publish to crates.io	2026-09-10T05:24:21.1308872Z ^[[1m^[[92m    Updating^[[0m crates.io index
+publish	Publish to crates.io	2026-09-10T05:24:21.5023314Z ^[[1m^[[92m    Updating^[[0m crates.io index
+publish	Publish to crates.io	2026-09-10T05:24:22.1410116Z ^[[1m^[[92m   Packaging^[[0m vig v0.15.0 (/home/runner/work/vig/vig)
+publish	Publish to crates.io	2026-09-10T05:24:22.1950496Z ^[[1m^[[92m    Updating^[[0m crates.io index
+publish	Publish to crates.io	2026-09-10T05:24:22.2527197Z ^[[1m^[[33mwarning^[[0m: package `chacha20 v0.10.1` in Cargo.lock is yanked in registry `crates-io`
+publish	Publish to crates.io	2026-09-10T05:24:22.2528302Z   ^[[1m^[[94m|^[[0m
+publish	Publish to crates.io	2026-09-10T05:24:22.2528970Z   ^[[1m^[[94m= ^[[0m^[[1mhelp^[[0m: consider updating to a version that is not yanked
+publish	Publish to crates.io	2026-09-10T05:24:22.3069918Z ^[[1m^[[92m    Packaged^[[0m 150 files, 1.6MiB (374.5KiB compressed)
+publish	Publish to crates.io	2026-09-10T05:24:22.3070673Z ^[[1m^[[92m   Verifying^[[0m vig v0.15.0 (/home/runner/work/vig/vig)
+publish	Publish to crates.io	2026-09-10T05:24:22.4016076Z ^[[1m^[[92m Downloading^[[0m crates ...
+publish	Publish to crates.io	2026-09-10T05:24:22.4655648Z ^[[1m^[[92m  Downloaded^[[0m adler2 v2.0.1
+publish	Publish to crates.io	2026-09-10T05:24:22.4672483Z ^[[1m^[[92m  Downloaded^[[0m errno v0.3.14
+publish	Publish to crates.io	2026-09-10T05:24:22.4689204Z ^[[1m^[[92m  Downloaded^[[0m serde_urlencoded v0.7.1
+publish	Publish to crates.io	2026-09-10T05:24:22.4708525Z ^[[1m^[[92m  Downloaded^[[0m walkdir v2.5.0
+publish	Publish to crates.io	2026-09-10T05:24:22.4728932Z ^[[1m^[[92m  Downloaded^[[0m euclid v0.22.13
+publish	Publish to crates.io	2026-09-10T05:24:22.4763519Z ^[[1m^[[92m  Downloaded^[[0m scopeguard v1.2.0
+publish	Publish to crates.io	2026-09-10T05:24:22.4776901Z ^[[1m^[[92m  Downloaded^[[0m fancy-regex v0.16.2
+publish	Publish to crates.io	2026-09-10T05:24:22.4815485Z ^[[1m^[[92m  Downloaded^[[0m tower-service v0.3.3
+publish	Publish to crates.io	2026-09-10T05:24:22.4823801Z ^[[1m^[[92m  Downloaded^[[0m strum_macros v0.27.2
+publish	Publish to crates.io	2026-09-10T05:24:22.4850747Z ^[[1m^[[92m  Downloaded^[[0m synstructure v0.13.2
+publish	Publish to crates.io	2026-09-10T05:24:22.4861784Z ^[[1m^[[92m  Downloaded^[[0m tempfile v3.25.0
+publish	Publish to crates.io	2026-09-10T05:24:22.4889420Z ^[[1m^[[92m  Downloaded^[[0m thiserror v2.0.18
+publish	Publish to crates.io	2026-09-10T05:24:22.4958168Z ^[[1m^[[92m  Downloaded^[[0m serde_core v1.0.228
+publish	Publish to crates.io	2026-09-10T05:24:22.4987199Z ^[[1m^[[92m  Downloaded^[[0m fancy-regex v0.11.0
+publish	Publish to crates.io	2026-09-10T05:24:22.5021627Z ^[[1m^[[92m  Downloaded^[[0m regex-syntax v0.8.9
+publish	Publish to crates.io	2026-09-10T05:24:22.5087789Z ^[[1m^[[92m  Downloaded^[[0m http v1.4.0
+publish	Publish to crates.io	2026-09-10T05:24:22.5124800Z ^[[1m^[[92m  Downloaded^[[0m icu_locale_core v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.5195783Z ^[[1m^[[92m  Downloaded^[[0m futures-task v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:22.5208714Z ^[[1m^[[92m  Downloaded^[[0m http-body v1.0.1
+publish	Publish to crates.io	2026-09-10T05:24:22.5219520Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.2.17
+publish	Publish to crates.io	2026-09-10T05:24:22.5250539Z ^[[1m^[[92m  Downloaded^[[0m tower-layer v0.3.3
+publish	Publish to crates.io	2026-09-10T05:24:22.5260713Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.3.4
+publish	Publish to crates.io	2026-09-10T05:24:22.5296448Z ^[[1m^[[92m  Downloaded^[[0m rustls-webpki v0.103.15
+publish	Publish to crates.io	2026-09-10T05:24:22.5328824Z ^[[1m^[[92m  Downloaded^[[0m self_cell v1.3.0
+publish	Publish to crates.io	2026-09-10T05:24:22.5339711Z ^[[1m^[[92m  Downloaded^[[0m half v2.7.1
+publish	Publish to crates.io	2026-09-10T05:24:22.5368117Z ^[[1m^[[92m  Downloaded^[[0m hex v0.4.3
+publish	Publish to crates.io	2026-09-10T05:24:22.5385440Z ^[[1m^[[92m  Downloaded^[[0m httparse v1.10.1
+publish	Publish to crates.io	2026-09-10T05:24:22.5411904Z ^[[1m^[[92m  Downloaded^[[0m icu_normalizer v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.5448661Z ^[[1m^[[92m  Downloaded^[[0m ref-cast v1.0.27
+publish	Publish to crates.io	2026-09-10T05:24:22.5481766Z ^[[1m^[[92m  Downloaded^[[0m rustc_version v0.4.1
+publish	Publish to crates.io	2026-09-10T05:24:22.5496230Z ^[[1m^[[92m  Downloaded^[[0m signal-hook v0.3.18
+publish	Publish to crates.io	2026-09-10T05:24:22.5554427Z ^[[1m^[[92m  Downloaded^[[0m simd-adler32 v0.3.8
+publish	Publish to crates.io	2026-09-10T05:24:22.5564679Z ^[[1m^[[92m  Downloaded^[[0m tokio-rustls v0.26.4
+publish	Publish to crates.io	2026-09-10T05:24:22.5585954Z ^[[1m^[[92m  Downloaded^[[0m icu_collections v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.5655616Z ^[[1m^[[92m  Downloaded^[[0m reqwest v0.12.28
+publish	Publish to crates.io	2026-09-10T05:24:22.5712546Z ^[[1m^[[92m  Downloaded^[[0m gif v0.14.2
+publish	Publish to crates.io	2026-09-10T05:24:22.5733653Z ^[[1m^[[92m  Downloaded^[[0m git2 v0.20.4
+publish	Publish to crates.io	2026-09-10T05:24:22.5820547Z ^[[1m^[[92m  Downloaded^[[0m hashbrown v0.16.1
+publish	Publish to crates.io	2026-09-10T05:24:22.5880906Z ^[[1m^[[92m  Downloaded^[[0m http-body-util v0.1.3
+publish	Publish to crates.io	2026-09-10T05:24:22.5901131Z ^[[1m^[[92m  Downloaded^[[0m signal-hook-mio v0.2.5
+publish	Publish to crates.io	2026-09-10T05:24:22.5924489Z ^[[1m^[[92m  Downloaded^[[0m signature v2.2.0
+publish	Publish to crates.io	2026-09-10T05:24:22.5934654Z ^[[1m^[[92m  Downloaded^[[0m thiserror v1.0.69
+publish	Publish to crates.io	2026-09-10T05:24:22.5993372Z ^[[1m^[[92m  Downloaded^[[0m unicode-truncate v2.0.1
+publish	Publish to crates.io	2026-09-10T05:24:22.6012102Z ^[[1m^[[92m  Downloaded^[[0m fastrand v2.3.0
+publish	Publish to crates.io	2026-09-10T05:24:22.6027627Z ^[[1m^[[92m  Downloaded^[[0m fixedbitset v0.4.2
+publish	Publish to crates.io	2026-09-10T05:24:22.6044663Z ^[[1m^[[92m  Downloaded^[[0m gethostname v1.1.0
+publish	Publish to crates.io	2026-09-10T05:24:22.6054940Z ^[[1m^[[92m  Downloaded^[[0m rustix v0.38.44
+publish	Publish to crates.io	2026-09-10T05:24:22.6328008Z ^[[1m^[[92m  Downloaded^[[0m rustls-pki-types v1.14.0
+publish	Publish to crates.io	2026-09-10T05:24:22.6353751Z ^[[1m^[[92m  Downloaded^[[0m ryu v1.0.23
+publish	Publish to crates.io	2026-09-10T05:24:22.6388056Z ^[[1m^[[92m  Downloaded^[[0m self_update v0.42.0
+publish	Publish to crates.io	2026-09-10T05:24:22.6414174Z ^[[1m^[[92m  Downloaded^[[0m semver v1.0.27
+publish	Publish to crates.io	2026-09-10T05:24:22.6437408Z ^[[1m^[[92m  Downloaded^[[0m serde v1.0.228
+publish	Publish to crates.io	2026-09-10T05:24:22.6472675Z ^[[1m^[[92m  Downloaded^[[0m serde_json v1.0.149
+publish	Publish to crates.io	2026-09-10T05:24:22.6546843Z ^[[1m^[[92m  Downloaded^[[0m slab v0.4.12
+publish	Publish to crates.io	2026-09-10T05:24:22.6559889Z ^[[1m^[[92m  Downloaded^[[0m smallvec v1.15.1
+publish	Publish to crates.io	2026-09-10T05:24:22.6581176Z ^[[1m^[[92m  Downloaded^[[0m tap v1.0.1
+publish	Publish to crates.io	2026-09-10T05:24:22.6590976Z ^[[1m^[[92m  Downloaded^[[0m tar v0.4.46
+publish	Publish to crates.io	2026-09-10T05:24:22.6620698Z ^[[1m^[[92m  Downloaded^[[0m termios v0.3.3
+publish	Publish to crates.io	2026-09-10T05:24:22.6638619Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v1.0.69
+publish	Publish to crates.io	2026-09-10T05:24:22.6652048Z ^[[1m^[[92m  Downloaded^[[0m time-core v0.1.8
+publish	Publish to crates.io	2026-09-10T05:24:22.6663487Z ^[[1m^[[92m  Downloaded^[[0m tinyvec_macros v0.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.6671793Z ^[[1m^[[92m  Downloaded^[[0m tower v0.5.3
+publish	Publish to crates.io	2026-09-10T05:24:22.6777500Z ^[[1m^[[92m  Downloaded^[[0m ucd-trie v0.1.7
+publish	Publish to crates.io	2026-09-10T05:24:22.6791908Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.4.1
+publish	Publish to crates.io	2026-09-10T05:24:22.6830285Z ^[[1m^[[92m  Downloaded^[[0m h2 v0.4.13
+publish	Publish to crates.io	2026-09-10T05:24:22.6896325Z ^[[1m^[[92m  Downloaded^[[0m hyper-rustls v0.27.7
+publish	Publish to crates.io	2026-09-10T05:24:22.6920701Z ^[[1m^[[92m  Downloaded^[[0m icu_normalizer_data v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.6941683Z ^[[1m^[[92m  Downloaded^[[0m is_terminal_polyfill v1.70.2
+publish	Publish to crates.io	2026-09-10T05:24:22.6951590Z ^[[1m^[[92m  Downloaded^[[0m itertools v0.14.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7022378Z ^[[1m^[[92m  Downloaded^[[0m linked-hash-map v0.5.6
+publish	Publish to crates.io	2026-09-10T05:24:22.7033263Z ^[[1m^[[92m  Downloaded^[[0m ref-cast-impl v1.0.27
+publish	Publish to crates.io	2026-09-10T05:24:22.7041649Z ^[[1m^[[92m  Downloaded^[[0m same-file v1.0.6
+publish	Publish to crates.io	2026-09-10T05:24:22.7055629Z ^[[1m^[[92m  Downloaded^[[0m self-replace v1.5.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7072902Z ^[[1m^[[92m  Downloaded^[[0m shlex v1.3.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7086108Z ^[[1m^[[92m  Downloaded^[[0m siphasher v1.0.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7100158Z ^[[1m^[[92m  Downloaded^[[0m stable_deref_trait v1.2.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7108845Z ^[[1m^[[92m  Downloaded^[[0m strum v0.27.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7118320Z ^[[1m^[[92m  Downloaded^[[0m tinystr v0.8.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7138553Z ^[[1m^[[92m  Downloaded^[[0m version_check v0.9.5
+publish	Publish to crates.io	2026-09-10T05:24:22.7151359Z ^[[1m^[[92m  Downloaded^[[0m futures-core v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:22.7164779Z ^[[1m^[[92m  Downloaded^[[0m futures-sink v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:22.7172765Z ^[[1m^[[92m  Downloaded^[[0m inotify-sys v0.1.5
+publish	Publish to crates.io	2026-09-10T05:24:22.7182127Z ^[[1m^[[92m  Downloaded^[[0m itoa v1.0.17
+publish	Publish to crates.io	2026-09-10T05:24:22.7197108Z ^[[1m^[[92m  Downloaded^[[0m kasuari v0.4.11
+publish	Publish to crates.io	2026-09-10T05:24:22.7221804Z ^[[1m^[[92m  Downloaded^[[0m cfg_aliases v0.2.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7231448Z ^[[1m^[[92m  Downloaded^[[0m form_urlencoded v1.2.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7239842Z ^[[1m^[[92m  Downloaded^[[0m futures-io v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:22.7248342Z ^[[1m^[[92m  Downloaded^[[0m heck v0.5.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7261746Z ^[[1m^[[92m  Downloaded^[[0m lru-slab v0.1.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7270299Z ^[[1m^[[92m  Downloaded^[[0m byteorder-lite v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7280642Z ^[[1m^[[92m  Downloaded^[[0m funty v2.0.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7288585Z ^[[1m^[[92m  Downloaded^[[0m lab v0.11.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7302313Z ^[[1m^[[92m  Downloaded^[[0m rustc-hash v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7315697Z ^[[1m^[[92m  Downloaded^[[0m find-msvc-tools v0.1.9
+publish	Publish to crates.io	2026-09-10T05:24:22.7331661Z ^[[1m^[[92m  Downloaded^[[0m inotify v0.10.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7352017Z ^[[1m^[[92m  Downloaded^[[0m instability v0.3.11
+publish	Publish to crates.io	2026-09-10T05:24:22.7368272Z ^[[1m^[[92m  Downloaded^[[0m memmem v0.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7378714Z ^[[1m^[[92m  Downloaded^[[0m memoffset v0.9.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7391296Z ^[[1m^[[92m  Downloaded^[[0m vtparse v0.6.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7400244Z ^[[1m^[[92m  Downloaded^[[0m anstyle v1.0.13
+publish	Publish to crates.io	2026-09-10T05:24:22.7415473Z ^[[1m^[[92m  Downloaded^[[0m atomic-waker v1.1.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7427814Z ^[[1m^[[92m  Downloaded^[[0m clap_lex v1.0.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7438697Z ^[[1m^[[92m  Downloaded^[[0m color_quant v1.1.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7449232Z ^[[1m^[[92m  Downloaded^[[0m utf8parse v0.2.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7459072Z ^[[1m^[[92m  Downloaded^[[0m subtle v2.6.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7470999Z ^[[1m^[[92m  Downloaded^[[0m sync_wrapper v1.0.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7479273Z ^[[1m^[[92m  Downloaded^[[0m try-lock v0.2.5
+publish	Publish to crates.io	2026-09-10T05:24:22.7488578Z ^[[1m^[[92m  Downloaded^[[0m untrusted v0.9.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7507696Z ^[[1m^[[92m  Downloaded^[[0m urlencoding v2.1.3
+publish	Publish to crates.io	2026-09-10T05:24:22.7516995Z ^[[1m^[[92m  Downloaded^[[0m instant v0.1.13
+publish	Publish to crates.io	2026-09-10T05:24:22.7537075Z ^[[1m^[[92m  Downloaded^[[0m lazy_static v1.5.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7555482Z ^[[1m^[[92m  Downloaded^[[0m pulldown-cmark-escape v0.11.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7562798Z ^[[1m^[[92m  Downloaded^[[0m strsim v0.11.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7576935Z ^[[1m^[[92m  Downloaded^[[0m utf8_iter v1.0.4
+publish	Publish to crates.io	2026-09-10T05:24:22.7590272Z ^[[1m^[[92m  Downloaded^[[0m want v0.3.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7600319Z ^[[1m^[[92m  Downloaded^[[0m outref v0.5.2
+publish	Publish to crates.io	2026-09-10T05:24:22.7614669Z ^[[1m^[[92m  Downloaded^[[0m ident_case v1.0.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7623116Z ^[[1m^[[92m  Downloaded^[[0m fax v0.2.6
+publish	Publish to crates.io	2026-09-10T05:24:22.7638538Z ^[[1m^[[92m  Downloaded^[[0m generic-array v0.14.7
+publish	Publish to crates.io	2026-09-10T05:24:22.7656802Z ^[[1m^[[92m  Downloaded^[[0m fax_derive v0.2.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7663190Z ^[[1m^[[92m  Downloaded^[[0m filedescriptor v0.8.3
+publish	Publish to crates.io	2026-09-10T05:24:22.7672855Z ^[[1m^[[92m  Downloaded^[[0m fnv v1.0.7
+publish	Publish to crates.io	2026-09-10T05:24:22.7681657Z ^[[1m^[[92m  Downloaded^[[0m rustversion v1.0.22
+publish	Publish to crates.io	2026-09-10T05:24:22.7710249Z ^[[1m^[[92m  Downloaded^[[0m sha2 v0.10.9
+publish	Publish to crates.io	2026-09-10T05:24:22.7736575Z ^[[1m^[[92m  Downloaded^[[0m static_assertions v1.1.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7750593Z ^[[1m^[[92m  Downloaded^[[0m filetime v0.2.27
+publish	Publish to crates.io	2026-09-10T05:24:22.7767323Z ^[[1m^[[92m  Downloaded^[[0m ipnet v2.11.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7783097Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v2.0.18
+publish	Publish to crates.io	2026-09-10T05:24:22.7797949Z ^[[1m^[[92m  Downloaded^[[0m time-macros v0.2.27
+publish	Publish to crates.io	2026-09-10T05:24:22.7821089Z ^[[1m^[[92m  Downloaded^[[0m wezterm-dynamic-derive v0.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7830397Z ^[[1m^[[92m  Downloaded^[[0m mio v1.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7891259Z ^[[1m^[[92m  Downloaded^[[0m phf_generator v0.11.3
+publish	Publish to crates.io	2026-09-10T05:24:22.7902769Z ^[[1m^[[92m  Downloaded^[[0m anstyle-query v1.1.5
+publish	Publish to crates.io	2026-09-10T05:24:22.7914601Z ^[[1m^[[92m  Downloaded^[[0m by_address v1.2.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7922915Z ^[[1m^[[92m  Downloaded^[[0m castaway v0.2.4
+publish	Publish to crates.io	2026-09-10T05:24:22.7937102Z ^[[1m^[[92m  Downloaded^[[0m quick-error v2.0.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7949568Z ^[[1m^[[92m  Downloaded^[[0m wezterm-blob-leases v0.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7960811Z ^[[1m^[[92m  Downloaded^[[0m wezterm-color-types v0.3.0
+publish	Publish to crates.io	2026-09-10T05:24:22.7969414Z ^[[1m^[[92m  Downloaded^[[0m wezterm-dynamic v0.2.1
+publish	Publish to crates.io	2026-09-10T05:24:22.7982826Z ^[[1m^[[92m  Downloaded^[[0m xattr v1.6.1
+publish	Publish to crates.io	2026-09-10T05:24:22.8002085Z ^[[1m^[[92m  Downloaded^[[0m base64-simd v0.8.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8016175Z ^[[1m^[[92m  Downloaded^[[0m jobserver v0.1.34
+publish	Publish to crates.io	2026-09-10T05:24:22.8036767Z ^[[1m^[[92m  Downloaded^[[0m mac_address v1.1.8
+publish	Publish to crates.io	2026-09-10T05:24:22.8051722Z ^[[1m^[[92m  Downloaded^[[0m notify-types v1.0.1
+publish	Publish to crates.io	2026-09-10T05:24:22.8087018Z ^[[1m^[[92m  Downloaded^[[0m num-conv v0.2.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8095289Z ^[[1m^[[92m  Downloaded^[[0m phf_codegen v0.11.3
+publish	Publish to crates.io	2026-09-10T05:24:22.8103925Z ^[[1m^[[92m  Downloaded^[[0m signal-hook-registry v1.4.8
+publish	Publish to crates.io	2026-09-10T05:24:22.8115686Z ^[[1m^[[92m  Downloaded^[[0m vsimd v0.8.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8136955Z ^[[1m^[[92m  Downloaded^[[0m bincode v1.3.3
+publish	Publish to crates.io	2026-09-10T05:24:22.8159913Z ^[[1m^[[92m  Downloaded^[[0m bit-set v0.5.3
+publish	Publish to crates.io	2026-09-10T05:24:22.8170187Z ^[[1m^[[92m  Downloaded^[[0m bit-set v0.8.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8183268Z ^[[1m^[[92m  Downloaded^[[0m bit-vec v0.8.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8199624Z ^[[1m^[[92m  Downloaded^[[0m bitflags v1.3.2
+publish	Publish to crates.io	2026-09-10T05:24:22.8232993Z ^[[1m^[[92m  Downloaded^[[0m block-buffer v0.10.4
+publish	Publish to crates.io	2026-09-10T05:24:22.8243377Z ^[[1m^[[92m  Downloaded^[[0m displaydoc v0.2.5
+publish	Publish to crates.io	2026-09-10T05:24:22.8274743Z ^[[1m^[[92m  Downloaded^[[0m fdeflate v0.3.7
+publish	Publish to crates.io	2026-09-10T05:24:22.8290944Z ^[[1m^[[92m  Downloaded^[[0m foldhash v0.2.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8303448Z ^[[1m^[[92m  Downloaded^[[0m futures-channel v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:22.8322680Z ^[[1m^[[92m  Downloaded^[[0m line-clipping v0.3.5
+publish	Publish to crates.io	2026-09-10T05:24:22.8337584Z ^[[1m^[[92m  Downloaded^[[0m litemap v0.8.1
+publish	Publish to crates.io	2026-09-10T05:24:22.8360427Z ^[[1m^[[92m  Downloaded^[[0m notify-debouncer-mini v0.5.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8368896Z ^[[1m^[[92m  Downloaded^[[0m num_threads v0.1.7
+publish	Publish to crates.io	2026-09-10T05:24:22.8379161Z ^[[1m^[[92m  Downloaded^[[0m number_prefix v0.4.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8388225Z ^[[1m^[[92m  Downloaded^[[0m ratatui-macros v0.7.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8403105Z ^[[1m^[[92m  Downloaded^[[0m ratatui-termwiz v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8412566Z ^[[1m^[[92m  Downloaded^[[0m spki v0.7.3
+publish	Publish to crates.io	2026-09-10T05:24:22.8430625Z ^[[1m^[[92m  Downloaded^[[0m unicase v2.9.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8444877Z ^[[1m^[[92m  Downloaded^[[0m wezterm-input-types v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8452651Z ^[[1m^[[92m  Downloaded^[[0m wyz v0.5.1
+publish	Publish to crates.io	2026-09-10T05:24:22.8464696Z ^[[1m^[[92m  Downloaded^[[0m yoke-derive v0.8.1
+publish	Publish to crates.io	2026-09-10T05:24:22.8473959Z ^[[1m^[[92m  Downloaded^[[0m zerofrom-derive v0.1.6
+publish	Publish to crates.io	2026-09-10T05:24:22.8483511Z ^[[1m^[[92m  Downloaded^[[0m zerovec-derive v0.11.2
+publish	Publish to crates.io	2026-09-10T05:24:22.8498111Z ^[[1m^[[92m  Downloaded^[[0m anstyle-parse v0.2.7
+publish	Publish to crates.io	2026-09-10T05:24:22.8513928Z ^[[1m^[[92m  Downloaded^[[0m atomic v0.6.1
+publish	Publish to crates.io	2026-09-10T05:24:22.8528181Z ^[[1m^[[92m  Downloaded^[[0m autocfg v1.5.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8557471Z ^[[1m^[[92m  Downloaded^[[0m bit-vec v0.6.3
+publish	Publish to crates.io	2026-09-10T05:24:22.8576124Z ^[[1m^[[92m  Downloaded^[[0m bytemuck_derive v1.12.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8596816Z ^[[1m^[[92m  Downloaded^[[0m cfg-if v1.0.4
+publish	Publish to crates.io	2026-09-10T05:24:22.8616680Z ^[[1m^[[92m  Downloaded^[[0m clap_derive v4.5.55
+publish	Publish to crates.io	2026-09-10T05:24:22.8639513Z ^[[1m^[[92m  Downloaded^[[0m darling_macro v0.23.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8646479Z ^[[1m^[[92m  Downloaded^[[0m dirs v6.0.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8659775Z ^[[1m^[[92m  Downloaded^[[0m dirs-sys v0.5.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8671350Z ^[[1m^[[92m  Downloaded^[[0m document-features v0.2.12
+publish	Publish to crates.io	2026-09-10T05:24:22.8683853Z ^[[1m^[[92m  Downloaded^[[0m either v1.15.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8698536Z ^[[1m^[[92m  Downloaded^[[0m idna_adapter v1.2.1
+publish	Publish to crates.io	2026-09-10T05:24:22.8707810Z ^[[1m^[[92m  Downloaded^[[0m lock_api v0.4.14
+publish	Publish to crates.io	2026-09-10T05:24:22.8720623Z ^[[1m^[[92m  Downloaded^[[0m lru v0.16.3
+publish	Publish to crates.io	2026-09-10T05:24:22.8732216Z ^[[1m^[[92m  Downloaded^[[0m num-derive v0.4.2
+publish	Publish to crates.io	2026-09-10T05:24:22.8750415Z ^[[1m^[[92m  Downloaded^[[0m pest_generator v2.8.6
+publish	Publish to crates.io	2026-09-10T05:24:22.8766766Z ^[[1m^[[92m  Downloaded^[[0m phf_shared v0.11.3
+publish	Publish to crates.io	2026-09-10T05:24:22.8776177Z ^[[1m^[[92m  Downloaded^[[0m pin-utils v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8788322Z ^[[1m^[[92m  Downloaded^[[0m pkcs8 v0.10.2
+publish	Publish to crates.io	2026-09-10T05:24:22.8817499Z ^[[1m^[[92m  Downloaded^[[0m potential_utf v0.1.4
+publish	Publish to crates.io	2026-09-10T05:24:22.8827674Z ^[[1m^[[92m  Downloaded^[[0m terminfo v0.9.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8855015Z ^[[1m^[[92m  Downloaded^[[0m unicode-ident v1.0.23
+publish	Publish to crates.io	2026-09-10T05:24:22.8882932Z ^[[1m^[[92m  Downloaded^[[0m uuid v1.21.0
+publish	Publish to crates.io	2026-09-10T05:24:22.8912870Z ^[[1m^[[92m  Downloaded^[[0m weezl v0.1.12
+publish	Publish to crates.io	2026-09-10T05:24:22.8938158Z ^[[1m^[[92m  Downloaded^[[0m base64ct v1.8.3
+publish	Publish to crates.io	2026-09-10T05:24:22.8964003Z ^[[1m^[[92m  Downloaded^[[0m bitflags v2.11.0
+publish	Publish to crates.io	2026-09-10T05:24:22.9008010Z ^[[1m^[[92m  Downloaded^[[0m deranged v0.5.6
+publish	Publish to crates.io	2026-09-10T05:24:22.9021638Z ^[[1m^[[92m  Downloaded^[[0m ed25519 v2.2.3
+publish	Publish to crates.io	2026-09-10T05:24:22.9039787Z ^[[1m^[[92m  Downloaded^[[0m indoc v2.0.7
+publish	Publish to crates.io	2026-09-10T05:24:22.9070999Z ^[[1m^[[92m  Downloaded^[[0m litrs v1.0.0
+publish	Publish to crates.io	2026-09-10T05:24:22.9101417Z ^[[1m^[[92m  Downloaded^[[0m phf_macros v0.11.3
+publish	Publish to crates.io	2026-09-10T05:24:22.9111059Z ^[[1m^[[92m  Downloaded^[[0m pin-project-lite v0.2.16
+publish	Publish to crates.io	2026-09-10T05:24:22.9170772Z ^[[1m^[[92m  Downloaded^[[0m pkg-config v0.3.32
+publish	Publish to crates.io	2026-09-10T05:24:22.9186917Z ^[[1m^[[92m  Downloaded^[[0m proc-macro2 v1.0.106
+publish	Publish to crates.io	2026-09-10T05:24:22.9217044Z ^[[1m^[[92m  Downloaded^[[0m socket2 v0.6.2
+publish	Publish to crates.io	2026-09-10T05:24:22.9234865Z ^[[1m^[[92m  Downloaded^[[0m tinyvec v1.10.0
+publish	Publish to crates.io	2026-09-10T05:24:22.9261889Z ^[[1m^[[92m  Downloaded^[[0m typenum v1.19.0
+publish	Publish to crates.io	2026-09-10T05:24:22.9290441Z ^[[1m^[[92m  Downloaded^[[0m yoke v0.8.1
+publish	Publish to crates.io	2026-09-10T05:24:22.9308091Z ^[[1m^[[92m  Downloaded^[[0m arboard v3.6.1
+publish	Publish to crates.io	2026-09-10T05:24:22.9335007Z ^[[1m^[[92m  Downloaded^[[0m base64 v0.22.1
+publish	Publish to crates.io	2026-09-10T05:24:22.9373622Z ^[[1m^[[92m  Downloaded^[[0m bytemuck v1.25.0
+publish	Publish to crates.io	2026-09-10T05:24:22.9406191Z ^[[1m^[[92m  Downloaded^[[0m icu_provider v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.9431632Z ^[[1m^[[92m  Downloaded^[[0m notify v7.0.0
+publish	Publish to crates.io	2026-09-10T05:24:22.9448553Z ^[[1m^[[92m  Downloaded^[[0m parking_lot v0.12.5
+publish	Publish to crates.io	2026-09-10T05:24:22.9473814Z ^[[1m^[[92m  Downloaded^[[0m pest_derive v2.8.6
+publish	Publish to crates.io	2026-09-10T05:24:22.9498147Z ^[[1m^[[92m  Downloaded^[[0m phf v0.11.3
+publish	Publish to crates.io	2026-09-10T05:24:22.9510632Z ^[[1m^[[92m  Downloaded^[[0m quinn-udp v0.5.14
+publish	Publish to crates.io	2026-09-10T05:24:22.9528464Z ^[[1m^[[92m  Downloaded^[[0m quote v1.0.44
+publish	Publish to crates.io	2026-09-10T05:24:22.9556558Z ^[[1m^[[92m  Downloaded^[[0m serde_derive v1.0.228
+publish	Publish to crates.io	2026-09-10T05:24:22.9587756Z ^[[1m^[[92m  Downloaded^[[0m tracing-core v0.1.36
+publish	Publish to crates.io	2026-09-10T05:24:22.9614902Z ^[[1m^[[92m  Downloaded^[[0m url v2.5.8
+publish	Publish to crates.io	2026-09-10T05:24:22.9640340Z ^[[1m^[[92m  Downloaded^[[0m wezterm-bidi v0.2.3
+publish	Publish to crates.io	2026-09-10T05:24:22.9660994Z ^[[1m^[[92m  Downloaded^[[0m writeable v0.6.2
+publish	Publish to crates.io	2026-09-10T05:24:22.9679723Z ^[[1m^[[92m  Downloaded^[[0m zerofrom v0.1.6
+publish	Publish to crates.io	2026-09-10T05:24:22.9688829Z ^[[1m^[[92m  Downloaded^[[0m zipsign-api v0.1.5
+publish	Publish to crates.io	2026-09-10T05:24:22.9709152Z ^[[1m^[[92m  Downloaded^[[0m zmij v1.0.21
+publish	Publish to crates.io	2026-09-10T05:24:22.9727729Z ^[[1m^[[92m  Downloaded^[[0m zune-core v0.4.12
+publish	Publish to crates.io	2026-09-10T05:24:22.9743802Z ^[[1m^[[92m  Downloaded^[[0m zune-core v0.5.3
+publish	Publish to crates.io	2026-09-10T05:24:22.9767058Z ^[[1m^[[92m  Downloaded^[[0m convert_case v0.10.0
+publish	Publish to crates.io	2026-09-10T05:24:22.9784228Z ^[[1m^[[92m  Downloaded^[[0m der v0.7.10
+publish	Publish to crates.io	2026-09-10T05:24:22.9838460Z ^[[1m^[[92m  Downloaded^[[0m derive_more-impl v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:22.9892617Z ^[[1m^[[92m  Downloaded^[[0m icu_properties v2.1.2
+publish	Publish to crates.io	2026-09-10T05:24:22.9914637Z ^[[1m^[[92m  Downloaded^[[0m image-webp v0.2.4
+publish	Publish to crates.io	2026-09-10T05:24:22.9937067Z ^[[1m^[[92m  Downloaded^[[0m indicatif v0.17.11
+publish	Publish to crates.io	2026-09-10T05:24:22.9974958Z ^[[1m^[[92m  Downloaded^[[0m num-traits v0.2.19
+publish	Publish to crates.io	2026-09-10T05:24:23.0001387Z ^[[1m^[[92m  Downloaded^[[0m once_cell v1.21.3
+publish	Publish to crates.io	2026-09-10T05:24:23.0027331Z ^[[1m^[[92m  Downloaded^[[0m openssl-probe v0.1.6
+publish	Publish to crates.io	2026-09-10T05:24:23.0038716Z ^[[1m^[[92m  Downloaded^[[0m option-ext v0.2.0
+publish	Publish to crates.io	2026-09-10T05:24:23.0047220Z ^[[1m^[[92m  Downloaded^[[0m quantette v0.6.0
+publish	Publish to crates.io	2026-09-10T05:24:23.0081356Z ^[[1m^[[92m  Downloaded^[[0m ratatui v0.30.0
+publish	Publish to crates.io	2026-09-10T05:24:23.0118423Z ^[[1m^[[92m  Downloaded^[[0m safe_arch v1.2.0
+publish	Publish to crates.io	2026-09-10T05:24:23.0167079Z ^[[1m^[[92m  Downloaded^[[0m sysinfo v0.39.6
+publish	Publish to crates.io	2026-09-10T05:24:23.0292779Z ^[[1m^[[92m  Downloaded^[[0m unicode-segmentation v1.12.0
+publish	Publish to crates.io	2026-09-10T05:24:23.0322293Z ^[[1m^[[92m  Downloaded^[[0m yaml-rust v0.4.5
+publish	Publish to crates.io	2026-09-10T05:24:23.0347725Z ^[[1m^[[92m  Downloaded^[[0m zeroize v1.8.2
+publish	Publish to crates.io	2026-09-10T05:24:23.0360996Z ^[[1m^[[92m  Downloaded^[[0m allocator-api2 v0.2.21
+publish	Publish to crates.io	2026-09-10T05:24:23.0386839Z ^[[1m^[[92m  Downloaded^[[0m anyhow v1.0.101
+publish	Publish to crates.io	2026-09-10T05:24:23.0430060Z ^[[1m^[[92m  Downloaded^[[0m crossterm v0.29.0
+publish	Publish to crates.io	2026-09-10T05:24:23.0500780Z ^[[1m^[[92m  Downloaded^[[0m digest v0.10.7
+publish	Publish to crates.io	2026-09-10T05:24:23.0519237Z ^[[1m^[[92m  Downloaded^[[0m log v0.4.29
+publish	Publish to crates.io	2026-09-10T05:24:23.0545222Z ^[[1m^[[92m  Downloaded^[[0m miniz_oxide v0.8.9
+publish	Publish to crates.io	2026-09-10T05:24:23.0570418Z ^[[1m^[[92m  Downloaded^[[0m ordered-float v4.6.0
+publish	Publish to crates.io	2026-09-10T05:24:23.0585548Z ^[[1m^[[92m  Downloaded^[[0m parking_lot_core v0.9.12
+publish	Publish to crates.io	2026-09-10T05:24:23.0607251Z ^[[1m^[[92m  Downloaded^[[0m percent-encoding v2.3.2
+publish	Publish to crates.io	2026-09-10T05:24:23.0616047Z ^[[1m^[[92m  Downloaded^[[0m plist v1.8.0
+publish	Publish to crates.io	2026-09-10T05:24:23.0643743Z ^[[1m^[[92m  Downloaded^[[0m regex v1.12.3
+publish	Publish to crates.io	2026-09-10T05:24:23.0697218Z ^[[1m^[[92m  Downloaded^[[0m time v0.3.47
+publish	Publish to crates.io	2026-09-10T05:24:23.0829608Z ^[[1m^[[92m  Downloaded^[[0m tower-http v0.6.8
+publish	Publish to crates.io	2026-09-10T05:24:23.0914648Z ^[[1m^[[92m  Downloaded^[[0m colorchoice v1.0.4
+publish	Publish to crates.io	2026-09-10T05:24:23.0924866Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.2.17
+publish	Publish to crates.io	2026-09-10T05:24:23.0944834Z ^[[1m^[[92m  Downloaded^[[0m tokio-util v0.7.18
+publish	Publish to crates.io	2026-09-10T05:24:23.1019472Z ^[[1m^[[92m  Downloaded^[[0m zune-jpeg v0.5.15
+publish	Publish to crates.io	2026-09-10T05:24:23.1056397Z ^[[1m^[[92m  Downloaded^[[0m openssl-sys v0.9.111
+publish	Publish to crates.io	2026-09-10T05:24:23.1113880Z ^[[1m^[[92m  Downloaded^[[0m bytes v1.11.1
+publish	Publish to crates.io	2026-09-10T05:24:23.1157169Z ^[[1m^[[92m  Downloaded^[[0m pulldown-cmark v0.13.0
+publish	Publish to crates.io	2026-09-10T05:24:23.1208140Z ^[[1m^[[92m  Downloaded^[[0m clap v4.5.58
+publish	Publish to crates.io	2026-09-10T05:24:23.1307141Z ^[[1m^[[92m  Downloaded^[[0m clap_builder v4.5.58
+publish	Publish to crates.io	2026-09-10T05:24:23.1370926Z ^[[1m^[[92m  Downloaded^[[0m console v0.15.11
+publish	Publish to crates.io	2026-09-10T05:24:23.1401683Z ^[[1m^[[92m  Downloaded^[[0m const-oid v0.9.6
+publish	Publish to crates.io	2026-09-10T05:24:23.1420798Z ^[[1m^[[92m  Downloaded^[[0m crypto-common v0.1.7
+publish	Publish to crates.io	2026-09-10T05:24:23.1430916Z ^[[1m^[[92m  Downloaded^[[0m curve25519-dalek-derive v0.1.1
+publish	Publish to crates.io	2026-09-10T05:24:23.1441174Z ^[[1m^[[92m  Downloaded^[[0m ratatui-widgets v0.3.0
+publish	Publish to crates.io	2026-09-10T05:24:23.1516856Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.1.14
+publish	Publish to crates.io	2026-09-10T05:24:23.1569472Z ^[[1m^[[92m  Downloaded^[[0m wide v1.6.1
+publish	Publish to crates.io	2026-09-10T05:24:23.1631380Z ^[[1m^[[92m  Downloaded^[[0m winnow v0.7.15
+publish	Publish to crates.io	2026-09-10T05:24:23.1729216Z ^[[1m^[[92m  Downloaded^[[0m zerotrie v0.2.3
+publish	Publish to crates.io	2026-09-10T05:24:23.1765235Z ^[[1m^[[92m  Downloaded^[[0m finl_unicode v1.4.0
+publish	Publish to crates.io	2026-09-10T05:24:23.1799606Z ^[[1m^[[92m  Downloaded^[[0m flate2 v1.1.9
+publish	Publish to crates.io	2026-09-10T05:24:23.1851100Z ^[[1m^[[92m  Downloaded^[[0m pest_meta v2.8.6
+publish	Publish to crates.io	2026-09-10T05:24:23.1875844Z ^[[1m^[[92m  Downloaded^[[0m powerfmt v0.2.0
+publish	Publish to crates.io	2026-09-10T05:24:23.1887593Z ^[[1m^[[92m  Downloaded^[[0m ratatui-crossterm v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:23.1897488Z ^[[1m^[[92m  Downloaded^[[0m vcpkg v0.2.15
+publish	Publish to crates.io	2026-09-10T05:24:23.2454177Z ^[[1m^[[92m  Downloaded^[[0m zerocopy-derive v0.8.39
+publish	Publish to crates.io	2026-09-10T05:24:23.2554417Z ^[[1m^[[92m  Downloaded^[[0m cc v1.2.56
+publish	Publish to crates.io	2026-09-10T05:24:23.2584418Z ^[[1m^[[92m  Downloaded^[[0m compact_str v0.9.0
+publish	Publish to crates.io	2026-09-10T05:24:23.2617220Z ^[[1m^[[92m  Downloaded^[[0m csscolorparser v0.6.2
+publish	Publish to crates.io	2026-09-10T05:24:23.2629638Z ^[[1m^[[92m  Downloaded^[[0m darling v0.23.0
+publish	Publish to crates.io	2026-09-10T05:24:23.2686101Z ^[[1m^[[92m  Downloaded^[[0m indexmap v2.13.0
+publish	Publish to crates.io	2026-09-10T05:24:23.2729245Z ^[[1m^[[92m  Downloaded^[[0m memchr v2.8.0
+publish	Publish to crates.io	2026-09-10T05:24:23.2784177Z ^[[1m^[[92m  Downloaded^[[0m ordered-float v5.5.0
+publish	Publish to crates.io	2026-09-10T05:24:23.2800905Z ^[[1m^[[92m  Downloaded^[[0m anstream v0.6.21
+publish	Publish to crates.io	2026-09-10T05:24:23.2821044Z ^[[1m^[[92m  Downloaded^[[0m bitvec v1.1.1
+publish	Publish to crates.io	2026-09-10T05:24:23.2996414Z ^[[1m^[[92m  Downloaded^[[0m equivalent v1.0.2
+publish	Publish to crates.io	2026-09-10T05:24:23.3006854Z ^[[1m^[[92m  Downloaded^[[0m miette v7.6.0
+publish	Publish to crates.io	2026-09-10T05:24:23.3052143Z ^[[1m^[[92m  Downloaded^[[0m palette_derive v0.7.7
+publish	Publish to crates.io	2026-09-10T05:24:23.3070357Z ^[[1m^[[92m  Downloaded^[[0m palette_math v0.7.7
+publish	Publish to crates.io	2026-09-10T05:24:23.3084623Z ^[[1m^[[92m  Downloaded^[[0m rand_chacha v0.3.1
+publish	Publish to crates.io	2026-09-10T05:24:23.3095729Z ^[[1m^[[92m  Downloaded^[[0m rand_pcg v0.10.2
+publish	Publish to crates.io	2026-09-10T05:24:23.3110418Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.2.2
+publish	Publish to crates.io	2026-09-10T05:24:23.3165103Z ^[[1m^[[92m  Downloaded^[[0m x11rb v0.13.2
+publish	Publish to crates.io	2026-09-10T05:24:23.3248546Z ^[[1m^[[92m  Downloaded^[[0m zerovec v0.11.5
+publish	Publish to crates.io	2026-09-10T05:24:23.3302430Z ^[[1m^[[92m  Downloaded^[[0m zune-jpeg v0.4.21
+publish	Publish to crates.io	2026-09-10T05:24:23.3331814Z ^[[1m^[[92m  Downloaded^[[0m aho-corasick v1.1.4
+publish	Publish to crates.io	2026-09-10T05:24:23.3383514Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.3.0
+publish	Publish to crates.io	2026-09-10T05:24:23.3398118Z ^[[1m^[[92m  Downloaded^[[0m darling_core v0.23.0
+publish	Publish to crates.io	2026-09-10T05:24:23.3455533Z ^[[1m^[[92m  Downloaded^[[0m minimal-lexical v0.2.1
+publish	Publish to crates.io	2026-09-10T05:24:23.3501303Z ^[[1m^[[92m  Downloaded^[[0m nom v7.1.3
+publish	Publish to crates.io	2026-09-10T05:24:23.3560740Z ^[[1m^[[92m  Downloaded^[[0m ppv-lite86 v0.2.21
+publish	Publish to crates.io	2026-09-10T05:24:23.3580021Z ^[[1m^[[92m  Downloaded^[[0m radium v0.7.0
+publish	Publish to crates.io	2026-09-10T05:24:23.3595326Z ^[[1m^[[92m  Downloaded^[[0m rand v0.8.8
+publish	Publish to crates.io	2026-09-10T05:24:23.3646580Z ^[[1m^[[92m  Downloaded^[[0m rand_core v0.6.4
+publish	Publish to crates.io	2026-09-10T05:24:23.3667175Z ^[[1m^[[92m  Downloaded^[[0m rand_xoshiro v0.8.1
+publish	Publish to crates.io	2026-09-10T05:24:23.3698167Z ^[[1m^[[92m  Downloaded^[[0m webpki-roots v1.0.6
+publish	Publish to crates.io	2026-09-10T05:24:23.3730533Z ^[[1m^[[92m  Downloaded^[[0m chacha20 v0.10.1
+publish	Publish to crates.io	2026-09-10T05:24:23.3755086Z ^[[1m^[[92m  Downloaded^[[0m hyper-util v0.1.20
+publish	Publish to crates.io	2026-09-10T05:24:23.3817303Z ^[[1m^[[92m  Downloaded^[[0m rand_core v0.10.1
+publish	Publish to crates.io	2026-09-10T05:24:23.3833284Z ^[[1m^[[92m  Downloaded^[[0m syn v1.0.109
+publish	Publish to crates.io	2026-09-10T05:24:23.3927379Z ^[[1m^[[92m  Downloaded^[[0m syn v2.0.115
+publish	Publish to crates.io	2026-09-10T05:24:23.4032976Z ^[[1m^[[92m  Downloaded^[[0m ed25519-dalek v2.2.0
+publish	Publish to crates.io	2026-09-10T05:24:23.4064698Z ^[[1m^[[92m  Downloaded^[[0m kdl v6.7.1
+publish	Publish to crates.io	2026-09-10T05:24:23.4450518Z ^[[1m^[[92m  Downloaded^[[0m syn v3.0.4
+publish	Publish to crates.io	2026-09-10T05:24:23.4557501Z ^[[1m^[[92m  Downloaded^[[0m crc32fast v1.5.0
+publish	Publish to crates.io	2026-09-10T05:24:23.4577025Z ^[[1m^[[92m  Downloaded^[[0m derive_more v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:23.4710064Z ^[[1m^[[92m  Downloaded^[[0m hyper v1.8.1
+publish	Publish to crates.io	2026-09-10T05:24:23.4777251Z ^[[1m^[[92m  Downloaded^[[0m idna v1.1.0
+publish	Publish to crates.io	2026-09-10T05:24:23.4811937Z ^[[1m^[[92m  Downloaded^[[0m iri-string v0.7.10
+publish	Publish to crates.io	2026-09-10T05:24:23.4889832Z ^[[1m^[[92m  Downloaded^[[0m libm v0.2.16
+publish	Publish to crates.io	2026-09-10T05:24:23.5014164Z ^[[1m^[[92m  Downloaded^[[0m moxcms v0.7.11
+publish	Publish to crates.io	2026-09-10T05:24:23.5116246Z ^[[1m^[[92m  Downloaded^[[0m png v0.18.1
+publish	Publish to crates.io	2026-09-10T05:24:23.5158051Z ^[[1m^[[92m  Downloaded^[[0m quinn-proto v0.11.17
+publish	Publish to crates.io	2026-09-10T05:24:23.5225606Z ^[[1m^[[92m  Downloaded^[[0m crossterm v0.28.1
+publish	Publish to crates.io	2026-09-10T05:24:23.5293960Z ^[[1m^[[92m  Downloaded^[[0m futures-util v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:23.5428593Z ^[[1m^[[92m  Downloaded^[[0m icu_properties_data v2.1.2
+publish	Publish to crates.io	2026-09-10T05:24:23.5534315Z ^[[1m^[[92m  Downloaded^[[0m quinn v0.11.9
+publish	Publish to crates.io	2026-09-10T05:24:23.5567457Z ^[[1m^[[92m  Downloaded^[[0m rand v0.10.2
+publish	Publish to crates.io	2026-09-10T05:24:23.5605587Z ^[[1m^[[92m  Downloaded^[[0m pest v2.8.6
+publish	Publish to crates.io	2026-09-10T05:24:23.5651024Z ^[[1m^[[92m  Downloaded^[[0m ratatui-core v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:23.5712099Z ^[[1m^[[92m  Downloaded^[[0m termwiz v0.23.3
+publish	Publish to crates.io	2026-09-10T05:24:23.5834999Z ^[[1m^[[92m  Downloaded^[[0m portable-atomic v1.13.1
+publish	Publish to crates.io	2026-09-10T05:24:23.5907229Z ^[[1m^[[92m  Downloaded^[[0m rustls v0.23.36
+publish	Publish to crates.io	2026-09-10T05:24:23.6026192Z ^[[1m^[[92m  Downloaded^[[0m rustix v1.1.3
+publish	Publish to crates.io	2026-09-10T05:24:23.6305549Z ^[[1m^[[92m  Downloaded^[[0m palette v0.7.7
+publish	Publish to crates.io	2026-09-10T05:24:23.6431960Z ^[[1m^[[92m  Downloaded^[[0m tracing v0.1.44
+publish	Publish to crates.io	2026-09-10T05:24:23.6590402Z ^[[1m^[[92m  Downloaded^[[0m image v0.25.9
+publish	Publish to crates.io	2026-09-10T05:24:23.6682657Z ^[[1m^[[92m  Downloaded^[[0m nix v0.29.0
+publish	Publish to crates.io	2026-09-10T05:24:23.6795822Z ^[[1m^[[92m  Downloaded^[[0m quick-xml v0.37.5
+publish	Publish to crates.io	2026-09-10T05:24:23.6848639Z ^[[1m^[[92m  Downloaded^[[0m quick-xml v0.38.4
+publish	Publish to crates.io	2026-09-10T05:24:23.6903692Z ^[[1m^[[92m  Downloaded^[[0m zerocopy v0.8.39
+publish	Publish to crates.io	2026-09-10T05:24:23.7139924Z ^[[1m^[[92m  Downloaded^[[0m x11rb-protocol v0.13.2
+publish	Publish to crates.io	2026-09-10T05:24:23.7265502Z ^[[1m^[[92m  Downloaded^[[0m curve25519-dalek v4.1.3
+publish	Publish to crates.io	2026-09-10T05:24:23.7347635Z ^[[1m^[[92m  Downloaded^[[0m regex-automata v0.4.14
+publish	Publish to crates.io	2026-09-10T05:24:23.7486177Z ^[[1m^[[92m  Downloaded^[[0m libssh2-sys v0.3.1
+publish	Publish to crates.io	2026-09-10T05:24:23.7830760Z ^[[1m^[[92m  Downloaded^[[0m syntect v5.3.0
+publish	Publish to crates.io	2026-09-10T05:24:23.7926571Z ^[[1m^[[92m  Downloaded^[[0m tokio v1.49.0
+publish	Publish to crates.io	2026-09-10T05:24:23.8378618Z ^[[1m^[[92m  Downloaded^[[0m pxfm v0.1.27
+publish	Publish to crates.io	2026-09-10T05:24:23.8631584Z ^[[1m^[[92m  Downloaded^[[0m libc v0.2.182
+publish	Publish to crates.io	2026-09-10T05:24:23.9028107Z ^[[1m^[[92m  Downloaded^[[0m libz-sys v1.1.23
+publish	Publish to crates.io	2026-09-10T05:24:23.9242277Z ^[[1m^[[92m  Downloaded^[[0m tiff v0.10.3
+publish	Publish to crates.io	2026-09-10T05:24:23.9356053Z ^[[1m^[[92m  Downloaded^[[0m ring v0.17.14
+publish	Publish to crates.io	2026-09-10T05:24:23.9780086Z ^[[1m^[[92m  Downloaded^[[0m libgit2-sys v0.18.3+1.9.2
+publish	Publish to crates.io	2026-09-10T05:24:24.0399851Z ^[[1m^[[92m  Downloaded^[[0m deltae v0.3.2
+publish	Publish to crates.io	2026-09-10T05:24:24.0564117Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.4.15
+publish	Publish to crates.io	2026-09-10T05:24:24.1046435Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.11.0
+publish	Publish to crates.io	2026-09-10T05:24:24.1629075Z ^[[1m^[[92m  Downloaded^[[0m icy_sixel v0.5.1
+publish	Publish to crates.io	2026-09-10T05:24:24.1959181Z ^[[1m^[[92m  Downloaded^[[0m ratatui-image v11.0.3
+publish	Publish to crates.io	2026-09-10T05:24:24.3308621Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.106
+publish	Publish to crates.io	2026-09-10T05:24:24.3309646Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.182
+publish	Publish to crates.io	2026-09-10T05:24:24.3310260Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.44
+publish	Publish to crates.io	2026-09-10T05:24:24.3310984Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.23
+publish	Publish to crates.io	2026-09-10T05:24:24.4107004Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.4
+publish	Publish to crates.io	2026-09-10T05:24:24.4473426Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.11.0
+publish	Publish to crates.io	2026-09-10T05:24:24.5044966Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.9
+publish	Publish to crates.io	2026-09-10T05:24:24.5894962Z ^[[1m^[[92m   Compiling^[[0m shlex v1.3.0
+publish	Publish to crates.io	2026-09-10T05:24:24.6690864Z ^[[1m^[[92m   Compiling^[[0m log v0.4.29
+publish	Publish to crates.io	2026-09-10T05:24:24.7015409Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.17
+publish	Publish to crates.io	2026-09-10T05:24:24.7865058Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+publish	Publish to crates.io	2026-09-10T05:24:24.8175445Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.2
+publish	Publish to crates.io	2026-09-10T05:24:24.8469815Z ^[[1m^[[92m   Compiling^[[0m allocator-api2 v0.2.21
+publish	Publish to crates.io	2026-09-10T05:24:24.8885082Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.0
+publish	Publish to crates.io	2026-09-10T05:24:25.1444888Z ^[[1m^[[92m   Compiling^[[0m smallvec v1.15.1
+publish	Publish to crates.io	2026-09-10T05:24:25.2827587Z ^[[1m^[[92m   Compiling^[[0m syn v2.0.115
+publish	Publish to crates.io	2026-09-10T05:24:25.3254401Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.16.1
+publish	Publish to crates.io	2026-09-10T05:24:25.4674780Z ^[[1m^[[92m   Compiling^[[0m jobserver v0.1.34
+publish	Publish to crates.io	2026-09-10T05:24:25.5165184Z ^[[1m^[[92m   Compiling^[[0m mio v1.1.1
+publish	Publish to crates.io	2026-09-10T05:24:25.7335038Z ^[[1m^[[92m   Compiling^[[0m cc v1.2.56
+publish	Publish to crates.io	2026-09-10T05:24:25.8825391Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.3
+publish	Publish to crates.io	2026-09-10T05:24:25.9495128Z ^[[1m^[[92m   Compiling^[[0m stable_deref_trait v1.2.1
+publish	Publish to crates.io	2026-09-10T05:24:25.9776129Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.3
+publish	Publish to crates.io	2026-09-10T05:24:26.0400168Z ^[[1m^[[92m   Compiling^[[0m libm v0.2.16
+publish	Publish to crates.io	2026-09-10T05:24:26.2817461Z ^[[1m^[[92m   Compiling^[[0m pin-project-lite v0.2.16
+publish	Publish to crates.io	2026-09-10T05:24:26.3305044Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.11.0
+publish	Publish to crates.io	2026-09-10T05:24:26.3384452Z ^[[1m^[[92m   Compiling^[[0m bytes v1.11.1
+publish	Publish to crates.io	2026-09-10T05:24:27.3104794Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+publish	Publish to crates.io	2026-09-10T05:24:27.3324923Z ^[[1m^[[92m   Compiling^[[0m typenum v1.19.0
+publish	Publish to crates.io	2026-09-10T05:24:27.5154780Z ^[[1m^[[92m   Compiling^[[0m pkg-config v0.3.32
+publish	Publish to crates.io	2026-09-10T05:24:27.6344668Z ^[[1m^[[92m   Compiling^[[0m thiserror v2.0.18
+publish	Publish to crates.io	2026-09-10T05:24:27.9615358Z ^[[1m^[[92m   Compiling^[[0m futures-core v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:28.0506063Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+publish	Publish to crates.io	2026-09-10T05:24:28.1934701Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.4
+publish	Publish to crates.io	2026-09-10T05:24:29.2975021Z ^[[1m^[[92m   Compiling^[[0m synstructure v0.13.2
+publish	Publish to crates.io	2026-09-10T05:24:29.8499827Z ^[[1m^[[92m   Compiling^[[0m autocfg v1.5.0
+publish	Publish to crates.io	2026-09-10T05:24:30.1965486Z ^[[1m^[[92m   Compiling^[[0m num-traits v0.2.19
+publish	Publish to crates.io	2026-09-10T05:24:30.4865170Z ^[[1m^[[92m   Compiling^[[0m zerofrom-derive v0.1.6
+publish	Publish to crates.io	2026-09-10T05:24:30.7885219Z ^[[1m^[[92m   Compiling^[[0m yoke-derive v0.8.1
+publish	Publish to crates.io	2026-09-10T05:24:30.8475423Z ^[[1m^[[92m   Compiling^[[0m zerovec-derive v0.11.2
+publish	Publish to crates.io	2026-09-10T05:24:31.3205110Z ^[[1m^[[92m   Compiling^[[0m displaydoc v0.2.5
+publish	Publish to crates.io	2026-09-10T05:24:31.6015263Z ^[[1m^[[92m   Compiling^[[0m zerofrom v0.1.6
+publish	Publish to crates.io	2026-09-10T05:24:31.6514937Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v2.0.18
+publish	Publish to crates.io	2026-09-10T05:24:31.6824795Z ^[[1m^[[92m   Compiling^[[0m yoke v0.8.1
+publish	Publish to crates.io	2026-09-10T05:24:31.7885311Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.2.17
+publish	Publish to crates.io	2026-09-10T05:24:31.7995443Z ^[[1m^[[92m   Compiling^[[0m socket2 v0.6.2
+publish	Publish to crates.io	2026-09-10T05:24:31.8125371Z ^[[1m^[[92m   Compiling^[[0m zerovec v0.11.5
+publish	Publish to crates.io	2026-09-10T05:24:31.9105230Z ^[[1m^[[92m   Compiling^[[0m futures-sink v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:31.9641719Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.228
+publish	Publish to crates.io	2026-09-10T05:24:32.1215013Z ^[[1m^[[92m   Compiling^[[0m vcpkg v0.2.15
+publish	Publish to crates.io	2026-09-10T05:24:32.2055133Z ^[[1m^[[92m   Compiling^[[0m unicode-segmentation v1.12.0
+publish	Publish to crates.io	2026-09-10T05:24:32.3325042Z ^[[1m^[[92m   Compiling^[[0m zeroize v1.8.2
+publish	Publish to crates.io	2026-09-10T05:24:32.4293127Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+publish	Publish to crates.io	2026-09-10T05:24:32.5454791Z ^[[1m^[[92m   Compiling^[[0m tinystr v0.8.2
+publish	Publish to crates.io	2026-09-10T05:24:32.6784923Z ^[[1m^[[92m   Compiling^[[0m tokio v1.49.0
+publish	Publish to crates.io	2026-09-10T05:24:32.8053373Z ^[[1m^[[92m   Compiling^[[0m rustversion v1.0.22
+publish	Publish to crates.io	2026-09-10T05:24:32.8302696Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.2.2
+publish	Publish to crates.io	2026-09-10T05:24:32.9922176Z ^[[1m^[[92m   Compiling^[[0m ryu v1.0.23
+publish	Publish to crates.io	2026-09-10T05:24:33.0040592Z ^[[1m^[[92m   Compiling^[[0m writeable v0.6.2
+publish	Publish to crates.io	2026-09-10T05:24:33.1115282Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+publish	Publish to crates.io	2026-09-10T05:24:33.1234557Z ^[[1m^[[92m   Compiling^[[0m litemap v0.8.1
+publish	Publish to crates.io	2026-09-10T05:24:33.2555206Z ^[[1m^[[92m   Compiling^[[0m icu_locale_core v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:33.9352265Z ^[[1m^[[92m   Compiling^[[0m potential_utf v0.1.4
+publish	Publish to crates.io	2026-09-10T05:24:34.0184791Z ^[[1m^[[92m   Compiling^[[0m zerotrie v0.2.3
+publish	Publish to crates.io	2026-09-10T05:24:34.1695141Z ^[[1m^[[92m   Compiling^[[0m bytemuck_derive v1.12.0
+publish	Publish to crates.io	2026-09-10T05:24:34.2615387Z ^[[1m^[[92m   Compiling^[[0m ring v0.17.14
+publish	Publish to crates.io	2026-09-10T05:24:34.6006092Z ^[[1m^[[92m   Compiling^[[0m http v1.4.0
+publish	Publish to crates.io	2026-09-10T05:24:35.2417432Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.228
+publish	Publish to crates.io	2026-09-10T05:24:35.3955131Z ^[[1m^[[92m   Compiling^[[0m parking_lot_core v0.9.12
+publish	Publish to crates.io	2026-09-10T05:24:35.4994841Z ^[[1m^[[92m   Compiling^[[0m either v1.15.0
+publish	Publish to crates.io	2026-09-10T05:24:35.5185012Z ^[[1m^[[92m   Compiling^[[0m simd-adler32 v0.3.8
+publish	Publish to crates.io	2026-09-10T05:24:35.5286811Z ^[[1m^[[92m   Compiling^[[0m icu_properties_data v2.1.2
+publish	Publish to crates.io	2026-09-10T05:24:35.6146095Z ^[[1m^[[92m   Compiling^[[0m slab v0.4.12
+publish	Publish to crates.io	2026-09-10T05:24:35.6822148Z ^[[1m^[[92m   Compiling^[[0m icu_normalizer_data v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:35.6994926Z ^[[1m^[[92m   Compiling^[[0m crc32fast v1.5.0
+publish	Publish to crates.io	2026-09-10T05:24:35.7215199Z ^[[1m^[[92m   Compiling^[[0m percent-encoding v2.3.2
+publish	Publish to crates.io	2026-09-10T05:24:35.7656313Z ^[[1m^[[92m   Compiling^[[0m ident_case v1.0.1
+publish	Publish to crates.io	2026-09-10T05:24:35.8155740Z ^[[1m^[[92m   Compiling^[[0m darling_core v0.23.0
+publish	Publish to crates.io	2026-09-10T05:24:35.8574271Z ^[[1m^[[92m   Compiling^[[0m bytemuck v1.25.0
+publish	Publish to crates.io	2026-09-10T05:24:36.0403872Z ^[[1m^[[92m   Compiling^[[0m icu_provider v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:36.2534973Z ^[[1m^[[92m   Compiling^[[0m icu_collections v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:36.8326906Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+publish	Publish to crates.io	2026-09-10T05:24:36.8858381Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+publish	Publish to crates.io	2026-09-10T05:24:36.8915049Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.228
+publish	Publish to crates.io	2026-09-10T05:24:36.9378432Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.13.0
+publish	Publish to crates.io	2026-09-10T05:24:37.4266807Z ^[[1m^[[92m   Compiling^[[0m errno v0.3.14
+publish	Publish to crates.io	2026-09-10T05:24:37.4987356Z ^[[1m^[[92m   Compiling^[[0m signal-hook v0.3.18
+publish	Publish to crates.io	2026-09-10T05:24:37.5687223Z ^[[1m^[[92m   Compiling^[[0m subtle v2.6.1
+publish	Publish to crates.io	2026-09-10T05:24:37.6515161Z ^[[1m^[[92m   Compiling^[[0m scopeguard v1.2.0
+publish	Publish to crates.io	2026-09-10T05:24:37.6900339Z ^[[1m^[[92m   Compiling^[[0m pin-utils v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:37.7169582Z ^[[1m^[[92m   Compiling^[[0m adler2 v2.0.1
+publish	Publish to crates.io	2026-09-10T05:24:37.7752243Z ^[[1m^[[92m   Compiling^[[0m powerfmt v0.2.0
+publish	Publish to crates.io	2026-09-10T05:24:37.8963351Z ^[[1m^[[92m   Compiling^[[0m deranged v0.5.6
+publish	Publish to crates.io	2026-09-10T05:24:38.2724932Z ^[[1m^[[92m   Compiling^[[0m darling_macro v0.23.0
+publish	Publish to crates.io	2026-09-10T05:24:38.4685025Z ^[[1m^[[92m   Compiling^[[0m miniz_oxide v0.8.9
+publish	Publish to crates.io	2026-09-10T05:24:38.9195115Z ^[[1m^[[92m   Compiling^[[0m lock_api v0.4.14
+publish	Publish to crates.io	2026-09-10T05:24:38.9556198Z ^[[1m^[[92m   Compiling^[[0m signal-hook-registry v1.4.8
+publish	Publish to crates.io	2026-09-10T05:24:39.0915062Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+publish	Publish to crates.io	2026-09-10T05:24:39.1265249Z ^[[1m^[[92m   Compiling^[[0m castaway v0.2.4
+publish	Publish to crates.io	2026-09-10T05:24:39.3505047Z ^[[1m^[[92m   Compiling^[[0m itertools v0.14.0
+publish	Publish to crates.io	2026-09-10T05:24:39.4320916Z ^[[1m^[[92m   Compiling^[[0m http-body v1.0.1
+publish	Publish to crates.io	2026-09-10T05:24:39.4891318Z ^[[1m^[[92m   Compiling^[[0m strum_macros v0.27.2
+publish	Publish to crates.io	2026-09-10T05:24:40.1353001Z ^[[1m^[[92m   Compiling^[[0m openssl-sys v0.9.111
+publish	Publish to crates.io	2026-09-10T05:24:40.3843869Z ^[[1m^[[92m   Compiling^[[0m libz-sys v1.1.23
+publish	Publish to crates.io	2026-09-10T05:24:40.5392060Z ^[[1m^[[92m   Compiling^[[0m rustls-pki-types v1.14.0
+publish	Publish to crates.io	2026-09-10T05:24:40.5459754Z ^[[1m^[[92m   Compiling^[[0m tracing-core v0.1.36
+publish	Publish to crates.io	2026-09-10T05:24:40.9774516Z ^[[1m^[[92m   Compiling^[[0m futures-io v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:40.9835860Z ^[[1m^[[92m   Compiling^[[0m untrusted v0.9.0
+publish	Publish to crates.io	2026-09-10T05:24:41.0290825Z ^[[1m^[[92m   Compiling^[[0m indoc v2.0.7
+publish	Publish to crates.io	2026-09-10T05:24:41.0464023Z ^[[1m^[[92m   Compiling^[[0m httparse v1.10.1
+publish	Publish to crates.io	2026-09-10T05:24:41.0755007Z ^[[1m^[[92m   Compiling^[[0m futures-task v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:41.1607675Z ^[[1m^[[92m   Compiling^[[0m num_threads v0.1.7
+publish	Publish to crates.io	2026-09-10T05:24:41.2195232Z ^[[1m^[[92m   Compiling^[[0m fnv v1.0.7
+publish	Publish to crates.io	2026-09-10T05:24:41.2274659Z ^[[1m^[[92m   Compiling^[[0m time-core v0.1.8
+publish	Publish to crates.io	2026-09-10T05:24:41.2514259Z ^[[1m^[[92m   Compiling^[[0m semver v1.0.27
+publish	Publish to crates.io	2026-09-10T05:24:41.2547626Z ^[[1m^[[92m   Compiling^[[0m num-conv v0.2.0
+publish	Publish to crates.io	2026-09-10T05:24:41.2948034Z ^[[1m^[[92m   Compiling^[[0m static_assertions v1.1.0
+publish	Publish to crates.io	2026-09-10T05:24:41.3204386Z ^[[1m^[[92m   Compiling^[[0m base64 v0.22.1
+publish	Publish to crates.io	2026-09-10T05:24:41.3250487Z ^[[1m^[[92m   Compiling^[[0m instability v0.3.11
+publish	Publish to crates.io	2026-09-10T05:24:41.3982086Z ^[[1m^[[92m   Compiling^[[0m rustc_version v0.4.1
+publish	Publish to crates.io	2026-09-10T05:24:41.4580448Z ^[[1m^[[92m   Compiling^[[0m time v0.3.47
+publish	Publish to crates.io	2026-09-10T05:24:41.5346522Z ^[[1m^[[92m   Compiling^[[0m compact_str v0.9.0
+publish	Publish to crates.io	2026-09-10T05:24:41.5654579Z ^[[1m^[[92m   Compiling^[[0m futures-util v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:42.0265476Z ^[[1m^[[92m   Compiling^[[0m strum v0.27.2
+publish	Publish to crates.io	2026-09-10T05:24:42.0814024Z ^[[1m^[[92m   Compiling^[[0m tracing v0.1.44
+publish	Publish to crates.io	2026-09-10T05:24:42.3924933Z ^[[1m^[[92m   Compiling^[[0m unicode-truncate v2.0.1
+publish	Publish to crates.io	2026-09-10T05:24:42.5364755Z ^[[1m^[[92m   Compiling^[[0m flate2 v1.1.9
+publish	Publish to crates.io	2026-09-10T05:24:42.8805152Z ^[[1m^[[92m   Compiling^[[0m icu_normalizer v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:42.9345066Z ^[[1m^[[92m   Compiling^[[0m parking_lot v0.12.5
+publish	Publish to crates.io	2026-09-10T05:24:43.2485090Z ^[[1m^[[92m   Compiling^[[0m icu_properties v2.1.2
+publish	Publish to crates.io	2026-09-10T05:24:43.5545044Z ^[[1m^[[92m   Compiling^[[0m darling v0.23.0
+publish	Publish to crates.io	2026-09-10T05:24:43.5915023Z ^[[1m^[[92m   Compiling^[[0m tokio-util v0.7.18
+publish	Publish to crates.io	2026-09-10T05:24:43.9595030Z ^[[1m^[[92m   Compiling^[[0m kasuari v0.4.11
+publish	Publish to crates.io	2026-09-10T05:24:44.1505138Z ^[[1m^[[92m   Compiling^[[0m convert_case v0.10.0
+publish	Publish to crates.io	2026-09-10T05:24:44.3364891Z ^[[1m^[[92m   Compiling^[[0m lru v0.16.3
+publish	Publish to crates.io	2026-09-10T05:24:44.4327994Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.1
+publish	Publish to crates.io	2026-09-10T05:24:44.4427839Z ^[[1m^[[92m   Compiling^[[0m try-lock v0.2.5
+publish	Publish to crates.io	2026-09-10T05:24:44.4551218Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.21
+publish	Publish to crates.io	2026-09-10T05:24:44.4624821Z ^[[1m^[[92m   Compiling^[[0m tower-service v0.3.3
+publish	Publish to crates.io	2026-09-10T05:24:44.4859584Z ^[[1m^[[92m   Compiling^[[0m atomic-waker v1.1.2
+publish	Publish to crates.io	2026-09-10T05:24:44.4995215Z ^[[1m^[[92m   Compiling^[[0m zerocopy v0.8.39
+publish	Publish to crates.io	2026-09-10T05:24:44.5352552Z ^[[1m^[[92m   Compiling^[[0m radium v0.7.0
+publish	Publish to crates.io	2026-09-10T05:24:44.5485157Z ^[[1m^[[92m   Compiling^[[0m rustls v0.23.36
+publish	Publish to crates.io	2026-09-10T05:24:44.6236363Z ^[[1m^[[92m   Compiling^[[0m h2 v0.4.13
+publish	Publish to crates.io	2026-09-10T05:24:44.6239134Z ^[[1m^[[92m   Compiling^[[0m want v0.3.1
+publish	Publish to crates.io	2026-09-10T05:24:44.6645444Z ^[[1m^[[92m   Compiling^[[0m ratatui-core v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:44.7043695Z ^[[1m^[[92m   Compiling^[[0m derive_more-impl v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:44.7365507Z ^[[1m^[[92m   Compiling^[[0m idna_adapter v1.2.1
+publish	Publish to crates.io	2026-09-10T05:24:44.7994965Z ^[[1m^[[92m   Compiling^[[0m rustls-webpki v0.103.15
+publish	Publish to crates.io	2026-09-10T05:24:45.6485021Z ^[[1m^[[92m   Compiling^[[0m signal-hook-mio v0.2.5
+publish	Publish to crates.io	2026-09-10T05:24:45.7084969Z ^[[1m^[[92m   Compiling^[[0m curve25519-dalek v4.1.3
+publish	Publish to crates.io	2026-09-10T05:24:45.8254951Z ^[[1m^[[92m   Compiling^[[0m form_urlencoded v1.2.2
+publish	Publish to crates.io	2026-09-10T05:24:45.9172352Z ^[[1m^[[92m   Compiling^[[0m futures-channel v0.3.31
+publish	Publish to crates.io	2026-09-10T05:24:45.9235253Z ^[[1m^[[92m   Compiling^[[0m libssh2-sys v0.3.1
+publish	Publish to crates.io	2026-09-10T05:24:46.0784961Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.4
+publish	Publish to crates.io	2026-09-10T05:24:46.0985715Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.149
+publish	Publish to crates.io	2026-09-10T05:24:46.1864866Z ^[[1m^[[92m   Compiling^[[0m ref-cast v1.0.27
+publish	Publish to crates.io	2026-09-10T05:24:46.1954830Z ^[[1m^[[92m   Compiling^[[0m utf8_iter v1.0.4
+publish	Publish to crates.io	2026-09-10T05:24:46.2715036Z ^[[1m^[[92m   Compiling^[[0m by_address v1.2.1
+publish	Publish to crates.io	2026-09-10T05:24:46.3194721Z ^[[1m^[[92m   Compiling^[[0m litrs v1.0.0
+publish	Publish to crates.io	2026-09-10T05:24:46.3444870Z ^[[1m^[[92m   Compiling^[[0m tap v1.0.1
+publish	Publish to crates.io	2026-09-10T05:24:46.4014242Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.9
+publish	Publish to crates.io	2026-09-10T05:24:46.7754945Z ^[[1m^[[92m   Compiling^[[0m rand_core v0.10.1
+publish	Publish to crates.io	2026-09-10T05:24:46.8595024Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+publish	Publish to crates.io	2026-09-10T05:24:46.8910445Z ^[[1m^[[92m   Compiling^[[0m document-features v0.2.12
+publish	Publish to crates.io	2026-09-10T05:24:47.2545268Z ^[[1m^[[92m   Compiling^[[0m hyper v1.8.1
+publish	Publish to crates.io	2026-09-10T05:24:47.6860750Z ^[[1m^[[92m   Compiling^[[0m wyz v0.5.1
+publish	Publish to crates.io	2026-09-10T05:24:47.8375038Z ^[[1m^[[92m   Compiling^[[0m palette_derive v0.7.7
+publish	Publish to crates.io	2026-09-10T05:24:47.8455072Z ^[[1m^[[92m   Compiling^[[0m idna v1.1.0
+publish	Publish to crates.io	2026-09-10T05:24:48.4235458Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.14
+publish	Publish to crates.io	2026-09-10T05:24:48.6208078Z ^[[1m^[[92m   Compiling^[[0m derive_more v2.1.1
+publish	Publish to crates.io	2026-09-10T05:24:52.2357632Z ^[[1m^[[92m   Compiling^[[0m signature v2.2.0
+publish	Publish to crates.io	2026-09-10T05:24:52.2778603Z ^[[1m^[[92m   Compiling^[[0m safe_arch v1.2.0
+publish	Publish to crates.io	2026-09-10T05:24:52.4270966Z ^[[1m^[[92m   Compiling^[[0m fdeflate v0.3.7
+publish	Publish to crates.io	2026-09-10T05:24:52.5985161Z ^[[1m^[[92m   Compiling^[[0m pxfm v0.1.27
+publish	Publish to crates.io	2026-09-10T05:24:52.7860362Z ^[[1m^[[92m   Compiling^[[0m ref-cast-impl v1.0.27
+publish	Publish to crates.io	2026-09-10T05:24:53.0235067Z ^[[1m^[[92m   Compiling^[[0m curve25519-dalek-derive v0.1.1
+publish	Publish to crates.io	2026-09-10T05:24:53.3193733Z ^[[1m^[[92m   Compiling^[[0m palette_math v0.7.7
+publish	Publish to crates.io	2026-09-10T05:24:53.3654968Z ^[[1m^[[92m   Compiling^[[0m sync_wrapper v1.0.2
+publish	Publish to crates.io	2026-09-10T05:24:53.4104497Z ^[[1m^[[92m   Compiling^[[0m filetime v0.2.27
+publish	Publish to crates.io	2026-09-10T05:24:53.4180712Z ^[[1m^[[92m   Compiling^[[0m line-clipping v0.3.5
+publish	Publish to crates.io	2026-09-10T05:24:53.5000604Z ^[[1m^[[92m   Compiling^[[0m portable-atomic v1.13.1
+publish	Publish to crates.io	2026-09-10T05:24:53.5409617Z ^[[1m^[[92m   Compiling^[[0m byteorder-lite v0.1.0
+publish	Publish to crates.io	2026-09-10T05:24:53.7264949Z ^[[1m^[[92m   Compiling^[[0m quick-error v2.0.1
+publish	Publish to crates.io	2026-09-10T05:24:53.7554874Z ^[[1m^[[92m   Compiling^[[0m tower-layer v0.3.3
+publish	Publish to crates.io	2026-09-10T05:24:53.7738533Z ^[[1m^[[92m   Compiling^[[0m funty v2.0.0
+publish	Publish to crates.io	2026-09-10T05:24:53.8409209Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+publish	Publish to crates.io	2026-09-10T05:24:53.8712056Z ^[[1m^[[92m   Compiling^[[0m rustix v0.38.44
+publish	Publish to crates.io	2026-09-10T05:24:54.0135263Z ^[[1m^[[92m   Compiling^[[0m color_quant v1.1.0
+publish	Publish to crates.io	2026-09-10T05:24:54.1184980Z ^[[1m^[[92m   Compiling^[[0m weezl v0.1.12
+publish	Publish to crates.io	2026-09-10T05:24:54.3563106Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+publish	Publish to crates.io	2026-09-10T05:24:54.4222306Z ^[[1m^[[92m   Compiling^[[0m ipnet v2.11.0
+publish	Publish to crates.io	2026-09-10T05:24:54.4280494Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.3.0
+publish	Publish to crates.io	2026-09-10T05:24:54.5365307Z ^[[1m^[[92m   Compiling^[[0m zune-core v0.5.3
+publish	Publish to crates.io	2026-09-10T05:24:54.7085186Z ^[[1m^[[92m   Compiling^[[0m zune-jpeg v0.5.15
+publish	Publish to crates.io	2026-09-10T05:24:54.7692299Z ^[[1m^[[92m   Compiling^[[0m moxcms v0.7.11
+publish	Publish to crates.io	2026-09-10T05:24:55.4556512Z ^[[1m^[[92m   Compiling^[[0m hyper-util v0.1.20
+publish	Publish to crates.io	2026-09-10T05:24:55.5254919Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.25.0
+publish	Publish to crates.io	2026-09-10T05:24:55.7678252Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+publish	Publish to crates.io	2026-09-10T05:24:55.9644588Z ^[[1m^[[92m   Compiling^[[0m gif v0.14.2
+publish	Publish to crates.io	2026-09-10T05:24:56.3981275Z ^[[1m^[[92m   Compiling^[[0m bitvec v1.1.1
+publish	Publish to crates.io	2026-09-10T05:24:56.7314848Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v0.2.7
+publish	Publish to crates.io	2026-09-10T05:24:56.8424938Z ^[[1m^[[92m   Compiling^[[0m tower v0.5.3
+publish	Publish to crates.io	2026-09-10T05:24:57.1934698Z ^[[1m^[[92m   Compiling^[[0m image-webp v0.2.4
+publish	Publish to crates.io	2026-09-10T05:24:57.2889580Z ^[[1m^[[92m   Compiling^[[0m ratatui-widgets v0.3.0
+publish	Publish to crates.io	2026-09-10T05:24:58.3223347Z ^[[1m^[[92m   Compiling^[[0m palette v0.7.7
+publish	Publish to crates.io	2026-09-10T05:24:58.7544895Z ^[[1m^[[92m   Compiling^[[0m png v0.18.1
+publish	Publish to crates.io	2026-09-10T05:24:59.6134907Z ^[[1m^[[92m   Compiling^[[0m wide v1.6.1
+publish	Publish to crates.io	2026-09-10T05:25:00.8465320Z ^[[1m^[[92m   Compiling^[[0m ed25519 v2.2.3
+publish	Publish to crates.io	2026-09-10T05:25:00.9435708Z ^[[1m^[[92m   Compiling^[[0m ppv-lite86 v0.2.21
+publish	Publish to crates.io	2026-09-10T05:25:01.2555067Z ^[[1m^[[92m   Compiling^[[0m tokio-rustls v0.26.4
+publish	Publish to crates.io	2026-09-10T05:25:01.4414966Z ^[[1m^[[92m   Compiling^[[0m crossterm v0.29.0
+publish	Publish to crates.io	2026-09-10T05:25:02.3835318Z ^[[1m^[[92m   Compiling^[[0m url v2.5.8
+publish	Publish to crates.io	2026-09-10T05:25:03.0734859Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+publish	Publish to crates.io	2026-09-10T05:25:03.3844829Z ^[[1m^[[92m   Compiling^[[0m rand_xoshiro v0.8.1
+publish	Publish to crates.io	2026-09-10T05:25:03.6745224Z ^[[1m^[[92m   Compiling^[[0m rand v0.10.2
+publish	Publish to crates.io	2026-09-10T05:25:04.1775319Z ^[[1m^[[92m   Compiling^[[0m webpki-roots v1.0.6
+publish	Publish to crates.io	2026-09-10T05:25:04.2535174Z ^[[1m^[[92m   Compiling^[[0m ordered-float v5.5.0
+publish	Publish to crates.io	2026-09-10T05:25:04.4807897Z ^[[1m^[[92m   Compiling^[[0m rand_core v0.6.4
+publish	Publish to crates.io	2026-09-10T05:25:04.6365048Z ^[[1m^[[92m   Compiling^[[0m libgit2-sys v0.18.3+1.9.2
+publish	Publish to crates.io	2026-09-10T05:25:04.7265363Z ^[[1m^[[92m   Compiling^[[0m inotify-sys v0.1.5
+publish	Publish to crates.io	2026-09-10T05:25:04.7515023Z ^[[1m^[[92m   Compiling^[[0m instant v0.1.13
+publish	Publish to crates.io	2026-09-10T05:25:04.7794953Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+publish	Publish to crates.io	2026-09-10T05:25:04.7989097Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.13
+publish	Publish to crates.io	2026-09-10T05:25:04.8197997Z ^[[1m^[[92m   Compiling^[[0m thiserror v1.0.69
+publish	Publish to crates.io	2026-09-10T05:25:04.8515070Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.4.15
+publish	Publish to crates.io	2026-09-10T05:25:04.9455417Z ^[[1m^[[92m   Compiling^[[0m bitflags v1.3.2
+publish	Publish to crates.io	2026-09-10T05:25:04.9694916Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+publish	Publish to crates.io	2026-09-10T05:25:04.9781472Z ^[[1m^[[92m   Compiling^[[0m bit-vec v0.8.0
+publish	Publish to crates.io	2026-09-10T05:25:05.0092079Z ^[[1m^[[92m   Compiling^[[0m iri-string v0.7.10
+publish	Publish to crates.io	2026-09-10T05:25:05.1301504Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.4
+publish	Publish to crates.io	2026-09-10T05:25:05.1455017Z ^[[1m^[[92m   Compiling^[[0m bit-set v0.8.0
+publish	Publish to crates.io	2026-09-10T05:25:05.1825350Z ^[[1m^[[92m   Compiling^[[0m anstream v0.6.21
+publish	Publish to crates.io	2026-09-10T05:25:05.4007670Z ^[[1m^[[92m   Compiling^[[0m quantette v0.6.0
+publish	Publish to crates.io	2026-09-10T05:25:05.5834730Z ^[[1m^[[92m   Compiling^[[0m inotify v0.10.2
+publish	Publish to crates.io	2026-09-10T05:25:06.4635850Z ^[[1m^[[92m   Compiling^[[0m tower-http v0.6.8
+publish	Publish to crates.io	2026-09-10T05:25:06.7185007Z ^[[1m^[[92m   Compiling^[[0m notify-types v1.0.1
+publish	Publish to crates.io	2026-09-10T05:25:06.9190208Z ^[[1m^[[92m   Compiling^[[0m rand_chacha v0.3.1
+publish	Publish to crates.io	2026-09-10T05:25:07.0854977Z ^[[1m^[[92m   Compiling^[[0m hyper-rustls v0.27.7
+publish	Publish to crates.io	2026-09-10T05:25:07.2442561Z ^[[1m^[[92m   Compiling^[[0m ed25519-dalek v2.2.0
+publish	Publish to crates.io	2026-09-10T05:25:07.2484976Z ^[[1m^[[92m   Compiling^[[0m ratatui-crossterm v0.1.0
+publish	Publish to crates.io	2026-09-10T05:25:07.3664842Z ^[[1m^[[92m   Compiling^[[0m image v0.25.9
+publish	Publish to crates.io	2026-09-10T05:25:07.3732482Z ^[[1m^[[92m   Compiling^[[0m ratatui-macros v0.7.0
+publish	Publish to crates.io	2026-09-10T05:25:07.4543750Z ^[[1m^[[92m   Compiling^[[0m serde_urlencoded v0.7.1
+publish	Publish to crates.io	2026-09-10T05:25:07.6384924Z ^[[1m^[[92m   Compiling^[[0m http-body-util v0.1.3
+publish	Publish to crates.io	2026-09-10T05:25:07.8242723Z ^[[1m^[[92m   Compiling^[[0m console v0.15.11
+publish	Publish to crates.io	2026-09-10T05:25:07.8815332Z ^[[1m^[[92m   Compiling^[[0m xattr v1.6.1
+publish	Publish to crates.io	2026-09-10T05:25:08.0944439Z ^[[1m^[[92m   Compiling^[[0m gethostname v1.1.0
+publish	Publish to crates.io	2026-09-10T05:25:08.1340304Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v1.0.69
+publish	Publish to crates.io	2026-09-10T05:25:08.2995689Z ^[[1m^[[92m   Compiling^[[0m quick-xml v0.38.4
+publish	Publish to crates.io	2026-09-10T05:25:09.0384809Z ^[[1m^[[92m   Compiling^[[0m vsimd v0.8.0
+publish	Publish to crates.io	2026-09-10T05:25:09.0992800Z ^[[1m^[[92m   Compiling^[[0m pulldown-cmark v0.13.0
+publish	Publish to crates.io	2026-09-10T05:25:09.1615071Z ^[[1m^[[92m   Compiling^[[0m linked-hash-map v0.5.6
+publish	Publish to crates.io	2026-09-10T05:25:09.2584958Z ^[[1m^[[92m   Compiling^[[0m self_update v0.42.0
+publish	Publish to crates.io	2026-09-10T05:25:09.3420581Z ^[[1m^[[92m   Compiling^[[0m outref v0.5.2
+publish	Publish to crates.io	2026-09-10T05:25:09.3825012Z ^[[1m^[[92m   Compiling^[[0m x11rb-protocol v0.13.2
+publish	Publish to crates.io	2026-09-10T05:25:09.4215355Z ^[[1m^[[92m   Compiling^[[0m option-ext v0.2.0
+publish	Publish to crates.io	2026-09-10T05:25:09.4564861Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.101
+publish	Publish to crates.io	2026-09-10T05:25:09.6004921Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.1.14
+publish	Publish to crates.io	2026-09-10T05:25:09.7725080Z ^[[1m^[[92m   Compiling^[[0m number_prefix v0.4.0
+publish	Publish to crates.io	2026-09-10T05:25:09.8353854Z ^[[1m^[[92m   Compiling^[[0m ratatui-image v11.0.3
+publish	Publish to crates.io	2026-09-10T05:25:09.8994567Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.0.0
+publish	Publish to crates.io	2026-09-10T05:25:10.0365114Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.5.58
+publish	Publish to crates.io	2026-09-10T05:25:11.8604989Z ^[[1m^[[92m   Compiling^[[0m indicatif v0.17.11
+publish	Publish to crates.io	2026-09-10T05:25:12.5875057Z ^[[1m^[[92m   Compiling^[[0m x11rb v0.13.2
+publish	Publish to crates.io	2026-09-10T05:25:12.6181363Z ^[[1m^[[92m   Compiling^[[0m miette v7.6.0
+publish	Publish to crates.io	2026-09-10T05:25:13.1041348Z ^[[1m^[[92m   Compiling^[[0m dirs-sys v0.5.0
+publish	Publish to crates.io	2026-09-10T05:25:13.2714917Z ^[[1m^[[92m   Compiling^[[0m base64-simd v0.8.0
+publish	Publish to crates.io	2026-09-10T05:25:13.4372242Z ^[[1m^[[92m   Compiling^[[0m yaml-rust v0.4.5
+publish	Publish to crates.io	2026-09-10T05:25:13.5575267Z ^[[1m^[[92m   Compiling^[[0m plist v1.8.0
+publish	Publish to crates.io	2026-09-10T05:25:13.5735274Z ^[[1m^[[92m   Compiling^[[0m tar v0.4.46
+publish	Publish to crates.io	2026-09-10T05:25:14.0186471Z ^[[1m^[[92m   Compiling^[[0m reqwest v0.12.28
+publish	Publish to crates.io	2026-09-10T05:25:14.2254951Z ^[[1m^[[92m   Compiling^[[0m ratatui v0.30.0
+publish	Publish to crates.io	2026-09-10T05:25:14.3157346Z ^[[1m^[[92m   Compiling^[[0m zipsign-api v0.1.5
+publish	Publish to crates.io	2026-09-10T05:25:14.3584934Z ^[[1m^[[92m   Compiling^[[0m rand v0.8.8
+publish	Publish to crates.io	2026-09-10T05:25:14.5259652Z ^[[1m^[[92m   Compiling^[[0m notify v7.0.0
+publish	Publish to crates.io	2026-09-10T05:25:14.9811384Z ^[[1m^[[92m   Compiling^[[0m icy_sixel v0.5.1
+publish	Publish to crates.io	2026-09-10T05:25:15.1714870Z ^[[1m^[[92m   Compiling^[[0m fancy-regex v0.16.2
+publish	Publish to crates.io	2026-09-10T05:25:15.2374904Z ^[[1m^[[92m   Compiling^[[0m self-replace v1.5.0
+publish	Publish to crates.io	2026-09-10T05:25:15.3108068Z ^[[1m^[[92m   Compiling^[[0m regex v1.12.3
+publish	Publish to crates.io	2026-09-10T05:25:15.6596381Z ^[[1m^[[92m   Compiling^[[0m bincode v1.3.3
+publish	Publish to crates.io	2026-09-10T05:25:15.8805320Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.5.55
+publish	Publish to crates.io	2026-09-10T05:25:15.9904221Z ^[[1m^[[92m   Compiling^[[0m quick-xml v0.37.5
+publish	Publish to crates.io	2026-09-10T05:25:16.6168582Z ^[[1m^[[92m   Compiling^[[0m winnow v0.7.15
+publish	Publish to crates.io	2026-09-10T05:25:17.2911624Z ^[[1m^[[92m   Compiling^[[0m unicase v2.9.0
+publish	Publish to crates.io	2026-09-10T05:25:17.3650853Z ^[[1m^[[92m   Compiling^[[0m self_cell v1.3.0
+publish	Publish to crates.io	2026-09-10T05:25:17.4084751Z ^[[1m^[[92m   Compiling^[[0m openssl-probe v0.1.6
+publish	Publish to crates.io	2026-09-10T05:25:17.4204887Z ^[[1m^[[92m   Compiling^[[0m urlencoding v2.1.3
+publish	Publish to crates.io	2026-09-10T05:25:18.2352026Z ^[[1m^[[92m   Compiling^[[0m kdl v6.7.1
+publish	Publish to crates.io	2026-09-10T05:25:18.7420717Z ^[[1m^[[92m   Compiling^[[0m clap v4.5.58
+publish	Publish to crates.io	2026-09-10T05:25:18.7753642Z ^[[1m^[[92m   Compiling^[[0m syntect v5.3.0
+publish	Publish to crates.io	2026-09-10T05:25:19.5835292Z ^[[1m^[[92m   Compiling^[[0m notify-debouncer-mini v0.5.0
+publish	Publish to crates.io	2026-09-10T05:25:19.7365268Z ^[[1m^[[92m   Compiling^[[0m arboard v3.6.1
+publish	Publish to crates.io	2026-09-10T05:25:20.8024908Z ^[[1m^[[92m   Compiling^[[0m dirs v6.0.0
+publish	Publish to crates.io	2026-09-10T05:25:21.0429138Z ^[[1m^[[92m   Compiling^[[0m crossterm v0.28.1
+publish	Publish to crates.io	2026-09-10T05:25:21.0716057Z ^[[1m^[[92m   Compiling^[[0m sysinfo v0.39.6
+publish	Publish to crates.io	2026-09-10T05:25:27.2371020Z ^[[1m^[[92m   Compiling^[[0m git2 v0.20.4
+publish	Publish to crates.io	2026-09-10T05:25:29.0216061Z ^[[1m^[[92m   Compiling^[[0m vig v0.15.0 (/home/runner/work/vig/vig/target/package/vig-0.15.0)
+publish	Publish to crates.io	2026-09-10T05:25:34.5869206Z ^[[1m^[[92m    Finished^[[0m `dev` profile [unoptimized] target(s) in 1m 13s
+publish	Publish to crates.io	2026-09-10T05:25:34.6158475Z ^[[1m^[[92m   Uploading^[[0m vig v0.15.0 (/home/runner/work/vig/vig)
+publish	Publish to crates.io	2026-09-10T05:25:35.5404147Z ^[[1m^[[92m    Uploaded^[[0m vig v0.15.0 to registry `crates-io`
+publish	Publish to crates.io	2026-09-10T05:25:35.5405185Z ^[[1m^[[92mnote^[[0m: waiting for vig v0.15.0 to be available at registry `crates-io`
+publish	Publish to crates.io	2026-09-10T05:25:35.5406319Z ^[[1m^[[96mhelp^[[0m: you may press ctrl-c to skip waiting; the crate should be available shortly
+publish	Publish to crates.io	2026-09-10T05:25:36.8943971Z ^[[1m^[[92m   Published^[[0m vig v0.15.0 at registry `crates-io`
+publish	Post Authenticate with crates.io	﻿2026-09-10T05:25:36.9164350Z Post job cleanup.
+publish	Post Authenticate with crates.io	2026-09-10T05:25:36.9884477Z Revoking trusted publishing token at https://crates.io/api/v1/trusted_publishing/tokens
+publish	Post Authenticate with crates.io	2026-09-10T05:25:37.0611667Z Token revoked successfully
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-09-10T05:25:37.1375487Z Post job cleanup.
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.1379344Z ##[start-action display=Setup Rust Caching;id=__e17493dc-3a04-4ef0-a773-a6685d50b9bc.__Swatinem_rust-cache]
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.1421873Z Post job cleanup.
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4173003Z ##[group]Cache Configuration
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4175185Z Cache Provider:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4175673Z     github
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4176460Z Workspaces:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4177240Z     /home/runner/work/vig/vig
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4177874Z Cache Paths:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4178329Z     /home/runner/.cargo/bin
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4178793Z     /home/runner/.cargo/.crates.toml
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4179310Z     /home/runner/.cargo/.crates2.json
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4179793Z     /home/runner/.cargo/registry
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4180108Z     /home/runner/.cargo/git
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4180403Z     /home/runner/work/vig/vig/target
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4180734Z Restore Key:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4181068Z     v0-rust-publish-Linux-x64-09ed3713
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4181574Z Cache Key:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4182046Z     v0-rust-publish-Linux-x64-09ed3713-eb78a9df
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4182474Z .. Prefix:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4182740Z   - v0-rust-publish-Linux-x64
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4183068Z .. Environment considered:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4183357Z   - Rust Versions:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4184085Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4184587Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4184982Z   - CARGO_INCREMENTAL
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4185220Z   - CARGO_PROFILE_DEV_DEBUG
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4185486Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4185759Z   - CARGO_TERM_COLOR
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4185995Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4186246Z   - RUST_BACKTRACE
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4186447Z   - RUSTFLAGS
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4186947Z .. Lockfiles considered:
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4187196Z   - /home/runner/work/vig/vig/Cargo.lock
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4187484Z   - /home/runner/work/vig/vig/Cargo.toml
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4187930Z ##[endgroup]
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4188050Z 
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4208375Z (node:7474) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:37.4209307Z (Use `node --trace-deprecation ...` to show where the warning was created)
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:39.7730415Z ... Cleaning /home/runner/work/vig/vig/target ...
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:39.8030685Z ... Cleaning cargo registry (cache-all-crates: false) ...
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:40.9120484Z ... Cleaning cargo/bin ...
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:40.9144293Z ... Cleaning cargo git cache ...
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:40.9149369Z ... Saving cache ...
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:40.9303928Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/vig/vig --files-from manifest.txt --use-compress-program zstdmt
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:44.5476724Z Sent 18310583 of 353854903 (5.2%), 17.5 MBs/sec
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:45.1104467Z Sent 353854903 of 353854903 (100.0%), 215.9 MBs/sec
+publish	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-09-10T05:25:45.2479306Z ##[end-action id=__e17493dc-3a04-4ef0-a773-a6685d50b9bc.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=8109]
+publish	Post Run actions/checkout@v6	﻿2026-09-10T05:25:45.2551925Z Post job cleanup.
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3376916Z [command]/usr/bin/git version
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3419020Z git version 2.55.0
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3460094Z Temporarily overriding HOME='/home/runner/work/_temp/722a296b-e48a-4275-a84c-c0f5a634023d' before making global git config changes
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3461530Z Adding repository directory to the temporary git global config as a safe directory
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3467075Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3501299Z Removing SSH command configuration
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3508442Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3545255Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3802678Z Removing HTTP extra header
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3810118Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.3847980Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4098797Z Removing includeIf entries pointing to credentials config files
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4106338Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4134755Z includeif.gitdir:/home/runner/work/vig/vig/.git.path
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4135577Z includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4136271Z includeif.gitdir:/github/workspace/.git.path
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4136958Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4151003Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git.path
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4174374Z /home/runner/work/_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4187436Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4229197Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4255371Z /home/runner/work/_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4267652Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4307105Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4333961Z /github/runner_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4344898Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4392023Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4420203Z /github/runner_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4429964Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4482435Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+publish	Post Run actions/checkout@v6	2026-09-10T05:25:45.4725703Z Removing credentials config '/home/runner/work/_temp/git-credentials-84962749-eea2-45bc-989e-a2cba123bfff.config'
+publish	Complete job	﻿2026-09-10T05:25:45.4886381Z Cleaning up orphan processes

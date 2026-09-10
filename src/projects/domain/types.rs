@@ -275,6 +275,18 @@ pub struct ItemContent {
     /// Draft issues carry their body here; issues and PRs too.
     #[serde(default)]
     pub body: Option<String>,
+    /// `OPEN` / `CLOSED` / `MERGED` (GraphQL path only; the CLI path and
+    /// older caches have none — such an item counts as open).
+    #[serde(default)]
+    pub state: Option<String>,
+}
+
+/// An item's open / closed state for filters and the closed toggle.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ItemState {
+    Open,
+    Closed,
+    Merged,
 }
 
 /// Coarse item type, for icons and the detail pane.
@@ -307,6 +319,16 @@ impl ItemKind {
 }
 
 impl ProjectItem {
+    /// The content's state; unknown (drafts, the CLI path) counts as open.
+    pub fn state(&self) -> ItemState {
+        let state = self.content.as_ref().and_then(|c| c.state.as_deref());
+        match state {
+            Some(s) if s.eq_ignore_ascii_case("CLOSED") => ItemState::Closed,
+            Some(s) if s.eq_ignore_ascii_case("MERGED") => ItemState::Merged,
+            _ => ItemState::Open,
+        }
+    }
+
     pub fn kind(&self) -> ItemKind {
         match self.content.as_ref().map(|c| c.kind.as_str()) {
             Some("Issue") => ItemKind::Issue,

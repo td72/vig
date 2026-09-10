@@ -2,13 +2,14 @@
 //! and evaluated locally against the items already fetched — no API call.
 //!
 //! Supported: free-text title words, `field:value` (with `,` lists and
-//! quoted values), `-` negation, `is:issue|pr|draft`, `no:<field>` /
+//! quoted values), `-` negation, `is:issue|pr|draft`, `is:open|closed|merged`
+//! (an item without a known state counts as open), `no:<field>` /
 //! `has:<field>`, `assignee:` (`@me` resolves to the signed-in login),
 //! `label:`, `milestone:`, `repo:`. Anything else — ranges (`>`, `<`, `..`),
-//! wildcards, `is:open|closed|merged` (item-list carries no state) — is
+//! wildcards — is
 //! reported in [`Filter::unsupported`] and ignored.
 
-use crate::projects::domain::types::{item_key, ItemKind, ProjectItem};
+use crate::projects::domain::types::{item_key, ItemKind, ItemState, ProjectItem};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Term {
@@ -16,6 +17,8 @@ pub enum Term {
     Text(String),
     /// `is:issue` / `is:pr` / `is:draft`.
     Is(ItemKind),
+    /// `is:open` / `is:closed` (closed or merged) / `is:merged`.
+    State(ItemState),
     /// `no:<field>` (`true`) / `has:<field>` (`false`): the field is empty / set.
     Empty {
         key: String,
@@ -110,6 +113,9 @@ pub fn parse(expr: &str, viewer: Option<&str>) -> Filter {
                 "issue" => Term::Is(ItemKind::Issue),
                 "pr" | "pull-request" | "pullrequest" => Term::Is(ItemKind::PullRequest),
                 "draft" | "draft-issue" => Term::Is(ItemKind::Draft),
+                "open" => Term::State(ItemState::Open),
+                "closed" => Term::State(ItemState::Closed),
+                "merged" => Term::State(ItemState::Merged),
                 _ => {
                     filter.unsupported.push(token.clone());
                     continue;
@@ -217,6 +223,9 @@ fn term_matches(term: &Term, item: &ProjectItem) -> bool {
     match term {
         Term::Text(word) => item.title().to_lowercase().contains(word.as_str()),
         Term::Is(kind) => item.kind() == *kind,
+        // GitHub counts a merged PR as closed too.
+        Term::State(ItemState::Closed) => item.state() != ItemState::Open,
+        Term::State(state) => item.state() == *state,
         Term::Empty { key, empty } => list_values(item, key).is_empty() == *empty,
         Term::Assignee(logins) => any_of(
             &item
@@ -303,14 +312,14 @@ mod tests {
     #[test]
     fn unsupported_tokens_are_reported_not_applied() {
         let f = parse(
-            "status:Todo updated:>2026-01-01 is:open estimate:1..3 label:x*",
+            "status:Todo updated:>2026-01-01 is:archived estimate:1..3 label:x*",
             None,
         );
         assert_eq!(
             f.unsupported,
             vec![
                 "updated:>2026-01-01",
-                "is:open",
+                "is:archived",
                 "estimate:1..3",
                 "label:x*"
             ]
@@ -320,5 +329,36 @@ mod tests {
         let f = parse("assignee:@me", None);
         assert_eq!(f.terms, vec![(false, Term::AssigneeMe)]);
         assert!(!f.matches(&board().items[0]));
+    }
+
+    /// `is:open` / `is:closed` / `is:merged` read the content state; an
+    /// item without one (a draft, the CLI path) counts as open, and a
+    /// merged PR is closed as well as merged.
+    #[test]
+    fn state_terms_follow_the_content_state() {
+        let mut b = board();
+        let set = |item: &mut crate::projects::domain::types::ProjectItem, s: &str| {
+            item.content.as_mut().unwrap().state = Some(s.into());
+        };
+        set(&mut b.items[0], "CLOSED");
+        set(&mut b.items[1], "MERGED");
+        set(&mut b.items[2], "OPEN");
+        // b.items[3..] keep no state.
+        let ids = |expr: &str| -> Vec<String> {
+            let f = parse(expr, None);
+            assert!(f.unsupported.is_empty(), "{expr}: {:?}", f.unsupported);
+            b.items
+                .iter()
+                .filter(|i| f.matches(i))
+                .map(|i| i.id.clone())
+                .collect()
+        };
+        assert_eq!(ids("is:closed"), vec!["I1", "I2"]);
+        assert_eq!(ids("is:merged"), vec!["I2"]);
+        assert!(!ids("is:open").contains(&"I1".to_string()));
+        assert!(!ids("is:open").contains(&"I2".to_string()));
+        assert!(ids("is:open").contains(&"I3".to_string()));
+        assert_eq!(ids("is:open").len(), b.items.len() - 2);
+        assert_eq!(ids("-is:closed"), ids("is:open"));
     }
 }

@@ -68,11 +68,20 @@ A view's **filter** (`status:Todo -label:bug assignee:@me is:issue
 no:milestone …`) is evaluated locally against the items already fetched —
 no extra API call — before grouping and sorting, in every layout. Supported:
 free-text title words, `field:value` with `,` lists and quoted values, `-`
-negation, `is:issue|pr|draft`, `no:` / `has:`, `assignee:` (`@me` is the
-signed-in login), `label:`, `milestone:`, `repo:`. Ranges (`>`, `..`),
-wildcards and `is:open|closed` cannot be evaluated: the status bar says
-`⚠ filter: unsupported "…"` and those tokens are ignored. The status bar also
-counts what the filter hid (`(3 filtered out)`).
+negation, `is:issue|pr|draft`, `is:open|closed|merged` (a merged PR counts
+as closed; an item whose state is unknown counts as open), `no:` / `has:`,
+`assignee:` (`@me` is the signed-in login), `label:`, `milestone:`,
+`repo:`. Ranges (`>`, `..`) and wildcards cannot be evaluated: the status
+bar says `⚠ filter: unsupported "…"` and those tokens are ignored. The
+status bar also counts what the filter hid (`(3 filtered out)`).
+
+Two more filters stack on top of whichever view is shown, saved or local:
+a [`projects-filter`](config-reference.md#projects-filter) expression from
+the config (`projects-filter "-status:Done"` keeps done items out of every
+view), and the **closed toggle** — `x` hides closed issues and merged /
+closed pull requests (`· closed hidden` in the header; drafts have no state
+and stay), and [`projects-hide-closed`](config-reference.md#projects-hide-closed)
+starts the page that way.
 
 ## Local views
 
@@ -105,6 +114,7 @@ projects-view "Mine" default=#true {
 | `Enter` / `i` (board) | Focus the detail |
 | `v` / `V` | Next / previous saved view of the project |
 | `Space` | Collapse / expand the selected swimlane |
+| `x` | Hide / show closed issues and merged / closed PRs |
 | `+` / `-` | Zoom the roadmap time scale in / out |
 | `o` | Open the project / item in the browser |
 | `y` | Copy the project / item URL |

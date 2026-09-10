@@ -39,6 +39,14 @@ github-poll-interval "5s"
 // "30s", "5s", ...; at least 5s. Probing pauses on the other pages.
 projects-poll-interval "30s"
 
+// A filter stacked on every view of the Projects page, saved or local
+// (the saved-view syntax, evaluated locally). Off when absent.
+// projects-filter "-status:Done"
+
+// Start the Projects page with closed items (closed issues, merged / closed
+// pull requests) hidden: "on" or "off". `x` toggles it while running.
+projects-hide-closed "off"
+
 // Local views of the Projects page: a filter / grouping / sort / layout
 // defined here instead of saved on GitHub. They follow the project's saved
 // views in the `v` / `V` cycle. See the Config Reference for every child.
@@ -588,6 +596,7 @@ page "projects" {
             "t" "ToggleTable"
             "s" "CycleSort"
             "v" "NextView"
+            "x" "ToggleClosed"
             "V" "PrevView"
             "Space" "ToggleLane"
             "+" "ZoomIn"

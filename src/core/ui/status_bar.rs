@@ -400,6 +400,12 @@ pub fn render_projects_header(f: &mut Frame, ctx: &AppContext, pj: &ProjectsStat
                 ));
             }
         }
+        if pj.panes.board.hide_closed() {
+            spans.push(Span::styled(
+                " · closed hidden",
+                Style::default().fg(Color::DarkGray),
+            ));
+        }
         spans.push(Span::raw(" "));
     }
     render_header_common(f, ctx, spans, area);
