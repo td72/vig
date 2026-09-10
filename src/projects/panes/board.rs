@@ -195,10 +195,16 @@ pub struct BoardPane {
     global_filter: Option<String>,
     /// `x` / `projects-hide-closed`: closed and merged items are left out.
     hide_closed: bool,
-    /// Roadmap: time scale, horizontal scroll in cells (`None` = start of
-    /// the timeline) and the first visible row.
+    /// Roadmap: time scale, horizontal scroll in cells (`None` = the
+    /// configured start, else the start of the timeline) and the first
+    /// visible row.
     zoom: Zoom,
     roadmap_scroll: Option<i64>,
+    /// The scroll the configured `start` maps to (from the last render).
+    roadmap_initial_scroll: i64,
+    /// `projects-roadmap`: where roadmaps open and at which zoom, unless
+    /// the view says otherwise.
+    roadmap_defaults: roadmap::RoadmapSettings,
     roadmap_offset: usize,
     loading: bool,
     error: Option<String>,
@@ -242,6 +248,8 @@ impl BoardPane {
             hide_closed: false,
             zoom: Zoom::Week,
             roadmap_scroll: None,
+            roadmap_initial_scroll: 0,
+            roadmap_defaults: Default::default(),
             roadmap_offset: 0,
             loading: false,
             error: None,
@@ -283,6 +291,24 @@ impl BoardPane {
         if self.board.is_some() {
             self.apply_view(false);
         }
+    }
+
+    /// `projects-roadmap`: where roadmaps open and their initial zoom.
+    pub fn set_roadmap_defaults(&mut self, settings: roadmap::RoadmapSettings) {
+        self.roadmap_defaults = settings;
+        if self.board.is_some() {
+            self.apply_view(true);
+        } else {
+            self.zoom = settings.zoom.unwrap_or(Zoom::Week);
+        }
+    }
+
+    /// The roadmap settings in force: the view's, filled from the config.
+    fn roadmap_settings(&self) -> roadmap::RoadmapSettings {
+        self.current_view()
+            .map(|v| v.roadmap)
+            .unwrap_or_default()
+            .or(self.roadmap_defaults)
     }
 
     /// `projects-filter`: a filter stacked on every view.
@@ -354,7 +380,7 @@ impl BoardPane {
         self.view_idx = 0;
         self.applied_view = None;
         self.filter = None;
-        self.zoom = Zoom::Week;
+        self.zoom = self.roadmap_defaults.zoom.unwrap_or(Zoom::Week);
         self.roadmap_scroll = None;
         self.roadmap_offset = 0;
         self.sort_desc = false;
@@ -636,6 +662,13 @@ impl BoardPane {
                 Some(ViewLayout::Roadmap) => BoardMode::Roadmap,
                 _ => BoardMode::Board,
             };
+            // The view's roadmap settings, filled from `projects-roadmap`.
+            self.zoom = view
+                .map(|v| v.roadmap)
+                .unwrap_or_default()
+                .or(self.roadmap_defaults)
+                .zoom
+                .unwrap_or(Zoom::Week);
             self.roadmap_scroll = None;
         }
         self.sort_col = self.sort_col.min(self.table_cols.len().saturating_sub(1));
@@ -815,7 +848,8 @@ impl BoardPane {
                     } else {
                         -7
                     };
-                    self.roadmap_scroll = Some((self.roadmap_scroll.unwrap_or(0) + step).max(0));
+                    let from = self.roadmap_scroll.unwrap_or(self.roadmap_initial_scroll);
+                    self.roadmap_scroll = Some((from + step).max(0));
                 } else if self.mode == BoardMode::Table {
                     // Left / right pick the sort column in table mode.
                     if !self.table_cols.is_empty() {
@@ -1362,8 +1396,16 @@ impl BoardPane {
             .unwrap_or(today)
             .min(today);
         let origin = min_day - 2;
-        let scroll = self.roadmap_scroll.unwrap_or(0);
         let zoom = self.zoom;
+        // The configured start (an offset from today) as a scroll, so `h`
+        // still reaches the earlier items.
+        let initial = self
+            .roadmap_settings()
+            .start
+            .map(|offset| zoom.x(today + offset, origin).max(0))
+            .unwrap_or(0);
+        self.roadmap_initial_scroll = initial;
+        let scroll = self.roadmap_scroll.unwrap_or(initial);
         let header_h = 2usize;
         let rows_h = (inner.height as usize).saturating_sub(header_h);
         self.view_height = rows_h as u16;
@@ -1753,6 +1795,7 @@ mod tests {
             visible_fields: vec![],
             local: false,
             initial: false,
+            roadmap: Default::default(),
         }
     }
 
@@ -2301,6 +2344,73 @@ mod roadmap_render_tests {
     use crate::projects::domain::types::tests::board;
     use ratatui::backend::TestBackend;
     use ratatui::Terminal;
+
+    /// `projects-roadmap` seeds the zoom and where the timeline opens; a
+    /// view's own `roadmap { … }` wins, and `h` still reaches the earlier
+    /// items from there.
+    #[test]
+    fn roadmap_settings_seed_zoom_and_start() {
+        use crate::projects::domain::roadmap::RoadmapSettings;
+        let mut p = BoardPane::new(1, 2, Some(0));
+        p.set_roadmap_defaults(RoadmapSettings {
+            start: Some(-7),
+            zoom: Some(Zoom::Month),
+        });
+        let mut b = board();
+        let mut timeline = view(1, "Timeline");
+        timeline.layout = ViewLayout::Roadmap;
+        let mut soon = view(2, "Soon");
+        soon.layout = ViewLayout::Roadmap;
+        soon.roadmap = RoadmapSettings {
+            start: None,
+            zoom: Some(Zoom::Day),
+        };
+        b.views = vec![timeline, soon];
+        // Every item starts 30 days ago, so the timeline origin is 32 days
+        // back and a `-7d` start sits 25 cells in at the week scale.
+        let t = roadmap::today();
+        let (y, m, d) = roadmap::civil_from_days(t - 30);
+        let date = format!("{y:04}-{m:02}-{d:02}");
+        for item in &mut b.items {
+            item.fields
+                .insert("start date".into(), serde_json::Value::String(date.clone()));
+        }
+        p.set_board(b);
+        assert_eq!(p.zoom, Zoom::Month, "from projects-roadmap");
+        let sh = shared();
+        p.execute(&sh, BoardAction::NextView);
+        assert_eq!(p.zoom, Zoom::Day, "the view's own zoom wins");
+        p.execute(&sh, BoardAction::PrevView);
+        p.execute(&sh, BoardAction::ZoomIn); // month → week
+        assert_eq!(p.zoom, Zoom::Week);
+
+        let mut term = Terminal::new(TestBackend::new(100, 20)).unwrap();
+        let ctx = crate::core::app::AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: std::path::PathBuf::new(),
+            needs_full_redraw: false,
+            last_input: std::time::Instant::now(),
+            auto_refresh: true,
+        };
+        term.draw(|f| {
+            let area = f.area();
+            p.render(f, &ctx, &sh, area);
+        })
+        .unwrap();
+        assert_eq!(p.roadmap_initial_scroll, 25);
+        assert_eq!(p.roadmap_scroll, None, "opens at the configured start");
+        // `h` scrolls left from there, towards the earlier items.
+        p.execute(&sh, BoardAction::PrevColumn);
+        assert_eq!(p.roadmap_scroll, Some(18));
+        p.execute(&sh, BoardAction::ZoomOut);
+        assert_eq!(p.roadmap_scroll, None, "a zoom change returns to the start");
+    }
 
     #[test]
     fn selected_roadmap_row_keeps_its_bar() {

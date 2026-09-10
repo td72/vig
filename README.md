@@ -430,7 +430,7 @@ press `r`. Nothing in this view adds, moves, edits or deletes anything.
 | `v` / `V` | Next / previous view of the project (saved on GitHub, or a local `projects-view` from the config) |
 | `Space` | Collapse / expand the selected swimlane (grouped board views) |
 | `x` | Hide / show closed issues and merged / closed PRs (`projects-hide-closed` sets the start; `projects-filter` stacks a filter on every view) |
-| `+` / `-` | Zoom the roadmap time scale in / out |
+| `+` / `-` | Zoom the roadmap time scale in / out (`projects-roadmap { start "-7d"; zoom "month" }` sets where a roadmap opens) |
 | `o` | Open the project / item in the browser |
 | `y` | Copy the project / item URL |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u` (detail) | Scroll |

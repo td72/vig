@@ -219,6 +219,7 @@ impl ProjectsState {
         board.set_keymap(board_km);
         board.set_global_filter(cfg.projects_filter()?);
         board.set_hide_closed(cfg.projects_hide_closed()?);
+        board.set_roadmap_defaults(cfg.projects_roadmap()?);
         let mut detail = DetailPane::new(ids.detail);
         detail.set_keymap(detail_km);
 

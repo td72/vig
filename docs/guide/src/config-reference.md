@@ -41,6 +41,7 @@ Conventions used below:
 | [`projects-view`](#projects-view) | none | replaced by name, else appended |
 | [`projects-filter`](#projects-filter) | absent | replaced |
 | [`projects-hide-closed`](#projects-hide-closed) | `"off"` | replaced |
+| [`projects-roadmap`](#projects-roadmap) | absent (earliest item, week) | replaced |
 | [`pages`](#pages) | all seven pages | replaced wholesale |
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
 | [`app`](#app) | `Ctrl+c` quit, `1`…`7` page switch | merged per key |
@@ -76,8 +77,8 @@ colors "red"
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
 //   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
-//   `projects-filter`, `projects-hide-closed`, `pages`, `repo-config`,
-//   `app`, or `page`)
+//   `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`,
+//   `repo-config`, `app`, or `page`)
 ```
 
 ## Top-level nodes
@@ -346,6 +347,8 @@ project needed. Local views follow the project's saved views in the `v` /
   - `fields "<field>" …` — the table columns, in order
   - `board "<title>"` or `board <number>` — apply to that linked project
     only (absent: every board)
+  - `roadmap { start "<offset>"; zoom "<level>" }` — where this view's
+    roadmap opens, overriding [`projects-roadmap`](#projects-roadmap)
 - **Default** — none
 - **Merge** — a view with the same name replaces it; other names are
   appended.
@@ -413,6 +416,40 @@ always show.
 
 ```kdl
 projects-hide-closed "on"
+```
+
+### `projects-roadmap`
+
+Where a Roadmap view opens and at which scale. Without it the timeline
+starts two days before the earliest span of any item — one old item then
+stretches the visible range far into the past — at the week scale.
+
+- **Form** — `projects-roadmap { start "<offset>"; zoom "<level>" }`, both
+  children optional:
+  - `start` — the first visible day as an offset from today: a number with
+    `d` (days), `w` (weeks) or `m` (months, 30 days), e.g. `"-7d"`,
+    `"-2w"`, `"0d"`. Items that start earlier are clipped on the left and
+    reachable with `h`; `+` / `-` return to this start.
+  - `zoom` — the initial scale: `"month"`, `"week"` or `"day"`
+- **Default** — absent (earliest item, week scale)
+- **Merge** — replaces the default.
+
+A local view can override either setting with its own `roadmap { … }`
+child (see [`projects-view`](#projects-view)).
+
+```kdl
+projects-roadmap {
+    start "-7d"
+    zoom "week"
+}
+```
+
+```kdl,ignore
+projects-roadmap {
+    start "yesterday"
+}
+// → bad projects-roadmap (start: bad offset "yesterday"; expected days,
+//   weeks or months from today such as "-7d", "-2w" or "-1m")
 ```
 
 ### `pages`

@@ -524,6 +524,9 @@ pub struct ProjectView {
     /// `projects-view … default=#true`: the view a board opens on.
     #[serde(default)]
     pub initial: bool,
+    /// A local view's `roadmap { start; zoom }` (unset for saved views).
+    #[serde(default)]
+    pub roadmap: crate::projects::domain::roadmap::RoadmapSettings,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -850,6 +853,7 @@ pub(crate) mod tests {
             visible_fields: vec!["Title".into(), "Status".into()],
             local: false,
             initial: false,
+            roadmap: Default::default(),
         });
         let json = serde_json::to_string(&b).unwrap();
         let back: Board = serde_json::from_str(&json).unwrap();
@@ -880,6 +884,7 @@ pub(crate) mod tests {
             ],
             local: false,
             initial: false,
+            roadmap: Default::default(),
         };
         let cols = view_table_columns(&v, &b.fields);
         let headers: Vec<&str> = cols.iter().map(TableColumn::header).collect();
