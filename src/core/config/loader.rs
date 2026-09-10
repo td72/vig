@@ -135,7 +135,7 @@ fn board_ref(node: &KdlNode) -> std::result::Result<ProjectsBoard, &'static str>
     if let Some(n) = entry.value().as_integer() {
         return match u64::try_from(n) {
             Ok(n) if n > 0 => Ok(ProjectsBoard::ByNumber(n)),
-            _ => Err("a project number is positive"),
+            _ => Err("a project number must be a positive integer"),
         };
     }
     Err("not a string or integer")

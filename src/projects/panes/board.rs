@@ -505,15 +505,20 @@ impl BoardPane {
             matches!(name.as_str(), "Title" | "Assignees")
                 || board.fields.iter().any(|f| &f.name == name)
         };
-        let mut missing: Vec<&String> = view
+        // Each name once, in first-seen order (a field may be named in
+        // several settings).
+        let mut missing: Vec<&String> = Vec::new();
+        for name in view
             .vertical_group_by
             .iter()
             .chain(view.group_by.iter())
             .chain(view.sort_by.iter().map(|s| &s.field))
             .chain(view.visible_fields.iter())
-            .filter(|name| !known(name))
-            .collect();
-        missing.dedup();
+        {
+            if !known(name) && !missing.contains(&name) {
+                missing.push(name);
+            }
+        }
         if missing.is_empty() {
             return None;
         }
@@ -1989,7 +1994,8 @@ mod tests {
             field: "Title".into(),
             desc: false,
         }];
-        mine.visible_fields = vec!["Status".into(), "Phantom".into()];
+        // "Ghost" twice, apart: listed once.
+        mine.visible_fields = vec!["Status".into(), "Phantom".into(), "Ghost".into()];
         b.views = vec![view(1, "All"), mine];
         p.set_board(b);
         assert_eq!(p.view_label(), Some(("Mine", 2, 2)));
