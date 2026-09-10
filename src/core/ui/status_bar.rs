@@ -92,16 +92,18 @@ pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect
     );
 }
 
-pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
-    render_header_common(
-        f,
-        ctx,
-        vec![Span::styled(
-            " GitHub ",
-            Style::default().fg(Color::Black).bg(Color::Rgb(36, 41, 47)),
-        )],
-        area,
-    );
+pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, area: Rect) {
+    let mut spans = vec![Span::styled(
+        " GitHub ",
+        Style::default().fg(Color::Black).bg(Color::Rgb(36, 41, 47)),
+    )];
+    if gh.show_closed() {
+        spans.push(Span::styled(
+            " · closed",
+            Style::default().fg(Color::DarkGray),
+        ));
+    }
+    render_header_common(f, ctx, spans, area);
 }
 
 fn render_search_prompt(f: &mut Frame, input: &str, area: Rect) {

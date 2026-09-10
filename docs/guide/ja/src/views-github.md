@@ -24,6 +24,13 @@ CI ステータス）を切り替えます。`o` でブラウザで開きます�
 アイテムを再取得するので、返信や CI の結果を待つあいだ最新のまま眺めて
 いられます。
 
+一覧に並ぶのは open なものです。`x` で closed な issue とマージ済み /
+closed な PR も含めて表示し（薄い色と状態アイコン: `✓` closed、`⊕` merged。
+ヘッダは `GitHub · closed`）、もう一度 `x` で外します。どちらも `gh` の
+一覧コマンドなので GraphQL ポイントは使いません。
+[`github-show-closed`](config-reference.md#github-show-closed) で最初から
+含めた状態で始められます。
+
 issue / PR の一覧も API ポイントを使わずに最新を保ちます。vig は
 `github-poll-interval` ごとに、リポジトリで最後に更新された issue / PR を
 1 件だけ *条件付き* リクエストで問い合わせ（`304 Not Modified` の応答は
@@ -60,6 +67,7 @@ tail のように追記されます。`]` / `[` で失敗ステップ間をジ�
 | `Esc` | 一覧に戻る |
 | `h` / `l`（詳細） | 本文 ↔ 右側のサブペイン。実行の場合は Jobs ↔ Log |
 | `w`（issue / PR の詳細） | watch モードの切り替え（表示中アイテムの自動再取得） |
+| `x`（issue / PR の一覧） | closed な issue / マージ済み・closed な PR を表示 / 非表示 |
 | `i` / `Enter`（実行の詳細・Jobs） | ジョブのログを表示（ステップ行ならそのステップへスクロール） |
 | `]` / `[`（実行の詳細） | ログ内の次 / 前の失敗ステップへ |
 | `G`（実行の詳細・Log） | 末尾へ移動して follow を再開 |

@@ -20,13 +20,15 @@ pub enum GhListAction {
     SwitchTab,
     OpenBrowser,
     CopyUrl,
+    /// Show / hide closed issues and merged / closed PRs (both lists).
+    ToggleClosed,
     Search(SearchAction),
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     GhListAction, nav: Nav, search: Search, esc: Esc,
-    OpenDetail, SwitchTab, OpenBrowser, CopyUrl
+    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed
 );
 
 impl ActionHelp for GhListAction {
@@ -37,6 +39,7 @@ impl ActionHelp for GhListAction {
             GhListAction::SwitchTab => Some("Switch tab"),
             GhListAction::OpenBrowser => Some("Open in browser"),
             GhListAction::CopyUrl => Some("Copy URL"),
+            GhListAction::ToggleClosed => Some("Show / hide closed items"),
             GhListAction::Search(sa) => sa.label(),
             GhListAction::Esc => Some("Clear search"),
         }
@@ -76,7 +79,9 @@ pub trait GhListItem: Sized + Send + 'static {
     fn copy_url(&self) -> Option<String>;
     fn load_disk_cache() -> Option<Vec<Self>>;
     fn save_disk_cache(items: &[Self]);
-    fn fetch_list() -> Result<Vec<Self>, String>;
+    /// The list; with `show_closed` the closed / merged items too (lists
+    /// without a state ignore it).
+    fn fetch_list(show_closed: bool) -> Result<Vec<Self>, String>;
     fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage;
 }
 
@@ -115,6 +120,9 @@ pub struct GhListPane<T: GhListItem> {
     positions: Vec<TreePos>,
     pub selected_idx: usize,
     pub loading: bool,
+    /// `x` / `github-show-closed`: fetch closed and merged items too. The
+    /// disk cache keeps only the open list.
+    pub show_closed: bool,
     keymap: Keymap<GhListAction>,
     pane_id: usize,
     detail_pane_id: usize,
@@ -133,6 +141,7 @@ impl<T: GhListItem> GhListPane<T> {
             positions: Vec::new(),
             selected_idx: 0,
             loading: false,
+            show_closed: false,
             keymap: default_keymap(switch_key),
             pane_id,
             detail_pane_id,
@@ -184,14 +193,17 @@ impl<T: GhListItem> GhListPane<T> {
     pub fn spawn_fetch(&mut self, tx: &mpsc::Sender<GhBgMessage>) {
         self.loading = true;
         let tx = tx.clone();
+        let show_closed = self.show_closed;
         std::thread::spawn(move || {
-            let _ = tx.send(T::wrap_bg_message(T::fetch_list()));
+            let _ = tx.send(T::wrap_bg_message(T::fetch_list(show_closed)));
         });
     }
 
     /// Apply a freshly fetched list — save to disk cache and update state.
     pub fn apply_list(&mut self, items: Vec<T>) {
-        T::save_disk_cache(&items);
+        if !self.show_closed {
+            T::save_disk_cache(&items);
+        }
         self.set_items(items);
     }
 
@@ -233,6 +245,7 @@ impl<T: GhListItem> GhListPane<T> {
                     return vec![copy_url_event(item.copy_url())];
                 }
             }
+            GhListAction::ToggleClosed => return vec![PaneEvent::ToggleClosed],
             _ => {}
         }
         vec![]

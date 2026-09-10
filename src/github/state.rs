@@ -318,6 +318,9 @@ pub struct GitHubState {
     rate_limit: Option<RateLimitBackoff>,
     /// What the last change check saw; `None` ETag until the first answer
     /// (that first answer is the baseline, not a change).
+    /// `x` / `github-show-closed`: the issue / PR lists include closed and
+    /// merged items.
+    show_closed: bool,
     list_watermark: client::ListWatermark,
     list_check_inflight: bool,
     last_list_check: Option<Instant>,
@@ -336,6 +339,7 @@ impl GitHubState {
     pub fn new(cfg: &Config) -> Result<Self> {
         let page_cfg = cfg.github_page()?;
         let poll_interval = cfg.github_poll_interval()?;
+        let show_closed = cfg.github_show_closed()?;
 
         let ids = GhPaneIds::from_config(&page_cfg);
         // Build select→detail and reverse detail→select dispatch maps.
@@ -353,9 +357,11 @@ impl GitHubState {
         let view_km = page_cfg.keymap::<ViewAction>("view")?;
 
         let mut issue_list = issue_list::new_pane(ids.issue_list, ids.issue_detail, ids.pr_list);
+        issue_list.show_closed = show_closed;
         issue_list.set_keymap(issue_list_km);
 
         let mut pr_list = pr_list::new_pane(ids.pr_list, ids.pr_detail, ids.issue_list);
+        pr_list.show_closed = show_closed;
         pr_list.set_keymap(pr_list_km);
 
         let mut run_list = run_list::new_pane(ids.run_list, ids.run_detail, ids.pr_list);
@@ -408,6 +414,7 @@ impl GitHubState {
             last_runs_refresh: None,
             poll_interval,
             rate_limit: None,
+            show_closed,
             list_watermark: client::ListWatermark::default(),
             list_check_inflight: false,
             last_list_check: None,
@@ -701,6 +708,23 @@ impl GitHubState {
         }
     }
 
+    /// `x`: include / leave out closed and merged items, re-fetching both
+    /// lists (the disk cache only ever holds the open ones).
+    fn toggle_closed(&mut self) {
+        self.show_closed = !self.show_closed;
+        self.panes.issue_tab.list.show_closed = self.show_closed;
+        self.panes.pr_tab.list.show_closed = self.show_closed;
+        if let Some(tx) = self.bg_tx.clone() {
+            self.panes.issue_tab.list.spawn_fetch(&tx);
+            self.panes.pr_tab.list.spawn_fetch(&tx);
+        }
+    }
+
+    /// Whether the lists include closed / merged items (header marker).
+    pub fn show_closed(&self) -> bool {
+        self.show_closed
+    }
+
     /// Age of the issue / PR lists for the status bar: `lists 12s ago`.
     pub fn lists_age(&self) -> Option<String> {
         let secs = self.lists_refreshed_at?.elapsed().as_secs() as i64;
@@ -784,6 +808,17 @@ impl GitHubState {
                     if let Some(tx) = self.bg_tx.clone() {
                         self.panes.run_tab.detail.open_selected_log(&tx);
                     }
+                }
+                PaneEvent::ToggleClosed => {
+                    self.toggle_closed();
+                    ctx.status_message = Some(
+                        if self.show_closed {
+                            "Closed issues and PRs shown (x hides them)"
+                        } else {
+                            "Closed issues and PRs hidden"
+                        }
+                        .into(),
+                    );
                 }
                 PaneEvent::OpenIssueBrowser(n) => match client::open_issue_in_browser(n) {
                     Ok(()) => {
@@ -883,7 +918,7 @@ impl crate::core::app::PageState for GitHubState {
 
     fn render(&mut self, f: &mut Frame, ctx: &AppContext, area: Rect) {
         let frame = split_page_frame(area);
-        status_bar::render_gh_header(f, ctx, frame.header);
+        status_bar::render_gh_header(f, ctx, self, frame.header);
         pane::render_page_content(self, f, ctx, frame.content);
         status_bar::render_gh_status_bar(f, ctx, self, frame.status_bar);
     }
@@ -1269,6 +1304,45 @@ mod kdl_regression {
         st.bg_tx = Some(tx);
         st.probe_reset = false;
         st
+    }
+
+    /// `x` flips the closed / merged inclusion of both lists and re-fetches
+    /// them; the config sets the start state.
+    #[test]
+    fn x_toggles_closed_items_in_both_lists() {
+        let mut st = state();
+        assert!(!st.show_closed());
+        let mut c = AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: std::path::PathBuf::new(),
+            needs_full_redraw: false,
+            last_input: Instant::now(),
+            auto_refresh: true,
+        };
+        st.process_events(&mut c, vec![PaneEvent::ToggleClosed])
+            .unwrap();
+        assert!(st.show_closed());
+        assert!(st.panes.issue_tab.list.show_closed && st.panes.pr_tab.list.show_closed);
+        assert!(st.panes.issue_tab.list.is_loading() && st.panes.pr_tab.list.is_loading());
+        assert!(c
+            .status_message
+            .as_deref()
+            .is_some_and(|m| m.contains("shown")));
+        st.process_events(&mut c, vec![PaneEvent::ToggleClosed])
+            .unwrap();
+        assert!(!st.show_closed());
+        assert!(!st.panes.pr_tab.list.show_closed);
+
+        let doc: kdl::KdlDocument = r#"github-show-closed "on""#.parse().unwrap();
+        let cfg = Config::with_user(&doc, std::path::PathBuf::from("/u/config.kdl")).unwrap();
+        let st = GitHubState::new(&cfg).expect("github page");
+        assert!(st.show_closed() && st.panes.issue_tab.list.show_closed);
     }
 
     /// The first `200` answer of the change check is only a baseline; a

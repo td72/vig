@@ -24,6 +24,13 @@ browser. In an issue or PR detail, `w` toggles **watch mode**: vig re-fetches
 the open item about every 10 seconds so a conversation or CI status you are
 waiting on stays current.
 
+The lists show open items. `x` brings in the closed issues and the merged /
+closed pull requests as well (dimmed, with their state icon: `✓` closed,
+`⊕` merged; the header reads `GitHub · closed`), and `x` again leaves them
+out. Both are plain `gh` list calls — no GraphQL points.
+[`github-show-closed`](config-reference.md#github-show-closed) starts the
+page with them included.
+
 The issue and PR lists also keep themselves current without spending API
 points: every `github-poll-interval` vig sends one *conditional* request
 for the repository's most recently updated issue or PR (a `304 Not
@@ -61,6 +68,7 @@ following.
 | `Esc` | Back to list |
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `w` (issue / PR detail) | Toggle watch mode (auto-refresh the open item) |
+| `x` (issue / PR list) | Show / hide closed issues and merged / closed PRs |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |
 | `]` / `[` (run detail) | Next / previous failed step in the log |
 | `G` (run detail, Log) | Jump to the end and resume following |

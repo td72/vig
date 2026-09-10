@@ -32,8 +32,9 @@ pub fn record(dir: &Path) -> Result<()> {
     step("gh repo view (nameWithOwner)");
     let nwo = gh::repo_nwo().context("gh repo view")?;
 
-    step("issues");
-    let issues = gh::list_issues(50).map_err(anyhow::Error::msg)?;
+    step("issues (open, then all)");
+    gh::list_issues(50, false).map_err(anyhow::Error::msg)?;
+    let issues = gh::list_issues(50, true).map_err(anyhow::Error::msg)?;
     for i in &issues {
         gh::get_issue(i.number).map_err(anyhow::Error::msg)?;
     }
@@ -41,7 +42,8 @@ pub fn record(dir: &Path) -> Result<()> {
     gh::check_lists(&gh::ListWatermark::default()).map_err(anyhow::Error::msg)?;
     trim_check_fixture(dir)?;
     step("pull requests + stacks");
-    let prs = gh::list_prs(50).map_err(anyhow::Error::msg)?;
+    gh::list_prs(50, false).map_err(anyhow::Error::msg)?;
+    let prs = gh::list_prs(50, true).map_err(anyhow::Error::msg)?;
     let _ = gh::list_pr_stacks(50);
     for p in &prs {
         gh::get_pr(p.number).map_err(anyhow::Error::msg)?;
