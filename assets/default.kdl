@@ -51,9 +51,18 @@ projects-poll-interval "30s"
 // pull requests) hidden: "on" or "off". `x` toggles it while running.
 projects-hide-closed "off"
 
+// Where the Projects roadmap opens (`start`: days / weeks / months from
+// today; earlier items are reachable with h) and its initial zoom
+// ("month", "week" or "day"). Absent: the earliest item, week scale.
+// projects-roadmap {
+//     start "-7d"
+//     zoom "week"
+// }
+
 // Local views of the Projects page: a filter / grouping / sort / layout
 // defined here instead of saved on GitHub. They follow the project's saved
-// views in the `v` / `V` cycle. See the Config Reference for every child.
+// views in the `v` / `V` cycle. See the Config Reference for every child
+// (a `roadmap { start; zoom }` child overrides `projects-roadmap`).
 // projects-view "Mine" default=#true {
 //     filter "assignee:@me -status:Done"
 //     group-by "Status"

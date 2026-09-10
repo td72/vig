@@ -62,7 +62,10 @@ name containing `start` / `begin` is the span start, `target` / `end` /
 without dates, from the iteration field's start and duration. `+` / `-`
 zoom between month, week and day scales, `h` / `l` scroll the timeline,
 and `t` drops into the table and back. Items without a span are listed
-without a bar.
+without a bar. By default the timeline opens at the earliest item's start
+at the week scale; [`projects-roadmap`](config-reference.md#projects-roadmap)
+(`start "-7d"`, `zoom "month"`) changes where it opens and how zoomed,
+per view through a local view's `roadmap { … }`.
 
 A view's **filter** (`status:Todo -label:bug assignee:@me is:issue
 no:milestone …`) is evaluated locally against the items already fetched —

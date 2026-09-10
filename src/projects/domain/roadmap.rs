@@ -3,6 +3,7 @@
 //! Hinnant's algorithm, which is all a timeline needs.
 
 use crate::projects::domain::types::{Board, ProjectItem};
+use serde::{Deserialize, Serialize};
 
 /// Days since 1970-01-01 for a civil date.
 pub fn days_from_civil(y: i64, m: i64, d: i64) -> i64 {
@@ -189,8 +190,56 @@ pub fn iterations(board: &Board, spec: &SpanSpec) -> Vec<Iteration> {
     out
 }
 
+/// Where the roadmap opens and at which scale, from the config
+/// (`projects-roadmap { … }`, overridden per view by `roadmap { … }`).
+/// `None` keeps the built-in behaviour: the timeline starts at the
+/// earliest span, at the week scale.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RoadmapSettings {
+    /// First visible day as an offset from today, in days (`"-7d"`).
+    /// Earlier items are reachable by scrolling left.
+    #[serde(default)]
+    pub start: Option<i64>,
+    /// The initial zoom.
+    #[serde(default)]
+    pub zoom: Option<Zoom>,
+}
+
+impl RoadmapSettings {
+    /// These settings with `base` filling what they leave unset.
+    pub fn or(self, base: RoadmapSettings) -> Self {
+        Self {
+            start: self.start.or(base.start),
+            zoom: self.zoom.or(base.zoom),
+        }
+    }
+}
+
+/// A day offset such as `"-7d"`, `"+2w"`, `"-1m"` or `"0d"` (a month is
+/// 30 days) in days. `None` for anything else.
+pub fn parse_offset(s: &str) -> Option<i64> {
+    let s = s.trim();
+    let (sign, rest) = match s.strip_prefix('-') {
+        Some(r) => (-1, r),
+        None => (1, s.strip_prefix('+').unwrap_or(s)),
+    };
+    let (num, unit) = rest.split_at(rest.len().checked_sub(1)?);
+    let num = num.trim();
+    if num.is_empty() || !num.bytes().all(|b| b.is_ascii_digit()) {
+        return None;
+    }
+    let n: i64 = num.parse().ok()?;
+    let per_unit = match unit {
+        "d" => 1,
+        "w" => 7,
+        "m" => 30,
+        _ => return None,
+    };
+    Some(sign * n * per_unit)
+}
+
 /// Zoom level of the time scale.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Zoom {
     /// 1 cell = 3 days.
     Month,
@@ -201,6 +250,16 @@ pub enum Zoom {
 }
 
 impl Zoom {
+    /// `"month"` / `"week"` / `"day"` as the config spells them.
+    pub fn parse(s: &str) -> Option<Self> {
+        match s {
+            "month" => Some(Self::Month),
+            "week" => Some(Self::Week),
+            "day" => Some(Self::Day),
+            _ => None,
+        }
+    }
+
     pub fn label(self) -> &'static str {
         match self {
             Self::Month => "month",
@@ -363,5 +422,35 @@ mod tests {
         assert_eq!(Zoom::Day.zoom_in(), Zoom::Day);
         assert_eq!(Zoom::Week.zoom_out(), Zoom::Month);
         assert_eq!(Zoom::Month.zoom_out(), Zoom::Month);
+    }
+
+    #[test]
+    fn offsets_parse_in_days_weeks_and_months() {
+        assert_eq!(parse_offset("-7d"), Some(-7));
+        assert_eq!(parse_offset("+2w"), Some(14));
+        assert_eq!(parse_offset("2w"), Some(14));
+        assert_eq!(parse_offset("-1m"), Some(-30));
+        assert_eq!(parse_offset("0d"), Some(0));
+        assert_eq!(parse_offset(" -3d "), Some(-3));
+        for bad in ["", "d", "7", "-7x", "seven d", "-7 days", "--7d"] {
+            assert_eq!(parse_offset(bad), None, "{bad:?}");
+        }
+        assert_eq!(Zoom::parse("month"), Some(Zoom::Month));
+        assert_eq!(Zoom::parse("Week"), None);
+        let view = RoadmapSettings {
+            start: None,
+            zoom: Some(Zoom::Day),
+        };
+        let base = RoadmapSettings {
+            start: Some(-7),
+            zoom: Some(Zoom::Month),
+        };
+        assert_eq!(
+            view.or(base),
+            RoadmapSettings {
+                start: Some(-7),
+                zoom: Some(Zoom::Day)
+            }
+        );
     }
 }

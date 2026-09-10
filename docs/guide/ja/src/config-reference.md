@@ -39,6 +39,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`projects-view`](#projects-view) | なし | 同名は置換、他は追加 |
 | [`projects-filter`](#projects-filter) | なし | 置換 |
 | [`projects-hide-closed`](#projects-hide-closed) | `"off"` | 置換 |
+| [`projects-roadmap`](#projects-roadmap) | なし（最古のアイテムから、week） | 置換 |
 | [`pages`](#pages) | 全 7 ページ | 丸ごと置換 |
 | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
 | [`app`](#app) | `Ctrl+c` 終了、`1`…`7` ページ切替 | キー単位マージ |
@@ -74,8 +75,8 @@ colors "red"
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
 //   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
-//   `projects-filter`, `projects-hide-closed`, `pages`, `repo-config`,
-//   `app`, or `page`)
+//   `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`,
+//   `repo-config`, `app`, or `page`)
 ```
 
 ## トップレベルノード
@@ -339,6 +340,9 @@ GitHub に保存するのではなく、ここで定義する Projects ボード
   - `fields "<field>" …` — テーブルの列（この順）
   - `board "<title>"` または `board <number>` — そのリンク済みプロジェクト
     にだけ適用（省略で全ボード）
+  - `roadmap { start "<offset>"; zoom "<level>" }` — このビューの
+    ロードマップを開く位置とスケール（[`projects-roadmap`](#projects-roadmap)
+    を上書き）
 - **デフォルト** — なし
 - **マージ** — 同名のビューは置換、それ以外は追加。
 
@@ -405,6 +409,40 @@ Projects ページを、closed なアイテム（closed な issue、マージ済
 
 ```kdl
 projects-hide-closed "on"
+```
+
+### `projects-roadmap`
+
+Roadmap ビューを開く位置と最初の時間スケール。無指定ではタイムラインが
+全アイテム中いちばん古い開始日の 2 日前から始まるため、古いアイテムが
+1 つあるだけで表示範囲が過去に大きく伸びます（スケールは week）。
+
+- **書式** — `projects-roadmap { start "<offset>"; zoom "<level>" }`。
+  子ノードはどちらも省略可:
+  - `start` — 最初に見える日を今日からの相対で: 数値 + `d`（日）/ `w`
+    （週）/ `m`（月 = 30 日）。例 `"-7d"`、`"-2w"`、`"0d"`。それより前に
+    始まるアイテムは左に切れ、`h` でスクロールすると見えます。`+` / `-`
+    でこの位置に戻ります。
+  - `zoom` — 最初のスケール: `"month"`、`"week"`、`"day"`
+- **デフォルト** — なし（いちばん古いアイテムから、week スケール）
+- **マージ** — デフォルトを置換。
+
+ローカルビューは自身の `roadmap { … }` 子ノードでどちらの設定も上書き
+できます（[`projects-view`](#projects-view) 参照）。
+
+```kdl
+projects-roadmap {
+    start "-7d"
+    zoom "week"
+}
+```
+
+```kdl,ignore
+projects-roadmap {
+    start "yesterday"
+}
+// → bad projects-roadmap (start: bad offset "yesterday"; expected days,
+//   weeks or months from today such as "-7d", "-2w" or "-1m")
 ```
 
 ### `pages`

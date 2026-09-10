@@ -95,6 +95,9 @@ pub struct ProjectsView {
     pub board: Option<ProjectsBoard>,
     /// `default=#true`: the view a board opens on.
     pub initial: bool,
+    /// `roadmap { start "-7d"; zoom "week" }`: overrides `projects-roadmap`
+    /// for this view.
+    pub roadmap: crate::projects::domain::roadmap::RoadmapSettings,
 }
 
 impl ProjectsView {
@@ -112,8 +115,48 @@ impl ProjectsView {
             visible_fields: self.fields.clone(),
             local: true,
             initial: self.initial,
+            roadmap: self.roadmap,
         }
     }
+}
+
+/// The children of a `roadmap { … }` / `projects-roadmap { … }` node:
+/// `start "<offset>"` and `zoom "month" | "week" | "day"`, both optional.
+fn roadmap_settings(
+    node: &KdlNode,
+) -> std::result::Result<crate::projects::domain::roadmap::RoadmapSettings, String> {
+    use crate::projects::domain::roadmap::{parse_offset, RoadmapSettings, Zoom};
+    if !node.entries().is_empty() {
+        return Err("takes no arguments, only `start` / `zoom` children".into());
+    }
+    let mut settings = RoadmapSettings::default();
+    let children = node.children().map(|c| c.nodes()).unwrap_or(&[]);
+    for child in children {
+        let key = child.name().value();
+        let args = string_args(child).map_err(|what| format!("{key}: {what}"))?;
+        let [value] = args.as_slice() else {
+            return Err(format!("{key}: one argument required"));
+        };
+        match key {
+            "start" => {
+                settings.start = Some(parse_offset(value).ok_or_else(|| {
+                    format!(
+                        "start: bad offset {value:?}; expected days, weeks or months from \
+                         today such as \"-7d\", \"-2w\" or \"-1m\""
+                    )
+                })?);
+            }
+            "zoom" => {
+                settings.zoom = Some(Zoom::parse(value).ok_or_else(|| {
+                    format!(
+                        "zoom: unknown level {value:?}; expected \"month\", \"week\" or \"day\""
+                    )
+                })?);
+            }
+            other => return Err(format!("unknown node {other:?}; expected start or zoom")),
+        }
+    }
+    Ok(settings)
 }
 
 /// A `board` reference as `projects-board` and `projects-view { board }`
@@ -406,6 +449,7 @@ impl Config {
         self.projects_views()?;
         self.projects_filter()?;
         self.projects_hide_closed()?;
+        self.projects_roadmap()?;
         self.repo_config()?;
         Ok(())
     }
@@ -735,6 +779,22 @@ impl Config {
         }
     }
 
+    /// Where the Projects roadmap opens and at which zoom
+    /// (`projects-roadmap { start "-7d"; zoom "week" }`); all unset when
+    /// the node is absent.
+    pub fn projects_roadmap(&self) -> Result<crate::projects::domain::roadmap::RoadmapSettings> {
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "projects-roadmap")
+        else {
+            return Ok(Default::default());
+        };
+        roadmap_settings(node)
+            .map_err(|what| anyhow!("invalid {}: bad projects-roadmap ({what})", self.describe()))
+    }
+
     /// A filter stacked on every view of the Projects page
     /// (`projects-filter "-status:Done"`), or `None` when absent.
     pub fn projects_filter(&self) -> Result<Option<String>> {
@@ -850,6 +910,7 @@ impl Config {
                 fields: Vec::new(),
                 board: None,
                 initial,
+                roadmap: Default::default(),
             };
             let children = node.children().map(|c| c.nodes()).unwrap_or(&[]);
             for child in children {
@@ -915,10 +976,13 @@ impl Config {
                         }
                         view.board = Some(board_ref(child).map_err(bad)?);
                     }
+                    "roadmap" => {
+                        view.roadmap = roadmap_settings(child).map_err(|w| bad(&w))?;
+                    }
                     other => {
                         return Err(invalid(format!(
                             "unknown node {other:?}; expected layout, filter, columns, \
-                             group-by, sort, fields or board"
+                             group-by, sort, fields, board or roadmap"
                         )))
                     }
                 }
@@ -2647,6 +2711,55 @@ mod tests {
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown icons mode \"emoji\""), "{msg}");
         assert!(msg.contains("nerd, none"), "{msg}");
+    }
+
+    #[test]
+    fn projects_roadmap_default_override_and_validation() {
+        use crate::projects::domain::roadmap::{RoadmapSettings, Zoom};
+        assert_eq!(
+            Config::builtin().projects_roadmap().unwrap(),
+            RoadmapSettings::default()
+        );
+        let cfg = user(
+            r#"
+            projects-roadmap {
+                start "-2w"
+                zoom "month"
+            }
+            projects-view "Soon" {
+                layout "roadmap"
+                roadmap {
+                    start "0d"
+                }
+            }
+            "#,
+        )
+        .unwrap();
+        assert_eq!(
+            cfg.projects_roadmap().unwrap(),
+            RoadmapSettings {
+                start: Some(-14),
+                zoom: Some(Zoom::Month)
+            }
+        );
+        let view = &cfg.projects_views().unwrap()[0];
+        assert_eq!(view.roadmap.start, Some(0));
+        assert_eq!(view.roadmap.zoom, None);
+        assert_eq!(view.to_view(1).roadmap, view.roadmap);
+        for (bad, what) in [
+            (r#"projects-roadmap "-7d""#, "takes no arguments"),
+            (r#"projects-roadmap { start "yesterday" }"#, "bad offset"),
+            (r#"projects-roadmap { zoom "year" }"#, "unknown level"),
+            (r#"projects-roadmap { scroll "3" }"#, "unknown node"),
+            (r#"projects-roadmap { start }"#, "one argument required"),
+            (
+                r#"projects-view "A" { roadmap { zoom "hour" } }"#,
+                "unknown level",
+            ),
+        ] {
+            let msg = user(bad).expect_err("expected an error").to_string();
+            assert!(msg.contains(what), "{bad}: {msg}");
+        }
     }
 
     #[test]

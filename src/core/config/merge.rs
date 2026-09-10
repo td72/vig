@@ -40,6 +40,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "projects-board"
             | "projects-filter"
             | "projects-hide-closed"
+            | "projects-roadmap"
             | "pages"
             | "repo-config" => replace_single(default, unode),
             "projects-view" => replace_named(default, unode),
@@ -49,7 +50,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
                  `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, \
-                 `projects-poll-interval`, `projects-board`, `projects-view`, `projects-filter`, `projects-hide-closed`, `pages`, `repo-config`, `app`, or `page`)"
+                 `projects-poll-interval`, `projects-board`, `projects-view`, `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`, `repo-config`, `app`, or `page`)"
             ))
             }
         }

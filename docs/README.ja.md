@@ -400,7 +400,7 @@ GitHub View と同じ issue / PR の本文とコメントを表示します（dr
 | `v` / `V` | プロジェクトのビューを切り替え (GitHub の保存済みビュー、または設定の `projects-view`) |
 | `Space` | 選択中のスイムレーンを折りたたみ / 展開（グループ化された Board ビュー） |
 | `x` | closed な issue / マージ済み・closed な PR を隠す / 表示（初期状態は `projects-hide-closed`、全ビュー共通フィルタは `projects-filter`） |
-| `+` / `-` | ロードマップの時間軸をズームイン / アウト |
+| `+` / `-` | ロードマップの時間軸をズームイン / アウト（開く位置とスケールは `projects-roadmap { start "-7d"; zoom "month" }`） |
 | `o` | プロジェクト / アイテムをブラウザで開く |
 | `y` | プロジェクト / アイテムの URL をコピー |
 | `j` / `k` / `Ctrl+d` / `Ctrl+u`（詳細） | スクロール |
