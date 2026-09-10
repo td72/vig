@@ -192,32 +192,38 @@ pub fn check_gh_available() -> Result<(), String> {
     run_gh(&["auth", "status"], "gh not found").map(|_| ())
 }
 
-pub fn list_issues(limit: usize) -> Result<Vec<GhIssueListItem>, String> {
-    run_gh_json(
-        &[
-            "issue",
-            "list",
-            "--json",
-            "number,title,state,author,labels,createdAt,parent",
-            "--limit",
-            &limit.to_string(),
-        ],
-        "gh issue list failed",
-    )
+/// The open issues, or with `all` every issue (`--state all`: closed ones
+/// too, newest first).
+pub fn list_issues(limit: usize, all: bool) -> Result<Vec<GhIssueListItem>, String> {
+    let limit = limit.to_string();
+    let mut args = vec!["issue", "list"];
+    if all {
+        args.extend(["--state", "all"]);
+    }
+    args.extend([
+        "--json",
+        "number,title,state,author,labels,createdAt,parent",
+        "--limit",
+        &limit,
+    ]);
+    run_gh_json(&args, "gh issue list failed")
 }
 
-pub fn list_prs(limit: usize) -> Result<Vec<GhPrListItem>, String> {
-    run_gh_json(
-        &[
-            "pr",
-            "list",
-            "--json",
-            "number,title,state,author,labels,headRefName,baseRefName,createdAt,reviewDecision,isDraft",
-            "--limit",
-            &limit.to_string(),
-        ],
-        "gh pr list failed",
-    )
+/// The open pull requests, or with `all` every one (`--state all`: merged
+/// and closed too, newest first).
+pub fn list_prs(limit: usize, all: bool) -> Result<Vec<GhPrListItem>, String> {
+    let limit = limit.to_string();
+    let mut args = vec!["pr", "list"];
+    if all {
+        args.extend(["--state", "all"]);
+    }
+    args.extend([
+        "--json",
+        "number,title,state,author,labels,headRefName,baseRefName,createdAt,reviewDecision,isDraft",
+        "--limit",
+        &limit,
+    ]);
+    run_gh_json(&args, "gh pr list failed")
 }
 
 pub fn get_issue(number: u64) -> Result<GhIssueDetail, String> {

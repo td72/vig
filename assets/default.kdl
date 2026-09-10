@@ -21,6 +21,10 @@ markdown-preview "render"
 // runs low, and stop under 5 % of it.
 github-auto-refresh "on"
 
+// Start the GitHub page with closed issues and merged / closed pull requests
+// in the lists: "on" or "off". `x` toggles it while running.
+github-show-closed "off"
+
 // How often the Procs view re-reads processes and listening ports
 // ("2s", "500ms", ...; at least 250ms). Sampling pauses while another view is shown.
 procs-refresh-interval "2s"
@@ -199,6 +203,7 @@ page "github" {
             "Tab" "SwitchTab"
             "o" "OpenBrowser"
             "y" "CopyUrl"
+            "x" "ToggleClosed"
             "Esc" "Esc"
         }
     }
@@ -212,6 +217,7 @@ page "github" {
             "BackTab" "SwitchTab"
             "o" "OpenBrowser"
             "y" "CopyUrl"
+            "x" "ToggleClosed"
             "Esc" "Esc"
         }
     }

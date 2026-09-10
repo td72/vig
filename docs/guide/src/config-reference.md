@@ -35,6 +35,7 @@ Conventions used below:
 | [`procs-history`](#procs-history) | `"120"` | replaced |
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | replaced |
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
+| [`github-show-closed`](#github-show-closed) | `"off"` | replaced |
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
 | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
 | [`projects-view`](#projects-view) | none | replaced by name, else appended |
@@ -57,6 +58,7 @@ procs-refresh-interval "2s"
 procs-history "120"
 github-poll-interval "5s"
 github-auto-refresh "on"
+github-show-closed "off"
 projects-poll-interval "30s"
 projects-hide-closed "off"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
@@ -73,7 +75,7 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `projects-poll-interval`, `projects-board`, `projects-view`,
+//   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `pages`, `repo-config`,
 //   `app`, or `page`)
 ```
@@ -273,6 +275,22 @@ left` below 1,500 points.
 
 ```kdl
 github-auto-refresh "off"
+```
+
+### `github-show-closed`
+
+Whether the GitHub page's issue and PR lists start with closed issues and
+merged / closed pull requests included. `x` on either list toggles it
+while vig runs; the header reads `GitHub · closed` while they are in.
+Either way the lists are plain `gh` calls that cost no GraphQL points; the
+disk cache keeps only the open lists.
+
+- **Form** — `github-show-closed "<mode>"` — `"on"` or `"off"`
+- **Default** — `"off"`
+- **Merge** — replaces the default.
+
+```kdl
+github-show-closed "on"
 ```
 
 ### `projects-board`

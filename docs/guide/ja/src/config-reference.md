@@ -33,6 +33,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`procs-history`](#procs-history) | `"120"` | 置換 |
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | 置換 |
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
+| [`github-show-closed`](#github-show-closed) | `"off"` | 置換 |
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
 | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
 | [`projects-view`](#projects-view) | なし | 同名は置換、他は追加 |
@@ -55,6 +56,7 @@ procs-refresh-interval "2s"
 procs-history "120"
 github-poll-interval "5s"
 github-auto-refresh "on"
+github-show-closed "off"
 projects-poll-interval "30s"
 projects-hide-closed "off"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
@@ -71,7 +73,7 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `projects-poll-interval`, `projects-board`, `projects-view`,
+//   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `pages`, `repo-config`,
 //   `app`, or `page`)
 ```
@@ -267,6 +269,22 @@ vig が GitHub のデータを自動で更新するか: GitHub ページのポ�
 
 ```kdl
 github-auto-refresh "off"
+```
+
+### `github-show-closed`
+
+GitHub ページの issue / PR 一覧を、closed な issue とマージ済み / closed な
+PR を含めた状態で始めるか。実行中はどちらの一覧でも `x` で切り替えられ、
+含めている間はヘッダが `GitHub · closed` になります。どちらも `gh` の
+一覧コマンドで GraphQL ポイントは使いません。ディスクキャッシュには
+open の一覧だけを残します。
+
+- **書式** — `github-show-closed "<mode>"` — `"on"` か `"off"`
+- **デフォルト** — `"off"`
+- **マージ** — デフォルトを置換。
+
+```kdl
+github-show-closed "on"
 ```
 
 ### `projects-board`

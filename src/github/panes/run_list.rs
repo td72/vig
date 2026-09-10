@@ -122,11 +122,11 @@ impl GhListItem for WorkflowRun {
         client::save_run_list(items);
     }
 
-    fn fetch_list() -> Result<Vec<Self>, String> {
+    fn fetch_list(_show_closed: bool) -> Result<Vec<Self>, String> {
         client::list_runs(client::RUN_LIST_LIMIT)
     }
 
-    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage {
+    fn wrap_bg_message(result: Result<Vec<Self>, String>, _show_closed: bool) -> GhBgMessage {
         GhBgMessage::RunList(result)
     }
 }

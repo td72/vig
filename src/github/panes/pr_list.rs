@@ -25,6 +25,12 @@ impl GhListItem for GhPrListItem {
             "CLOSED" => ("✓", Color::Red),
             _ => ("●", Color::Green),
         };
+        // Merged / closed PRs (shown with `x`) are dimmed.
+        let title_style = if self.state == "OPEN" {
+            Style::default()
+        } else {
+            Style::default().fg(Color::DarkGray)
+        };
 
         let mut spans = vec![
             Span::raw(" "),
@@ -36,7 +42,7 @@ impl GhListItem for GhPrListItem {
                 Style::default().fg(Color::Yellow),
             ),
             Span::raw(" "),
-            Span::raw(self.title.clone()),
+            Span::styled(self.title.clone(), title_style),
         ];
 
         // Review badge
@@ -118,8 +124,8 @@ impl GhListItem for GhPrListItem {
         disk_cache::save_pr_list(items);
     }
 
-    fn fetch_list() -> Result<Vec<Self>, String> {
-        let mut prs = client::list_prs(50)?;
+    fn fetch_list(show_closed: bool) -> Result<Vec<Self>, String> {
+        let mut prs = client::list_prs(50, show_closed)?;
         // Stack membership is best-effort: without it (older gh, API
         // without stacks) the list is simply flat.
         if let Ok(stacks) = client::list_pr_stacks(50) {
@@ -130,8 +136,11 @@ impl GhListItem for GhPrListItem {
         Ok(prs)
     }
 
-    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage {
-        GhBgMessage::PrList(result)
+    fn wrap_bg_message(result: Result<Vec<Self>, String>, show_closed: bool) -> GhBgMessage {
+        GhBgMessage::PrList {
+            result,
+            show_closed,
+        }
     }
 }
 

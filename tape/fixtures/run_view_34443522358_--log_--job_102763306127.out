@@ -1,0 +1,383 @@
+build	Set up job	﻿2026-09-10T06:02:58.8837763Z Current runner version: '2.337.0'
+build	Set up job	2026-09-10T06:02:58.8862931Z ##[group]Runner Image Provisioner
+build	Set up job	2026-09-10T06:02:58.8863802Z Hosted Compute Agent
+build	Set up job	2026-09-10T06:02:58.8864738Z Version: 20260828.587
+build	Set up job	2026-09-10T06:02:58.8865404Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+build	Set up job	2026-09-10T06:02:58.8866252Z Build Date: 2026-08-28T16:44:25Z
+build	Set up job	2026-09-10T06:02:58.8867021Z Worker ID: {16a37b6e-9e30-4965-bedc-71d4aa32b21c}
+build	Set up job	2026-09-10T06:02:58.8867741Z Azure Region: eastus
+build	Set up job	2026-09-10T06:02:58.8868411Z ##[endgroup]
+build	Set up job	2026-09-10T06:02:58.8870306Z ##[group]Operating System
+build	Set up job	2026-09-10T06:02:58.8871041Z Ubuntu
+build	Set up job	2026-09-10T06:02:58.8871631Z 24.04.5
+build	Set up job	2026-09-10T06:02:58.8872152Z LTS
+build	Set up job	2026-09-10T06:02:58.8873060Z ##[endgroup]
+build	Set up job	2026-09-10T06:02:58.8873631Z ##[group]Runner Image
+build	Set up job	2026-09-10T06:02:58.8874682Z Image: ubuntu-24.04
+build	Set up job	2026-09-10T06:02:58.8875386Z Version: 20260907.300.1
+build	Set up job	2026-09-10T06:02:58.8876453Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+build	Set up job	2026-09-10T06:02:58.8878214Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+build	Set up job	2026-09-10T06:02:58.8879253Z ##[endgroup]
+build	Set up job	2026-09-10T06:02:58.8880459Z ##[group]GITHUB_TOKEN Permissions
+build	Set up job	2026-09-10T06:02:58.8882673Z Contents: read
+build	Set up job	2026-09-10T06:02:58.8883328Z Metadata: read
+build	Set up job	2026-09-10T06:02:58.8883911Z Pages: write
+build	Set up job	2026-09-10T06:02:58.8885019Z ##[endgroup]
+build	Set up job	2026-09-10T06:02:58.8887237Z Secret source: Actions
+build	Set up job	2026-09-10T06:02:58.8888361Z Cache mode: write
+build	Set up job	2026-09-10T06:02:58.8889294Z Prepare workflow directory
+build	Set up job	2026-09-10T06:02:58.9279214Z Prepare all required actions
+build	Set up job	2026-09-10T06:02:58.9327277Z Getting action download info
+build	Set up job	2026-09-10T06:02:59.1590192Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+build	Set up job	2026-09-10T06:02:59.2661726Z Download action repository 'actions/upload-pages-artifact@v3' (SHA:56afc609e74202658d3ffba0e8f6dda462b719fa)
+build	Set up job	2026-09-10T06:02:59.4595158Z Getting action download info
+build	Set up job	2026-09-10T06:02:59.5660840Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+build	Set up job	2026-09-10T06:02:59.7020138Z Complete job name: build
+build	Run actions/checkout@v4	﻿2026-09-10T06:02:59.7836256Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7845444Z ##[group]Run actions/checkout@v4
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7846351Z with:
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7846858Z   lfs: true
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7847358Z   repository: td72/vig
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7851520Z   token: ***
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7852042Z   ssh-strict: true
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7852574Z   ssh-user: git
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7853119Z   persist-credentials: true
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7853705Z   clean: true
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7854441Z   sparse-checkout-cone-mode: true
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7855076Z   fetch-depth: 1
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7855623Z   fetch-tags: false
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7856174Z   show-progress: true
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7856772Z   submodules: false
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7857357Z   set-safe-directory: true
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7857952Z   allow-unsafe-pr-checkout: false
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7858832Z env:
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7859350Z   MDBOOK_VERSION: 0.5.4
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7860197Z   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
+build	Run actions/checkout@v4	2026-09-10T06:02:59.7861089Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:02:59.8990719Z Syncing repository: td72/vig
+build	Run actions/checkout@v4	2026-09-10T06:02:59.8993449Z ##[group]Getting Git version info
+build	Run actions/checkout@v4	2026-09-10T06:02:59.8994725Z Working directory is '/home/runner/work/vig/vig'
+build	Run actions/checkout@v4	2026-09-10T06:02:59.8996166Z [command]/usr/bin/git version
+build	Run actions/checkout@v4	2026-09-10T06:02:59.9003790Z git version 2.55.0
+build	Run actions/checkout@v4	2026-09-10T06:02:59.9047815Z [command]/usr/bin/git lfs version
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4688636Z git-lfs/3.8.0 (GitHub; linux amd64; go 1.27.0)
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4704807Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4723860Z Temporarily overriding HOME='/home/runner/work/_temp/ffa0f69e-61b0-4301-8b5d-9afdba1b9613' before making global git config changes
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4727059Z Adding repository directory to the temporary git global config as a safe directory
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4729788Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4781956Z Deleting the contents of '/home/runner/work/vig/vig'
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4786346Z ##[group]Initializing the repository
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4790916Z [command]/usr/bin/git init /home/runner/work/vig/vig
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4895913Z hint: Using 'master' as the name for the initial branch. This default branch name
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4899167Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4902526Z hint: to use in all of your new repositories, which will suppress this warning,
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4905809Z hint: call:
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4907530Z hint:
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4909502Z hint: 	git config --global init.defaultBranch <name>
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4912035Z hint:
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4914588Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4918125Z hint: 'development'. The just-created branch can be renamed via this command:
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4921498Z hint:
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4922972Z hint: 	git branch -m <name>
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4924882Z hint:
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4926696Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4929278Z Initialized empty Git repository in /home/runner/work/vig/vig/.git/
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4934964Z [command]/usr/bin/git remote add origin https://github.com/td72/vig
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4968254Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4971721Z ##[group]Disabling automatic garbage collection
+build	Run actions/checkout@v4	2026-09-10T06:03:00.4974930Z [command]/usr/bin/git config --local gc.auto 0
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5006575Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5009822Z ##[group]Setting up auth
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5015081Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5056431Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5369190Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5442037Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5667784Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5702826Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5927323Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5966351Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:03:00.5977902Z [command]/usr/bin/git lfs install --local
+build	Run actions/checkout@v4	2026-09-10T06:03:00.6443372Z Updated Git hooks.
+build	Run actions/checkout@v4	2026-09-10T06:03:00.6445737Z Git LFS initialized.
+build	Run actions/checkout@v4	2026-09-10T06:03:00.6460365Z ##[group]Fetching the repository
+build	Run actions/checkout@v4	2026-09-10T06:03:00.6470822Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c1c06546dca5c7c103ec074896333d8f743fbf49:refs/remotes/origin/main
+build	Run actions/checkout@v4	2026-09-10T06:03:00.9912972Z From https://github.com/td72/vig
+build	Run actions/checkout@v4	2026-09-10T06:03:00.9915857Z  * [new ref]         c1c06546dca5c7c103ec074896333d8f743fbf49 -> origin/main
+build	Run actions/checkout@v4	2026-09-10T06:03:00.9921330Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:03:00.9923545Z ##[group]Determining the checkout info
+build	Run actions/checkout@v4	2026-09-10T06:03:00.9926195Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:03:00.9928178Z ##[group]Fetching LFS objects
+build	Run actions/checkout@v4	2026-09-10T06:03:00.9932737Z [command]/usr/bin/git lfs fetch origin refs/remotes/origin/main
+build	Run actions/checkout@v4	2026-09-10T06:03:01.0243544Z Fetching reference refs/remotes/origin/main
+build	Run actions/checkout@v4	2026-09-10T06:03:01.7360068Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:03:01.7385029Z [command]/usr/bin/git sparse-checkout disable
+build	Run actions/checkout@v4	2026-09-10T06:03:01.7424641Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+build	Run actions/checkout@v4	2026-09-10T06:03:01.7458799Z ##[group]Checking out the ref
+build	Run actions/checkout@v4	2026-09-10T06:03:01.7463522Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+build	Run actions/checkout@v4	2026-09-10T06:03:01.8082399Z Switched to a new branch 'main'
+build	Run actions/checkout@v4	2026-09-10T06:03:01.8088317Z branch 'main' set up to track 'origin/main'.
+build	Run actions/checkout@v4	2026-09-10T06:03:01.8385729Z ##[endgroup]
+build	Run actions/checkout@v4	2026-09-10T06:03:01.8432373Z [command]/usr/bin/git log -1 --format=%H
+build	Run actions/checkout@v4	2026-09-10T06:03:01.8459179Z c1c06546dca5c7c103ec074896333d8f743fbf49
+build	Install mdBook	﻿2026-09-10T06:03:01.8662026Z ##[group]Run mkdir -p "$HOME/.local/bin"
+build	Install mdBook	2026-09-10T06:03:01.8662447Z ^[[36;1mmkdir -p "$HOME/.local/bin"^[[0m
+build	Install mdBook	2026-09-10T06:03:01.8663334Z ^[[36;1mcurl -fL -o /tmp/mdbook.tar.gz "https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz"^[[0m
+build	Install mdBook	2026-09-10T06:03:01.8664559Z ^[[36;1mecho "${MDBOOK_SHA256}  /tmp/mdbook.tar.gz" | sha256sum -c -^[[0m
+build	Install mdBook	2026-09-10T06:03:01.8665003Z ^[[36;1mtar xz -f /tmp/mdbook.tar.gz -C "$HOME/.local/bin"^[[0m
+build	Install mdBook	2026-09-10T06:03:01.8665396Z ^[[36;1mecho "$HOME/.local/bin" >> "$GITHUB_PATH"^[[0m
+build	Install mdBook	2026-09-10T06:03:01.8705779Z shell: /usr/bin/bash -e {0}
+build	Install mdBook	2026-09-10T06:03:01.8706072Z env:
+build	Install mdBook	2026-09-10T06:03:01.8706286Z   MDBOOK_VERSION: 0.5.4
+build	Install mdBook	2026-09-10T06:03:01.8706684Z   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
+build	Install mdBook	2026-09-10T06:03:01.8707117Z ##[endgroup]
+build	Install mdBook	2026-09-10T06:03:01.8889457Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+build	Install mdBook	2026-09-10T06:03:01.8890764Z                                  Dload  Upload   Total   Spent    Left  Speed
+build	Install mdBook	2026-09-10T06:03:01.8891284Z 
+build	Install mdBook	2026-09-10T06:03:01.9193009Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+build	Install mdBook	2026-09-10T06:03:01.9193712Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+build	Install mdBook	2026-09-10T06:03:01.9609025Z 
+build	Install mdBook	2026-09-10T06:03:01.9720815Z  14 4709k   14  666k    0     0  9245k      0 --:--:-- --:--:-- --:--:-- 9245k
+build	Install mdBook	2026-09-10T06:03:01.9721711Z 100 4709k  100 4709k    0     0  55.2M      0 --:--:-- --:--:-- --:--:--  358M
+build	Install mdBook	2026-09-10T06:03:01.9804224Z /tmp/mdbook.tar.gz: OK
+build	Build books	﻿2026-09-10T06:03:02.0689421Z ##[group]Run mdbook build docs/guide --dest-dir "$GITHUB_WORKSPACE/site"
+build	Build books	2026-09-10T06:03:02.0690016Z ^[[36;1mmdbook build docs/guide --dest-dir "$GITHUB_WORKSPACE/site"^[[0m
+build	Build books	2026-09-10T06:03:02.0690533Z ^[[36;1mmdbook build docs/guide/ja --dest-dir "$GITHUB_WORKSPACE/site/ja"^[[0m
+build	Build books	2026-09-10T06:03:02.0730118Z shell: /usr/bin/bash -e {0}
+build	Build books	2026-09-10T06:03:02.0730404Z env:
+build	Build books	2026-09-10T06:03:02.0730618Z   MDBOOK_VERSION: 0.5.4
+build	Build books	2026-09-10T06:03:02.0731007Z   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
+build	Build books	2026-09-10T06:03:02.0731442Z ##[endgroup]
+build	Build books	2026-09-10T06:03:02.0827823Z  INFO Book building has started
+build	Build books	2026-09-10T06:03:02.1343357Z  INFO Running the html backend
+build	Build books	2026-09-10T06:03:02.1994453Z  INFO HTML book written to `/home/runner/work/vig/vig/site`
+build	Build books	2026-09-10T06:03:02.2035545Z  INFO Book building has started
+build	Build books	2026-09-10T06:03:02.2554726Z  INFO Running the html backend
+build	Build books	2026-09-10T06:03:02.2975746Z  INFO HTML book written to `/home/runner/work/vig/vig/site/ja`
+build	Copy demo GIFs into the site	﻿2026-09-10T06:03:02.3026188Z ##[group]Run mkdir -p site/assets site/ja/assets
+build	Copy demo GIFs into the site	2026-09-10T06:03:02.3026663Z ^[[36;1mmkdir -p site/assets site/ja/assets^[[0m
+build	Copy demo GIFs into the site	2026-09-10T06:03:02.3026983Z ^[[36;1mcp assets/*.gif site/assets/^[[0m
+build	Copy demo GIFs into the site	2026-09-10T06:03:02.3027287Z ^[[36;1mcp assets/*.gif site/ja/assets/^[[0m
+build	Copy demo GIFs into the site	2026-09-10T06:03:02.3064734Z shell: /usr/bin/bash -e {0}
+build	Copy demo GIFs into the site	2026-09-10T06:03:02.3065026Z env:
+build	Copy demo GIFs into the site	2026-09-10T06:03:02.3065235Z   MDBOOK_VERSION: 0.5.4
+build	Copy demo GIFs into the site	2026-09-10T06:03:02.3065637Z   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
+build	Copy demo GIFs into the site	2026-09-10T06:03:02.3066076Z ##[endgroup]
+build	Run actions/upload-pages-artifact@v3	﻿2026-09-10T06:03:02.3340041Z ##[group]Run actions/upload-pages-artifact@v3
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3340403Z with:
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3340609Z   path: site
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3340830Z   name: github-pages
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3341063Z   retention-days: 1
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3341276Z env:
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3341476Z   MDBOOK_VERSION: 0.5.4
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3341857Z   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3342280Z ##[endgroup]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3407491Z ##[start-action display=Archive artifact;id=__actions_upload-pages-artifact.__run]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3448818Z ##[group]Run echo ::group::Archive artifact
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3449196Z ^[[36;1mecho ::group::Archive artifact^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3449477Z ^[[36;1mtar \^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3449730Z ^[[36;1m  --dereference --hard-dereference \^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3450057Z ^[[36;1m  --directory "$INPUT_PATH" \^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3450372Z ^[[36;1m  -cvf "$RUNNER_TEMP/artifact.tar" \^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3450681Z ^[[36;1m  --exclude=.git \^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3451000Z ^[[36;1m  --exclude=.github \^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3451256Z ^[[36;1m  .^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3451472Z ^[[36;1mecho ::endgroup::^[[0m
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3502736Z shell: /usr/bin/sh -e {0}
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3503014Z env:
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3503220Z   MDBOOK_VERSION: 0.5.4
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3503613Z   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3504309Z   INPUT_PATH: site
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3504544Z ##[endgroup]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3570475Z ##[group]Archive artifact
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3586903Z ./
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3588862Z ./print.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3589228Z ./views-docker.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3589607Z ./toc-c9c24bd0.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3589959Z ./mark-09e88c2c.min.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3590369Z ./searchindex-a3b5d8b8.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3595522Z ./404.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3595916Z ./clipboard-1626706a.min.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3596338Z ./highlight-abc7f01d.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3597612Z ./troubleshooting.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3598191Z ./tomorrow-night-4c0ae647.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3598673Z ./views-git.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3599068Z ./views-projects.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3599474Z ./views.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3600038Z ./elasticlunr-ef4e11c1.min.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3600510Z ./views-worktrees.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3600955Z ./favicon-8114d1fc.png
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3601381Z ./ayu-highlight-3fdfc3ac.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3601874Z ./ja/
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3602220Z ./ja/print.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3604675Z ./ja/views-docker.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3605133Z ./ja/mark-09e88c2c.min.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3605543Z ./ja/404.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3605934Z ./ja/clipboard-1626706a.min.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3606415Z ./ja/highlight-abc7f01d.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3607498Z ./ja/troubleshooting.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3608017Z ./ja/tomorrow-night-4c0ae647.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3608494Z ./ja/views-git.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3608877Z ./ja/views-projects.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3609466Z ./ja/views.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3609912Z ./ja/elasticlunr-ef4e11c1.min.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3610368Z ./ja/views-worktrees.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3610877Z ./ja/favicon-8114d1fc.png
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3611302Z ./ja/ayu-highlight-3fdfc3ac.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3611750Z ./ja/highlight-493f70e1.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3612162Z ./ja/favicon-de23e50b.svg
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3612548Z ./ja/fonts/
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3613033Z ./ja/fonts/source-code-pro-v11-all-charsets-500-2bdd9410.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3613797Z ./ja/fonts/open-sans-v17-all-charsets-regular-2e3b1d34.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3614812Z ./ja/fonts/open-sans-v17-all-charsets-700italic-238ae959.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3615440Z ./ja/fonts/fonts-9644e21d.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3616035Z ./ja/fonts/open-sans-v17-all-charsets-300italic-2c7b95c0.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3616751Z ./ja/fonts/open-sans-v17-all-charsets-800-3d2c812a.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3617341Z ./ja/fonts/OPEN-SANS-LICENSE.txt
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3618441Z ./ja/fonts/open-sans-v17-all-charsets-600italic-1a3e8659.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3619172Z ./ja/fonts/open-sans-v17-all-charsets-600-486c6759.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3619769Z ./ja/fonts/SOURCE-CODE-PRO-LICENSE.txt
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3620350Z ./ja/fonts/open-sans-v17-all-charsets-700-c22fe8c7.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3621012Z ./ja/fonts/open-sans-v17-all-charsets-300-7736aa35.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3621717Z ./ja/fonts/open-sans-v17-all-charsets-800italic-ba1521ec.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3622455Z ./ja/fonts/open-sans-v17-all-charsets-italic-6c9463f7.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3623056Z ./ja/views-github.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3623480Z ./ja/index.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3623838Z ./ja/getting-started.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3624447Z ./ja/views-procs.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3624848Z ./ja/introduction.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3625216Z ./ja/toc-2a6ac577.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3625585Z ./ja/searchindex-975c896b.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3628469Z ./ja/css/
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3628873Z ./ja/css/chrome-d279d366.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3629351Z ./ja/css/general-e96d0476.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3629782Z ./ja/css/variables-8adf115d.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3630219Z ./ja/css/print-9e4910d8.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3630664Z ./ja/searcher-09f2665d.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3631038Z ./ja/.nojekyll
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3631368Z ./ja/book-609e4cb8.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3631754Z ./ja/config-recipes.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3632163Z ./ja/configuration-basics.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3632583Z ./ja/toc.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3632923Z ./ja/views-files.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3633288Z ./ja/assets/
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3633633Z ./ja/assets/demo-search.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3635726Z ./ja/assets/demo-reflog.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3638557Z ./ja/assets/demo-files.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3643481Z ./ja/assets/demo-github-issue.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3648819Z ./ja/assets/demo-branch.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3653200Z ./ja/assets/demo-yank.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3654387Z ./ja/assets/demo-worktrees.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3657107Z ./ja/assets/demo-commit-log.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3659562Z ./ja/assets/demo-github-pr.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3665753Z ./ja/assets/demo-config.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3668860Z ./ja/assets/demo-docker.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3676599Z ./ja/assets/demo-procs.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3682701Z ./ja/assets/demo-repo-config.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3685849Z ./ja/assets/demo.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3691089Z ./ja/assets/demo-projects.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3696523Z ./ja/config-reference.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3697276Z ./highlight-493f70e1.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3697709Z ./favicon-de23e50b.svg
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3698097Z ./fonts/
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3698566Z ./fonts/source-code-pro-v11-all-charsets-500-2bdd9410.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3699291Z ./fonts/open-sans-v17-all-charsets-regular-2e3b1d34.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3700007Z ./fonts/open-sans-v17-all-charsets-700italic-238ae959.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3700608Z ./fonts/fonts-9644e21d.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3701139Z ./fonts/open-sans-v17-all-charsets-300italic-2c7b95c0.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3701842Z ./fonts/open-sans-v17-all-charsets-800-3d2c812a.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3702406Z ./fonts/OPEN-SANS-LICENSE.txt
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3702948Z ./fonts/open-sans-v17-all-charsets-600italic-1a3e8659.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3703613Z ./fonts/open-sans-v17-all-charsets-600-486c6759.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3704377Z ./fonts/SOURCE-CODE-PRO-LICENSE.txt
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3704917Z ./fonts/open-sans-v17-all-charsets-700-c22fe8c7.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3705544Z ./fonts/open-sans-v17-all-charsets-300-7736aa35.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3706206Z ./fonts/open-sans-v17-all-charsets-800italic-ba1521ec.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3706916Z ./fonts/open-sans-v17-all-charsets-italic-6c9463f7.woff2
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3707472Z ./views-github.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3707823Z ./index.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3708170Z ./getting-started.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3708547Z ./views-procs.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3709029Z ./introduction.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3709557Z ./css/
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3710332Z ./css/chrome-d279d366.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3710761Z ./css/general-e96d0476.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3711177Z ./css/variables-8adf115d.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3711586Z ./css/print-9e4910d8.css
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3714880Z ./searcher-09f2665d.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3734931Z ./.nojekyll
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3755504Z ./book-609e4cb8.js
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3755902Z ./config-recipes.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3756298Z ./configuration-basics.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3756701Z ./toc.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3756910Z ./views-files.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3757135Z ./assets/
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3757337Z ./assets/demo-search.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3757579Z ./assets/demo-reflog.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3757823Z ./assets/demo-files.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3758075Z ./assets/demo-github-issue.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3758343Z ./assets/demo-branch.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3758587Z ./assets/demo-yank.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3758835Z ./assets/demo-worktrees.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3759108Z ./assets/demo-commit-log.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3759389Z ./assets/demo-github-pr.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3759633Z ./assets/demo-config.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3759862Z ./assets/demo-docker.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3760094Z ./assets/demo-procs.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3761964Z ./assets/demo-repo-config.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3765132Z ./assets/demo.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3770400Z ./assets/demo-projects.gif
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3775862Z ./config-reference.html
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3779706Z ##[endgroup]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3793282Z ##[end-action id=__actions_upload-pages-artifact.__run;outcome=success;conclusion=success;duration_ms=38]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3797866Z ##[start-action display=Archive artifact;id=__actions_upload-pages-artifact.__run_2]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3803581Z ##[end-action id=__actions_upload-pages-artifact.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3806880Z ##[start-action display=Archive artifact;id=__actions_upload-pages-artifact.__run_3]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3810811Z ##[end-action id=__actions_upload-pages-artifact.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3812913Z ##[start-action display=Upload artifact;id=__actions_upload-pages-artifact.upload-artifact]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3881183Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3883116Z ##[group]Run actions/upload-artifact@v4
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3883410Z with:
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3883616Z   name: github-pages
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3883875Z   path: /home/runner/work/_temp/artifact.tar
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3884355Z   retention-days: 1
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3884585Z   if-no-files-found: error
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3884829Z   compression-level: 6
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3885053Z   overwrite: false
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3885297Z   include-hidden-files: false
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3885540Z env:
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3885732Z   MDBOOK_VERSION: 0.5.4
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3886118Z   MDBOOK_SHA256: 3f28de05dafca9d0f2eab99c662116b0e37b89b1d96a08f8f430b9eeae958cd7
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.3886539Z ##[endgroup]
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.5582207Z (node:2418) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.5583981Z (Use `node --trace-deprecation ...` to show where the warning was created)
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.5669559Z With the provided path, there will be 1 file uploaded
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.5671486Z Artifact name is valid!
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.5672503Z Root directory input is valid!
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:02.7665775Z Beginning upload of artifact content to blob storage
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.1368554Z (node:2418) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.3510032Z Uploaded bytes 8388608
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.5493665Z Uploaded bytes 15529726
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.5655013Z Finished uploading artifact content to blob storage!
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.5656566Z SHA256 digest of uploaded artifact zip is 1c71417984a7f39d4182dbd54056bda42f13b8af702069291b74084386f2334e
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.5658809Z Finalizing artifact upload
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.8181023Z Artifact github-pages.zip successfully finalized. Artifact ID 10138787006
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.8182372Z Artifact github-pages has been successfully uploaded! Final size is 15529726 bytes. Artifact ID is 10138787006
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.8188960Z Artifact download URL: https://github.com/td72/vig/actions/runs/34443522358/artifacts/10138787006
+build	Run actions/upload-pages-artifact@v3	2026-09-10T06:03:03.8306522Z ##[end-action id=__actions_upload-pages-artifact.upload-artifact;outcome=success;conclusion=success;duration_ms=1449]
+build	Post Run actions/checkout@v4	﻿2026-09-10T06:03:03.8427056Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.8428374Z Post job cleanup.
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9307630Z [command]/usr/bin/git version
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9348091Z git version 2.55.0
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9388461Z Temporarily overriding HOME='/home/runner/work/_temp/6db4ae29-3065-4dfe-aab1-eeb96817a711' before making global git config changes
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9389893Z Adding repository directory to the temporary git global config as a safe directory
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9394815Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9436140Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9478400Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9741813Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9771658Z http.https://github.com/.extraheader
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9784418Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+build	Post Run actions/checkout@v4	2026-09-10T06:03:03.9821308Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Post Run actions/checkout@v4	2026-09-10T06:03:04.0080551Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Post Run actions/checkout@v4	2026-09-10T06:03:04.0120843Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Complete job	﻿2026-09-10T06:03:04.0556632Z Cleaning up orphan processes
+build	Complete job	2026-09-10T06:03:04.0849596Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

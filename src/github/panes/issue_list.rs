@@ -20,11 +20,14 @@ impl GhListItem for GhIssueListItem {
     }
 
     fn render_item(&self, tree: &TreePos) -> ListItem<'static> {
-        let icon = if self.state == "OPEN" { "●" } else { "✓" };
-        let icon_color = if self.state == "OPEN" {
-            Color::Green
+        let open = self.state == "OPEN";
+        let icon = if open { "●" } else { "✓" };
+        let icon_color = if open { Color::Green } else { Color::Red };
+        // Closed issues (shown with `x`) are dimmed.
+        let title_style = if open {
+            Style::default()
         } else {
-            Color::Red
+            Style::default().fg(Color::DarkGray)
         };
 
         ListItem::new(Line::from(vec![
@@ -37,7 +40,7 @@ impl GhListItem for GhIssueListItem {
                 Style::default().fg(Color::Yellow),
             ),
             Span::raw(" "),
-            Span::raw(self.title.clone()),
+            Span::styled(self.title.clone(), title_style),
         ]))
     }
 
@@ -69,12 +72,15 @@ impl GhListItem for GhIssueListItem {
         disk_cache::save_issue_list(items);
     }
 
-    fn fetch_list() -> Result<Vec<Self>, String> {
-        client::list_issues(50)
+    fn fetch_list(show_closed: bool) -> Result<Vec<Self>, String> {
+        client::list_issues(50, show_closed)
     }
 
-    fn wrap_bg_message(result: Result<Vec<Self>, String>) -> GhBgMessage {
-        GhBgMessage::IssueList(result)
+    fn wrap_bg_message(result: Result<Vec<Self>, String>, show_closed: bool) -> GhBgMessage {
+        GhBgMessage::IssueList {
+            result,
+            show_closed,
+        }
     }
 }
 

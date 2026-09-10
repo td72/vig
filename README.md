@@ -239,6 +239,7 @@ Nothing in this view reruns, cancels or deletes anything.
 | `i` / `Enter` | Open detail view |
 | `o` | Open in browser (issue, PR, run or the selected job) |
 | `y` | Copy the item URL |
+| `x` | Show / hide closed issues and merged / closed PRs in the lists (`github-show-closed` sets the start) |
 | `Esc` | Back to list |
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |

@@ -43,6 +43,13 @@ Sleep 3s
 Type "2"
 Sleep 4s
 
+# `x` brings the closed issues and merged PRs into the lists (dimmed,
+# `· closed` in the header); `x` again leaves them out
+Type "x"
+Sleep 3s
+Type "x"
+Sleep 2s
+
 # Navigate issue list with j/k
 Type "j"
 Sleep 800ms

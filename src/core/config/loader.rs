@@ -400,6 +400,7 @@ impl Config {
         self.procs_history()?;
         self.github_poll_interval()?;
         self.github_auto_refresh()?;
+        self.github_show_closed()?;
         self.projects_poll_interval()?;
         self.projects_board()?;
         self.projects_views()?;
@@ -704,6 +705,34 @@ impl Config {
                 self.describe()
             )
         })
+    }
+
+    /// Whether the GitHub page's issue / PR lists start with closed and
+    /// merged items included (`github-show-closed "on"` / `"off"`, default
+    /// off; `x` toggles it).
+    pub fn github_show_closed(&self) -> Result<bool> {
+        let mode = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "github-show-closed")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("github-show-closed block missing mode argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| "off".to_string());
+        match mode.as_str() {
+            "on" => Ok(true),
+            "off" => Ok(false),
+            _ => Err(anyhow!(
+                "invalid {}: github-show-closed expects \"on\" or \"off\"",
+                self.describe()
+            )),
+        }
     }
 
     /// A filter stacked on every view of the Projects page
@@ -2618,6 +2647,19 @@ mod tests {
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown icons mode \"emoji\""), "{msg}");
         assert!(msg.contains("nerd, none"), "{msg}");
+    }
+
+    #[test]
+    fn github_show_closed_default_override_and_validation() {
+        assert!(!Config::builtin().github_show_closed().unwrap());
+        assert!(user(r#"github-show-closed "on""#)
+            .unwrap()
+            .github_show_closed()
+            .unwrap());
+        let msg = user(r#"github-show-closed "all""#)
+            .expect_err("expected an error")
+            .to_string();
+        assert!(msg.contains("github-show-closed expects"), "{msg}");
     }
 
     #[test]

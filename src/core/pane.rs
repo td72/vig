@@ -146,6 +146,8 @@ pub enum PaneEvent {
     OpenPrBrowser(u64),
     /// Run detail: load the log of the job selected in the Jobs sub-pane.
     OpenRunLog,
+    /// Issue / PR lists: show or hide closed and merged items (both lists).
+    ToggleClosed,
     // Files-specific
     /// The directory list changed directory (enter / parent).
     DirChanged,
