@@ -1,0 +1,87 @@
+upload	Set up job	﻿2026-09-10T05:29:50.6815818Z Current runner version: '2.337.0'
+upload	Set up job	2026-09-10T05:29:50.6842807Z ##[group]Runner Image Provisioner
+upload	Set up job	2026-09-10T05:29:50.6843793Z Hosted Compute Agent
+upload	Set up job	2026-09-10T05:29:50.6844467Z Version: 20260828.587
+upload	Set up job	2026-09-10T05:29:50.6845095Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+upload	Set up job	2026-09-10T05:29:50.6845802Z Build Date: 2026-08-28T16:44:25Z
+upload	Set up job	2026-09-10T05:29:50.6846560Z Worker ID: {fe484c90-d6a7-4865-83b3-2ae9f2cb34f7}
+upload	Set up job	2026-09-10T05:29:50.6847310Z Azure Region: eastus
+upload	Set up job	2026-09-10T05:29:50.6847905Z ##[endgroup]
+upload	Set up job	2026-09-10T05:29:50.6849511Z ##[group]Operating System
+upload	Set up job	2026-09-10T05:29:50.6850155Z Ubuntu
+upload	Set up job	2026-09-10T05:29:50.6850948Z 24.04.4
+upload	Set up job	2026-09-10T05:29:50.6851565Z LTS
+upload	Set up job	2026-09-10T05:29:50.6852118Z ##[endgroup]
+upload	Set up job	2026-09-10T05:29:50.6852712Z ##[group]Runner Image
+upload	Set up job	2026-09-10T05:29:50.6853311Z Image: ubuntu-24.04
+upload	Set up job	2026-09-10T05:29:50.6853927Z Version: 20260831.293.1
+upload	Set up job	2026-09-10T05:29:50.6855041Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260831.293/images/ubuntu/Ubuntu2404-Readme.md
+upload	Set up job	2026-09-10T05:29:50.6856906Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260831.293
+upload	Set up job	2026-09-10T05:29:50.6857860Z ##[endgroup]
+upload	Set up job	2026-09-10T05:29:50.6859052Z ##[group]GITHUB_TOKEN Permissions
+upload	Set up job	2026-09-10T05:29:50.6861401Z Contents: write
+upload	Set up job	2026-09-10T05:29:50.6862115Z Metadata: read
+upload	Set up job	2026-09-10T05:29:50.6862712Z ##[endgroup]
+upload	Set up job	2026-09-10T05:29:50.6865209Z Secret source: Actions
+upload	Set up job	2026-09-10T05:29:50.6866295Z Cache mode: write
+upload	Set up job	2026-09-10T05:29:50.6867113Z Prepare workflow directory
+upload	Set up job	2026-09-10T05:29:50.7203906Z Prepare all required actions
+upload	Set up job	2026-09-10T05:29:50.7251571Z Getting action download info
+upload	Set up job	2026-09-10T05:29:50.9737819Z Download action repository 'actions/download-artifact@v7' (SHA:37930b1c2abaa49bbe596cd826c3c89aef350131)
+upload	Set up job	2026-09-10T05:29:51.2202876Z Download action repository 'softprops/action-gh-release@v2' (SHA:3bb12739c298aeb8a4eeaf626c5b8d85266b0e65)
+upload	Set up job	2026-09-10T05:29:51.4311321Z Complete job name: upload
+upload	Download artifacts	﻿2026-09-10T05:29:51.5039874Z ##[group]Run actions/download-artifact@v7
+upload	Download artifacts	2026-09-10T05:29:51.5041159Z with:
+upload	Download artifacts	2026-09-10T05:29:51.5041624Z   merge-multiple: true
+upload	Download artifacts	2026-09-10T05:29:51.5042143Z   repository: td72/vig
+upload	Download artifacts	2026-09-10T05:29:51.5042614Z   run-id: 34440913700
+upload	Download artifacts	2026-09-10T05:29:51.5043295Z ##[endgroup]
+upload	Download artifacts	2026-09-10T05:29:51.7613006Z Found 3 artifact(s)
+upload	Download artifacts	2026-09-10T05:29:51.7615787Z No input name, artifact-ids or pattern filtered specified, downloading all artifacts
+upload	Download artifacts	2026-09-10T05:29:51.7616766Z Preparing to download the following artifacts:
+upload	Download artifacts	2026-09-10T05:29:51.7618207Z - vig-x86_64-unknown-linux-gnu (ID: 10137997142, Size: 8482867, Expected Digest: sha256:ab5b725fe7913b9d7fccf0ec1f7ed29b43b6c15733ee9f5581fa5cdca1bf4c72)
+upload	Download artifacts	2026-09-10T05:29:51.7620454Z - vig-aarch64-apple-darwin (ID: 10137989390, Size: 7666748, Expected Digest: sha256:1cb901bff782a5f8671157cbee1f5a955cef0e9d45dc0c946a9d48ba0a7fcb50)
+upload	Download artifacts	2026-09-10T05:29:51.7622906Z - vig-aarch64-unknown-linux-gnu (ID: 10137979024, Size: 8549478, Expected Digest: sha256:9319acc7e2fe886d75ad0f7c58639e8ee44268f785f7ae165d2cadc3bc94f760)
+upload	Download artifacts	2026-09-10T05:29:51.9069048Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/bb8dcaa1-d3a9-489d-80af-929414b6884b/workflow-job-run-fed2930c-a9b0-5768-a07e-de7174352568/artifacts/1762b283d0f601eb191915fdfdae9886828280756a28f8ba9cbe015dc39aadcd.zip
+upload	Download artifacts	2026-09-10T05:29:51.9073337Z Starting download of artifact to: /home/runner/work/vig/vig
+upload	Download artifacts	2026-09-10T05:29:51.9090894Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/bb8dcaa1-d3a9-489d-80af-929414b6884b/workflow-job-run-7f148c32-b289-5526-b850-86230219f5a8/artifacts/1c695ffc2b6749250362cf6d6d28ac2e4c61428e5e82064ab8daed8c6cf6e05c.zip
+upload	Download artifacts	2026-09-10T05:29:51.9094003Z Starting download of artifact to: /home/runner/work/vig/vig
+upload	Download artifacts	2026-09-10T05:29:51.9113237Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/bb8dcaa1-d3a9-489d-80af-929414b6884b/workflow-job-run-3a9b57c5-d465-5b48-8d56-5ef9dca90846/artifacts/26fe75a994ed2ceac0ee61c6484cc01fd93f85d963a228b2c9f8f6bc5d78c7e3.zip
+upload	Download artifacts	2026-09-10T05:29:51.9117389Z Starting download of artifact to: /home/runner/work/vig/vig
+upload	Download artifacts	2026-09-10T05:29:51.9798851Z (node:2132) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+upload	Download artifacts	2026-09-10T05:29:51.9802822Z (Use `node --trace-deprecation ...` to show where the warning was created)
+upload	Download artifacts	2026-09-10T05:29:52.2815786Z SHA256 digest of downloaded artifact is 1cb901bff782a5f8671157cbee1f5a955cef0e9d45dc0c946a9d48ba0a7fcb50
+upload	Download artifacts	2026-09-10T05:29:52.2818210Z Artifact download completed successfully.
+upload	Download artifacts	2026-09-10T05:29:52.2910303Z SHA256 digest of downloaded artifact is ab5b725fe7913b9d7fccf0ec1f7ed29b43b6c15733ee9f5581fa5cdca1bf4c72
+upload	Download artifacts	2026-09-10T05:29:52.2913190Z Artifact download completed successfully.
+upload	Download artifacts	2026-09-10T05:29:52.2937499Z SHA256 digest of downloaded artifact is 9319acc7e2fe886d75ad0f7c58639e8ee44268f785f7ae165d2cadc3bc94f760
+upload	Download artifacts	2026-09-10T05:29:52.2939541Z Artifact download completed successfully.
+upload	Download artifacts	2026-09-10T05:29:52.2940896Z Total of 3 artifact(s) downloaded
+upload	Download artifacts	2026-09-10T05:29:52.2942579Z Download artifact has finished successfully
+upload	Upload to GitHub Release	﻿2026-09-10T05:29:52.3331603Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+upload	Upload to GitHub Release	2026-09-10T05:29:52.3337647Z ##[group]Run softprops/action-gh-release@v2
+upload	Upload to GitHub Release	2026-09-10T05:29:52.3338936Z with:
+upload	Upload to GitHub Release	2026-09-10T05:29:52.3339864Z   files: vig-*.tar.gz
+upload	Upload to GitHub Release	vig-*.tar.gz.sha256
+upload	Upload to GitHub Release	
+upload	Upload to GitHub Release	2026-09-10T05:29:52.3341527Z   overwrite_files: true
+upload	Upload to GitHub Release	2026-09-10T05:29:52.3352408Z   token: ***
+upload	Upload to GitHub Release	2026-09-10T05:29:52.3353321Z ##[endgroup]
+upload	Upload to GitHub Release	2026-09-10T05:29:52.6901298Z Found release v0.15.0 (with id=386024556)
+upload	Upload to GitHub Release	2026-09-10T05:29:52.9848264Z ⬆️ Uploading vig-x86_64-unknown-linux-gnu.tar.gz...
+upload	Upload to GitHub Release	2026-09-10T05:29:52.9849145Z ⬆️ Uploading vig-aarch64-unknown-linux-gnu.tar.gz...
+upload	Upload to GitHub Release	2026-09-10T05:29:52.9849688Z ⬆️ Uploading vig-aarch64-apple-darwin.tar.gz...
+upload	Upload to GitHub Release	2026-09-10T05:29:52.9850271Z ⬆️ Uploading vig-x86_64-unknown-linux-gnu.tar.gz.sha256...
+upload	Upload to GitHub Release	2026-09-10T05:29:52.9851705Z ⬆️ Uploading vig-aarch64-unknown-linux-gnu.tar.gz.sha256...
+upload	Upload to GitHub Release	2026-09-10T05:29:52.9852782Z ⬆️ Uploading vig-aarch64-apple-darwin.tar.gz.sha256...
+upload	Upload to GitHub Release	2026-09-10T05:29:53.4298029Z ✅ Uploaded vig-x86_64-unknown-linux-gnu.tar.gz.sha256
+upload	Upload to GitHub Release	2026-09-10T05:29:53.4305941Z ✅ Uploaded vig-aarch64-unknown-linux-gnu.tar.gz.sha256
+upload	Upload to GitHub Release	2026-09-10T05:29:53.4577265Z ✅ Uploaded vig-aarch64-apple-darwin.tar.gz.sha256
+upload	Upload to GitHub Release	2026-09-10T05:29:53.8416121Z ✅ Uploaded vig-x86_64-unknown-linux-gnu.tar.gz
+upload	Upload to GitHub Release	2026-09-10T05:29:53.9025133Z ✅ Uploaded vig-aarch64-unknown-linux-gnu.tar.gz
+upload	Upload to GitHub Release	2026-09-10T05:29:53.9408070Z ✅ Uploaded vig-aarch64-apple-darwin.tar.gz
+upload	Upload to GitHub Release	2026-09-10T05:29:53.9409372Z Finalizing release...
+upload	Upload to GitHub Release	2026-09-10T05:29:53.9410056Z Getting assets list...
+upload	Upload to GitHub Release	2026-09-10T05:29:54.0468737Z 🎉 Release ready at https://github.com/td72/vig/releases/tag/v0.15.0
+upload	Complete job	﻿2026-09-10T05:29:54.0651978Z Cleaning up orphan processes
+upload	Complete job	2026-09-10T05:29:54.1019046Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: softprops/action-gh-release@v2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

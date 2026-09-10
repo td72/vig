@@ -47,6 +47,8 @@ pub enum BoardAction {
     /// Roadmap: a finer / coarser time scale.
     ZoomIn,
     ZoomOut,
+    /// Hide / show closed issues and merged / closed PRs.
+    ToggleClosed,
     OpenDetail,
     OpenBrowser,
     CopyUrl,
@@ -57,7 +59,7 @@ pub enum BoardAction {
 crate::impl_pane_action_from_str!(
     BoardAction, nav: Nav, search: Search, esc: Esc,
     PrevColumn, NextColumn, ToggleTable, CycleSort, NextView, PrevView, ToggleLane,
-    ZoomIn, ZoomOut, OpenDetail, OpenBrowser, CopyUrl
+    ZoomIn, ZoomOut, ToggleClosed, OpenDetail, OpenBrowser, CopyUrl
 );
 
 impl ActionHelp for BoardAction {
@@ -75,6 +77,7 @@ impl ActionHelp for BoardAction {
             BoardAction::ToggleLane => Some("Collapse / expand lane"),
             BoardAction::ZoomIn => Some("Zoom in (roadmap)"),
             BoardAction::ZoomOut => Some("Zoom out (roadmap)"),
+            BoardAction::ToggleClosed => Some("Hide / show closed items"),
             BoardAction::OpenDetail => Some("Focus detail"),
             BoardAction::OpenBrowser => Some("Open item in browser"),
             BoardAction::CopyUrl => Some("Copy item URL"),
@@ -186,6 +189,10 @@ pub struct BoardPane {
     filter: Option<Filter>,
     /// The signed-in login, for `assignee:@me` in filters.
     viewer: Option<String>,
+    /// `projects-filter`: stacked on every view's filter.
+    global_filter: Option<String>,
+    /// `x` / `projects-hide-closed`: closed and merged items are left out.
+    hide_closed: bool,
     /// Roadmap: time scale, horizontal scroll in cells (`None` = start of
     /// the timeline) and the first visible row.
     zoom: Zoom,
@@ -229,6 +236,8 @@ impl BoardPane {
             applied_view: None,
             filter: None,
             viewer: None,
+            global_filter: None,
+            hide_closed: false,
             zoom: Zoom::Week,
             roadmap_scroll: None,
             roadmap_offset: 0,
@@ -272,6 +281,27 @@ impl BoardPane {
         if self.board.is_some() {
             self.apply_view(false);
         }
+    }
+
+    /// `projects-filter`: a filter stacked on every view.
+    pub fn set_global_filter(&mut self, expr: Option<String>) {
+        self.global_filter = expr.filter(|e| !e.trim().is_empty());
+        if self.board.is_some() {
+            self.apply_view(false);
+        }
+    }
+
+    /// Start with closed items hidden (`projects-hide-closed`).
+    pub fn set_hide_closed(&mut self, hide: bool) {
+        self.hide_closed = hide;
+        if self.board.is_some() {
+            self.apply_view(false);
+        }
+    }
+
+    /// Whether closed items are hidden (`x`).
+    pub fn hide_closed(&self) -> bool {
+        self.hide_closed
     }
 
     /// Items the view's filter hides.
@@ -577,9 +607,17 @@ impl BoardPane {
             .and_then(|v| v.group_by.first())
             .and_then(|name| board.fields.iter().find(|f| &f.name == name))
             .cloned();
-        self.filter = view
-            .and_then(|v| v.filter.as_deref())
-            .map(|expr| filter::parse(expr, self.viewer.as_deref()))
+        // The view's filter, the config's board-wide one and the closed
+        // toggle are one expression: every term must hold.
+        let expr: Vec<&str> = self
+            .global_filter
+            .as_deref()
+            .into_iter()
+            .chain(view.and_then(|v| v.filter.as_deref()))
+            .chain(self.hide_closed.then_some("is:open"))
+            .collect();
+        self.filter = (!expr.is_empty())
+            .then(|| filter::parse(&expr.join(" "), self.viewer.as_deref()))
             .filter(|f| !f.is_empty() || !f.unsupported.is_empty());
         if reset {
             let sort = view.and_then(|v| v.sort_by.first());
@@ -839,6 +877,18 @@ impl BoardPane {
                     };
                     self.roadmap_scroll = None;
                 }
+            }
+            BoardAction::ToggleClosed => {
+                self.hide_closed = !self.hide_closed;
+                self.apply_view(false);
+                return vec![PaneEvent::StatusMessage(
+                    if self.hide_closed {
+                        "Closed items hidden (x shows them)"
+                    } else {
+                        "Closed items shown"
+                    }
+                    .into(),
+                )];
             }
             BoardAction::NextView => return self.cycle_view(true),
             BoardAction::PrevView => return self.cycle_view(false),
@@ -1944,6 +1994,47 @@ mod tests {
         assert_eq!(p.headers_before(0), 1);
         let first_group = p.groups[0].1;
         assert_eq!(p.headers_before(first_group), 2);
+    }
+
+    /// `x` leaves closed issues and merged / closed PRs out of every
+    /// layout on top of the view's filter; `projects-filter` stacks the
+    /// same way from the config.
+    #[test]
+    fn x_hides_closed_items_and_the_global_filter_stacks_on_the_view() {
+        let mut p = pane();
+        let sh = shared();
+        let mut b = board();
+        let total = b.items.len();
+        b.items[0].content.as_mut().unwrap().state = Some("CLOSED".into());
+        b.items[1].content.as_mut().unwrap().state = Some("MERGED".into());
+        p.set_board(b.clone());
+        assert_eq!(p.item_count(), total);
+        assert!(!p.hide_closed());
+
+        let ev = p.execute(&sh, BoardAction::ToggleClosed);
+        assert!(matches!(&ev[0], PaneEvent::StatusMessage(m) if m.contains("hidden")));
+        assert!(p.hide_closed());
+        assert_eq!(p.item_count(), total - 2);
+        assert_eq!(p.filtered_out(), 2);
+        // Survives a refresh and a view switch.
+        p.set_board(b.clone());
+        assert_eq!(p.item_count(), total - 2);
+        p.execute(&sh, BoardAction::ToggleClosed);
+        assert_eq!(p.item_count(), total);
+
+        // The config's filter applies without a view, and combines with
+        // the toggle.
+        p.set_global_filter(Some("is:issue".into()));
+        let issues = b
+            .items
+            .iter()
+            .filter(|i| i.kind() == ItemKind::Issue)
+            .count();
+        assert_eq!(p.item_count(), issues);
+        p.set_hide_closed(true);
+        assert_eq!(p.item_count(), issues - 1, "the closed issue goes too");
+        p.set_global_filter(None);
+        assert_eq!(p.item_count(), total - 2);
     }
 
     #[test]

@@ -97,6 +97,13 @@ Sleep 1.5s
 Type "v"
 Sleep 2.5s
 
+# `x` hides the closed issues and merged PRs (`· closed hidden` in the
+# header, the count in the status bar); `x` again brings them back
+Type "x"
+Sleep 2.5s
+Type "x"
+Sleep 1.5s
+
 # `v` again: the Timeline view — a roadmap with a bar per item, a today
 # marker, month labels and week ticks
 Type "v"

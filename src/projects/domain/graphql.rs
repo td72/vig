@@ -66,8 +66,8 @@ fn items_query(root: &str, values_per_item: usize) -> String {
              pageInfo {{ hasNextPage endCursor }} \
              nodes {{ id type \
                content {{ __typename \
-                 ... on Issue {{ number title url body repository {{ nameWithOwner }} }} \
-                 ... on PullRequest {{ number title url body repository {{ nameWithOwner }} }} \
+                 ... on Issue {{ number title url body state repository {{ nameWithOwner }} }} \
+                 ... on PullRequest {{ number title url body state repository {{ nameWithOwner }} }} \
                  ... on DraftIssue {{ title body }} }} \
                fieldValues(first: {values_per_item}) {{ nodes {{ __typename \
                  ... on ProjectV2ItemFieldTextValue {{ text field {{ ... on ProjectV2FieldCommon {{ name }} }} }} \
@@ -344,7 +344,7 @@ fn item_from(node: &Value) -> Option<ProjectItem> {
             .to_string();
         let mut c = serde_json::Map::new();
         c.insert("type".into(), json!(kind));
-        for key in ["title", "number", "url", "body"] {
+        for key in ["title", "number", "url", "body", "state"] {
             if let Some(v) = content.get(key) {
                 c.insert(key.into(), v.clone());
             }

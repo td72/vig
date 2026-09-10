@@ -38,6 +38,8 @@ Conventions used below:
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
 | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
 | [`projects-view`](#projects-view) | none | replaced by name, else appended |
+| [`projects-filter`](#projects-filter) | absent | replaced |
+| [`projects-hide-closed`](#projects-hide-closed) | `"off"` | replaced |
 | [`pages`](#pages) | all seven pages | replaced wholesale |
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
 | [`app`](#app) | `Ctrl+c` quit, `1`…`7` page switch | merged per key |
@@ -56,6 +58,7 @@ procs-history "120"
 github-poll-interval "5s"
 github-auto-refresh "on"
 projects-poll-interval "30s"
+projects-hide-closed "off"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 repo-config "on"
 app {
@@ -70,8 +73,9 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `projects-poll-interval`, `projects-board`, `projects-view`, `pages`,
-//   `repo-config`, `app`, or `page`)
+//   `projects-poll-interval`, `projects-board`, `projects-view`,
+//   `projects-filter`, `projects-hide-closed`, `pages`, `repo-config`,
+//   `app`, or `page`)
 ```
 
 ## Top-level nodes
@@ -355,6 +359,42 @@ projects-view "Mine" {
 }
 // → bad projects-view "Mine" (layout: unknown layout "kanban"; expected
 //   "board", "table" or "roadmap")
+```
+
+### `projects-filter`
+
+A filter expression stacked on **every** view of the Projects page, saved
+or local, on top of the view's own filter (both must match). The syntax is
+the saved-view filter syntax, evaluated locally (see the
+[Projects view](views-projects.md#saved-views)).
+
+- **Form** — `projects-filter "<expression>"`
+- **Default** — absent (no extra filter)
+- **Merge** — replaces the default.
+
+```kdl
+projects-filter "-status:Done"
+```
+
+```kdl,ignore
+projects-filter "-status:Done" "is:issue"
+// → bad projects-filter (one argument required); expected one filter
+//   expression, e.g. `projects-filter "-status:Done"`
+```
+
+### `projects-hide-closed`
+
+Whether the Projects page starts with closed items — closed issues,
+merged / closed pull requests — hidden from every view. `x` toggles it
+while vig runs; the header says `· closed hidden`. Drafts have no state and
+always show.
+
+- **Form** — `projects-hide-closed "<mode>"` — `"on"` or `"off"`
+- **Default** — `"off"`
+- **Merge** — replaces the default.
+
+```kdl
+projects-hide-closed "on"
 ```
 
 ### `pages`

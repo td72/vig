@@ -36,6 +36,8 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
 | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
 | [`projects-view`](#projects-view) | なし | 同名は置換、他は追加 |
+| [`projects-filter`](#projects-filter) | なし | 置換 |
+| [`projects-hide-closed`](#projects-hide-closed) | `"off"` | 置換 |
 | [`pages`](#pages) | 全 7 ページ | 丸ごと置換 |
 | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
 | [`app`](#app) | `Ctrl+c` 終了、`1`…`7` ページ切替 | キー単位マージ |
@@ -54,6 +56,7 @@ procs-history "120"
 github-poll-interval "5s"
 github-auto-refresh "on"
 projects-poll-interval "30s"
+projects-hide-closed "off"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 repo-config "on"
 app {
@@ -68,8 +71,9 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `projects-poll-interval`, `projects-board`, `projects-view`, `pages`,
-//   `repo-config`, `app`, or `page`)
+//   `projects-poll-interval`, `projects-board`, `projects-view`,
+//   `projects-filter`, `projects-hide-closed`, `pages`, `repo-config`,
+//   `app`, or `page`)
 ```
 
 ## トップレベルノード
@@ -347,6 +351,42 @@ projects-view "Mine" {
 }
 // → bad projects-view "Mine" (layout: unknown layout "kanban"; expected
 //   "board", "table" or "roadmap")
+```
+
+### `projects-filter`
+
+Projects ページの**すべて**のビュー（保存済み / ローカル）に、ビュー自身の
+フィルタの上から重ねるフィルタ式（両方に合致したものだけ表示）。構文は
+保存済みビューのフィルタと同じで、手元で評価します
+（[Projects ビュー](views-projects.md#保存済みビュー)参照）。
+
+- **書式** — `projects-filter "<式>"`
+- **デフォルト** — なし（追加フィルタ無し）
+- **マージ** — デフォルトを置換。
+
+```kdl
+projects-filter "-status:Done"
+```
+
+```kdl,ignore
+projects-filter "-status:Done" "is:issue"
+// → bad projects-filter (one argument required); expected one filter
+//   expression, e.g. `projects-filter "-status:Done"`
+```
+
+### `projects-hide-closed`
+
+Projects ページを、closed なアイテム（closed な issue、マージ済み / closed
+な PR）を全ビューから隠した状態で始めるか。実行中は `x` で切り替えられ、
+ヘッダに `· closed hidden` と出ます。ドラフトは状態を持たないので常に
+表示されます。
+
+- **書式** — `projects-hide-closed "<mode>"` — `"on"` か `"off"`
+- **デフォルト** — `"off"`
+- **マージ** — デフォルトを置換。
+
+```kdl
+projects-hide-closed "on"
 ```
 
 ### `pages`

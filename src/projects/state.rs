@@ -217,6 +217,8 @@ impl ProjectsState {
         // Esc on the board goes back to the list only when there is one.
         let mut board = BoardPane::new(ids.board, ids.detail, list_placed.then_some(ids.projects));
         board.set_keymap(board_km);
+        board.set_global_filter(cfg.projects_filter()?);
+        board.set_hide_closed(cfg.projects_hide_closed()?);
         let mut detail = DetailPane::new(ids.detail);
         detail.set_keymap(detail_km);
 

@@ -403,6 +403,8 @@ impl Config {
         self.projects_poll_interval()?;
         self.projects_board()?;
         self.projects_views()?;
+        self.projects_filter()?;
+        self.projects_hide_closed()?;
         self.repo_config()?;
         Ok(())
     }
@@ -702,6 +704,58 @@ impl Config {
                 self.describe()
             )
         })
+    }
+
+    /// A filter stacked on every view of the Projects page
+    /// (`projects-filter "-status:Done"`), or `None` when absent.
+    pub fn projects_filter(&self) -> Result<Option<String>> {
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "projects-filter")
+        else {
+            return Ok(None);
+        };
+        let invalid = |what: &str| {
+            anyhow!(
+                "invalid {}: bad projects-filter ({what}); expected one filter expression, \
+                 e.g. `projects-filter \"-status:Done\"`",
+                self.describe()
+            )
+        };
+        let args = string_args(node).map_err(invalid)?;
+        let [expr] = args.as_slice() else {
+            return Err(invalid("one argument required"));
+        };
+        Ok(Some(expr.trim().to_string()))
+    }
+
+    /// Whether the Projects page starts with closed items hidden
+    /// (`projects-hide-closed "on"` / `"off"`, default off; `x` toggles it).
+    pub fn projects_hide_closed(&self) -> Result<bool> {
+        let mode = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "projects-hide-closed")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("projects-hide-closed block missing mode argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| "off".to_string());
+        match mode.as_str() {
+            "on" => Ok(true),
+            "off" => Ok(false),
+            _ => Err(anyhow!(
+                "invalid {}: projects-hide-closed expects \"on\" or \"off\"",
+                self.describe()
+            )),
+        }
     }
 
     /// The local views of the Projects page (`projects-view "<name>" { … }`
@@ -2564,6 +2618,39 @@ mod tests {
         assert!(msg.contains("/u/config.kdl"), "{msg}");
         assert!(msg.contains("unknown icons mode \"emoji\""), "{msg}");
         assert!(msg.contains("nerd, none"), "{msg}");
+    }
+
+    #[test]
+    fn projects_filter_and_hide_closed_default_override_and_validation() {
+        let cfg = Config::builtin();
+        assert_eq!(cfg.projects_filter().unwrap(), None);
+        assert!(!cfg.projects_hide_closed().unwrap());
+        let cfg = user(
+            r#"
+            projects-filter "-status:Done is:issue"
+            projects-hide-closed "on"
+            "#,
+        )
+        .unwrap();
+        assert_eq!(
+            cfg.projects_filter().unwrap().as_deref(),
+            Some("-status:Done is:issue")
+        );
+        assert!(cfg.projects_hide_closed().unwrap());
+        for (bad, what) in [
+            (r#"projects-filter"#, "projects-filter"),
+            (r#"projects-filter "a" "b""#, "one argument required"),
+            (r#"projects-filter 3"#, "not a string"),
+            (
+                r#"projects-hide-closed "yes""#,
+                "projects-hide-closed expects",
+            ),
+            (r#"projects-hide-closed"#, "missing mode"),
+        ] {
+            // `{:#}` prints the context chain (the mode error is wrapped).
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
+            assert!(msg.contains(what), "{bad}: {msg}");
+        }
     }
 
     #[test]

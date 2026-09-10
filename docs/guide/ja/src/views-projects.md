@@ -70,11 +70,20 @@ issue / PR の本文とコメントを表示します（draft は本文のみ）
 no:milestone …`）は、取得済みのアイテムに対して手元で評価します（追加の
 API 呼び出しなし）。どのレイアウトでもグループ化・ソートの前に適用され
 ます。対応: タイトルの自由語、`field:value`（`,` 区切りの複数値・引用符付き
-の値）、`-` による否定、`is:issue|pr|draft`、`no:` / `has:`、`assignee:`
-（`@me` はサインイン中のログイン）、`label:`、`milestone:`、`repo:`。範囲
-（`>`、`..`）・ワイルドカード・`is:open|closed` は評価できないため、
+の値）、`-` による否定、`is:issue|pr|draft`、`is:open|closed|merged`
+（マージ済み PR は closed としても扱い、状態が不明なアイテムは open 扱い）、
+`no:` / `has:`、`assignee:`（`@me` はサインイン中のログイン）、`label:`、
+`milestone:`、`repo:`。範囲（`>`、`..`）・ワイルドカードは評価できないため、
 ステータスバーに `⚠ filter: unsupported "…"` と出して無視します。フィルタ
 で隠れた件数もステータスバーに `(3 filtered out)` と表示されます。
+
+表示中のビュー（保存済み / ローカルを問わず）にはさらに 2 つのフィルタが
+重なります。設定の [`projects-filter`](config-reference.md#projects-filter)
+（`projects-filter "-status:Done"` で Done を全ビューから外せます）と、
+**closed トグル** — `x` で closed な issue とマージ済み / closed な PR を
+隠します（ヘッダに `· closed hidden`。ドラフトは状態を持たないので残ります）。
+[`projects-hide-closed`](config-reference.md#projects-hide-closed) で最初から
+隠した状態で始められます。
 
 ## ローカルビュー
 
@@ -107,6 +116,7 @@ projects-view "Mine" default=#true {
 | `Enter` / `i`（ボード） | 詳細ペインにフォーカス |
 | `v` / `V` | プロジェクトの保存済みビューを切り替え |
 | `Space` | 選択中のスイムレーンを折りたたみ / 展開 |
+| `x` | closed な issue / マージ済み・closed な PR を隠す / 表示 |
 | `+` / `-` | ロードマップの時間軸をズームイン / アウト |
 | `o` | プロジェクト / アイテムをブラウザで開く |
 | `y` | プロジェクト / アイテムの URL をコピー |
