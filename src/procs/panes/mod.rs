@@ -143,17 +143,18 @@ pub fn render_table_pane(
     selected: Option<usize>,
     emphasized: bool,
     empty: Option<&str>,
+    scroll: usize,
     build_items: impl FnOnce(&HashSet<usize>, Option<usize>) -> Vec<ListItem<'static>>,
-) {
+) -> usize {
     let block = theme::pane_block(title, shared.focused_pane == pane_id);
     if let Some(message) = empty {
         theme::render_empty_list(f, area, block, message);
-        return;
+        return 0;
     }
     let inner = block.inner(area);
     f.render_widget(block, area);
     if inner.height == 0 || inner.width == 0 {
-        return;
+        return scroll;
     }
     let header_area = Rect { height: 1, ..inner };
     f.render_widget(
@@ -166,7 +167,7 @@ pub fn render_table_pane(
         ..inner
     };
     if list_area.height == 0 {
-        return;
+        return scroll;
     }
     let (match_set, current_match_idx) = theme::list_search_highlights(shared, pane_id);
     let items = build_items(&match_set, current_match_idx);
@@ -176,9 +177,11 @@ pub fn render_table_pane(
         Style::default().add_modifier(Modifier::BOLD)
     };
     let list = List::new(items).highlight_style(highlight);
-    let mut state = ListState::default();
+    // The kept offset makes scrolling symmetric (see `theme::render_search_list`).
+    let mut state = ListState::default().with_offset(scroll);
     state.select(selected);
     f.render_stateful_widget(list, list_area, &mut state);
+    state.offset()
 }
 
 #[cfg(test)]

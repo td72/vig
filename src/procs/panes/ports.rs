@@ -58,6 +58,8 @@ pub struct PortsPane {
     pub loading: bool,
     keymap: Keymap<PortsAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     view_height: u16,
 }
 
@@ -70,6 +72,7 @@ impl PortsPane {
             loading: true,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             view_height: 20,
         }
     }
@@ -183,7 +186,7 @@ impl Pane<PaneEvent> for PortsPane {
             None => None,
         };
         let selected = (!self.entries.is_empty()).then_some(self.selected_idx);
-        render_table_pane(
+        self.list_scroll = render_table_pane(
             f,
             area,
             shared,
@@ -193,6 +196,7 @@ impl Pane<PaneEvent> for PortsPane {
             selected,
             shared.focused_pane == self.pane_id,
             empty.as_deref(),
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.entries
                     .iter()

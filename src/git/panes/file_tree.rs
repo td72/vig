@@ -65,6 +65,8 @@ pub struct FileTreePane {
     pub files: Rc<Vec<FileDiff>>,
     keymap: Keymap<FileTreeAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     diff_view_id: usize,
 }
 
@@ -76,6 +78,7 @@ impl FileTreePane {
             files,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             diff_view_id,
         }
     }
@@ -191,7 +194,7 @@ impl FileTreePane {
     fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         let entries = self.tree_entries();
         let empty = entries.is_empty().then_some("Working tree clean");
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -199,6 +202,7 @@ impl FileTreePane {
             "Files",
             Some(self.selected_idx),
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 entries
                     .iter()

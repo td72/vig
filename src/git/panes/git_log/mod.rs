@@ -66,6 +66,8 @@ pub struct GitLogPane {
     pub detail_changed_files: Vec<CommitFileChange>,
     keymap: Keymap<GitLogAction>,
     pub pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    pub list_scroll: usize,
     reflog_id: usize,
     pub branch_list_id: usize,
 }
@@ -83,6 +85,7 @@ impl GitLogPane {
             detail_changed_files: Vec::new(),
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             reflog_id,
             branch_list_id,
         }

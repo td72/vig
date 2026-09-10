@@ -57,6 +57,8 @@ pub struct ReflogPane {
     pub view_height: u16,
     keymap: Keymap<ReflogAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     branch_list_id: usize,
     git_log_id: usize,
 }
@@ -69,6 +71,7 @@ impl ReflogPane {
             view_height: 0,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             branch_list_id,
             git_log_id,
         }
@@ -123,7 +126,7 @@ impl ReflogPane {
     fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         self.view_height = area.height.saturating_sub(2);
         let empty = self.entries.is_empty().then_some("No reflog entries");
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -131,6 +134,7 @@ impl ReflogPane {
             "Reflog",
             Some(self.selected_idx),
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.entries
                     .iter()

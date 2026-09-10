@@ -163,6 +163,8 @@ pub struct BranchListPane {
     keymap: Keymap<BranchListAction>,
     menu_keymap: Keymap<MenuAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     git_log_id: usize,
 }
 
@@ -175,6 +177,7 @@ impl BranchListPane {
             keymap: default_keymap(),
             menu_keymap: default_menu_keymap(),
             pane_id,
+            list_scroll: 0,
             git_log_id,
         }
     }
@@ -302,7 +305,7 @@ impl BranchListPane {
 
     fn render_impl(&mut self, f: &mut Frame, _ctx: &AppContext, shared: &PaneShared, area: Rect) {
         let empty = self.branches.is_empty().then_some("No branches");
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -310,6 +313,7 @@ impl BranchListPane {
             "Branches",
             Some(self.selected_idx),
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.branches
                     .iter()

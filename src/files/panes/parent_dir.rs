@@ -13,6 +13,8 @@ use std::path::{Path, PathBuf};
 
 pub struct ParentDirPane {
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     icons: bool,
     /// The repository root; nothing above it is shown.
     root: PathBuf,
@@ -25,6 +27,7 @@ impl ParentDirPane {
     pub fn new(pane_id: usize, root: &Path, icons: bool) -> Self {
         let mut p = Self {
             pane_id,
+            list_scroll: 0,
             icons,
             root: root.to_path_buf(),
             parent: None,
@@ -79,8 +82,11 @@ impl Pane<PaneEvent> for ParentDirPane {
         let list = List::new(items)
             .block(block)
             .highlight_style(theme::list_highlight_style(false));
-        let mut state = ListState::default();
+        // Keep the offset across frames so scrolling is symmetric (see
+        // `theme::render_search_list`).
+        let mut state = ListState::default().with_offset(self.list_scroll);
         state.select(self.current_idx);
         f.render_stateful_widget(list, area, &mut state);
+        self.list_scroll = state.offset();
     }
 }

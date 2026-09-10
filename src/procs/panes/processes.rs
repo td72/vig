@@ -95,6 +95,8 @@ pub struct ProcessesPane {
     pub loading: bool,
     keymap: Keymap<ProcessesAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     detail_pane_id: usize,
     view_height: u16,
 }
@@ -108,6 +110,7 @@ impl ProcessesPane {
             loading: true,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             detail_pane_id,
             view_height: 20,
         }
@@ -249,7 +252,7 @@ impl Pane<PaneEvent> for ProcessesPane {
             || (shared.focused_pane == self.detail_pane_id && shared.previous_pane == self.pane_id);
         let selected = (!self.rows.is_empty()).then_some(self.selected_idx);
         let width = area.width.saturating_sub(2) as usize;
-        render_table_pane(
+        self.list_scroll = render_table_pane(
             f,
             area,
             shared,
@@ -259,6 +262,7 @@ impl Pane<PaneEvent> for ProcessesPane {
             selected,
             emphasized,
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.rows
                     .iter()

@@ -54,6 +54,8 @@ pub struct StashesPane {
     pub selected_idx: usize,
     keymap: Keymap<StashesAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     preview_pane_id: usize,
     view_height: u16,
 }
@@ -65,6 +67,7 @@ impl StashesPane {
             selected_idx: 0,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             preview_pane_id,
             view_height: 20,
         }
@@ -169,7 +172,7 @@ impl Pane<PaneEvent> for StashesPane {
             || (shared.focused_pane == self.preview_pane_id
                 && shared.previous_pane == self.pane_id);
         let selected = show_selection.then_some(self.selected_idx);
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -177,6 +180,7 @@ impl Pane<PaneEvent> for StashesPane {
             "Stashes",
             selected,
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.items
                     .iter()

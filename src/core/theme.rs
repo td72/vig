@@ -131,6 +131,14 @@ pub fn list_highlight_style(selected_is_match: bool) -> Style {
 /// Render a list with search highlighting and selection.
 /// Pass `selected_idx: Some(idx)` to highlight the selected row,
 /// or `None` to render without selection (e.g. when the pane is not focused).
+///
+/// `scroll` is the pane's first visible row from the previous frame and
+/// the new one is returned: the pane must keep it. Starting every frame
+/// from a fresh `ListState` would recompute the offset from scratch and
+/// pin any selection past the first page to the bottom row — so `k` from
+/// the end would scroll at once while `j` from the top moved within the
+/// page first. With the offset kept, both directions move within the page
+/// and scroll one row at the edge.
 pub fn render_search_list(
     f: &mut Frame,
     area: Rect,
@@ -138,15 +146,17 @@ pub fn render_search_list(
     block: Block,
     selected_idx: Option<usize>,
     match_set: &HashSet<usize>,
-) {
+    scroll: usize,
+) -> usize {
     let highlight_style =
         list_highlight_style(selected_idx.is_some_and(|idx| match_set.contains(&idx)));
     let list = List::new(items)
         .block(block)
         .highlight_style(highlight_style);
-    let mut list_state = ListState::default();
+    let mut list_state = ListState::default().with_offset(scroll);
     list_state.select(selected_idx);
     f.render_stateful_widget(list, area, &mut list_state);
+    list_state.offset()
 }
 
 /// Render a standard search-enabled list pane: focused border, empty-state
@@ -156,6 +166,8 @@ pub fn render_search_list(
 ///
 /// Pass `empty: Some(message)` to short-circuit into the empty-state view
 /// (used both for "no items" and transient states like "Loading...").
+/// `scroll` is the pane's kept scroll position; the new one is returned
+/// (see [`render_search_list`]).
 #[allow(clippy::too_many_arguments)]
 pub fn render_list_pane(
     f: &mut Frame,
@@ -165,16 +177,17 @@ pub fn render_list_pane(
     title: &str,
     selected: Option<usize>,
     empty: Option<&str>,
+    scroll: usize,
     build_items: impl FnOnce(&HashSet<usize>, Option<usize>) -> Vec<ListItem<'static>>,
-) {
+) -> usize {
     let block = pane_block(title, shared.focused_pane == pane_id);
     if let Some(message) = empty {
         render_empty_list(f, area, block, message);
-        return;
+        return 0;
     }
     let (match_set, current_match_idx) = list_search_highlights(shared, pane_id);
     let items = build_items(&match_set, current_match_idx);
-    render_search_list(f, area, items, block, selected, &match_set);
+    render_search_list(f, area, items, block, selected, &match_set, scroll)
 }
 
 /// Extract list-entry search highlights for a given pane.
@@ -204,4 +217,61 @@ pub fn list_search_highlights(
                 _ => None,
             });
     (set, current)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    /// The kept offset makes the list scroll the same way in both
+    /// directions: the selection moves within the page and the page
+    /// scrolls one row at the edge. A fresh state per frame would pin a
+    /// selection past the first page to the bottom row on the way up.
+    #[test]
+    fn kept_scroll_makes_list_scrolling_symmetric() {
+        let mut term = Terminal::new(TestBackend::new(30, 10)).unwrap();
+        let rows = 8; // 10 minus the block's two border rows
+        let mut scroll = 0;
+        let mut frame = |selected: usize, scroll: usize| -> usize {
+            let mut out = 0;
+            term.draw(|f| {
+                let items: Vec<ListItem> =
+                    (0..30).map(|i| ListItem::new(format!("row {i}"))).collect();
+                let block = pane_block("List", true);
+                out = render_search_list(
+                    f,
+                    f.area(),
+                    items,
+                    block,
+                    Some(selected),
+                    &HashSet::new(),
+                    scroll,
+                );
+            })
+            .unwrap();
+            out
+        };
+        // Down from the top: within the page until the edge, then one row
+        // at a time with the selection on the bottom row.
+        for sel in 0..rows {
+            scroll = frame(sel, scroll);
+            assert_eq!(scroll, 0, "sel {sel}");
+        }
+        scroll = frame(rows, scroll);
+        assert_eq!(scroll, 1);
+        scroll = frame(20, scroll);
+        assert_eq!(scroll, 20 - rows + 1);
+        // Up from there: the selection moves within the page first …
+        scroll = frame(19, scroll);
+        assert_eq!(scroll, 13, "moving up within the page keeps the offset");
+        scroll = frame(13, scroll);
+        assert_eq!(scroll, 13);
+        // … and scrolls one row once it reaches the top edge.
+        scroll = frame(12, scroll);
+        assert_eq!(scroll, 12);
+        scroll = frame(11, scroll);
+        assert_eq!(scroll, 11);
+    }
 }

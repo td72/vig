@@ -127,6 +127,8 @@ pub struct GhListPane<T: GhListItem> {
     pub show_closed: bool,
     keymap: Keymap<GhListAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     detail_pane_id: usize,
     switch_target: usize,
 }
@@ -146,6 +148,7 @@ impl<T: GhListItem> GhListPane<T> {
             show_closed: false,
             keymap: default_keymap(switch_key),
             pane_id,
+            list_scroll: 0,
             detail_pane_id,
             switch_target,
         }
@@ -267,7 +270,7 @@ impl<T: GhListItem> GhListPane<T> {
             || (shared.focused_pane == self.detail_pane_id && shared.previous_pane == self.pane_id);
         let selected = show_selection.then_some(self.selected_idx);
 
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -275,6 +278,7 @@ impl<T: GhListItem> GhListPane<T> {
             T::pane_title(),
             selected,
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.items
                     .iter()
