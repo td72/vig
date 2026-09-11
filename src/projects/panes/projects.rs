@@ -68,6 +68,8 @@ pub struct ProjectsPane {
     loading: bool,
     keymap: Keymap<ProjectsAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     board_pane_id: usize,
     view_height: u16,
 }
@@ -80,6 +82,7 @@ impl ProjectsPane {
             loading: false,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             board_pane_id,
             view_height: 20,
         }
@@ -192,7 +195,7 @@ impl Pane<PaneEvent> for ProjectsPane {
         };
         // The selection is always shown: it is the project the board follows.
         let selected = (!self.items.is_empty()).then_some(self.selected_idx);
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -200,6 +203,7 @@ impl Pane<PaneEvent> for ProjectsPane {
             "Projects",
             selected,
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.items
                     .iter()

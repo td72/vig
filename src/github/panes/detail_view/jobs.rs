@@ -110,6 +110,8 @@ impl LogTarget {
 /// State of the Jobs sub-pane: the rows of one run and their fetch status.
 #[derive(Debug, Clone)]
 pub struct JobsView {
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     pub rows: Vec<JobRow>,
     positions: Vec<TreePos>,
     pub selected_idx: usize,
@@ -125,6 +127,7 @@ impl JobsView {
     /// Start following `run` and fetch its jobs.
     pub fn new(run: &WorkflowRun, tx: &mpsc::Sender<GhBgMessage>) -> Self {
         let mut view = Self {
+            list_scroll: 0,
             rows: Vec::new(),
             positions: Vec::new(),
             selected_idx: 0,
@@ -341,7 +344,8 @@ impl JobsView {
             })
             .collect();
         let selected = highlight_selection.then_some(self.selected_idx);
-        theme::render_search_list(f, area, items, block, selected, match_set);
+        self.list_scroll =
+            theme::render_search_list(f, area, items, block, selected, match_set, self.list_scroll);
     }
 }
 

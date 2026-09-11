@@ -68,6 +68,8 @@ pub struct DirListPane {
     pub error: Option<String>,
     keymap: Keymap<DirListAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     preview_pane_id: usize,
     view_height: u16,
     icons: bool,
@@ -84,6 +86,7 @@ impl DirListPane {
             error: None,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             preview_pane_id,
             view_height: 20,
         };
@@ -222,7 +225,7 @@ impl Pane<PaneEvent> for DirListPane {
                 && shared.previous_pane == self.pane_id);
         let selected = show_selection.then_some(self.selected_idx);
         let width = area.width.saturating_sub(2) as usize;
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -230,6 +233,7 @@ impl Pane<PaneEvent> for DirListPane {
             &title,
             selected,
             empty.as_deref(),
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.entries
                     .iter()

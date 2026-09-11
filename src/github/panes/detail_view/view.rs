@@ -1,5 +1,6 @@
 use super::GhDetailViewPane;
 use crate::core::pane::PaneShared;
+use crate::core::pane::SubPaneScroll;
 use crate::core::theme;
 use crate::core::ui::markdown::markdown_to_lines;
 use crate::github::domain::actions::time::{
@@ -166,15 +167,19 @@ pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &PaneShared, are
 
             let checks_count = detail.status_check_rollup.as_ref().map_or(0, |c| c.len());
             let checks_title = format!("Checks ({checks_count})");
-            render_status_table(
+            // `scroll_y` doubles as the table offset (the Status sub-pane
+            // has no paragraph to scroll); a table never gets anywhere near
+            // `u16::MAX` rows, but never truncate.
+            dv.status.scroll_y = u16::try_from(render_status_table(
                 f,
                 right_rows[0],
                 &checks_title,
                 detail,
                 active_pane == GhDetailPane::Status,
                 is_focused,
-                dv.status.selected_idx,
-            );
+                &dv.status,
+            ))
+            .unwrap_or(u16::MAX);
 
             let review_count = detail
                 .reviews
@@ -572,8 +577,9 @@ fn render_status_table(
     detail: &GhPrDetail,
     is_active: bool,
     is_detail_focused: bool,
-    selected_idx: usize,
-) {
+    status: &SubPaneScroll,
+) -> usize {
+    let (selected_idx, scroll) = (status.selected_idx, status.scroll_y as usize);
     let block = sub_block(title, is_active, is_detail_focused);
 
     let sorted = sorted_checks(detail);
@@ -585,7 +591,7 @@ fn render_status_table(
         )))
         .block(block);
         f.render_widget(para, area);
-        return;
+        return 0;
     }
 
     let dim = Style::default().fg(Color::DarkGray);
@@ -628,11 +634,13 @@ fn render_status_table(
         .block(block)
         .row_highlight_style(highlight_style);
 
-    let mut state = TableState::default();
+    // The kept offset makes scrolling symmetric (see `theme::render_search_list`).
+    let mut state = TableState::default().with_offset(scroll);
     if is_active && is_detail_focused {
         state.select(Some(selected_idx));
     }
     f.render_stateful_widget(table, area, &mut state);
+    state.offset()
 }
 
 /// Format duration between two ISO 8601 timestamps (e.g. "1m23s", "45s").

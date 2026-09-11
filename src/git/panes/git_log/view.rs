@@ -147,9 +147,11 @@ fn render_list(f: &mut Frame, pane: &mut GitLogPane, shared: &PaneShared, area: 
 
     let list = List::new(items).highlight_style(highlight_style);
 
-    let mut state = ListState::default();
+    // The kept offset makes scrolling symmetric (see `theme::render_search_list`).
+    let mut state = ListState::default().with_offset(pane.list_scroll);
     state.select(Some(selected));
     f.render_stateful_widget(list, area, &mut state);
+    pane.list_scroll = state.offset();
 }
 
 /// Render commit detail content (left border as separator inside the parent Git Log block).

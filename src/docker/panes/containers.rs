@@ -151,6 +151,8 @@ pub struct ContainersPane {
     loading: bool,
     keymap: Keymap<ContainersAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     detail_pane_id: usize,
     logs_pane_id: usize,
     view_height: u16,
@@ -165,6 +167,7 @@ impl ContainersPane {
             loading: false,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             detail_pane_id,
             logs_pane_id,
             view_height: 20,
@@ -322,7 +325,7 @@ impl Pane<PaneEvent> for ContainersPane {
                 || shared.focused_pane == self.logs_pane_id)
                 && shared.previous_pane == self.pane_id);
         let selected = show_selection.then_some(self.selected_idx);
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -330,6 +333,7 @@ impl Pane<PaneEvent> for ContainersPane {
             "Containers",
             selected,
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.rows
                     .iter()

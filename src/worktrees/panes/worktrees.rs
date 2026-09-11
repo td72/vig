@@ -54,6 +54,8 @@ pub struct WorktreesPane {
     pub selected_idx: usize,
     keymap: Keymap<WorktreesAction>,
     pane_id: usize,
+    /// First visible row, kept across frames (see `theme::render_search_list`).
+    list_scroll: usize,
     preview_pane_id: usize,
     view_height: u16,
 }
@@ -65,6 +67,7 @@ impl WorktreesPane {
             selected_idx: 0,
             keymap: default_keymap(),
             pane_id,
+            list_scroll: 0,
             preview_pane_id,
             view_height: 20,
         }
@@ -190,7 +193,7 @@ impl Pane<PaneEvent> for WorktreesPane {
             .max()
             .unwrap_or(0);
 
-        theme::render_list_pane(
+        self.list_scroll = theme::render_list_pane(
             f,
             area,
             shared,
@@ -198,6 +201,7 @@ impl Pane<PaneEvent> for WorktreesPane {
             "Worktrees",
             selected,
             empty,
+            self.list_scroll,
             |match_set, current_match_idx| {
                 self.items
                     .iter()
