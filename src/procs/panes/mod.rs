@@ -148,8 +148,9 @@ pub fn render_table_pane(
 ) -> usize {
     let block = theme::pane_block(title, shared.focused_pane == pane_id);
     if let Some(message) = empty {
+        // Keep the offset through transient messages (see `theme::render_list_pane`).
         theme::render_empty_list(f, area, block, message);
-        return 0;
+        return scroll;
     }
     let inner = block.inner(area);
     f.render_widget(block, area);

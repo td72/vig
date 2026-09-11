@@ -182,8 +182,10 @@ pub fn render_list_pane(
 ) -> usize {
     let block = pane_block(title, shared.focused_pane == pane_id);
     if let Some(message) = empty {
+        // Keep the offset through "Loading..." and the like: the list comes
+        // back where it was.
         render_empty_list(f, area, block, message);
-        return 0;
+        return scroll;
     }
     let (match_set, current_match_idx) = list_search_highlights(shared, pane_id);
     let items = build_items(&match_set, current_match_idx);

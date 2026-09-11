@@ -168,8 +168,9 @@ pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &PaneShared, are
             let checks_count = detail.status_check_rollup.as_ref().map_or(0, |c| c.len());
             let checks_title = format!("Checks ({checks_count})");
             // `scroll_y` doubles as the table offset (the Status sub-pane
-            // has no paragraph to scroll).
-            dv.status.scroll_y = render_status_table(
+            // has no paragraph to scroll); a table never gets anywhere near
+            // `u16::MAX` rows, but never truncate.
+            dv.status.scroll_y = u16::try_from(render_status_table(
                 f,
                 right_rows[0],
                 &checks_title,
@@ -177,7 +178,8 @@ pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &PaneShared, are
                 active_pane == GhDetailPane::Status,
                 is_focused,
                 &dv.status,
-            ) as u16;
+            ))
+            .unwrap_or(u16::MAX);
 
             let review_count = detail
                 .reviews
