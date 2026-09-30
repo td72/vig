@@ -176,6 +176,16 @@ pub fn render(f: &mut Frame, pane: &mut DiffViewPane, shared: &PaneShared, area:
     let total_lines = left_lines.len() as u16;
     pane.scroll.total_lines = total_lines;
     pane.scroll.view_height = content_area.height;
+    // A refresh may have shortened the diff under a kept scroll position / cursor.
+    pane.scroll.y = pane
+        .scroll
+        .y
+        .min(total_lines.saturating_sub(content_area.height));
+    pane.vim.cursor.row = pane
+        .vim
+        .cursor
+        .row
+        .min((total_lines as usize).saturating_sub(1));
 
     let left_para = Paragraph::new(left_lines).scroll((pane.scroll.y, 0));
     f.render_widget(left_para, panes[0]);

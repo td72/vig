@@ -68,10 +68,23 @@ impl FileTab {
     }
 
     /// Called after the file list has been replaced (refresh_diff).
-    /// Restores selection, resets DiffView, and spawns background highlighting.
+    /// Restores selection, rebinds DiffView, and spawns background highlighting.
+    ///
+    /// When the previously selected file is still selected the diff view keeps
+    /// its scroll position: refreshes are triggered by any change under the
+    /// repository (a build writing to `target/`, an editor swap file, another
+    /// tool touching `.git/index`), so resetting here threw the reader back to
+    /// the top of a long diff at random moments.
     pub fn on_files_changed(&mut self, old_path: Option<String>) {
-        self.list.restore_selection(old_path);
-        self.detail.reset_to_file(self.list.selected_file_idx());
+        self.list.restore_selection(old_path.clone());
+        let idx = self.list.selected_file_idx();
+        let still_selected = old_path.is_some()
+            && self.list.selected_file().map(|f| f.path.as_str()) == old_path.as_deref();
+        if still_selected {
+            self.detail.rebind_file(idx);
+        } else {
+            self.detail.reset_to_file(idx);
+        }
         let file_data = self.list.highlight_file_data();
         self.detail.spawn_highlight(file_data);
     }
@@ -785,5 +798,88 @@ mod kdl_regression {
         );
         // Exactly these two bindings exist
         assert_eq!(bindings.len(), 2, "expected exactly 2 select bindings");
+    }
+}
+
+#[cfg(test)]
+mod file_tab_refresh {
+    use super::*;
+    use crate::git::domain::diff::FileStatus;
+
+    fn files(paths: &[&str]) -> Rc<Vec<FileDiff>> {
+        Rc::new(
+            paths
+                .iter()
+                .map(|p| FileDiff {
+                    path: p.to_string(),
+                    status: FileStatus::Modified,
+                    hunks: vec![],
+                    is_binary: false,
+                })
+                .collect(),
+        )
+    }
+
+    fn tab_showing(files: Rc<Vec<FileDiff>>, selected: &str) -> FileTab {
+        let mut tab = Tab {
+            list: FileTreePane::new(Rc::clone(&files), 0, 4),
+            detail: DiffViewPane::new(files, 4, "default"),
+        };
+        tab.on_files_changed(None);
+        // Move the selection onto `selected` the way the file tree would.
+        let idx = tab
+            .list
+            .tree_entries()
+            .iter()
+            .position(|e| {
+                matches!(e, crate::git::panes::file_tree::TreeEntry::File { file_idx, .. }
+                    if tab.list.files[*file_idx].path == selected)
+            })
+            .expect("file present");
+        tab.list.selected_idx = idx;
+        tab.sync_detail();
+        tab
+    }
+
+    fn replace_files(tab: &mut FileTab, files: Rc<Vec<FileDiff>>) {
+        tab.list.set_files(Rc::clone(&files));
+        tab.detail.set_files(files);
+    }
+
+    #[test]
+    fn refresh_keeps_scroll_when_the_same_file_stays_selected() {
+        let mut tab = tab_showing(files(&["a.rs", "b.rs"]), "b.rs");
+        tab.detail.scroll.y = 42;
+        tab.detail.scroll.x = 8;
+        tab.detail.vim.cursor.row = 45;
+
+        replace_files(&mut tab, files(&["a.rs", "b.rs", "c.rs"]));
+        tab.on_files_changed(Some("b.rs".to_string()));
+
+        assert_eq!(tab.detail.current_file_idx, Some(1));
+        assert_eq!(
+            tab.detail.scroll.y, 42,
+            "vertical scroll must survive a refresh"
+        );
+        assert_eq!(
+            tab.detail.scroll.x, 8,
+            "horizontal scroll must survive a refresh"
+        );
+        assert_eq!(
+            tab.detail.vim.cursor.row, 45,
+            "cursor must survive a refresh"
+        );
+    }
+
+    #[test]
+    fn refresh_resets_scroll_when_the_selected_file_disappears() {
+        let mut tab = tab_showing(files(&["a.rs", "b.rs"]), "b.rs");
+        tab.detail.scroll.y = 42;
+
+        replace_files(&mut tab, files(&["a.rs"]));
+        tab.on_files_changed(Some("b.rs".to_string()));
+
+        assert_eq!(tab.detail.current_file_idx, Some(0));
+        assert_eq!(tab.detail.scroll.y, 0, "a different file starts at the top");
     }
 }
