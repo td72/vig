@@ -118,6 +118,17 @@ impl DiffViewPane {
         self.scroll.y = 0;
         self.scroll.x = 0;
         self.highlight.reset();
+        self.content_lines_cache = None;
+    }
+
+    /// Point at `idx` after the file list was replaced while the same file
+    /// stays selected (a refresh): the scroll position and cursor survive
+    /// (the next render clamps them to the new content) and only the
+    /// derived caches are rebuilt.
+    pub fn rebind_file(&mut self, idx: Option<usize>) {
+        self.current_file_idx = idx;
+        self.highlight.reset();
+        self.content_lines_cache = None;
     }
 
     /// Spawn background syntax highlighting for the given file data.
