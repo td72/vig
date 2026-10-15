@@ -215,12 +215,13 @@ Search works in all panes (DiffView, FileTree, CommitLog, Reflog). Case-insensit
 Browse GitHub Issues, Pull Requests and Actions workflow runs directly within vig. Requires [GitHub CLI (`gh`)](https://cli.github.com/) to be installed and authenticated.
 Bodies and comments are rendered as Markdown (headings, lists, task lists, code, tables narrowed to fit the pane width where possible).
 Sub-issues are listed under their parent issue as a tree, and PRs in a GitHub Stack (as created by [`gh stack`](https://github.com/github/gh-stack)) are nested bottom-to-top under the PR they build on.
-The issue and PR lists refresh themselves when something changes: every `github-poll-interval` vig sends one conditional request (a `304` answer costs no API points) and re-fetches the lists only when the answer moves.
+The issue, PR and workflow run lists refresh themselves when something changes: every `github-poll-interval` vig sends one conditional request per list (a `304` answer costs no API points) and re-fetches a list only when its answer moves.
 
 The third column lists the latest 50 workflow runs (`gh run list`) with their
 status, workflow, run number, branch, event, duration (elapsed while running)
 and age; while any run is queued or in progress the list refreshes every 5
-seconds (`github-poll-interval` in the config). Selecting a run fills the detail area with its jobs and their steps
+seconds (`github-poll-interval` in the config), and otherwise a new run shows
+up through the conditional change check above. Selecting a run fills the detail area with its jobs and their steps
 nested underneath (failed steps in red) in the **Jobs** sub-pane; `Enter` on a
 job or step loads that job's log into the **Log** sub-pane, with step
 boundaries and `##[group]` markers rendered as section lines. Logs of jobs

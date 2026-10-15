@@ -154,6 +154,8 @@ pub enum GhBgMessage {
     RateLimitReset(Option<i64>),
     /// The free change check behind the list auto-refresh.
     ListCheck(Result<client::ListCheck, String>),
+    /// The same check for the runs column while no run is active.
+    RunsCheck(Result<client::ListCheck, String>),
 }
 
 /// The error string of a failed fetch carried by `msg`, if any.
@@ -166,7 +168,8 @@ fn fetch_error(msg: &GhBgMessage) -> Option<&str> {
         | GhBgMessage::PrDetail(Err(e))
         | GhBgMessage::RunJobs { result: Err(e), .. }
         | GhBgMessage::RunLog { result: Err(e), .. }
-        | GhBgMessage::ListCheck(Err(e)) => Some(e),
+        | GhBgMessage::ListCheck(Err(e))
+        | GhBgMessage::RunsCheck(Err(e)) => Some(e),
         _ => None,
     }
 }
@@ -184,6 +187,7 @@ fn fetch_succeeded(msg: &GhBgMessage) -> bool {
             | GhBgMessage::RunJobs { result: Ok(_), .. }
             | GhBgMessage::RunLog { result: Ok(_), .. }
             | GhBgMessage::ListCheck(Ok(_))
+            | GhBgMessage::RunsCheck(Ok(_))
     )
 }
 
@@ -332,6 +336,11 @@ pub struct GitHubState {
     list_watermark: client::ListWatermark,
     list_check_inflight: bool,
     last_list_check: Option<Instant>,
+    /// The runs column's own change check, run while no run is active
+    /// (the active watch re-fetches the list outright).
+    runs_watermark: client::ListWatermark,
+    runs_check_inflight: bool,
+    last_runs_check: Option<Instant>,
     /// When the issue / PR lists last arrived (`lists 12s ago`).
     lists_refreshed_at: Option<Instant>,
     /// When a change check last triggered a refresh (`↻ updated` flash).
@@ -426,6 +435,9 @@ impl GitHubState {
             list_watermark: client::ListWatermark::default(),
             list_check_inflight: false,
             last_list_check: None,
+            runs_watermark: client::ListWatermark::default(),
+            runs_check_inflight: false,
+            last_runs_check: None,
             lists_refreshed_at: None,
             lists_updated_at: None,
             probe_reset: true,
@@ -627,6 +639,12 @@ impl GitHubState {
                         self.apply_list_check(next);
                     }
                 }
+                GhBgMessage::RunsCheck(result) => {
+                    self.runs_check_inflight = false;
+                    if let Ok(client::ListCheck::Fresh(next)) = result {
+                        self.apply_runs_check(next);
+                    }
+                }
             }
         }
 
@@ -727,6 +745,22 @@ impl GitHubState {
         }
         if self.active_tab() != GhTab::Run {
             self.refresh_detail();
+        }
+    }
+
+    /// The runs change check answered `200`: baseline first, then a moved
+    /// watermark re-fetches the runs list (a new run, or the newest one
+    /// changing state); the shown run's detail follows the fresh list.
+    fn apply_runs_check(&mut self, next: client::ListWatermark) {
+        let baseline = self.runs_watermark.etag.is_none();
+        let changed = !baseline && next != self.runs_watermark;
+        self.runs_watermark = next;
+        if !changed {
+            return;
+        }
+        self.lists_updated_at = Some(Instant::now());
+        if let Some(tx) = self.bg_tx.clone() {
+            self.spawn_runs(&tx);
         }
     }
 
@@ -974,10 +1008,23 @@ impl crate::core::app::PageState for GitHubState {
         let due = self
             .last_runs_refresh
             .is_none_or(|t| t.elapsed() >= interval);
-        if self.panes.run_tab.list.has_active() && due && !self.panes.run_tab.list.is_loading() {
+        let runs_active = self.panes.run_tab.list.has_active();
+        if runs_active && due && !self.panes.run_tab.list.is_loading() {
             self.spawn_runs(&tx);
         }
         self.panes.run_tab.detail.handle_run_tick(&tx);
+        // Otherwise one free conditional request per interval tells whether
+        // a run started (or the newest one moved); a change re-fetches.
+        let runs_check_due = self.last_runs_check.is_none_or(|t| t.elapsed() >= interval);
+        if !runs_active && runs_check_due && !self.runs_check_inflight {
+            self.runs_check_inflight = true;
+            self.last_runs_check = Some(Instant::now());
+            let prev = self.runs_watermark.clone();
+            let tx = tx.clone();
+            std::thread::spawn(move || {
+                let _ = tx.send(GhBgMessage::RunsCheck(client::check_runs(&prev)));
+            });
+        }
         // Issue / PR lists: one free conditional request per interval; a
         // detected change re-fetches the lists (see drain).
         let check_due = self.last_list_check.is_none_or(|t| t.elapsed() >= interval);
@@ -1423,6 +1470,38 @@ mod kdl_regression {
         assert!(st.panes.pr_tab.list.is_loading());
     }
 
+    /// The runs change check works the same way: the first `200` is the
+    /// baseline, a moved watermark re-fetches the runs list only.
+    #[test]
+    fn runs_change_check_baseline_then_change_refetches_runs() {
+        let mut st = state();
+        let first = client::ListWatermark {
+            etag: Some("W/\"r1\"".into()),
+            updated_at: Some("2026-10-15T00:00:00Z".into()),
+        };
+        st.apply_runs_check(first.clone());
+        assert_eq!(st.runs_watermark, first);
+        assert!(
+            st.lists_updated_at.is_none(),
+            "the baseline is not a change"
+        );
+        assert!(!st.panes.run_tab.list.is_loading());
+
+        st.apply_runs_check(first.clone());
+        assert!(st.lists_updated_at.is_none(), "same watermark, no refetch");
+
+        let moved = client::ListWatermark {
+            etag: Some("W/\"r2\"".into()),
+            updated_at: Some("2026-10-15T00:01:00Z".into()),
+        };
+        st.apply_runs_check(moved.clone());
+        assert_eq!(st.runs_watermark, moved);
+        assert_eq!(st.lists_updated_notice(), Some("↻ updated"));
+        assert!(st.panes.run_tab.list.is_loading());
+        assert!(!st.panes.issue_tab.list.is_loading(), "issues untouched");
+        assert!(!st.panes.pr_tab.list.is_loading(), "PRs untouched");
+    }
+
     /// The whole page against the recorded `gh` output in `tape/fixtures`:
     /// issues, PRs and runs load and render without the network.
     #[test]
@@ -1773,5 +1852,46 @@ mod rate_limit {
             st.panes.run_tab.list.is_loading(),
             "backoff cleared: the watch resumes"
         );
+    }
+
+    /// The runs change check runs only while no run is active (the watch
+    /// re-fetches the list outright then), once per interval.
+    #[test]
+    fn the_runs_change_check_runs_only_while_no_run_is_active() {
+        let (mut st, _tx) = state();
+        st.gh_available = Some(true);
+        let mut ctx = ctx();
+        st.panes
+            .run_tab
+            .list
+            .set_items(vec![crate::github::panes::run_list::tests::run(
+                2,
+                "in_progress",
+                "",
+            )]);
+        st.on_tick(&mut ctx);
+        assert!(
+            !st.runs_check_inflight,
+            "active run: the watch, not the check"
+        );
+        assert!(st.last_runs_check.is_none());
+
+        st.panes
+            .run_tab
+            .list
+            .set_items(vec![crate::github::panes::run_list::tests::run(
+                2,
+                "completed",
+                "success",
+            )]);
+        st.on_tick(&mut ctx);
+        assert!(
+            st.runs_check_inflight,
+            "all completed: one conditional request"
+        );
+        assert!(st.last_runs_check.is_some());
+        st.runs_check_inflight = false;
+        st.on_tick(&mut ctx);
+        assert!(!st.runs_check_inflight, "not due again before the interval");
     }
 }

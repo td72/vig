@@ -107,7 +107,8 @@ pub fn commit_url(hash: &str) -> Option<String> {
 }
 
 /// What the last change check saw: the ETag GitHub gave for "the most
-/// recently updated issue or PR" and that item's `updated_at`.
+/// recently updated item" (issue / PR, or workflow run) and that item's
+/// `updated_at`.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ListWatermark {
     pub etag: Option<String>,
@@ -128,35 +129,78 @@ pub enum ListCheck {
 /// PR (`/issues` covers both). With `prev.etag` sent as `If-None-Match`,
 /// an unchanged repository answers `304` at no cost against the quota.
 pub fn check_lists(prev: &ListWatermark) -> Result<ListCheck, String> {
-    // A replayed recording holds one unconditional answer; the header
-    // would name a fixture that was never written.
-    let etag = prev
-        .etag
-        .as_deref()
-        .filter(|_| !crate::core::gh_fixture::active());
-    let args = check_lists_args(etag);
-    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
-    let out = run_gh(&refs, "gh api (change check) failed")?;
-    parse_list_check(&String::from_utf8_lossy(&out))
+    run_check(check_lists_args(replay_safe_etag(prev)), parse_list_check)
 }
 
-/// The `gh` arguments of the change check, conditional on `etag` when given
-/// (also names its fixture for the recorder).
+/// The same free change check for the Workflow Runs column: the single
+/// newest run (`/actions/runs?per_page=1`). A run that starts, or the
+/// newest one changing state, moves the answer; `304` is free.
+pub fn check_runs(prev: &ListWatermark) -> Result<ListCheck, String> {
+    run_check(check_runs_args(replay_safe_etag(prev)), parse_runs_check)
+}
+
+/// A replayed recording holds one unconditional answer; the header
+/// would name a fixture that was never written.
+fn replay_safe_etag(prev: &ListWatermark) -> Option<&str> {
+    prev.etag
+        .as_deref()
+        .filter(|_| !crate::core::gh_fixture::active())
+}
+
+fn run_check(
+    args: Vec<String>,
+    parse: fn(&str) -> Result<ListCheck, String>,
+) -> Result<ListCheck, String> {
+    let refs: Vec<&str> = args.iter().map(String::as_str).collect();
+    let out = run_gh(&refs, "gh api (change check) failed")?;
+    parse(&String::from_utf8_lossy(&out))
+}
+
+/// The `gh` arguments of the issue / PR change check, conditional on
+/// `etag` when given (also names its fixture for the recorder).
 pub fn check_lists_args(etag: Option<&str>) -> Vec<String> {
+    check_args(
+        etag,
+        "repos/{owner}/{repo}/issues?state=all&sort=updated&direction=desc&per_page=1",
+    )
+}
+
+/// The `gh` arguments of the runs change check (see `check_lists_args`).
+pub fn check_runs_args(etag: Option<&str>) -> Vec<String> {
+    check_args(etag, "repos/{owner}/{repo}/actions/runs?per_page=1")
+}
+
+fn check_args(etag: Option<&str>, endpoint: &str) -> Vec<String> {
     let mut args: Vec<String> = vec!["api".into(), "-i".into()];
     if let Some(etag) = etag {
         args.push("-H".into());
         args.push(format!("If-None-Match: {etag}"));
     }
-    args.push(
-        "repos/{owner}/{repo}/issues?state=all&sort=updated&direction=desc&per_page=1".into(),
-    );
+    args.push(endpoint.into());
     args
 }
 
-/// Parse a `gh api -i` response: the status line, the headers up to the
-/// blank line, then the JSON body.
+/// Parse the issue / PR check: the body is the array of (one) issue.
 pub fn parse_list_check(raw: &str) -> Result<ListCheck, String> {
+    parse_check(raw, |body| body.get(0)?.get("updated_at")?.as_str())
+}
+
+/// Parse the runs check: the body wraps the (one) run in `workflow_runs`.
+pub fn parse_runs_check(raw: &str) -> Result<ListCheck, String> {
+    parse_check(raw, |body| {
+        body.get("workflow_runs")?
+            .get(0)?
+            .get("updated_at")?
+            .as_str()
+    })
+}
+
+/// Parse a `gh api -i` response: the status line, the headers up to the
+/// blank line, then the JSON body, whose watermark `updated_at` picks.
+fn parse_check(
+    raw: &str,
+    updated_at: fn(&serde_json::Value) -> Option<&str>,
+) -> Result<ListCheck, String> {
     let mut lines = raw.lines();
     let status = lines.next().unwrap_or("");
     let code = status
@@ -184,7 +228,7 @@ pub fn parse_list_check(raw: &str) -> Result<ListCheck, String> {
     }
     let updated_at = serde_json::from_str::<serde_json::Value>(&body)
         .ok()
-        .and_then(|v| v.get(0)?.get("updated_at")?.as_str().map(str::to_string));
+        .and_then(|v| updated_at(&v).map(str::to_string));
     Ok(ListCheck::Fresh(ListWatermark { etag, updated_at }))
 }
 
@@ -415,6 +459,45 @@ mod tests {
         // Any other status is an error, not a watermark.
         assert!(parse_list_check("HTTP/2.0 500 Internal Server Error\r\n\r\n{}").is_err());
         assert!(parse_list_check("HTTP/2.0 404 Not Found\r\nETag: \"x\"\r\n\r\n[]").is_err());
+    }
+
+    #[test]
+    fn runs_check_reads_the_newest_run_and_names_its_endpoint() {
+        let raw = "HTTP/2.0 200 OK\r\nETag: W/\"r1\"\r\n\r\n{\"total_count\":12,\"workflow_runs\":[{\"id\":5,\"status\":\"queued\",\"updated_at\":\"2026-10-15T01:02:03Z\"}]}\n";
+        assert_eq!(
+            parse_runs_check(raw).unwrap(),
+            ListCheck::Fresh(ListWatermark {
+                etag: Some("W/\"r1\"".into()),
+                updated_at: Some("2026-10-15T01:02:03Z".into()),
+            })
+        );
+        // No runs yet: 200 with an empty array.
+        assert_eq!(
+            parse_runs_check(
+                "HTTP/2.0 200 OK\r\nETag: \"e\"\r\n\r\n{\"total_count\":0,\"workflow_runs\":[]}"
+            )
+            .unwrap(),
+            ListCheck::Fresh(ListWatermark {
+                etag: Some("\"e\"".into()),
+                updated_at: None,
+            })
+        );
+        assert_eq!(
+            parse_runs_check("HTTP/2.0 304 Not Modified\r\n\r\n").unwrap(),
+            ListCheck::NotModified
+        );
+        assert_eq!(
+            check_runs_args(None),
+            vec!["api", "-i", "repos/{owner}/{repo}/actions/runs?per_page=1"]
+        );
+        assert_eq!(
+            check_runs_args(Some("W/\"r1\""))[2..],
+            [
+                "-H",
+                "If-None-Match: W/\"r1\"",
+                "repos/{owner}/{repo}/actions/runs?per_page=1"
+            ]
+        );
     }
 
     #[test]

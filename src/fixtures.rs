@@ -40,7 +40,7 @@ pub fn record(dir: &Path) -> Result<()> {
     }
     step("list change check");
     gh::check_lists(&gh::ListWatermark::default()).map_err(anyhow::Error::msg)?;
-    trim_check_fixture(dir)?;
+    trim_check_fixture(dir, &gh::check_lists_args(None))?;
     step("pull requests + stacks");
     gh::list_prs(50, false).map_err(anyhow::Error::msg)?;
     let prs = gh::list_prs(50, true).map_err(anyhow::Error::msg)?;
@@ -50,6 +50,9 @@ pub fn record(dir: &Path) -> Result<()> {
     }
     step("workflow runs, jobs and logs");
     let runs = actions::list_runs(actions::RUN_LIST_LIMIT).map_err(anyhow::Error::msg)?;
+    // The runs change check: replayed unchanged, so the demo never re-fetches.
+    gh::check_runs(&gh::ListWatermark::default()).map_err(anyhow::Error::msg)?;
+    trim_check_fixture(dir, &gh::check_runs_args(None))?;
     let mut missing_logs = Vec::new();
     for run in runs.iter().take(RUNS_WITH_JOBS) {
         let jobs = actions::list_jobs(run.id).map_err(anyhow::Error::msg)?;
@@ -101,8 +104,7 @@ pub fn record(dir: &Path) -> Result<()> {
 /// the status line, the `Etag` header and the body. The other response
 /// headers describe the recording account (OAuth scopes, request ids)
 /// and have no place in a checked-in fixture.
-fn trim_check_fixture(dir: &Path) -> Result<()> {
-    let args = gh::check_lists_args(None);
+fn trim_check_fixture(dir: &Path, args: &[String]) -> Result<()> {
     let refs: Vec<&str> = args.iter().map(String::as_str).collect();
     let path = dir.join(gh_fixture::name_for(&refs));
     let raw = std::fs::read_to_string(&path).with_context(|| format!("read {}", path.display()))?;
