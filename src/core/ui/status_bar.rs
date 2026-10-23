@@ -149,6 +149,10 @@ pub fn render_diff_window_status_bar(
         render_search_prompt(f, &win.pane.search.input, area);
         return;
     }
+    if win.open_with.active {
+        render_prompt(f, "Open with: ", &win.open_with.input, area);
+        return;
+    }
     let n = win.file_count;
     let counts = || {
         vec![
@@ -626,6 +630,10 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
 pub fn render_status_bar(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect) {
     if git.pane.search.active {
         render_search_prompt(f, &git.pane.search.input, area);
+        return;
+    }
+    if git.open_with.active {
+        render_prompt(f, "Open with: ", &git.open_with.input, area);
         return;
     }
 

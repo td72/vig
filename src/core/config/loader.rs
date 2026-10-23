@@ -2258,9 +2258,22 @@ mod tests {
         };
         assert_eq!(look("q"), Some(ViewAction::Close));
         assert_eq!(look("Esc"), Some(ViewAction::Close));
-        assert_eq!(look("o"), Some(ViewAction::OpenBrowser));
+        assert_eq!(look("b"), Some(ViewAction::OpenBrowser));
         assert_eq!(look("y"), Some(ViewAction::CopyUrl));
         assert_eq!(look("e"), Some(ViewAction::OpenEditor));
+        // `o` / `O` open the file itself, as in the Files and Git views.
+        assert_eq!(look("o"), Some(ViewAction::OpenDefault));
+        assert_eq!(look("O"), Some(ViewAction::OpenWith));
+        let git = Config::builtin().git_page().unwrap();
+        let git_view = git.keymap::<ViewAction>("view").unwrap();
+        let look_git = |s: &str| {
+            let ki: KeyInput = s.parse().unwrap();
+            git_view
+                .lookup(KeyEvent::new(ki.code, ki.modifiers))
+                .copied()
+        };
+        assert_eq!(look_git("o"), Some(ViewAction::OpenDefault));
+        assert_eq!(look_git("O"), Some(ViewAction::OpenWith));
         assert!(!Config::builtin()
             .builtin_page_names()
             .iter()

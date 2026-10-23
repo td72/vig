@@ -809,6 +809,7 @@ page "git" {
 | | `PrevTab` / `NextTab` | `h` / `l` | サイドバーのペイン間を移動 |
 | | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | `tabs` のペインを巡回 |
 | | `OpenEditor` | `e` | 選択中ファイルを `$EDITOR` で開く |
+| | `OpenDefault` / `OpenWith` | `o` / `O` | 選択中ファイルを既定アプリ / 指定したアプリで開く（Files view と同じ） |
 | `file_tree` (nav, search) | `ToggleDir` | `Space` | ディレクトリの開閉 |
 | | `ExpandOrOpen` | `Enter`、`Right` | ディレクトリを開く / ファイルの diff を開く |
 | | `FocusDiff` | `i` | diff ビューにフォーカス |
@@ -885,8 +886,9 @@ window "diff" {
 |---|---|---|---|
 | `view` | `Close` | `q`、`Esc` | ウィンドウを閉じる（`Esc` は検索を消してから diff → ツリー → 閉じる、と一段ずつ。`q` はすぐ閉じる） |
 | | `Help` / `Refresh` | `?` / `r` | ヘルプ / diff を再取得 |
-| | `OpenEditor` | `e` | 選択中のファイルを `$EDITOR` で開く（作業ツリーにある場合） |
-| | `OpenBrowser` / `CopyUrl` | `o` / `y` | PR の Files タブをブラウザで開く / その URL をコピー |
+| | `OpenEditor` | `e` | 選択中のファイルを `$EDITOR` で開く（作業ツリーか PR の worktree にある場合） |
+| | `OpenDefault` / `OpenWith` | `o` / `O` | そのファイルを既定アプリ / 指定したアプリで開く |
+| | `OpenBrowser` / `CopyUrl` | `b` / `y` | PR の Files タブをブラウザで開く / その URL をコピー |
 | | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | ツリー ↔ diff |
 | `file_tree` (nav, search) | `ToggleDir` / `ExpandOrOpen` / `FocusDiff` | `Space` / `Enter`、`Right`、`l` / `i` | Git ページと同じ |
 | `diff_view` (nav, search) | `ScrollLeft` / `ScrollRight` / `EnterNormalMode` | `h`、`Left` / `l`、`Right` / `i` | Git ページと同じ |

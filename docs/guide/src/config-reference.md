@@ -820,6 +820,7 @@ slot).
 | | `PrevTab` / `NextTab` | `h` / `l` | move between the sidebar panes |
 | | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | cycle the `tabs` panes |
 | | `OpenEditor` | `e` | open the selected file in `$EDITOR` |
+| | `OpenDefault` / `OpenWith` | `o` / `O` | open the selected file with the default app / an app you name (as in the Files view) |
 | `file_tree` (nav, search) | `ToggleDir` | `Space` | expand / collapse a directory |
 | | `ExpandOrOpen` | `Enter`, `Right` | expand a directory / open a file's diff |
 | | `FocusDiff` | `i` | focus the diff view |
@@ -896,8 +897,9 @@ window "diff" {
 |---|---|---|---|
 | `view` | `Close` | `q`, `Esc` | close the window (`Esc` first clears a search, then steps diff → tree → close; `q` closes outright) |
 | | `Help` / `Refresh` | `?` / `r` | help overlay / fetch the diff again |
-| | `OpenEditor` | `e` | open the selected file in `$EDITOR` (when the working tree has it) |
-| | `OpenBrowser` / `CopyUrl` | `o` / `y` | the PR's Files tab in the browser / its URL |
+| | `OpenEditor` | `e` | open the selected file in `$EDITOR` (when the working tree or the PR's worktree has it) |
+| | `OpenDefault` / `OpenWith` | `o` / `O` | open that file with the default app / an app you name |
+| | `OpenBrowser` / `CopyUrl` | `b` / `y` | the PR's Files tab in the browser / its URL |
 | | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | tree ↔ diff |
 | `file_tree` (nav, search) | `ToggleDir` / `ExpandOrOpen` / `FocusDiff` | `Space` / `Enter`, `Right`, `l` / `i` | as on the Git page |
 | `diff_view` (nav, search) | `ScrollLeft` / `ScrollRight` / `EnterNormalMode` | `h`, `Left` / `l`, `Right` / `i` | as on the Git page |

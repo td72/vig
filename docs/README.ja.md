@@ -225,7 +225,7 @@ GitHub にレート制限された場合はページ内のポーリングを指�
 Pull Request で `d` を押すと、その diff をページの上に重なるウィンドウで表示します。左に変更ファイルのツリー、
 右にサイドバイサイドの diff で、Git view と同じ折りたたみ・検索・`i` のカーソルモードが使えます。
 取得は `gh pr diff`（REST なので GraphQL ポイントを消費せず、fork でも可）。`q` / `Esc` で PR に戻り、
-`o` で Files タブを開き、作業ツリーにあるファイルは `e` で編集できます。
+`b` で Files タブをブラウザで開き、作業ツリー (または PR の worktree) にあるファイルは `e` / `o` / `O` で編集・起動できます。
 Pull Request で `W` を押すと、その PR をリポジトリの隣に git worktree として checkout します。実行する 2 つのコマンドを
 確認ダイアログで見せてから `git fetch origin refs/pull/<n>/head`（fork も可）と
 `git worktree add ../<repo>-pr-<n> -b pr/<n> FETCH_HEAD` を実行し（現在の checkout は触らない）、
@@ -242,7 +242,7 @@ Worktrees view に移って新しい worktree を選択します（場所と名�
 | `o` | ブラウザで開く（issue / PR / 実行、または選択中のジョブ） |
 | `y` | アイテムの URL をコピー |
 | `x` | 一覧に closed な issue / マージ済み・closed な PR を表示 / 非表示（初期状態は `github-show-closed`） |
-| `d`（PR の一覧 / 詳細） | PR の diff を表示: 変更ファイル + サイドバイサイド diff のウィンドウ（`q` / `Esc` で戻る、`o` Files タブ、`e` 編集、`r` 再取得） |
+| `d`（PR の一覧 / 詳細） | PR の diff を表示: 変更ファイル + サイドバイサイド diff のウィンドウ（`q` / `Esc` で戻る、`b` Files タブ、`e` / `o` / `O` でファイルを編集 / 起動、`r` 再取得） |
 | `W`（PR の一覧 / 詳細） | PR を worktree として開く: 確認後に head を `git fetch` + `git worktree add`、Worktrees view でその worktree を選択 |
 | `Esc` | 一覧に戻る |
 | `h` / `l`（詳細） | 本文 ↔ 右側のサブペイン。実行の場合は Jobs ↔ Log |
@@ -282,6 +282,7 @@ Markdown ファイル (`.md` / `.markdown`) はプレビューでレンダリン
 | `Esc`（プレビュー） | 検索をクリア / ファイル一覧に戻る |
 | `/` `n` `N` | ファイル名検索 |
 | `e` | 選択中のファイルを外部エディタで開く |
+| `o` / `O` | 選択中のファイルを既定アプリ / 指定したアプリで開く（Files view と同じ） |
 | `o` | 選択中のファイル / ディレクトリを OS の既定アプリで開く (`open` / `xdg-open` / `explorer`) |
 | `O` | アプリ名を入力して選択中の項目を開く (macOS では `open -a <app>`) |
 | `m` | プレビューの Markdown レンダリングを切り替え |
