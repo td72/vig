@@ -226,6 +226,11 @@ Pull Request で `d` を押すと、その diff をページの上に重なる�
 右にサイドバイサイドの diff で、Git view と同じ折りたたみ・検索・`i` のカーソルモードが使えます。
 取得は `gh pr diff`（REST なので GraphQL ポイントを消費せず、fork でも可）。`q` / `Esc` で PR に戻り、
 `o` で Files タブを開き、作業ツリーにあるファイルは `e` で編集できます。
+Pull Request で `W` を押すと、その PR をリポジトリの隣に git worktree として checkout します。実行する 2 つのコマンドを
+確認ダイアログで見せてから `git fetch origin refs/pull/<n>/head`（fork も可）と
+`git worktree add ../<repo>-pr-<n> -b pr/<n> FETCH_HEAD` を実行し（現在の checkout は触らない）、
+Worktrees view に移って新しい worktree を選択します（場所と名前は `worktree-dir` / `worktree-name` /
+`worktree-branch` で設定。その PR の worktree が既にあればそれを表示。vig が worktree を削除することはありません）。
 このビューが実行を再実行・キャンセル・削除することはありません。
 
 | キー | 操作 |
@@ -238,6 +243,7 @@ Pull Request で `d` を押すと、その diff をページの上に重なる�
 | `y` | アイテムの URL をコピー |
 | `x` | 一覧に closed な issue / マージ済み・closed な PR を表示 / 非表示（初期状態は `github-show-closed`） |
 | `d`（PR の一覧 / 詳細） | PR の diff を表示: 変更ファイル + サイドバイサイド diff のウィンドウ（`q` / `Esc` で戻る、`o` Files タブ、`e` 編集、`r` 再取得） |
+| `W`（PR の一覧 / 詳細） | PR を worktree として開く: 確認後に head を `git fetch` + `git worktree add`、Worktrees view でその worktree を選択 |
 | `Esc` | 一覧に戻る |
 | `h` / `l`（詳細） | 本文 ↔ 右側のサブペイン。実行の場合は Jobs ↔ Log |
 | `i` / `Enter`（実行の詳細・Jobs） | ジョブのログを表示（ステップ行ならそのステップへスクロール） |

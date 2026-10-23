@@ -42,6 +42,9 @@ Conventions used below:
 | [`projects-filter`](#projects-filter) | absent | replaced |
 | [`projects-hide-closed`](#projects-hide-closed) | `"off"` | replaced |
 | [`projects-roadmap`](#projects-roadmap) | absent (earliest item, week) | replaced |
+| [`worktree-dir`](#worktree-dir) | `"../"` | replaced |
+| [`worktree-name`](#worktree-name) | `"{repo}-pr-{n}"` | replaced |
+| [`worktree-branch`](#worktree-branch) | `"pr/{n}"` | replaced |
 | [`pages`](#pages) | all seven pages | replaced wholesale |
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
 | [`app`](#app) | `Ctrl+c` quit, `1`…`7` page switch | merged per key |
@@ -63,6 +66,9 @@ github-auto-refresh "on"
 github-show-closed "off"
 projects-poll-interval "30s"
 projects-hide-closed "off"
+worktree-dir "../"
+worktree-name "{repo}-pr-{n}"
+worktree-branch "pr/{n}"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 repo-config "on"
 app {
@@ -78,7 +84,8 @@ colors "red"
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
 //   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
-//   `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`,
+//   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
+//   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
 //   `repo-config`, `app`, `page`, or `window`)
 ```
 
@@ -454,6 +461,50 @@ projects-roadmap {
 //   weeks or months from today such as "-7d", "-2w" or "-1m")
 ```
 
+### `worktree-dir`
+
+Where `W` on a pull request creates its worktree (see the
+[GitHub view](views-github.md#issues-and-pull-requests)): a directory
+relative to the main worktree. The default `"../"` puts it next to the
+repository.
+
+```kdl
+worktree-dir ".worktrees"
+```
+
+- **Default** — `"../"`.
+- **Merge** — replaced.
+- **Errors** — missing or empty string, more than one argument.
+
+### `worktree-name`
+
+The directory name of a PR's worktree inside `worktree-dir`. `{repo}` is
+the main worktree's directory name and `{n}` the PR number; `{n}` is
+mandatory so two PRs never share a directory.
+
+```kdl
+worktree-name "pr-{n}"
+```
+
+- **Default** — `"{repo}-pr-{n}"` (`../vig-pr-123` for PR 123 of `vig`).
+- **Merge** — replaced.
+- **Errors** — missing or empty string, more than one argument, no `{n}`.
+
+### `worktree-branch`
+
+The branch `git worktree add -b` creates for the PR's head; the same
+placeholders as `worktree-name`, `{n}` mandatory. A PR whose branch is
+already checked out in a worktree is shown there instead of being
+fetched again.
+
+```kdl
+worktree-branch "review/{n}"
+```
+
+- **Default** — `"pr/{n}"`.
+- **Merge** — replaced.
+- **Errors** — missing or empty string, more than one argument, no `{n}`.
+
 ### `pages`
 
 Which pages are enabled, in tab order. The position in the list is the
@@ -797,11 +848,14 @@ Panes: `issue_list`, `pr_list`, `run_list` (the three columns) and
 | | `SwitchTab` | `Tab` (issues) / `BackTab` (PRs, runs) | column-local tab switch |
 | | `OpenBrowser` | `o` | open the item in the browser |
 | | `CopyUrl` | `y` | copy the item URL |
+| `pr_list` | `ShowDiff` | `d` | the PR's diff window (see [Window `diff`](#window-diff)) |
+| | `OpenWorktree` | `W` | fetch the PR into a worktree, after a confirmation |
 | `issue_detail`, `pr_detail` (nav) | `FocusBody` / `FocusRight` | `h` / `l` | body ↔ right-hand sub-panes |
 | | `CycleForward` / `CycleBackward` | `Tab` / `BackTab` | cycle the sub-panes |
 | | `ToggleWatch` | `w` | watch mode: auto-refresh the open item |
 | | `OpenItem` | `o` | open in the browser |
 | | `CopyUrl` | `y` | copy the item URL |
+| `pr_detail` | `ShowDiff` / `OpenWorktree` | `d` / `W` | as in `pr_list` |
 | `run_detail` (nav, search) | `FocusBody` / `FocusRight` | `h` / `l` | Jobs ↔ Log sub-panes |
 | | `CycleForward` / `CycleBackward` | `Tab` / `BackTab` | cycle the sub-panes |
 | | `OpenLog` | `i`, `Enter` | show the selected job's log |

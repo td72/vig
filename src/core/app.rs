@@ -32,6 +32,13 @@ pub struct AppContext {
     pub last_input: Instant,
     /// `github-auto-refresh`: `false` leaves only manual `r` refreshes.
     pub auto_refresh: bool,
+    /// A page asking to show another page (by id) once the current event
+    /// is handled: `App` closes every window and switches, as a page key
+    /// would. Set with [`AppContext::request_page`].
+    pub page_request: Option<&'static str>,
+    /// The worktree the Worktrees page should select when it is next
+    /// shown (set by the GitHub page after adding one for a PR).
+    pub select_worktree: Option<PathBuf>,
 }
 
 /// No key press for this long puts automatic refreshes into idle mode.
@@ -100,6 +107,12 @@ impl AppContext {
     /// Consume the pending full-redraw request.
     pub fn take_full_redraw(&mut self) -> bool {
         std::mem::take(&mut self.needs_full_redraw)
+    }
+
+    /// Ask the app to show page `id` (a `PageState::id`) after the current
+    /// event; an unknown or disabled page is ignored.
+    pub fn request_page(&mut self, id: &'static str) {
+        self.page_request = Some(id);
     }
 
     pub fn show_error(&mut self, title: &str, message: String) {
@@ -299,6 +312,7 @@ impl App {
     /// Apply what the active page asked for after a key: a window is
     /// pushed / popped here, everything else goes back to the main loop.
     fn apply_page_action(&mut self, action: PageAction) -> PageAction {
+        self.apply_page_request();
         match action {
             PageAction::Push(mut window) => {
                 // The page's last status line is not the window's.
@@ -312,6 +326,19 @@ impl App {
                 PageAction::None
             }
             other => other,
+        }
+    }
+
+    /// Honour a page's `request_page`: close every window and switch, as
+    /// a page key would.
+    fn apply_page_request(&mut self) {
+        let Some(id) = self.ctx.page_request.take() else {
+            return;
+        };
+        if let Some(idx) = self.pages.iter().position(|p| p.id() == id) {
+            self.windows.clear();
+            self.ctx.active_page = idx;
+            self.pages[idx].on_activate(&mut self.ctx);
         }
     }
 
@@ -352,6 +379,7 @@ impl App {
             Some(w) => w.on_tick(ctx),
             None => self.pages[ctx.active_page].on_tick(ctx),
         }
+        self.apply_page_request();
     }
 
     pub fn on_suspend_return(
@@ -488,6 +516,8 @@ mod tests {
             needs_full_redraw: false,
             last_input: Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         };
         // Fresh input, quota unknown: nothing to say.
         assert_eq!(ctx.refresh_notice(), None);
@@ -517,6 +547,8 @@ mod tests {
             needs_full_redraw: false,
             last_input: Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         };
         App::new(ctx, pages, cfg).expect("app keymap")
     }
@@ -677,9 +709,13 @@ mod tests {
         fn label(&self) -> &'static str {
             "Pusher"
         }
-        fn handle_key(&mut self, _ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
             Ok(match key.code {
                 crossterm::event::KeyCode::Char('d') => PageAction::Push(Page::new(Window)),
+                crossterm::event::KeyCode::Char('f') => {
+                    ctx.request_page("files");
+                    PageAction::None
+                }
                 _ => PageAction::None,
             })
         }
@@ -705,6 +741,10 @@ mod tests {
         fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
             Ok(match key.code {
                 crossterm::event::KeyCode::Char('q') => PageAction::Pop,
+                crossterm::event::KeyCode::Char('f') => {
+                    ctx.request_page("files");
+                    PageAction::None
+                }
                 crossterm::event::KeyCode::Char('m') => {
                     ctx.status_message = Some("from the window".into());
                     PageAction::None
@@ -757,6 +797,8 @@ mod tests {
                 needs_full_redraw: false,
                 last_input: Instant::now(),
                 auto_refresh: true,
+                page_request: None,
+                select_worktree: None,
             },
             pages: vec![Page::new(Pusher), files],
             windows: Vec::new(),
@@ -788,6 +830,18 @@ mod tests {
         app.handle_key(key('3')).unwrap();
         assert_eq!(app.window_depth(), 0);
         assert_eq!(app.ctx.active_page, 1);
+        // A page can ask for another page by id (`request_page`): honoured
+        // after the key, closing windows on the way; unknown ids are ignored.
+        app.handle_key(key('1')).unwrap();
+        app.handle_key(key('d')).unwrap();
+        app.ctx.request_page("nowhere");
+        app.on_tick();
+        assert_eq!(app.ctx.active_page, 0);
+        assert_eq!(app.window_depth(), 1);
+        app.handle_key(key('f')).unwrap();
+        assert_eq!(app.ctx.active_page, 1);
+        assert_eq!(app.window_depth(), 0);
+        assert_eq!(app.ctx.page_request, None);
     }
 
     #[test]

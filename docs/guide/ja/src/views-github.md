@@ -39,6 +39,29 @@ fetch していないブランチでも開けます。最後に見た diff は�
 ファイルが手元にあるとは限りません）。GitHub が描画を断るほど大きい
 diff はステータスバーにその旨が出ます。
 
+Pull Request で `W` を押すと、もう一歩進んで PR をリポジトリの隣に
+**git worktree** として checkout します。現在の checkout を触らずに、
+動かす・テストする・直す、ができます。vig はまず実行する 2 つの
+コマンドを見せて `y` を待ちます:
+
+```text
+git fetch origin refs/pull/<n>/head
+git worktree add ../<repo>-pr-<n> -b pr/<n> FETCH_HEAD
+```
+
+`refs/pull/<n>/head` はすべての PR にあるので、fork からの PR も同じ手順
+です。fetch はバックグラウンドで走り、worktree ができると
+[Worktrees view](views-worktrees.md) に切り替わってその worktree が選択
+されます（diff ウィンドウに戻れば `e` がその checkout のファイルを開き
+ます）。その PR の worktree が既にある（そのブランチを checkout している
+か、そのパスにある）場合は聞き直さずにそれを表示します。同名のディレクトリ
+やブランチがあって PR の worktree ではない場合はエラーにして何も作りません。
+場所と名前は [`worktree-dir`](config-reference.md#worktree-dir)・
+[`worktree-name`](config-reference.md#worktree-name)・
+[`worktree-branch`](config-reference.md#worktree-branch) で決まります。
+vig が worktree を削除することはありません（`git worktree remove` は
+あなたの手で）。
+
 一覧に並ぶのは open なものです。`x` で closed な issue とマージ済み /
 closed な PR も含めて表示し（薄い色と状態アイコン: `✓` closed、`⊕` merged。
 ヘッダは `GitHub · closed`）、もう一度 `x` で外します。どちらも `gh` の
@@ -86,6 +109,7 @@ tail のように追記されます。`]` / `[` で失敗ステップ間をジ�
 | `w`（issue / PR の詳細） | watch モードの切り替え（表示中アイテムの自動再取得） |
 | `x`（issue / PR の一覧） | closed な issue / マージ済み・closed な PR を表示 / 非表示 |
 | `d`（PR の一覧 / 詳細） | PR の diff をウィンドウで表示: 変更ファイル + サイドバイサイド diff（`q` / `Esc` で戻る、`o` Files タブ、`y` コピー、`e` 編集、`r` 再取得） |
+| `W`（PR の一覧 / 詳細） | PR を worktree として開く: 確認後に head を `git fetch` + `git worktree add`、Worktrees view でその worktree へ |
 | `i` / `Enter`（実行の詳細・Jobs） | ジョブのログを表示（ステップ行ならそのステップへスクロール） |
 | `]` / `[`（実行の詳細） | ログ内の次 / 前の失敗ステップへ |
 | `G`（実行の詳細・Log） | 末尾へ移動して follow を再開 |

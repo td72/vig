@@ -677,6 +677,15 @@ pub fn render_gh_status_bar(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, a
         return;
     }
 
+    if let Some(number) = gh.worktree_in_flight() {
+        let line = Line::from(Span::styled(
+            format!(" Fetching PR #{number} and adding its worktree..."),
+            Style::default().fg(Color::Yellow),
+        ));
+        f.render_widget(Paragraph::new(line), area);
+        return;
+    }
+
     let issue_count = gh.panes.issue_tab.list.item_count();
     let pr_count = gh.panes.pr_tab.list.item_count();
     let (run_count, active_runs) = gh.run_counts();

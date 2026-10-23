@@ -14,6 +14,7 @@ pub(crate) fn source_for(
     number: u64,
     item: Option<&GhPrListItem>,
     detail: Option<&GhPrDetail>,
+    local_root: Option<std::path::PathBuf>,
 ) -> DiffSource {
     let title = item
         .map(|i| i.title.clone())
@@ -33,6 +34,7 @@ pub(crate) fn source_for(
         refs,
         title,
         url: client::pr_files_url(number),
+        local_root,
         cached: disk_cache::load_pr_diff(number),
         fetch: Arc::new(move || client::pr_diff(number)),
         store: Some(Arc::new(move |patch: &[u8]| {
@@ -48,7 +50,8 @@ pub(crate) fn open(
     number: u64,
     item: Option<&GhPrListItem>,
     detail: Option<&GhPrDetail>,
+    local_root: Option<std::path::PathBuf>,
 ) -> Result<Page> {
-    let source = source_for(number, item, detail);
+    let source = source_for(number, item, detail, local_root);
     Ok(Page::new(DiffWindowState::new(cfg, theme, source)?))
 }

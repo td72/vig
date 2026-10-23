@@ -40,6 +40,9 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`projects-filter`](#projects-filter) | なし | 置換 |
 | [`projects-hide-closed`](#projects-hide-closed) | `"off"` | 置換 |
 | [`projects-roadmap`](#projects-roadmap) | なし（最古のアイテムから、week） | 置換 |
+| [`worktree-dir`](#worktree-dir) | `"../"` | 置換 |
+| [`worktree-name`](#worktree-name) | `"{repo}-pr-{n}"` | 置換 |
+| [`worktree-branch`](#worktree-branch) | `"pr/{n}"` | 置換 |
 | [`pages`](#pages) | 全 7 ページ | 丸ごと置換 |
 | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
 | [`app`](#app) | `Ctrl+c` 終了、`1`…`7` ページ切替 | キー単位マージ |
@@ -61,6 +64,9 @@ github-auto-refresh "on"
 github-show-closed "off"
 projects-poll-interval "30s"
 projects-hide-closed "off"
+worktree-dir "../"
+worktree-name "{repo}-pr-{n}"
+worktree-branch "pr/{n}"
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 repo-config "on"
 app {
@@ -76,7 +82,8 @@ colors "red"
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
 //   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
-//   `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`,
+//   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
+//   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
 //   `repo-config`, `app`, `page`, or `window`)
 ```
 
@@ -446,6 +453,48 @@ projects-roadmap {
 //   weeks or months from today such as "-7d", "-2w" or "-1m")
 ```
 
+### `worktree-dir`
+
+Pull Request で `W` を押したときに worktree を作る場所
+（[GitHub view](views-github.md#issue-と-pull-request) 参照）。メイン
+worktree からの相対パスで、デフォルトの `"../"` はリポジトリの隣です。
+
+```kdl
+worktree-dir ".worktrees"
+```
+
+- **デフォルト** — `"../"`。
+- **マージ** — 置換。
+- **エラー** — 文字列がない・空、引数が 2 つ以上。
+
+### `worktree-name`
+
+`worktree-dir` の中に作る PR の worktree のディレクトリ名。`{repo}` は
+メイン worktree のディレクトリ名、`{n}` は PR 番号に展開されます。2 つの
+PR が同じディレクトリを共有しないよう `{n}` は必須です。
+
+```kdl
+worktree-name "pr-{n}"
+```
+
+- **デフォルト** — `"{repo}-pr-{n}"`（`vig` の PR 123 なら `../vig-pr-123`）。
+- **マージ** — 置換。
+- **エラー** — 文字列がない・空、引数が 2 つ以上、`{n}` がない。
+
+### `worktree-branch`
+
+`git worktree add -b` が PR の head に作るブランチ名。プレースホルダは
+`worktree-name` と同じで、`{n}` は必須です。そのブランチを checkout した
+worktree が既にある PR は、fetch し直さずにそこを表示します。
+
+```kdl
+worktree-branch "review/{n}"
+```
+
+- **デフォルト** — `"pr/{n}"`。
+- **マージ** — 置換。
+- **エラー** — 文字列がない・空、引数が 2 つ以上、`{n}` がない。
+
 ### `pages`
 
 有効にするページを、タブ順で並べます。リスト内の位置がページの
@@ -788,11 +837,14 @@ page "git" {
 | | `SwitchTab` | `Tab`（issues）/ `BackTab`（PR、runs） | 列ローカルのタブ切替 |
 | | `OpenBrowser` | `o` | アイテムをブラウザで開く |
 | | `CopyUrl` | `y` | アイテムの URL をコピー |
+| `pr_list` | `ShowDiff` | `d` | PR の diff ウィンドウ（[ウィンドウ `diff`](#ウィンドウ-diff) 参照） |
+| | `OpenWorktree` | `W` | 確認後に PR を worktree へ fetch |
 | `issue_detail`、`pr_detail` (nav) | `FocusBody` / `FocusRight` | `h` / `l` | 本文 ↔ 右側サブペイン |
 | | `CycleForward` / `CycleBackward` | `Tab` / `BackTab` | サブペインを巡回 |
 | | `ToggleWatch` | `w` | ウォッチモード: 開いたアイテムを自動更新 |
 | | `OpenItem` | `o` | ブラウザで開く |
 | | `CopyUrl` | `y` | アイテムの URL をコピー |
+| `pr_detail` | `ShowDiff` / `OpenWorktree` | `d` / `W` | `pr_list` と同じ |
 | `run_detail` (nav, search) | `FocusBody` / `FocusRight` | `h` / `l` | Jobs ↔ Log サブペイン |
 | | `CycleForward` / `CycleBackward` | `Tab` / `BackTab` | サブペインを巡回 |
 | | `OpenLog` | `i`、`Enter` | 選択中ジョブのログを表示 |

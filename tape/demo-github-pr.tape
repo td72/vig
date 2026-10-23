@@ -14,7 +14,7 @@ Set TypingSpeed 50ms
 # --- Hidden setup: create a temporary git repo linked to a GitHub repo ---
 Hide
 
-Type@1ms "cd $(mktemp -d)"
+Type@1ms "mkdir -p $(mktemp -d)/vig && cd $_"
 Enter
 Sleep 300ms
 Type@1ms "git init -q && git config user.email a@b.c && git config user.name demo"
@@ -128,6 +128,12 @@ Escape
 Sleep 1s
 Escape
 Sleep 1.5s
+
+# W would check the PR out as a worktree next to the repo: it asks first
+Type "W"
+Sleep 3s
+Type "n"
+Sleep 1s
 
 # Back to list
 Escape

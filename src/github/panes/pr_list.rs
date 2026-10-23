@@ -120,6 +120,10 @@ impl GhListItem for GhPrListItem {
         Some(PaneEvent::ShowPrDiff(self.number))
     }
 
+    fn worktree_event(&self) -> Option<PaneEvent> {
+        Some(PaneEvent::OpenPrWorktree(self.number))
+    }
+
     fn load_disk_cache() -> Option<Vec<Self>> {
         disk_cache::load_pr_list()
     }
@@ -210,11 +214,11 @@ mod tests {
         );
         assert!(matches!(events[..], [PaneEvent::ShowPrDiff(11)]));
 
-        let src = crate::github::pr_diff::source_for(11, pane.items.get(1), None);
+        let src = crate::github::pr_diff::source_for(11, pane.items.get(1), None, None);
         assert_eq!(src.badge, "PR #11");
         assert_eq!(src.refs.as_deref(), Some("feat/11 → main"));
         assert_eq!(src.title, "pr 11");
-        let bare = crate::github::pr_diff::source_for(12, None, None);
+        let bare = crate::github::pr_diff::source_for(12, None, None, None);
         assert_eq!(bare.refs, None);
         assert_eq!(bare.title, "");
     }

@@ -85,6 +85,21 @@ impl WorktreesPane {
         self.items.get(self.selected_idx)
     }
 
+    /// Select the worktree at `path` (compared canonicalised, as git may
+    /// report a resolved path); `false` when the listing has no such entry.
+    pub fn select_path(&mut self, path: &std::path::Path) -> bool {
+        let canon =
+            |p: &std::path::Path| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
+        let target = canon(path);
+        match self.items.iter().position(|w| canon(&w.path) == target) {
+            Some(idx) => {
+                self.selected_idx = idx;
+                true
+            }
+            None => false,
+        }
+    }
+
     /// Replace the listing, keeping the selection on the same path when
     /// it still exists.
     pub fn set_items(&mut self, items: Vec<Worktree>) {

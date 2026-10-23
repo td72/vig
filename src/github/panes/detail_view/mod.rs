@@ -118,13 +118,15 @@ pub enum DetailAction {
     PrevFailed,
     /// PR detail: open the PR's diff window.
     ShowDiff,
+    /// PR detail: fetch the PR into a worktree (after confirming).
+    OpenWorktree,
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     DetailAction, nav: Nav, search: Search, esc: Esc,
     FocusBody, FocusRight, CycleForward, CycleBackward, ToggleWatch, OpenItem,
-    CopyUrl, OpenLog, NextFailed, PrevFailed, ShowDiff
+    CopyUrl, OpenLog, NextFailed, PrevFailed, ShowDiff, OpenWorktree
 );
 
 impl ActionHelp for DetailAction {
@@ -143,6 +145,7 @@ impl ActionHelp for DetailAction {
             DetailAction::NextFailed => Some("Next failed step"),
             DetailAction::PrevFailed => Some("Prev failed step"),
             DetailAction::ShowDiff => Some("Show PR diff (files + side-by-side)"),
+            DetailAction::OpenWorktree => Some("Open PR as a worktree (fetch + worktree add)"),
             DetailAction::Esc => Some("Back to list"),
         }
     }
@@ -402,7 +405,9 @@ impl GhDetailViewPane {
                     d.run.url.clone(),
                 ))]
             }
-            DetailAction::ToggleWatch | DetailAction::ShowDiff => vec![],
+            DetailAction::ToggleWatch | DetailAction::ShowDiff | DetailAction::OpenWorktree => {
+                vec![]
+            }
             DetailAction::Search(_) | DetailAction::Esc => return None,
         };
         Some(events)
@@ -725,6 +730,11 @@ impl GhDetailViewPane {
             DetailAction::ShowDiff => {
                 if let GhDetailContent::Pr(d) = &self.content {
                     return vec![PaneEvent::ShowPrDiff(d.number)];
+                }
+            }
+            DetailAction::OpenWorktree => {
+                if let GhDetailContent::Pr(d) = &self.content {
+                    return vec![PaneEvent::OpenPrWorktree(d.number)];
                 }
             }
             // Handled above (search / esc) or only meaningful for runs.

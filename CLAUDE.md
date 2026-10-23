@@ -8,7 +8,7 @@ runs / Projects boards, containers, processes, worktrees. It began as a Git
 diff viewer (the name comes from *vim* + *git*) and every page stays rooted
 at the current repository.
 
-- Allowed: `git switch`, `git branch -d` (safe delete), read operations
+- Allowed: `git switch`, `git branch -d` (safe delete), `git fetch` + `git worktree add` (a PR's head into a new worktree, after a confirmation dialog — the current checkout is untouched), read operations
 - **Not** allowed: merge, rebase, force delete (`-D`), push, or any destructive operation
 
 This is a deliberate design choice — vig helps you *inspect*, not *mutate*. New
