@@ -1867,13 +1867,19 @@ mod kdl_regression {
         use crate::core::app::PageState;
         let mut st = state();
         let mut ctx = test_ctx();
-        // The main worktree counts as "the worktree of this PR" when the
-        // plan's branch is what it has checked out: `{n}` is mandatory in
-        // the config, but the state takes any template.
+        // The main worktree counts as "the worktree of this PR" when it
+        // sits at the plan's path (CI checks out a detached HEAD, so the
+        // branch match is not relied on): `{n}` is mandatory in the
+        // config, but the state takes any template.
         let list = st.worktrees();
         let main = list.iter().find(|w| w.is_main).expect("main worktree");
-        let branch = main.branch.clone().expect("a branch is checked out");
-        st.worktree_settings.branch = branch;
+        st.worktree_settings.dir = "../".into();
+        st.worktree_settings.name = main
+            .path
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .into_owned();
         st.open_worktree(&mut ctx, 5);
         assert!(
             st.pending_worktree.is_none(),
