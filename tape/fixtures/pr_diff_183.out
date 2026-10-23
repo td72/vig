@@ -1,0 +1,1172 @@
+diff --git a/README.md b/README.md
+index 54e38f7..a440279 100644
+--- a/README.md
++++ b/README.md
+@@ -426,7 +426,7 @@ press `r`. Nothing in this view adds, moves, edits or deletes anything.
+ | `t` (board) | Toggle table mode |
+ | `s` (board, table mode) | Cycle the sort column |
+ | `Enter` / `i` (board) | Focus the detail |
+-| `v` / `V` | Next / previous saved view of the project |
++| `v` / `V` | Next / previous view of the project (saved on GitHub, or a local `projects-view` from the config) |
+ | `Space` | Collapse / expand the selected swimlane (grouped board views) |
+ | `+` / `-` | Zoom the roadmap time scale in / out |
+ | `o` | Open the project / item in the browser |
+diff --git a/assets/default.kdl b/assets/default.kdl
+index 598c014..56c3b84 100644
+--- a/assets/default.kdl
++++ b/assets/default.kdl
+@@ -39,6 +39,14 @@ github-poll-interval "5s"
+ // "30s", "5s", ...; at least 5s. Probing pauses on the other pages.
+ projects-poll-interval "30s"
+ 
++// Local views of the Projects page: a filter / grouping / sort / layout
++// defined here instead of saved on GitHub. They follow the project's saved
++// views in the `v` / `V` cycle. See the Config Reference for every child.
++// projects-view "Mine" default=#true {
++//     filter "assignee:@me -status:Done"
++//     group-by "Status"
++// }
++
+ // Pages in tab order: the position here is the slot shown in the header
+ // (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
+ // wholesale; pages left out are disabled. `app` bindings address pages by name.
+diff --git a/assets/demo-projects.gif b/assets/demo-projects.gif
+index deb6df5..33afd43 100644
+--- a/assets/demo-projects.gif
++++ b/assets/demo-projects.gif
+@@ -1,3 +1,3 @@
+ version https://git-lfs.github.com/spec/v1
+-oid sha256:b3e21849f007ee35c817478ae817b3d4f85c57c44c163530fa2fdf12955a1592
+-size 520639
++oid sha256:b4f4f6f3b3786bd00e3e4b0862178d3cfc498a5ecc78fa11506cda1ec2c52556
++size 576476
+diff --git a/docs/README.ja.md b/docs/README.ja.md
+index d8aeeb0..cad4d6c 100644
+--- a/docs/README.ja.md
++++ b/docs/README.ja.md
+@@ -396,7 +396,7 @@ GitHub View と同じ issue / PR の本文とコメントを表示します（dr
+ | `t`（ボード） | テーブルモードの切り替え |
+ | `s`（ボード、テーブルモード） | ソート列を順に切り替え |
+ | `Enter` / `i`（ボード） | 詳細ペインにフォーカス |
+-| `v` / `V` | プロジェクトの保存済みビューを切り替え |
++| `v` / `V` | プロジェクトのビューを切り替え (GitHub の保存済みビュー、または設定の `projects-view`) |
+ | `Space` | 選択中のスイムレーンを折りたたみ / 展開（グループ化された Board ビュー） |
+ | `+` / `-` | ロードマップの時間軸をズームイン / アウト |
+ | `o` | プロジェクト / アイテムをブラウザで開く |
+diff --git a/docs/guide/ja/src/config-reference.md b/docs/guide/ja/src/config-reference.md
+index b82f119..c8f40b0 100644
+--- a/docs/guide/ja/src/config-reference.md
++++ b/docs/guide/ja/src/config-reference.md
+@@ -35,6 +35,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
+ | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
+ | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
+ | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
++| [`projects-view`](#projects-view) | なし | 同名は置換、他は追加 |
+ | [`pages`](#pages) | 全 7 ページ | 丸ごと置換 |
+ | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
+ | [`app`](#app) | `Ctrl+c` 終了、`1`…`7` ページ切替 | キー単位マージ |
+@@ -67,8 +68,8 @@ colors "red"
+ // → unknown top-level block "colors" (expected `theme`, `icons`,
+ //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
+ //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
+-//   `projects-poll-interval`, `projects-board`, `pages`, `repo-config`,
+-//   `app`, or `page`)
++//   `projects-poll-interval`, `projects-board`, `projects-view`, `pages`,
++//   `repo-config`, `app`, or `page`)
+ ```
+ 
+ ## トップレベルノード
+@@ -296,6 +297,58 @@ projects-board "Roadmap" 2
+ //   number (`projects-board 2`)
+ ```
+ 
++### `projects-view`
++
++GitHub に保存するのではなく、ここで定義する Projects ボードのビュー:
++フィルタ・グループ化・ソート・レイアウトを手元だけで持てます（プロジェクト
++への書き込み権限は不要）。ローカルビューはプロジェクトの保存済みビューの
++後ろに並んで `v` / `V` で巡回でき、ヘッダに `(local)` と出ます。
++
++- **書式** — `projects-view "<name>" { … }`。ビューごとに 1 つ、複数
++  書けます。プロパティ `default=#true` を付けるとボードはそのビューで
++  開きます（1 つまで）。子ノードはすべて省略可:
++  - `layout "board" | "table" | "roadmap"` — 既定 `"board"`
++  - `filter "<式>"` — 保存済みビューのフィルタ構文
++    （[Projects ビュー](views-projects.md#保存済みビュー)参照）を手元で評価
++  - `columns "<field>"` — ボードの列にする単一選択フィールド（既定 `Status`）
++  - `group-by "<field>"` — ボードではスイムレーン、テーブルではグループ行
++  - `sort "<field>" "asc" | "desc"` — 複数可。先頭がボードのカード順と
++    テーブルの初期ソート
++  - `fields "<field>" …` — テーブルの列（この順）
++  - `board "<title>"` または `board <number>` — そのリンク済みプロジェクト
++    にだけ適用（省略で全ボード）
++- **デフォルト** — なし
++- **マージ** — 同名のビューは置換、それ以外は追加。
++
++フィールド名は GitHub で表示されるプロジェクトのフィールド名（`Status`、
++`Priority`、`Target date`、…）です。ボードに無い名前はエラーにならず、
++ステータスバーに `⚠ view "Mine": no field "…"` と出てその設定だけ無視
++されます。
++
++```kdl
++projects-view "Mine" default=#true {
++    filter "assignee:@me -status:Done"
++    group-by "Status"
++    sort "Target date" "asc"
++}
++
++projects-view "Backlog" {
++    layout "table"
++    filter "status:Todo is:issue"
++    fields "Title" "Priority" "Assignees"
++    sort "Priority" "desc"
++    board "Roadmap"
++}
++```
++
++```kdl,ignore
++projects-view "Mine" {
++    layout "kanban"
++}
++// → bad projects-view "Mine" (layout: unknown layout "kanban"; expected
++//   "board", "table" or "roadmap")
++```
++
+ ### `pages`
+ 
+ 有効にするページを、タブ順で並べます。リスト内の位置がページの
+diff --git a/docs/guide/ja/src/views-projects.md b/docs/guide/ja/src/views-projects.md
+index 139aacd..3ffa42e 100644
+--- a/docs/guide/ja/src/views-projects.md
++++ b/docs/guide/ja/src/views-projects.md
+@@ -76,6 +76,25 @@ API 呼び出しなし）。どのレイアウトでもグループ化・ソー
+ ステータスバーに `⚠ filter: unsupported "…"` と出して無視します。フィルタ
+ で隠れた件数もステータスバーに `(3 filtered out)` と表示されます。
+ 
++## ローカルビュー
++
++ビューは GitHub 由来でなくても構いません。設定のトップレベルに
++[`projects-view`](config-reference.md#projects-view) ノードを書くと、
++フィルタ・グループ化・ソート・テーブルの列・レイアウトを手元だけで
++定義できます（プロジェクトへの書き込み権限は不要）。ローカルビューは
++保存済みビューの後ろに並んで `v` / `V` で巡回でき、ヘッダに `(local)` と
++出ます。`default=#true` を付けたものはボードを開いたときのビューになり
++ます。`board "<title>"` / `board <number>` で特定のリンク済みプロジェクト
++に限定でき、ボードに無いフィールド名はエラーではなくステータスバーで
++知らせたうえで無視されます。
++
++```kdl
++projects-view "Mine" default=#true {
++    filter "assignee:@me -status:Done"
++    group-by "Status"
++}
++```
++
+ ## キーバインド
+ 
+ | キー | 操作 |
+diff --git a/docs/guide/src/config-reference.md b/docs/guide/src/config-reference.md
+index 47fbd1f..e140f2a 100644
+--- a/docs/guide/src/config-reference.md
++++ b/docs/guide/src/config-reference.md
+@@ -37,6 +37,7 @@ Conventions used below:
+ | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
+ | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
+ | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
++| [`projects-view`](#projects-view) | none | replaced by name, else appended |
+ | [`pages`](#pages) | all seven pages | replaced wholesale |
+ | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
+ | [`app`](#app) | `Ctrl+c` quit, `1`…`7` page switch | merged per key |
+@@ -69,8 +70,8 @@ colors "red"
+ // → unknown top-level block "colors" (expected `theme`, `icons`,
+ //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
+ //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
+-//   `projects-poll-interval`, `projects-board`, `pages`, `repo-config`,
+-//   `app`, or `page`)
++//   `projects-poll-interval`, `projects-board`, `projects-view`, `pages`,
++//   `repo-config`, `app`, or `page`)
+ ```
+ 
+ ## Top-level nodes
+@@ -302,6 +303,60 @@ projects-board "Roadmap" 2
+ //   number (`projects-board 2`)
+ ```
+ 
++### `projects-view`
++
++A view of a Projects board defined here rather than saved on GitHub: a
++filter, grouping, sort and layout of your own, with no write access to the
++project needed. Local views follow the project's saved views in the `v` /
++`V` cycle and the header marks them `(local)`.
++
++- **Form** — `projects-view "<name>" { … }`, repeatable, one per view; an
++  optional `default=#true` property makes the board open on that view
++  (at most one). Children, all optional:
++  - `layout "board" | "table" | "roadmap"` — default `"board"`
++  - `filter "<expression>"` — the saved-view filter syntax (see the
++    [Projects view](views-projects.md#saved-views)), evaluated locally
++  - `columns "<field>"` — the single-select field whose options become the
++    board columns (default `Status`)
++  - `group-by "<field>"` — swimlanes on the board, group rows in the table
++  - `sort "<field>" "asc" | "desc"` — repeatable; the first is the board's
++    card order and the table's initial sort
++  - `fields "<field>" …` — the table columns, in order
++  - `board "<title>"` or `board <number>` — apply to that linked project
++    only (absent: every board)
++- **Default** — none
++- **Merge** — a view with the same name replaces it; other names are
++  appended.
++
++Field names are the project's field names as GitHub shows them (`Status`,
++`Priority`, `Target date`, …). A name the board does not have is not an
++error: the status bar says `⚠ view "Mine": no field "…"` and that setting
++is ignored for the board.
++
++```kdl
++projects-view "Mine" default=#true {
++    filter "assignee:@me -status:Done"
++    group-by "Status"
++    sort "Target date" "asc"
++}
++
++projects-view "Backlog" {
++    layout "table"
++    filter "status:Todo is:issue"
++    fields "Title" "Priority" "Assignees"
++    sort "Priority" "desc"
++    board "Roadmap"
++}
++```
++
++```kdl,ignore
++projects-view "Mine" {
++    layout "kanban"
++}
++// → bad projects-view "Mine" (layout: unknown layout "kanban"; expected
++//   "board", "table" or "roadmap")
++```
++
+ ### `pages`
+ 
+ Which pages are enabled, in tab order. The position in the list is the
+diff --git a/docs/guide/src/views-projects.md b/docs/guide/src/views-projects.md
+index f2876ac..b25034d 100644
+--- a/docs/guide/src/views-projects.md
++++ b/docs/guide/src/views-projects.md
+@@ -74,6 +74,25 @@ wildcards and `is:open|closed` cannot be evaluated: the status bar says
+ `⚠ filter: unsupported "…"` and those tokens are ignored. The status bar also
+ counts what the filter hid (`(3 filtered out)`).
+ 
++## Local views
++
++Views need not come from GitHub: a top-level
++[`projects-view`](config-reference.md#projects-view) node in the config
++defines one locally — its filter, grouping, sort, table columns and layout —
++with no write access to the project. Local views follow the saved ones in
++the `v` / `V` cycle, the header marks them `(local)`, and one can be the
++view a board opens on (`default=#true`). A view can be limited to one
++linked project (`board "<title>"` / `board <number>`); a field name the
++board does not have is reported in the status bar and ignored rather than
++being an error.
++
++```kdl
++projects-view "Mine" default=#true {
++    filter "assignee:@me -status:Done"
++    group-by "Status"
++}
++```
++
+ ## Key bindings
+ 
+ | Key | Action |
+diff --git a/src/core/config/loader.rs b/src/core/config/loader.rs
+index faa4ec1..a1df0c5 100644
+--- a/src/core/config/loader.rs
++++ b/src/core/config/loader.rs
+@@ -73,6 +73,93 @@ impl ProjectsBoard {
+     }
+ }
+ 
++/// A `projects-view` node: a view of a Projects board defined in the
++/// config rather than saved on GitHub. Field references are names,
++/// resolved against the board when it is shown.
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub struct ProjectsView {
++    pub name: String,
++    pub layout: crate::projects::domain::types::ViewLayout,
++    /// `filter "<expression>"` — the saved-view syntax, evaluated locally.
++    pub filter: Option<String>,
++    /// `columns "<field>"` — the single-select field behind the board columns.
++    pub columns: Option<String>,
++    /// `group-by "<field>"` — swimlanes (board) / group rows (table).
++    pub group_by: Option<String>,
++    /// `sort "<field>" "asc"|"desc"` lines, in order.
++    pub sort: Vec<crate::projects::domain::types::ViewSort>,
++    /// `fields "…" "…"` — the table columns.
++    pub fields: Vec<String>,
++    /// `board "<title>"` / `board <number>`: only that linked project gets
++    /// the view (`None`: every board).
++    pub board: Option<ProjectsBoard>,
++    /// `default=#true`: the view a board opens on.
++    pub initial: bool,
++}
++
++impl ProjectsView {
++    /// The view as the board pane consumes it, tagged local; `number` must
++    /// not collide with GitHub's view numbers.
++    pub fn to_view(&self, number: u64) -> crate::projects::domain::types::ProjectView {
++        crate::projects::domain::types::ProjectView {
++            number,
++            name: self.name.clone(),
++            layout: self.layout,
++            filter: self.filter.clone(),
++            group_by: self.group_by.iter().cloned().collect(),
++            vertical_group_by: self.columns.iter().cloned().collect(),
++            sort_by: self.sort.clone(),
++            visible_fields: self.fields.clone(),
++            local: true,
++            initial: self.initial,
++        }
++    }
++}
++
++/// A `board` reference as `projects-board` and `projects-view { board }`
++/// take it: a title string or a positive project number. `Err` names
++/// what is wrong with the arguments.
++fn board_ref(node: &KdlNode) -> std::result::Result<ProjectsBoard, &'static str> {
++    let [entry] = node.entries() else {
++        return Err("one argument required");
++    };
++    if entry.name().is_some() {
++        return Err("a property is not an argument");
++    }
++    if let Some(title) = entry.value().as_string() {
++        if title.trim().is_empty() {
++            return Err("empty title");
++        }
++        return Ok(ProjectsBoard::ByTitle(title.to_string()));
++    }
++    if let Some(n) = entry.value().as_integer() {
++        return match u64::try_from(n) {
++            Ok(n) if n > 0 => Ok(ProjectsBoard::ByNumber(n)),
++            _ => Err("a project number must be a positive integer"),
++        };
++    }
++    Err("not a string or integer")
++}
++
++/// The string arguments of `node` (`fields "A" "B"`), or what is wrong.
++fn string_args(node: &KdlNode) -> std::result::Result<Vec<String>, &'static str> {
++    let mut out = Vec::new();
++    for entry in node.entries() {
++        if entry.name().is_some() {
++            return Err("a property is not an argument");
++        }
++        match entry.value().as_string() {
++            Some(s) if !s.trim().is_empty() => out.push(s.to_string()),
++            Some(_) => return Err("empty string"),
++            None => return Err("not a string"),
++        }
++    }
++    if out.is_empty() {
++        return Err("one argument required");
++    }
++    Ok(out)
++}
++
+ /// The pin as written in the config — `"Roadmap"` or `2` — for messages
+ /// naming it.
+ impl std::fmt::Display for ProjectsBoard {
+@@ -315,6 +402,7 @@ impl Config {
+         self.github_auto_refresh()?;
+         self.projects_poll_interval()?;
+         self.projects_board()?;
++        self.projects_views()?;
+         self.repo_config()?;
+         Ok(())
+     }
+@@ -606,33 +694,155 @@ impl Config {
+         else {
+             return Ok(None);
+         };
+-        let invalid = |what: &str| {
++        board_ref(node).map(Some).map_err(|what| {
+             anyhow!(
+                 "invalid {}: bad projects-board ({what}); expected exactly one argument, \
+                  a board title (`projects-board \"Roadmap\"`) or a project number \
+                  (`projects-board 2`)",
+                 self.describe()
+             )
+-        };
+-        let [entry] = node.entries() else {
+-            return Err(invalid("one argument required"));
+-        };
+-        if entry.name().is_some() {
+-            return Err(invalid("a property is not an argument"));
+-        }
+-        if let Some(title) = entry.value().as_string() {
+-            if title.trim().is_empty() {
+-                return Err(invalid("empty title"));
++        })
++    }
++
++    /// The local views of the Projects page (`projects-view "<name>" { … }`
++    /// nodes), in config order. Names are unique; at most one is `default`.
++    pub fn projects_views(&self) -> Result<Vec<ProjectsView>> {
++        use crate::projects::domain::types::{ViewLayout, ViewSort};
++        let mut views: Vec<ProjectsView> = Vec::new();
++        for node in self
++            .doc
++            .nodes()
++            .iter()
++            .filter(|n| n.name().value() == "projects-view")
++        {
++            let name = node
++                .get(0usize)
++                .and_then(|v| v.as_string())
++                .map(str::trim)
++                .filter(|s| !s.is_empty())
++                .ok_or_else(|| {
++                    anyhow!(
++                        "invalid {}: bad projects-view (a name is required): \
++                         `projects-view \"Mine\" {{ … }}`",
++                        self.describe()
++                    )
++                })?
++                .to_string();
++            let invalid = |what: String| {
++                anyhow!(
++                    "invalid {}: bad projects-view {name:?} ({what})",
++                    self.describe()
++                )
++            };
++            if views.iter().any(|v| v.name == name) {
++                return Err(invalid("defined twice".into()));
+             }
+-            return Ok(Some(ProjectsBoard::ByTitle(title.to_string())));
+-        }
+-        if let Some(n) = entry.value().as_integer() {
+-            return match u64::try_from(n) {
+-                Ok(n) if n > 0 => Ok(Some(ProjectsBoard::ByNumber(n))),
+-                _ => Err(invalid("a project number is positive")),
++            let mut initial = false;
++            for entry in node.entries() {
++                match entry.name().map(|n| n.value()) {
++                    None => {}
++                    Some("default") => {
++                        initial = entry
++                            .value()
++                            .as_bool()
++                            .ok_or_else(|| invalid("default expects #true or #false".into()))?;
++                    }
++                    Some(other) => {
++                        return Err(invalid(format!(
++                            "unknown property {other:?}; only default=#true is accepted"
++                        )))
++                    }
++                }
++            }
++            if initial && views.iter().any(|v| v.initial) {
++                return Err(invalid("only one projects-view can be the default".into()));
++            }
++            let mut view = ProjectsView {
++                name: name.clone(),
++                layout: ViewLayout::Board,
++                filter: None,
++                columns: None,
++                group_by: None,
++                sort: Vec::new(),
++                fields: Vec::new(),
++                board: None,
++                initial,
+             };
++            let children = node.children().map(|c| c.nodes()).unwrap_or(&[]);
++            for child in children {
++                let key = child.name().value();
++                let bad = |what: &str| invalid(format!("{key}: {what}"));
++                match key {
++                    "layout" => {
++                        let args = string_args(child).map_err(bad)?;
++                        let [layout] = args.as_slice() else {
++                            return Err(bad("one argument required"));
++                        };
++                        view.layout = match layout.as_str() {
++                            "board" => ViewLayout::Board,
++                            "table" => ViewLayout::Table,
++                            "roadmap" => ViewLayout::Roadmap,
++                            other => {
++                                return Err(bad(&format!(
++                                    "unknown layout {other:?}; expected \"board\", \"table\" or \"roadmap\""
++                                )))
++                            }
++                        };
++                    }
++                    "filter" | "columns" | "group-by" => {
++                        let args = string_args(child).map_err(bad)?;
++                        let [value] = args.as_slice() else {
++                            return Err(bad("one argument required"));
++                        };
++                        let slot = match key {
++                            "filter" => &mut view.filter,
++                            "columns" => &mut view.columns,
++                            _ => &mut view.group_by,
++                        };
++                        if slot.is_some() {
++                            return Err(bad("given twice"));
++                        }
++                        *slot = Some(value.clone());
++                    }
++                    "sort" => {
++                        let args = string_args(child).map_err(bad)?;
++                        let (field, desc) = match args.as_slice() {
++                            [field] => (field.clone(), false),
++                            [field, dir] => match dir.as_str() {
++                                "asc" => (field.clone(), false),
++                                "desc" => (field.clone(), true),
++                                other => {
++                                    return Err(bad(&format!(
++                                        "unknown direction {other:?}; expected \"asc\" or \"desc\""
++                                    )))
++                                }
++                            },
++                            _ => {
++                                return Err(bad(
++                                    "expected a field name and optionally \"asc\" / \"desc\"",
++                                ))
++                            }
++                        };
++                        view.sort.push(ViewSort { field, desc });
++                    }
++                    "fields" => view.fields.extend(string_args(child).map_err(bad)?),
++                    "board" => {
++                        if view.board.is_some() {
++                            return Err(bad("given twice"));
++                        }
++                        view.board = Some(board_ref(child).map_err(bad)?);
++                    }
++                    other => {
++                        return Err(invalid(format!(
++                            "unknown node {other:?}; expected layout, filter, columns, \
++                             group-by, sort, fields or board"
++                        )))
++                    }
++                }
++            }
++            views.push(view);
+         }
+-        Err(invalid("not a string or integer"))
++        Ok(views)
+     }
+ 
+     /// How the Files view previews images (`image-preview "auto"` / `"halfblocks"` / `"none"`).
+@@ -2356,6 +2566,88 @@ mod tests {
+         assert!(msg.contains("nerd, none"), "{msg}");
+     }
+ 
++    #[test]
++    fn projects_views_parse_and_validate() {
++        use crate::projects::domain::types::ViewLayout;
++        assert!(Config::builtin().projects_views().unwrap().is_empty());
++        let cfg = user(
++            r#"
++            projects-view "Mine" default=#true {
++                layout "board"
++                filter "assignee:@me -status:Done"
++                columns "Status"
++                group-by "Priority"
++                sort "Target date" "asc"
++                sort "Title" "desc"
++                fields "Title" "Status"
++                fields "Target date"
++                board "Roadmap"
++            }
++            projects-view "All" {
++                layout "table"
++                board 2
++            }
++            "#,
++        )
++        .unwrap();
++        let views = cfg.projects_views().unwrap();
++        assert_eq!(views.len(), 2);
++        let mine = &views[0];
++        assert_eq!(mine.name, "Mine");
++        assert!(mine.initial);
++        assert_eq!(mine.layout, ViewLayout::Board);
++        assert_eq!(mine.filter.as_deref(), Some("assignee:@me -status:Done"));
++        assert_eq!(mine.columns.as_deref(), Some("Status"));
++        assert_eq!(mine.group_by.as_deref(), Some("Priority"));
++        assert_eq!(mine.sort.len(), 2);
++        assert_eq!(mine.sort[0].field, "Target date");
++        assert!(!mine.sort[0].desc);
++        assert!(mine.sort[1].desc);
++        assert_eq!(mine.fields, vec!["Title", "Status", "Target date"]);
++        assert_eq!(mine.board, Some(ProjectsBoard::ByTitle("Roadmap".into())));
++        let all = &views[1];
++        assert!(!all.initial);
++        assert_eq!(all.layout, ViewLayout::Table);
++        assert_eq!(all.board, Some(ProjectsBoard::ByNumber(2)));
++        assert!(all.filter.is_none() && all.fields.is_empty());
++        // The board pane's shape: local, columns → vertical group, sort kept.
++        let v = mine.to_view(7);
++        assert!(v.local && v.initial);
++        assert_eq!(v.vertical_group_by, vec!["Status"]);
++        assert_eq!(v.group_by, vec!["Priority"]);
++        assert_eq!(v.sort_by.len(), 2);
++
++        for (bad, what) in [
++            (r#"projects-view { layout "board" }"#, "a name is required"),
++            (r#"projects-view "" { }"#, "a name is required"),
++            (
++                r#"projects-view "A" default=#true { }; projects-view "B" default=#true { }"#,
++                "only one",
++            ),
++            (r#"projects-view "A" default="yes" { }"#, "default expects"),
++            (r#"projects-view "A" pinned=#true { }"#, "unknown property"),
++            (r#"projects-view "A" { layout "kanban" }"#, "unknown layout"),
++            (
++                r#"projects-view "A" { filter "a"; filter "b" }"#,
++                "given twice",
++            ),
++            (
++                r#"projects-view "A" { sort "Title" "up" }"#,
++                "unknown direction",
++            ),
++            (r#"projects-view "A" { sort }"#, "one argument required"),
++            (r#"projects-view "A" { fields 3 }"#, "not a string"),
++            (r#"projects-view "A" { board 0 }"#, "positive"),
++            (r#"projects-view "A" { swimlane "Status" }"#, "unknown node"),
++        ] {
++            let msg = user(bad).expect_err("expected an error").to_string();
++            assert!(
++                msg.contains("projects-view") && msg.contains(what),
++                "{bad}: {msg}"
++            );
++        }
++    }
++
+     #[test]
+     fn projects_board_default_override_and_validation() {
+         assert_eq!(Config::builtin().projects_board().unwrap(), None);
+diff --git a/src/core/config/merge.rs b/src/core/config/merge.rs
+index 15655a8..5d4a613 100644
+--- a/src/core/config/merge.rs
++++ b/src/core/config/merge.rs
+@@ -39,13 +39,14 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
+             | "projects-board"
+             | "pages"
+             | "repo-config" => replace_single(default, unode),
++            "projects-view" => replace_named(default, unode),
+             "app" => merge_app(default, unode)?,
+             "page" => merge_page(default, unode)?,
+             other => {
+                 return Err(anyhow!(
+                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
+                  `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, \
+-                 `projects-poll-interval`, `projects-board`, `pages`, `repo-config`, `app`, or `page`)"
++                 `projects-poll-interval`, `projects-board`, `projects-view`, `pages`, `repo-config`, `app`, or `page`)"
+             ))
+             }
+         }
+@@ -63,6 +64,21 @@ fn replace_single(target: &mut KdlDocument, node: &KdlNode) {
+     }
+ }
+ 
++/// Replace the node with the same name *and* first argument (`projects-view
++/// "Mine"`), else append: several may coexist, one per name.
++fn replace_named(target: &mut KdlDocument, node: &KdlNode) {
++    let name = node.name().value();
++    let key = arg0(node);
++    let nodes = target.nodes_mut();
++    match nodes
++        .iter_mut()
++        .find(|n| n.name().value() == name && arg0(n) == key)
++    {
++        Some(existing) => *existing = node.clone(),
++        None => nodes.push(node.clone()),
++    }
++}
++
+ fn merge_app(default: &mut KdlDocument, unode: &KdlNode) -> Result<()> {
+     let Some(uchildren) = unode.children() else {
+         return Ok(());
+@@ -372,6 +388,30 @@ page "git" {
+         assert_eq!(vals, vec!["60s"]);
+     }
+ 
++    #[test]
++    fn projects_views_replace_by_name_else_append() {
++        let mut d =
++            merged(r#"projects-view "Mine" { layout "table" }; projects-view "All" { }"#).unwrap();
++        let user: KdlDocument =
++            r#"projects-view "Mine" { layout "board" }; projects-view "New" { }"#
++                .parse()
++                .unwrap();
++        merge_user_config(&mut d, &user).unwrap();
++        let views: Vec<(&str, Option<&str>)> = d
++            .nodes()
++            .iter()
++            .filter(|n| n.name().value() == "projects-view")
++            .map(|n| {
++                let layout = n.children().and_then(|c| c.get("layout")).and_then(arg0);
++                (arg0(n).unwrap(), layout)
++            })
++            .collect();
++        assert_eq!(
++            views,
++            vec![("Mine", Some("board")), ("All", None), ("New", None)]
++        );
++    }
++
+     #[test]
+     fn projects_board_replaced_wholesale() {
+         let d = merged("projects-board 2").unwrap();
+diff --git a/src/core/config/mod.rs b/src/core/config/mod.rs
+index f84bf61..936de08 100644
+--- a/src/core/config/mod.rs
++++ b/src/core/config/mod.rs
+@@ -8,7 +8,7 @@ pub mod repo;
+ pub mod source;
+ pub mod trust;
+ 
+-pub use loader::{Config, LoadedPageConfig, ProjectsBoard};
++pub use loader::{Config, LoadedPageConfig, ProjectsBoard, ProjectsView};
+ 
+ #[cfg(test)]
+ pub use keymap_builder::build_keymap;
+diff --git a/src/core/ui/status_bar.rs b/src/core/ui/status_bar.rs
+index 7a6fd25..f36c329 100644
+--- a/src/core/ui/status_bar.rs
++++ b/src/core/ui/status_bar.rs
+@@ -381,6 +381,12 @@ pub fn render_projects_header(f: &mut Frame, ctx: &AppContext, pj: &ProjectsStat
+                 view.to_string(),
+                 Style::default().fg(Color::White),
+             ));
++            if pj.panes.board.current_view_is_local() {
++                spans.push(Span::styled(
++                    " (local)",
++                    Style::default().fg(Color::DarkGray),
++                ));
++            }
+             if let Some(v) = pj.panes.board.current_view() {
+                 spans.push(Span::styled(
+                     format!(" [{}]", v.layout.label()),
+@@ -468,6 +474,10 @@ pub fn render_projects_status_bar(f: &mut Frame, ctx: &AppContext, pj: &Projects
+                 spans.push(Span::raw("  "));
+                 spans.push(Span::styled(notice, Style::default().fg(Color::Yellow)));
+             }
++            if let Some(notice) = pj.panes.board.view_notice() {
++                spans.push(Span::raw("  "));
++                spans.push(Span::styled(notice, Style::default().fg(Color::Yellow)));
++            }
+             if let Some(age) = pj.board_age() {
+                 spans.push(Span::raw("  "));
+                 spans.push(Span::styled(age, Style::default().fg(Color::DarkGray)));
+diff --git a/src/projects/domain/graphql.rs b/src/projects/domain/graphql.rs
+index bc53191..1489770 100644
+--- a/src/projects/domain/graphql.rs
++++ b/src/projects/domain/graphql.rs
+@@ -314,6 +314,8 @@ pub(crate) fn views_from(views: &Value) -> Vec<ProjectView> {
+                             })
+                             .unwrap_or_default(),
+                         visible_fields: names(v.get("fields").unwrap_or(&Value::Null)),
++                        local: false,
++                        initial: false,
+                     })
+                 })
+                 .collect()
+diff --git a/src/projects/domain/types.rs b/src/projects/domain/types.rs
+index a4e6bb1..5a3287a 100644
+--- a/src/projects/domain/types.rs
++++ b/src/projects/domain/types.rs
+@@ -496,9 +496,15 @@ pub struct ProjectView {
+     /// Visible fields in the view's column order.
+     #[serde(default)]
+     pub visible_fields: Vec<String>,
++    /// Defined in the config (`projects-view`), not saved on GitHub.
++    #[serde(default)]
++    pub local: bool,
++    /// `projects-view … default=#true`: the view a board opens on.
++    #[serde(default)]
++    pub initial: bool,
+ }
+ 
+-#[derive(Debug, Clone, Deserialize, Serialize)]
++#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+ pub struct ViewSort {
+     pub field: String,
+     /// `true` for descending (`DESC`).
+@@ -820,6 +826,8 @@ pub(crate) mod tests {
+                 desc: true,
+             }],
+             visible_fields: vec!["Title".into(), "Status".into()],
++            local: false,
++            initial: false,
+         });
+         let json = serde_json::to_string(&b).unwrap();
+         let back: Board = serde_json::from_str(&json).unwrap();
+@@ -848,6 +856,8 @@ pub(crate) mod tests {
+                 "Estimate".into(),
+                 "Assignees".into(),
+             ],
++            local: false,
++            initial: false,
+         };
+         let cols = view_table_columns(&v, &b.fields);
+         let headers: Vec<&str> = cols.iter().map(TableColumn::header).collect();
+diff --git a/src/projects/panes/board.rs b/src/projects/panes/board.rs
+index 543610a..b04fd6d 100644
+--- a/src/projects/panes/board.rs
++++ b/src/projects/panes/board.rs
+@@ -335,10 +335,17 @@ impl BoardPane {
+     /// still there (a refresh may move it to another column).
+     pub fn set_board(&mut self, board: Board) {
+         let keep = self.selected_item().map(|i| i.id.clone());
+-        // Keep the shown view across a refresh of the same project; another
+-        // project starts on its first view.
++        // Keep the shown view (by number: the saved views may have changed)
++        // across a refresh of the same project; another project starts on
++        // its default local view, else its first view.
+         if self.board.as_ref().map(|b| b.number) != Some(board.number) {
+-            self.view_idx = 0;
++            self.view_idx = board.views.iter().position(|v| v.initial).unwrap_or(0);
++        } else if let Some(idx) = board
++            .views
++            .iter()
++            .position(|v| Some(v.number) == self.applied_view)
++        {
++            self.view_idx = idx;
+         }
+         self.view_idx = self.view_idx.min(board.views.len().saturating_sub(1));
+         let same_project = self.board.as_ref().map(|b| b.number) == Some(board.number);
+@@ -484,6 +491,45 @@ impl BoardPane {
+         self.board.as_ref()?.views.get(self.view_idx)
+     }
+ 
++    /// The shown view comes from the config (`projects-view`), not GitHub.
++    pub fn current_view_is_local(&self) -> bool {
++        self.current_view().is_some_and(|v| v.local)
++    }
++
++    /// `⚠ view "Mine": no field "Foo"` when the current view names fields
++    /// the board does not have (those settings are ignored).
++    pub fn view_notice(&self) -> Option<String> {
++        let board = self.board.as_ref()?;
++        let view = self.current_view()?;
++        let known = |name: &String| {
++            matches!(name.as_str(), "Title" | "Assignees")
++                || board.fields.iter().any(|f| &f.name == name)
++        };
++        // Each name once, in first-seen order (a field may be named in
++        // several settings).
++        let mut missing: Vec<&String> = Vec::new();
++        for name in view
++            .vertical_group_by
++            .iter()
++            .chain(view.group_by.iter())
++            .chain(view.sort_by.iter().map(|s| &s.field))
++            .chain(view.visible_fields.iter())
++        {
++            if !known(name) && !missing.contains(&name) {
++                missing.push(name);
++            }
++        }
++        if missing.is_empty() {
++            return None;
++        }
++        let list: Vec<String> = missing.iter().map(|n| format!("{n:?}")).collect();
++        Some(format!(
++            "⚠ view {:?}: no field {}",
++            view.name,
++            list.join(", ")
++        ))
++    }
++
+     /// `(view name, position, count)` for the header.
+     pub fn view_label(&self) -> Option<(&str, usize, usize)> {
+         let views = &self.board.as_ref()?.views;
+@@ -1653,6 +1699,8 @@ mod tests {
+             vertical_group_by: vec![],
+             sort_by: vec![],
+             visible_fields: vec![],
++            local: false,
++            initial: false,
+         }
+     }
+ 
+@@ -1929,6 +1977,40 @@ mod tests {
+         assert_eq!(p.view_label(), Some(("Only", 1, 1)));
+     }
+ 
++    /// A local `default` view opens first; fields it names that the board
++    /// lacks are reported, and a saved view carries neither mark.
++    #[test]
++    fn a_local_default_view_opens_first_and_missing_fields_are_noticed() {
++        let mut p = pane();
++        let sh = shared();
++        let mut b = board();
++        b.number = 5; // another project than the helper's: opens fresh
++        let mut mine = view(2, "Mine");
++        mine.local = true;
++        mine.initial = true;
++        mine.layout = crate::projects::domain::types::ViewLayout::Board;
++        mine.group_by = vec!["Ghost".into()];
++        mine.sort_by = vec![crate::projects::domain::types::ViewSort {
++            field: "Title".into(),
++            desc: false,
++        }];
++        // "Ghost" twice, apart: listed once.
++        mine.visible_fields = vec!["Status".into(), "Phantom".into(), "Ghost".into()];
++        b.views = vec![view(1, "All"), mine];
++        p.set_board(b);
++        assert_eq!(p.view_label(), Some(("Mine", 2, 2)));
++        assert!(p.current_view_is_local());
++        assert_eq!(p.mode, BoardMode::Board);
++        assert_eq!(
++            p.view_notice().as_deref(),
++            Some("⚠ view \"Mine\": no field \"Ghost\", \"Phantom\"")
++        );
++        p.execute(&sh, BoardAction::PrevView);
++        assert_eq!(p.view_label(), Some(("All", 1, 2)));
++        assert!(!p.current_view_is_local());
++        assert_eq!(p.view_notice(), None);
++    }
++
+     #[test]
+     fn columns_and_cards_navigate_with_hjkl() {
+         let mut p = pane();
+diff --git a/src/projects/state.rs b/src/projects/state.rs
+index 916acbf..964ee56 100644
+--- a/src/projects/state.rs
++++ b/src/projects/state.rs
+@@ -10,7 +10,7 @@
+ //! the list's selection drives the board.
+ 
+ use crate::core::app::{AppContext, PageState};
+-use crate::core::config::{Config, LoadedPageConfig, ProjectsBoard};
++use crate::core::config::{Config, LoadedPageConfig, ProjectsBoard, ProjectsView};
+ use crate::core::keymap::{Keymap, ViewAction};
+ use crate::core::layout::{split_page_frame, PageLayoutConfig};
+ use crate::core::page::PageAction;
+@@ -138,6 +138,9 @@ pub struct ProjectsState {
+     /// The `projects-board` config pin: only the matching project is shown
+     /// and `p` / `P` do not cycle.
+     pinned: Option<ProjectsBoard>,
++    /// `projects-view` nodes: appended to every board's saved views (or to
++    /// the one board they name) when the board is shown.
++    local_views: Vec<ProjectsView>,
+     bg_rx: Option<mpsc::Receiver<ProjectsBgMessage>>,
+     bg_tx: Option<mpsc::Sender<ProjectsBgMessage>>,
+     initialized: bool,
+@@ -163,6 +166,10 @@ pub struct ProjectsState {
+     view_keymap: Keymap<ViewAction>,
+ }
+ 
++/// View numbers given to local views (`projects-view`), above anything
++/// GitHub hands out, so the pane tells them apart from saved views.
++const LOCAL_VIEW_BASE: u64 = 1 << 40;
++
+ /// First probe pause after a rate-limited answer.
+ const PROBE_BASE_BACKOFF: Duration = Duration::from_secs(30);
+ /// Longest interval automatic probes stretch to when idle / low on quota,
+@@ -194,6 +201,7 @@ impl ProjectsState {
+         let ids = ProjectsPaneIds::from_config(&page_cfg);
+         let list_placed = page_cfg.is_placed("projects");
+         let pinned = cfg.projects_board()?;
++        let local_views = cfg.projects_views()?;
+         let poll_interval = cfg.projects_poll_interval()?;
+         // Validates the bind declarations (projects → board while the list
+         // is placed, board → detail).
+@@ -232,6 +240,7 @@ impl ProjectsState {
+             list_placed,
+             links_known: false,
+             pinned,
++            local_views,
+             bg_rx: None,
+             bg_tx: None,
+             initialized: false,
+@@ -396,6 +405,31 @@ impl ProjectsState {
+             .map(|_| "↻ updated")
+     }
+ 
++    /// Show `board` in the pane with the config's local views appended to
++    /// its saved ones (the cached / on-disk board stays as fetched).
++    fn show_board(&mut self, mut board: Board) {
++        let title = self
++            .panes
++            .projects
++            .items
++            .iter()
++            .find(|p| p.number == board.number)
++            .map(|p| p.title.as_str())
++            .unwrap_or_default();
++        let local = self
++            .local_views
++            .iter()
++            .enumerate()
++            .filter(|(_, v)| {
++                v.board
++                    .as_ref()
++                    .is_none_or(|b| b.matches(board.number, title))
++            })
++            .map(|(i, v)| v.to_view(LOCAL_VIEW_BASE + i as u64));
++        board.views.extend(local);
++        self.panes.board.set_board(board);
++    }
++
+     /// The cached board for `number` is missing or older than [`STALE_AFTER`].
+     fn board_stale(&self, number: u64) -> bool {
+         self.board_stale_for(number, STALE_AFTER)
+@@ -441,7 +475,7 @@ impl ProjectsState {
+             },
+         );
+         if current {
+-            self.panes.board.set_board(board);
++            self.show_board(board);
+             self.sync_detail();
+         }
+         true
+@@ -544,7 +578,7 @@ impl ProjectsState {
+         let shown = self.panes.board.board.as_ref().map(|b| b.number);
+         if shown != Some(number) {
+             match self.board_cache.get(&number) {
+-                Some(c) => self.panes.board.set_board(c.board.clone()),
++                Some(c) => self.show_board(c.board.clone()),
+                 None => self.panes.board.clear(),
+             }
+         }
+@@ -678,7 +712,7 @@ impl ProjectsState {
+                                 },
+                             );
+                             if current {
+-                                self.panes.board.set_board(board);
++                                self.show_board(board);
+                                 self.sync_detail();
+                             }
+                         }
+@@ -1580,6 +1614,73 @@ mod tests {
+         assert!(st.board_inflight.contains(&2), "the board is retried");
+     }
+ 
++    /// `projects-view` nodes follow the saved views of every board they
++    /// apply to, a `default` one opens first, and the cached board stays
++    /// as fetched.
++    #[test]
++    fn local_views_join_the_saved_ones_and_a_default_one_opens_first() {
++        let doc: kdl::KdlDocument = r#"
++            projects-view "Mine" default=#true {
++                filter "-status:Done"
++                group-by "Status"
++            }
++            projects-view "Elsewhere" {
++                board 99
++            }
++            projects-view "Here" {
++                layout "table"
++                board 2
++            }
++        "#
++        .parse()
++        .unwrap();
++        let cfg = Config::with_user(&doc, std::path::PathBuf::from("/u/config.kdl")).unwrap();
++        let mut st = state_with(&cfg);
++        let tx = st.bg_tx.clone().unwrap();
++        tx.send(ProjectsBgMessage::Repo(Ok(repo_info()))).unwrap();
++        let mut fetched = board();
++        let mut saved = cfg.projects_views().unwrap()[0].to_view(1);
++        saved.name = "All".into();
++        saved.local = false;
++        saved.initial = false;
++        fetched.views = vec![saved];
++        tx.send(ProjectsBgMessage::Board {
++            number: 2,
++            result: Ok(fetched),
++        })
++        .unwrap();
++        st.drain_bg_messages();
++
++        let names: Vec<String> = st
++            .panes
++            .board
++            .board
++            .as_ref()
++            .unwrap()
++            .views
++            .iter()
++            .map(|v| v.name.clone())
++            .collect();
++        assert_eq!(names, vec!["All", "Mine", "Here"], "scoped to board 2");
++        assert_eq!(st.panes.board.view_label().map(|l| l.0), Some("Mine"));
++        assert!(st.panes.board.current_view_is_local());
++        assert_eq!(
++            st.board_cache.get(&2).unwrap().board.views.len(),
++            1,
++            "the cache holds the board as fetched"
++        );
++        let rows = render_rows(&mut st);
++        assert!(rows.iter().any(|r| r.contains("Mine (local)")), "{rows:?}");
++        // A refresh keeps the shown local view.
++        tx.send(ProjectsBgMessage::Board {
++            number: 2,
++            result: Ok(board()),
++        })
++        .unwrap();
++        st.drain_bg_messages();
++        assert_eq!(st.panes.board.view_label().map(|l| l.0), Some("Mine"));
++    }
++
+     #[test]
+     fn the_status_bar_shows_the_board_age() {
+         let mut st = state();
+diff --git a/tape/demo-projects.tape b/tape/demo-projects.tape
+index 40b1ce1..4be2e1a 100644
+--- a/tape/demo-projects.tape
++++ b/tape/demo-projects.tape
+@@ -30,6 +30,25 @@ Sleep 500ms
+ Type@1ms "git remote add origin https://github.com/td72/vig.git"
+ Enter
+ Sleep 300ms
++# A local view for the page: defined in the config rather than on GitHub
++# (`projects-view`), passed with --config below.
++Type@1ms "cat > vig.kdl <<'K'"
++Enter
++Type@1ms 'projects-view "Open work" {'
++Enter
++Type@1ms '  layout "table"'
++Enter
++Type@1ms '  filter "-status:Done"'
++Enter
++Type@1ms '  fields "Title" "Status" "Target date"'
++Enter
++Type@1ms '  sort "Target date" "asc"'
++Enter
++Type@1ms "}"
++Enter
++Type@1ms "K"
++Enter
++Sleep 300ms
+ Type@1ms "clear"
+ Enter
+ Sleep 300ms
+@@ -38,7 +57,7 @@ Show
+ 
+ # --- Demo: Projects View ---
+ 
+-Type "vig"
++Type "vig --config vig.kdl"
+ Enter
+ Sleep 2s
+ 
+@@ -109,6 +128,12 @@ Sleep 1.5s
+ Escape
+ Sleep 1.5s
+ 
++# `v` once more: a view defined in the config (`projects-view`), not on
++# GitHub — a table of the open items sorted by target date, `(local)` in
++# the header
++Type "v"
++Sleep 3.5s
++
+ # Quit
+ Type "q"
+ Sleep 500ms

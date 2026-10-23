@@ -84,6 +84,7 @@ impl SlotRule {
 ///
 /// This is the single source of truth for how a page's panes are arranged,
 /// cycled, and dynamically resolved — everything a future config file needs.
+#[derive(Debug, Clone)]
 pub struct PageLayoutConfig {
     pub tree: LayoutNode,
     pub tab_panes: Vec<usize>,

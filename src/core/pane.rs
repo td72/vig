@@ -148,6 +148,8 @@ pub enum PaneEvent {
     OpenRunLog,
     /// Issue / PR lists: show or hide closed and merged items (both lists).
     ToggleClosed,
+    /// PR list / detail: open this PR's diff in a window on top of the page.
+    ShowPrDiff(u64),
     // Files-specific
     /// The directory list changed directory (enter / parent).
     DirChanged,

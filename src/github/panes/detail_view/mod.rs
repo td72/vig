@@ -116,13 +116,15 @@ pub enum DetailAction {
     /// Run detail: jump to the next / previous failed step in the log.
     NextFailed,
     PrevFailed,
+    /// PR detail: open the PR's diff window.
+    ShowDiff,
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     DetailAction, nav: Nav, search: Search, esc: Esc,
     FocusBody, FocusRight, CycleForward, CycleBackward, ToggleWatch, OpenItem,
-    CopyUrl, OpenLog, NextFailed, PrevFailed
+    CopyUrl, OpenLog, NextFailed, PrevFailed, ShowDiff
 );
 
 impl ActionHelp for DetailAction {
@@ -140,6 +142,7 @@ impl ActionHelp for DetailAction {
             DetailAction::OpenLog => Some("Open job log"),
             DetailAction::NextFailed => Some("Next failed step"),
             DetailAction::PrevFailed => Some("Prev failed step"),
+            DetailAction::ShowDiff => Some("Show PR diff (files + side-by-side)"),
             DetailAction::Esc => Some("Back to list"),
         }
     }
@@ -399,7 +402,7 @@ impl GhDetailViewPane {
                     d.run.url.clone(),
                 ))]
             }
-            DetailAction::ToggleWatch => vec![],
+            DetailAction::ToggleWatch | DetailAction::ShowDiff => vec![],
             DetailAction::Search(_) | DetailAction::Esc => return None,
         };
         Some(events)
@@ -718,6 +721,11 @@ impl GhDetailViewPane {
                     _ => None,
                 };
                 return vec![crate::github::panes::gh_list::copy_url_event(url)];
+            }
+            DetailAction::ShowDiff => {
+                if let GhDetailContent::Pr(d) = &self.content {
+                    return vec![PaneEvent::ShowPrDiff(d.number)];
+                }
             }
             // Handled above (search / esc) or only meaningful for runs.
             DetailAction::Search(_)

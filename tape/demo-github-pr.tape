@@ -43,11 +43,17 @@ Sleep 3s
 Type "2"
 Sleep 4s
 
+# Include merged / closed pull requests too (x)
+Type "x"
+Sleep 2s
+
 # Move to PR list with l
 Type "l"
 Sleep 1.5s
 
 # Navigate PR list
+Type "j"
+Sleep 800ms
 Type "j"
 Sleep 800ms
 
@@ -87,6 +93,40 @@ Sleep 800ms
 
 # Back to body pane with h
 Type "h"
+Sleep 1.5s
+
+# Show the PR's diff: changed files + side-by-side diff in a window
+Type "d"
+Sleep 3s
+
+# Walk the changed files; the diff follows
+Type "j"
+Sleep 1s
+Type "j"
+Sleep 1.5s
+
+# Search the file tree by path
+Type "/loader"
+Enter
+Sleep 2s
+
+# Into the diff: scroll, then search it
+Type "i"
+Sleep 1s
+Ctrl+d
+Sleep 1s
+Type "/fn "
+Enter
+Sleep 2s
+Type "n"
+Sleep 1.5s
+Escape
+Sleep 800ms
+
+# Esc steps back to the file tree, then closes the window
+Escape
+Sleep 1s
+Escape
 Sleep 1.5s
 
 # Back to list

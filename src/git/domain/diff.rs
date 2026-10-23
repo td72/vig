@@ -120,6 +120,16 @@ pub fn parse_diff(repo: &Repository, base_ref: Option<&str>) -> anyhow::Result<V
     files_from_diff(&diff)
 }
 
+/// Parse a unified diff (`git diff` / `gh pr diff` output) into side-by-side
+/// `FileDiff`s via libgit2. Blank input is an empty diff.
+pub fn files_from_patch(patch: &[u8]) -> anyhow::Result<Vec<FileDiff>> {
+    if patch.iter().all(|b| b.is_ascii_whitespace()) {
+        return Ok(Vec::new());
+    }
+    let diff = git2::Diff::from_buffer(patch)?;
+    files_from_diff(&diff)
+}
+
 /// Convert a libgit2 diff (working tree, tree-to-tree, or one parsed from a
 /// patch buffer with `git2::Diff::from_buffer`) into side-by-side `FileDiff`s.
 pub fn files_from_diff(diff: &git2::Diff) -> anyhow::Result<Vec<FileDiff>> {

@@ -22,13 +22,15 @@ pub enum GhListAction {
     CopyUrl,
     /// Show / hide closed issues and merged / closed PRs (both lists).
     ToggleClosed,
+    /// PR list: open the selected PR's diff window.
+    ShowDiff,
     Search(SearchAction),
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     GhListAction, nav: Nav, search: Search, esc: Esc,
-    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed
+    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed, ShowDiff
 );
 
 impl ActionHelp for GhListAction {
@@ -40,6 +42,7 @@ impl ActionHelp for GhListAction {
             GhListAction::OpenBrowser => Some("Open in browser"),
             GhListAction::CopyUrl => Some("Copy URL"),
             GhListAction::ToggleClosed => Some("Show / hide closed items"),
+            GhListAction::ShowDiff => Some("Show diff (files + side-by-side)"),
             GhListAction::Search(sa) => sa.label(),
             GhListAction::Esc => Some("Clear search"),
         }
@@ -77,6 +80,11 @@ pub trait GhListItem: Sized + Send + 'static {
     /// The item's URL, built locally (no API request); `None` when it
     /// cannot be derived (e.g. a non-github.com remote).
     fn copy_url(&self) -> Option<String>;
+    /// The event opening the item's diff window (`d`); `None` for items
+    /// without a diff (issues, runs).
+    fn diff_event(&self) -> Option<PaneEvent> {
+        None
+    }
     fn load_disk_cache() -> Option<Vec<Self>>;
     fn save_disk_cache(items: &[Self]);
     /// The list; with `show_closed` the closed / merged items too (lists
@@ -251,6 +259,15 @@ impl<T: GhListItem> GhListPane<T> {
                 }
             }
             GhListAction::ToggleClosed => return vec![PaneEvent::ToggleClosed],
+            GhListAction::ShowDiff => {
+                if let Some(ev) = self
+                    .items
+                    .get(self.selected_idx)
+                    .and_then(|i| i.diff_event())
+                {
+                    return vec![ev];
+                }
+            }
             _ => {}
         }
         vec![]

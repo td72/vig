@@ -44,6 +44,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
 | [`app`](#app) | `Ctrl+c` 終了、`1`…`7` ページ切替 | キー単位マージ |
 | [`page`](#page-ブロック) | [ページとペイン](#ページとペイン) 参照 | 要素ごと（後述） |
+| [`window`](#ウィンドウ-diff) | PR で `d` が開く diff ウィンドウ | 要素ごと（`page` と同じ） |
 
 トップレベルノードをすべて書いた設定（各値はデフォルトなので、これは
 読み込めて、かつ何も変えません）:
@@ -76,7 +77,7 @@ colors "red"
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
 //   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`,
-//   `repo-config`, `app`, or `page`)
+//   `repo-config`, `app`, `page`, or `window`)
 ```
 
 ## トップレベルノード
@@ -801,6 +802,42 @@ page "git" {
 
 `run_detail` では `Nav.JumpBottom`（`G`）が、実行中ジョブのログの
 follow 再開も兼ねます。
+
+### ウィンドウ `diff`
+
+GitHub ページで Pull Request に `d` を押したときに、変更ファイルと
+サイドバイサイド diff を載せてページの上に開くウィンドウです。ページでは
+ないので `pages` のスロットも `app` のキーも持たず、専用の `window "diff"`
+ブロックで設定します。`layout` / `tabs` / `bind` / `pane` の要素とマージ
+規則は `page` と同じです。ペインは Git ページの `file_tree` と `diff_view`
+で、アクションも同じです（diff view のカーソル / ビジュアルモードのキーも
+共通）。
+
+```kdl
+window "diff" {
+    layout {
+        split direction="horizontal" {
+            place "file_tree" size="40"
+            place "diff_view" size="min:20"
+        }
+    }
+    pane "view" {
+        keys {
+            "Backspace" "Close"
+        }
+    }
+}
+```
+
+| ペイン | アクション | デフォルトキー | 意味 |
+|---|---|---|---|
+| `view` | `Close` | `q`、`Esc` | ウィンドウを閉じる（`Esc` は検索を消してから diff → ツリー → 閉じる、と一段ずつ。`q` はすぐ閉じる） |
+| | `Help` / `Refresh` | `?` / `r` | ヘルプ / diff を再取得 |
+| | `OpenEditor` | `e` | 選択中のファイルを `$EDITOR` で開く（作業ツリーにある場合） |
+| | `OpenBrowser` / `CopyUrl` | `o` / `y` | PR の Files タブをブラウザで開く / その URL をコピー |
+| | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | ツリー ↔ diff |
+| `file_tree` (nav, search) | `ToggleDir` / `ExpandOrOpen` / `FocusDiff` | `Space` / `Enter`、`Right`、`l` / `i` | Git ページと同じ |
+| `diff_view` (nav, search) | `ScrollLeft` / `ScrollRight` / `EnterNormalMode` | `h`、`Left` / `l`、`Right` / `i` | Git ページと同じ |
 
 ### ページ `files`
 

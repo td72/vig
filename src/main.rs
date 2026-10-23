@@ -1,4 +1,5 @@
 mod core;
+mod diff_window;
 mod docker;
 mod files;
 mod fixtures;

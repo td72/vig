@@ -230,6 +230,12 @@ tail. When GitHub rejects a request as rate-limited, the page suspends its
 polling with an exponential backoff (30s up to 10 minutes) and shows
 `⚠ GitHub rate limited (resets in Nm)` in the status bar; `r` retries
 immediately and a successful fetch clears the backoff.
+`d` on a pull request opens its diff in a window on top of the page — the
+changed files as a tree on the left, the side-by-side diff on the right,
+with the Git view's folding, search and `i` cursor mode — fetched with
+`gh pr diff` (a REST call: no GraphQL points, works for forks); `q` / `Esc`
+returns to the PR, `o` opens its Files tab, `e` edits the file when the
+working tree has it.
 Nothing in this view reruns, cancels or deletes anything.
 
 | Key | Action |
@@ -241,6 +247,7 @@ Nothing in this view reruns, cancels or deletes anything.
 | `o` | Open in browser (issue, PR, run or the selected job) |
 | `y` | Copy the item URL |
 | `x` | Show / hide closed issues and merged / closed PRs in the lists (`github-show-closed` sets the start) |
+| `d` (PR list / detail) | Show the PR's diff: changed files + side-by-side diff in a window (`q` / `Esc` back, `o` Files tab, `e` edit, `r` re-fetch) |
 | `Esc` | Back to list |
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |

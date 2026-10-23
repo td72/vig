@@ -233,6 +233,10 @@ impl Page {
 pub struct App {
     pub ctx: AppContext,
     pages: Vec<Page>,
+    /// Pages pushed on top of the tab row (`PageAction::Push`), innermost
+    /// last. While any is open it receives the keys, ticks and drawing;
+    /// the tab pages underneath keep their state untouched.
+    windows: Vec<Page>,
     app_keymap: Keymap<AppAction>,
 }
 
@@ -260,39 +264,105 @@ impl App {
         Ok(Self {
             ctx,
             pages,
+            windows: Vec::new(),
             app_keymap,
         })
     }
 
+    /// The page receiving keys and drawing: the innermost pushed window,
+    /// else the active tab page. A free function over the fields so the
+    /// context can be borrowed alongside.
+    fn active_page_mut<'a>(
+        windows: &'a mut [Page],
+        pages: &'a mut [Page],
+        active_page: usize,
+    ) -> &'a mut Page {
+        match windows.last_mut() {
+            Some(w) => w,
+            None => &mut pages[active_page],
+        }
+    }
+
+    fn active(&self) -> &Page {
+        match self.windows.last() {
+            Some(w) => w,
+            None => &self.pages[self.ctx.active_page],
+        }
+    }
+
+    /// How many pushed windows are open (tests).
+    #[cfg(test)]
+    pub fn window_depth(&self) -> usize {
+        self.windows.len()
+    }
+
+    /// Apply what the active page asked for after a key: a window is
+    /// pushed / popped here, everything else goes back to the main loop.
+    fn apply_page_action(&mut self, action: PageAction) -> PageAction {
+        match action {
+            PageAction::Push(mut window) => {
+                // The page's last status line is not the window's.
+                self.ctx.status_message = None;
+                window.on_activate(&mut self.ctx);
+                self.windows.push(window);
+                PageAction::None
+            }
+            PageAction::Pop => {
+                self.pop_window();
+                PageAction::None
+            }
+            other => other,
+        }
+    }
+
+    /// Close the innermost window; the page revealed is re-activated.
+    fn pop_window(&mut self) {
+        if self.windows.pop().is_some() {
+            self.ctx.status_message = None;
+            let ctx = &mut self.ctx;
+            Self::active_page_mut(&mut self.windows, &mut self.pages, ctx.active_page)
+                .on_activate(ctx);
+        }
+    }
+
     pub fn drain_all_background(&mut self) {
-        for page in &mut self.pages {
+        for page in self.pages.iter_mut().chain(self.windows.iter_mut()) {
             page.drain_background();
         }
     }
 
     pub fn render(&mut self, f: &mut ratatui::Frame, area: ratatui::layout::Rect) {
-        let idx = self.ctx.active_page;
-        self.pages[idx].render(f, &self.ctx, area);
+        let ctx = &self.ctx;
+        match self.windows.last_mut() {
+            Some(w) => w.render(f, ctx, area),
+            None => self.pages[ctx.active_page].render(f, ctx, area),
+        }
     }
 
     pub fn on_fs_change(&mut self) -> Result<()> {
-        for page in &mut self.pages {
+        for page in self.pages.iter_mut().chain(self.windows.iter_mut()) {
             page.on_fs_change(&mut self.ctx)?;
         }
         Ok(())
     }
 
     pub fn on_tick(&mut self) {
-        let idx = self.ctx.active_page;
-        self.pages[idx].on_tick(&mut self.ctx);
+        let ctx = &mut self.ctx;
+        match self.windows.last_mut() {
+            Some(w) => w.on_tick(ctx),
+            None => self.pages[ctx.active_page].on_tick(ctx),
+        }
     }
 
     pub fn on_suspend_return(
         &mut self,
         status: std::io::Result<std::process::ExitStatus>,
     ) -> Result<()> {
-        let idx = self.ctx.active_page;
-        self.pages[idx].on_suspend_return(&mut self.ctx, status)
+        let ctx = &mut self.ctx;
+        match self.windows.last_mut() {
+            Some(w) => w.on_suspend_return(ctx, status),
+            None => self.pages[ctx.active_page].on_suspend_return(ctx, status),
+        }
     }
 
     /// Help entries of the active page, preceded by the page-switch keys of
@@ -310,7 +380,7 @@ impl App {
         if !switch_keys.is_empty() {
             entries.push((switch_keys, "Switch view".to_string()));
         }
-        entries.extend(self.pages[self.ctx.active_page].help_bindings());
+        entries.extend(self.active().help_bindings());
         entries
     }
 
@@ -330,11 +400,15 @@ impl App {
         let idx = self.ctx.active_page;
 
         // If the page intercepts all keys (modal menu, search input), delegate immediately
-        if self.pages[idx].intercepts_all_keys() {
-            return self.pages[idx].handle_key(&mut self.ctx, key);
+        if self.active().intercepts_all_keys() {
+            let ctx = &mut self.ctx;
+            let action = Self::active_page_mut(&mut self.windows, &mut self.pages, ctx.active_page)
+                .handle_key(ctx, key)?;
+            return Ok(self.apply_page_action(action));
         }
 
-        // App-level keymap handles Quit and page switching.
+        // App-level keymap handles Quit and page switching. Switching
+        // closes every pushed window: the tab row is the destination.
         if let Some(action) = self.app_keymap.lookup(key) {
             match action.clone() {
                 AppAction::Quit => {
@@ -342,17 +416,25 @@ impl App {
                     return Ok(PageAction::None);
                 }
                 AppAction::SwitchPage(new_idx) => {
-                    if new_idx < self.pages.len() && new_idx != idx {
-                        self.ctx.active_page = new_idx;
-                        self.pages[new_idx].on_activate(&mut self.ctx);
+                    if new_idx < self.pages.len() {
+                        let had_windows = !self.windows.is_empty();
+                        self.windows.clear();
+                        if new_idx != idx || had_windows {
+                            self.ctx.active_page = new_idx;
+                            self.ctx.status_message = None;
+                            self.pages[new_idx].on_activate(&mut self.ctx);
+                        }
                     }
                     return Ok(PageAction::None);
                 }
             }
         }
 
-        // Delegate to active page
-        self.pages[idx].handle_key(&mut self.ctx, key)
+        // Delegate to the active page (or window)
+        let ctx = &mut self.ctx;
+        let action = Self::active_page_mut(&mut self.windows, &mut self.pages, ctx.active_page)
+            .handle_key(ctx, key)?;
+        Ok(self.apply_page_action(action))
     }
 }
 
@@ -582,6 +664,130 @@ mod tests {
         app.handle_key(KeyEvent::new(ki.code, ki.modifiers))
             .unwrap();
         assert_eq!(app.ctx.active_page, 0);
+    }
+
+    /// A page that pushes a window on `d`; the window pops itself on `q`.
+    struct Pusher;
+    struct Window;
+
+    impl PageState for Pusher {
+        fn id(&self) -> &'static str {
+            "pusher"
+        }
+        fn label(&self) -> &'static str {
+            "Pusher"
+        }
+        fn handle_key(&mut self, _ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+            Ok(match key.code {
+                crossterm::event::KeyCode::Char('d') => PageAction::Push(Page::new(Window)),
+                _ => PageAction::None,
+            })
+        }
+        fn render(
+            &mut self,
+            _f: &mut ratatui::Frame,
+            _ctx: &AppContext,
+            _a: ratatui::layout::Rect,
+        ) {
+        }
+    }
+
+    impl PageState for Window {
+        fn id(&self) -> &'static str {
+            "window"
+        }
+        fn label(&self) -> &'static str {
+            "Window"
+        }
+        fn help_bindings(&self) -> Vec<(String, String)> {
+            vec![("q".into(), "Close window".into())]
+        }
+        fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+            Ok(match key.code {
+                crossterm::event::KeyCode::Char('q') => PageAction::Pop,
+                crossterm::event::KeyCode::Char('m') => {
+                    ctx.status_message = Some("from the window".into());
+                    PageAction::None
+                }
+                _ => PageAction::None,
+            })
+        }
+        fn render(
+            &mut self,
+            _f: &mut ratatui::Frame,
+            _ctx: &AppContext,
+            _a: ratatui::layout::Rect,
+        ) {
+        }
+    }
+
+    fn key(c: char) -> KeyEvent {
+        KeyEvent::new(
+            crossterm::event::KeyCode::Char(c),
+            crossterm::event::KeyModifiers::NONE,
+        )
+    }
+
+    /// `PageAction::Push` shows a window on top of the active page: it gets
+    /// the keys and the help, `Pop` closes it (clearing its status message)
+    /// and a page-switch key closes every window on its way to the page.
+    #[test]
+    fn windows_push_and_pop_over_the_active_page() {
+        let cfg = Config::builtin();
+        let cwd = std::env::current_dir().unwrap();
+        let files = crate::files::page::new_page(&cwd, &cfg, None).unwrap();
+        let app_keymap = build_app_keymap(
+            &[
+                ("1".to_string(), "page:pusher".to_string()),
+                ("3".to_string(), "page:files".to_string()),
+            ],
+            &["pusher", "files"],
+        )
+        .unwrap();
+        let mut app = App {
+            ctx: AppContext {
+                should_quit: false,
+                active_page: 0,
+                page_labels: vec!["Pusher", "Files"],
+                page_keys: vec![],
+                show_help: false,
+                status_message: None,
+                error_dialog: None,
+                workdir: PathBuf::new(),
+                needs_full_redraw: false,
+                last_input: Instant::now(),
+                auto_refresh: true,
+            },
+            pages: vec![Page::new(Pusher), files],
+            windows: Vec::new(),
+            app_keymap,
+        };
+        assert_eq!(app.window_depth(), 0);
+        assert!(matches!(
+            app.handle_key(key('d')).unwrap(),
+            PageAction::None
+        ));
+        assert_eq!(app.window_depth(), 1);
+        assert_eq!(
+            app.active_help_bindings().last().unwrap().1,
+            "Close window",
+            "the window's help replaces the page's"
+        );
+        // Keys reach the window, not the page.
+        app.handle_key(key('m')).unwrap();
+        assert_eq!(app.ctx.status_message.as_deref(), Some("from the window"));
+        app.handle_key(key('q')).unwrap();
+        assert_eq!(app.window_depth(), 0);
+        assert_eq!(
+            app.ctx.status_message, None,
+            "the window's message goes with it"
+        );
+        // A second window, then a page switch: the window closes.
+        app.handle_key(key('d')).unwrap();
+        assert_eq!(app.window_depth(), 1);
+        app.handle_key(key('3')).unwrap();
+        assert_eq!(app.window_depth(), 0);
+        assert_eq!(app.ctx.active_page, 1);
     }
 
     #[test]

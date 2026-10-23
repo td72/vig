@@ -104,6 +104,26 @@ pub fn save_pr_detail(detail: &GhPrDetail) {
     }
 }
 
+/// The last `gh pr diff` output seen for a PR (shown at once while a
+/// fresh one is fetched).
+pub fn load_pr_diff(number: u64) -> Option<Vec<u8>> {
+    fs::read(cache_dir()?.join("pr").join(format!("{number}.diff"))).ok()
+}
+
+pub fn save_pr_diff(number: u64, patch: &[u8]) {
+    let Some(dir) = cache_dir() else {
+        return;
+    };
+    let path = dir.join("pr").join(format!("{number}.diff"));
+    if fs::create_dir_all(dir.join("pr")).is_err() {
+        return;
+    }
+    let tmp = path.with_extension("diff.tmp");
+    if fs::write(&tmp, patch).is_ok() && fs::rename(&tmp, &path).is_err() {
+        let _ = fs::remove_file(&tmp);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

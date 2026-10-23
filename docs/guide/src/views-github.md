@@ -24,6 +24,21 @@ browser. In an issue or PR detail, `w` toggles **watch mode**: vig re-fetches
 the open item about every 10 seconds so a conversation or CI status you are
 waiting on stays current.
 
+`d` on a pull request — in the list or in its detail — opens the PR's diff
+in a window on top of the page: the changed files as a tree on the left,
+the side-by-side diff on the right, exactly as the [Git view](views-git.md)
+shows a working-tree diff (folding with `Space`, `/` search, `i` for the
+cursor mode with yank and visual selection). The header names the PR, its
+branches and title; the status bar counts the files and lines. The diff
+comes from `gh pr diff`, a REST call that costs no GraphQL points and works
+for pull requests from forks and branches you never fetched; the last diff
+seen is cached on disk and shown at once while a fresh one is fetched (`r`
+fetches again). `Esc` steps back — diff → tree → close — and `q` closes
+outright; `o` opens the PR's Files tab in the browser, `y` copies that URL,
+and `e` opens the selected file in `$EDITOR` when the working tree has it
+(a PR's file need not exist locally). A diff too large for GitHub to
+render is reported in the status bar.
+
 The lists show open items. `x` brings in the closed issues and the merged /
 closed pull requests as well (dimmed, with their state icon: `✓` closed,
 `⊕` merged; the header reads `GitHub · closed`), and `x` again leaves them
@@ -71,6 +86,7 @@ following.
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `w` (issue / PR detail) | Toggle watch mode (auto-refresh the open item) |
 | `x` (issue / PR list) | Show / hide closed issues and merged / closed PRs |
+| `d` (PR list / detail) | Show the PR's diff in a window: changed files + side-by-side diff (`q` / `Esc` back, `o` Files tab, `y` copy, `e` edit, `r` re-fetch) |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |
 | `]` / `[` (run detail) | Next / previous failed step in the log |
 | `G` (run detail, Log) | Jump to the end and resume following |

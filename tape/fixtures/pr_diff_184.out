@@ -1,0 +1,25 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 1f2dcda..6ac3f0a 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -3615,7 +3615,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
+ 
+ [[package]]
+ name = "vig"
+-version = "0.14.0"
++version = "0.15.0"
+ dependencies = [
+  "anyhow",
+  "arboard",
+diff --git a/Cargo.toml b/Cargo.toml
+index 3d8a0ea..3a7ffaa 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,6 +1,6 @@
+ [package]
+ name = "vig"
+-version = "0.14.0"
++version = "0.15.0"
+ edition = "2021"
+ description = "Read-only TUI cockpit for busy repositories - git, GitHub PRs/CI/projects, containers and processes at a glance"
+ authors = ["td72"]

@@ -224,6 +224,7 @@ page "github" {
             "i" "OpenDetail"
             "Enter" "OpenDetail"
             "BackTab" "SwitchTab"
+            "d" "ShowDiff"
             "o" "OpenBrowser"
             "y" "CopyUrl"
             "x" "ToggleClosed"
@@ -266,6 +267,7 @@ page "github" {
             "Tab" "CycleForward"
             "BackTab" "CycleBackward"
             "w" "ToggleWatch"
+            "d" "ShowDiff"
             "o" "OpenItem"
             "y" "CopyUrl"
             "Esc" "Esc"
@@ -287,6 +289,59 @@ page "github" {
             "o" "OpenItem"
             "y" "CopyUrl"
             "Esc" "Esc"
+        }
+    }
+}
+
+// The window `d` opens on top of the GitHub page with a pull request's
+// changed files and side-by-side diff (`gh pr diff`). It is not a page:
+// it has no slot in `pages` and closes with q / Esc. Its panes share the
+// Git page's file tree and diff view, so the same keys apply.
+window "diff" {
+    layout {
+        split direction="horizontal" {
+            place "file_tree" size="30"
+            place "diff_view" size="min:20"
+        }
+    }
+    tabs "file_tree" "diff_view"
+    bind select="file_tree" detail="diff_view"
+
+    pane "view" {
+        keys {
+            "q" "Close"
+            "Esc" "Close"
+            "?" "Help"
+            "r" "Refresh"
+            "e" "OpenEditor"
+            "o" "OpenBrowser"
+            "y" "CopyUrl"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+        }
+    }
+
+    pane "file_tree" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Space" "ToggleDir"
+            "Right" "ExpandOrOpen"
+            "Enter" "ExpandOrOpen"
+            "l" "ExpandOrOpen"
+            "i" "FocusDiff"
+        }
+    }
+
+    pane "diff_view" {
+        keys {
+            preset "nav"
+            preset "search"
+            "h" "ScrollLeft"
+            "Left" "ScrollLeft"
+            "l" "ScrollRight"
+            "Right" "ScrollRight"
+            "i" "EnterNormalMode"
         }
     }
 }

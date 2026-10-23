@@ -450,6 +450,11 @@ pub enum ViewAction {
     PrevProject,
     /// Files page: toggle Markdown rendering in the preview.
     ToggleMarkdown,
+    /// A pushed window (a PR's diff): close it and return to the page below.
+    Close,
+    /// A pushed window: open what it shows in the browser / copy its URL.
+    OpenBrowser,
+    CopyUrl,
 }
 
 impl_action_from_str!(
@@ -466,7 +471,10 @@ impl_action_from_str!(
     CyclePaneBackward,
     NextProject,
     PrevProject,
-    ToggleMarkdown
+    ToggleMarkdown,
+    Close,
+    OpenBrowser,
+    CopyUrl
 );
 
 impl ActionHelp for ViewAction {
@@ -485,6 +493,9 @@ impl ActionHelp for ViewAction {
             ViewAction::NextProject => "Next linked project",
             ViewAction::PrevProject => "Prev linked project",
             ViewAction::ToggleMarkdown => "Toggle markdown rendering",
+            ViewAction::Close => "Close window",
+            ViewAction::OpenBrowser => "Open in browser",
+            ViewAction::CopyUrl => "Copy URL",
         })
     }
 }

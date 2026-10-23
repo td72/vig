@@ -101,6 +101,18 @@ pub fn pr_url(number: u64) -> Option<String> {
     origin_github_nwo().map(|nwo| format!("https://github.com/{nwo}/pull/{number}"))
 }
 
+/// Locally built URL of a pull request's Files tab (see `issue_url`).
+pub fn pr_files_url(number: u64) -> Option<String> {
+    pr_url(number).map(|u| format!("{u}/files"))
+}
+
+/// The unified diff of a pull request (`gh pr diff`, a REST call: no
+/// GraphQL points, works for forks and unfetched branches). GitHub refuses
+/// to render very large diffs; that comes back as the error text.
+pub fn pr_diff(number: u64) -> Result<Vec<u8>, String> {
+    run_gh(&["pr", "diff", &number.to_string()], "gh pr diff failed")
+}
+
 /// Locally built URL for a commit (see `issue_url`).
 pub fn commit_url(hash: &str) -> Option<String> {
     origin_github_nwo().map(|nwo| format!("https://github.com/{nwo}/commit/{hash}"))
