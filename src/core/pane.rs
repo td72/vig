@@ -150,6 +150,8 @@ pub enum PaneEvent {
     ToggleClosed,
     /// PR list / detail: open this PR's diff in a window on top of the page.
     ShowPrDiff(u64),
+    /// PR list / detail: fetch this PR's head into a worktree (`W`).
+    OpenPrWorktree(u64),
     // Files-specific
     /// The directory list changed directory (enter / parent).
     DirChanged,

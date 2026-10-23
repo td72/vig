@@ -325,10 +325,19 @@ impl PageState for WorktreesState {
         Ok(())
     }
 
-    fn on_activate(&mut self, _ctx: &mut AppContext) {
+    fn on_activate(&mut self, ctx: &mut AppContext) {
         // `git worktree add/remove` only touches `.git/worktrees`, which the
         // watcher ignores, so catch up when the page is shown.
         self.reload(false);
+        // Another page (the GitHub page, after `W` on a PR) asked for a
+        // worktree to be selected.
+        if let Some(path) = ctx.select_worktree.take() {
+            let ids = self.panes.ids;
+            if self.panes.worktrees.select_path(&path) {
+                self.pane.set_focus(ids.worktrees);
+                self.sync_preview(ids.worktrees, false);
+            }
+        }
     }
 
     fn drain_background(&mut self) {
@@ -398,5 +407,50 @@ mod tests {
         // vig's own repository is a worktree, and this test runs in it.
         assert!(state.panes.worktrees.items.iter().any(|w| w.is_current));
         assert!(!state.help_bindings().is_empty());
+    }
+
+    /// Another page can hand over a worktree to select (`W` on a PR): it
+    /// is selected and focused on activation, and the request is consumed.
+    #[test]
+    fn activation_selects_a_requested_worktree() {
+        let cwd = std::env::current_dir().unwrap();
+        let mut state = WorktreesState::new(&cwd, &Config::builtin()).expect("worktrees page");
+        let ids = state.panes.ids;
+        state.pane.set_focus(ids.stashes);
+        let main = state
+            .panes
+            .worktrees
+            .items
+            .iter()
+            .find(|w| w.is_main)
+            .map(|w| w.path.clone())
+            .expect("main worktree");
+        let mut ctx = AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: cwd.clone(),
+            needs_full_redraw: false,
+            last_input: std::time::Instant::now(),
+            auto_refresh: true,
+            page_request: None,
+            select_worktree: Some(main.clone()),
+        };
+        state.on_activate(&mut ctx);
+        assert_eq!(ctx.select_worktree, None, "consumed");
+        assert_eq!(state.pane.focused_pane, ids.worktrees);
+        assert_eq!(
+            state.panes.worktrees.selected().map(|w| w.path.clone()),
+            Some(main)
+        );
+        // A path that is no worktree changes nothing.
+        ctx.select_worktree = Some(std::path::PathBuf::from("/nonexistent/x"));
+        state.pane.set_focus(ids.stashes);
+        state.on_activate(&mut ctx);
+        assert_eq!(state.pane.focused_pane, ids.stashes);
     }
 }

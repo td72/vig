@@ -24,7 +24,7 @@ pub fn build_pages(
     for name in cfg.pages()? {
         let page = match name.as_str() {
             "git" => crate::git::page::new_page(cwd, cfg)?.0,
-            "github" => crate::github::page::new_page(cfg)?,
+            "github" => crate::github::page::new_page(&workdir, cfg)?,
             "files" => crate::files::page::new_page(&workdir, cfg, picker.take())?,
             "docker" => crate::docker::page::new_page(cfg)?,
             "procs" => crate::procs::page::new_page(cfg)?,

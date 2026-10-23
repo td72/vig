@@ -1006,6 +1006,8 @@ mod tests {
             needs_full_redraw: false,
             last_input: Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         }
     }
 

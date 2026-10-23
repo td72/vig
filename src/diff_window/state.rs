@@ -16,6 +16,7 @@ use anyhow::Result;
 use crossterm::event::KeyEvent;
 use ratatui::layout::Rect;
 use ratatui::Frame;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::mpsc;
 use std::sync::Arc;
@@ -35,6 +36,9 @@ pub struct DiffSource {
     pub title: String,
     /// What `o` opens and `y` copies.
     pub url: Option<String>,
+    /// A checkout of what the diff shows (a PR's worktree): `e` opens the
+    /// file from there before falling back to vig's working tree.
+    pub local_root: Option<PathBuf>,
     /// A patch seen earlier, shown at once while `fetch` runs.
     pub cached: Option<Vec<u8>>,
     pub fetch: PatchFetch,
@@ -301,11 +305,20 @@ impl DiffWindowState {
         let Some(file) = self.selected_file() else {
             return PageAction::None;
         };
-        let path = ctx.workdir.join(&file.path);
-        if !path.is_file() {
-            ctx.status_message = Some(format!("{} is not in the working tree", file.path));
+        let candidates = self
+            .source
+            .local_root
+            .iter()
+            .chain(std::iter::once(&ctx.workdir))
+            .map(|root| root.join(&file.path))
+            .collect::<Vec<_>>();
+        let Some(path) = candidates.into_iter().find(|p| p.is_file()) else {
+            ctx.status_message = Some(format!(
+                "{} is not in the working tree (W opens the PR as a worktree)",
+                file.path
+            ));
             return PageAction::None;
-        }
+        };
         let editor = std::env::var("EDITOR")
             .or_else(|_| std::env::var("VISUAL"))
             .unwrap_or_else(|_| "vi".to_string());
@@ -439,6 +452,8 @@ index 3333333..4444444 100644
             needs_full_redraw: false,
             last_input: Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         }
     }
 
@@ -448,6 +463,7 @@ index 3333333..4444444 100644
             refs: Some("feat/x → main".into()),
             title: "Seven".into(),
             url: Some("https://github.com/o/r/pull/7/files".into()),
+            local_root: None,
             cached: cached.map(|c| c.as_bytes().to_vec()),
             fetch: Arc::new(move || fetch.map(|p| p.as_bytes().to_vec()).map_err(String::from)),
             store: None,

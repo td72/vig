@@ -24,13 +24,15 @@ pub enum GhListAction {
     ToggleClosed,
     /// PR list: open the selected PR's diff window.
     ShowDiff,
+    /// PR list: fetch the selected PR into a worktree (after confirming).
+    OpenWorktree,
     Search(SearchAction),
     Esc,
 }
 
 crate::impl_pane_action_from_str!(
     GhListAction, nav: Nav, search: Search, esc: Esc,
-    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed, ShowDiff
+    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed, ShowDiff, OpenWorktree
 );
 
 impl ActionHelp for GhListAction {
@@ -43,6 +45,7 @@ impl ActionHelp for GhListAction {
             GhListAction::CopyUrl => Some("Copy URL"),
             GhListAction::ToggleClosed => Some("Show / hide closed items"),
             GhListAction::ShowDiff => Some("Show diff (files + side-by-side)"),
+            GhListAction::OpenWorktree => Some("Open as a worktree (fetch + worktree add)"),
             GhListAction::Search(sa) => sa.label(),
             GhListAction::Esc => Some("Clear search"),
         }
@@ -83,6 +86,11 @@ pub trait GhListItem: Sized + Send + 'static {
     /// The event opening the item's diff window (`d`); `None` for items
     /// without a diff (issues, runs).
     fn diff_event(&self) -> Option<PaneEvent> {
+        None
+    }
+    /// The event adding a worktree for the item (`W`); `None` for items
+    /// without a branch (issues, runs).
+    fn worktree_event(&self) -> Option<PaneEvent> {
         None
     }
     fn load_disk_cache() -> Option<Vec<Self>>;
@@ -264,6 +272,15 @@ impl<T: GhListItem> GhListPane<T> {
                     .items
                     .get(self.selected_idx)
                     .and_then(|i| i.diff_event())
+                {
+                    return vec![ev];
+                }
+            }
+            GhListAction::OpenWorktree => {
+                if let Some(ev) = self
+                    .items
+                    .get(self.selected_idx)
+                    .and_then(|i| i.worktree_event())
                 {
                     return vec![ev];
                 }

@@ -203,6 +203,28 @@ fn string_args(node: &KdlNode) -> std::result::Result<Vec<String>, &'static str>
     Ok(out)
 }
 
+/// `worktree-dir` / `worktree-name` / `worktree-branch`: where `W` on a
+/// pull request puts its worktree. `{repo}` and `{n}` are expanded by
+/// [`WorktreeSettings::expand`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorktreeSettings {
+    /// Directory the worktree is created in, relative to the main worktree.
+    pub dir: String,
+    /// Directory name template.
+    pub name: String,
+    /// Branch name template.
+    pub branch: String,
+}
+
+impl WorktreeSettings {
+    /// Replace `{repo}` and `{n}` in `template`.
+    pub fn expand(template: &str, repo: &str, number: u64) -> String {
+        template
+            .replace("{repo}", repo)
+            .replace("{n}", &number.to_string())
+    }
+}
+
 /// The pin as written in the config — `"Roadmap"` or `2` — for messages
 /// naming it.
 impl std::fmt::Display for ProjectsBoard {
@@ -451,8 +473,51 @@ impl Config {
         self.projects_filter()?;
         self.projects_hide_closed()?;
         self.projects_roadmap()?;
+        self.pr_worktree()?;
         self.repo_config()?;
         Ok(())
+    }
+
+    /// Where `W` on a pull request puts its worktree: `worktree-dir`
+    /// (relative to the main worktree), `worktree-name` and
+    /// `worktree-branch` (with `{repo}` / `{n}` placeholders). Each is one
+    /// non-empty string; the defaults are `"../"`, `"{repo}-pr-{n}"` and
+    /// `"pr/{n}"`.
+    pub fn pr_worktree(&self) -> Result<WorktreeSettings> {
+        let one = |name: &str, default: &str| -> Result<String> {
+            let Some(node) = self.doc.nodes().iter().find(|n| n.name().value() == name) else {
+                return Ok(default.to_string());
+            };
+            let invalid = |what: &str| {
+                anyhow!(
+                    "invalid {}: bad {name} ({what}); expected one string, e.g. `{name} \"{default}\"`",
+                    self.describe()
+                )
+            };
+            let args = string_args(node).map_err(invalid)?;
+            let [value] = args.as_slice() else {
+                return Err(invalid("one argument required"));
+            };
+            Ok(value.trim().to_string())
+        };
+        let settings = WorktreeSettings {
+            dir: one("worktree-dir", "../")?,
+            name: one("worktree-name", "{repo}-pr-{n}")?,
+            branch: one("worktree-branch", "pr/{n}")?,
+        };
+        if !settings.name.contains("{n}") {
+            return Err(anyhow!(
+                "invalid {}: worktree-name must contain {{n}} (the PR number), so two PRs never share a directory",
+                self.describe()
+            ));
+        }
+        if !settings.branch.contains("{n}") {
+            return Err(anyhow!(
+                "invalid {}: worktree-branch must contain {{n}} (the PR number), so two PRs never share a branch",
+                self.describe()
+            ));
+        }
+        Ok(settings)
     }
 
     /// Whether automatic refreshes run at all (`github-auto-refresh "on"` /
@@ -2856,6 +2921,48 @@ mod tests {
             .expect_err("expected an error")
             .to_string();
         assert!(msg.contains("github-show-closed expects"), "{msg}");
+    }
+
+    #[test]
+    fn pr_worktree_settings_default_override_and_validation() {
+        let s = Config::builtin().pr_worktree().unwrap();
+        assert_eq!(
+            s,
+            WorktreeSettings {
+                dir: "../".into(),
+                name: "{repo}-pr-{n}".into(),
+                branch: "pr/{n}".into(),
+            }
+        );
+        assert_eq!(WorktreeSettings::expand(&s.name, "vig", 7), "vig-pr-7");
+        assert_eq!(WorktreeSettings::expand(&s.branch, "vig", 7), "pr/7");
+        let s = user(
+            r#"
+            worktree-dir ".worktrees"
+            worktree-name "pr-{n}"
+            worktree-branch "review/{repo}/{n}"
+            "#,
+        )
+        .unwrap()
+        .pr_worktree()
+        .unwrap();
+        assert_eq!(s.dir, ".worktrees");
+        assert_eq!(WorktreeSettings::expand(&s.name, "vig", 7), "pr-7");
+        assert_eq!(
+            WorktreeSettings::expand(&s.branch, "vig", 7),
+            "review/vig/7"
+        );
+        for (bad, what) in [
+            (r#"worktree-dir"#, "one argument required"),
+            (r#"worktree-dir "a" "b""#, "one argument required"),
+            (r#"worktree-name """#, "empty string"),
+            (r#"worktree-branch 3"#, "not a string"),
+            (r#"worktree-name "pr""#, "must contain {n}"),
+            (r#"worktree-branch "pr""#, "must contain {n}"),
+        ] {
+            let msg = format!("{:#}", user(bad).expect_err("expected an error"));
+            assert!(msg.contains(what), "{bad}: {msg}");
+        }
     }
 
     #[test]

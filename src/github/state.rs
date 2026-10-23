@@ -1,5 +1,5 @@
 use crate::core::app::AppContext;
-use crate::core::config::{Config, LoadedPageConfig};
+use crate::core::config::{Config, LoadedPageConfig, WorktreeSettings};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
 use crate::core::page::PageAction;
@@ -9,6 +9,7 @@ use crate::core::tab::Tab;
 use crate::core::ui::status_bar;
 use crate::github::domain::actions::types::{Job, WorkflowRun};
 use crate::github::domain::client;
+use crate::github::domain::pr_worktree::WorktreePlan;
 use crate::github::domain::types::*;
 use crate::github::panes::detail_view::{DetailAction, GhDetailViewPane, GhRunDetail};
 use crate::github::panes::gh_list::{GhListAction, GhListItem, GhListPane};
@@ -16,10 +17,11 @@ use crate::github::panes::issue_list::{self, GhIssueListPane};
 use crate::github::panes::pr_list::{self, GhPrListPane};
 use crate::github::panes::run_list::{self, GhRunListPane};
 use anyhow::Result;
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::layout::Rect;
 use ratatui::Frame;
 use std::collections::HashMap;
+use std::path::Path;
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
@@ -156,6 +158,11 @@ pub enum GhBgMessage {
     ListCheck(Result<client::ListCheck, String>),
     /// The same check for the runs column while no run is active.
     RunsCheck(Result<client::ListCheck, String>),
+    /// `W`: the PR's worktree was added (its path), or why not.
+    WorktreeAdded {
+        number: u64,
+        result: Result<std::path::PathBuf, String>,
+    },
 }
 
 /// The error string of a failed fetch carried by `msg`, if any.
@@ -354,15 +361,35 @@ pub struct GitHubState {
     /// pushes on top of this page.
     diff_window_cfg: LoadedPageConfig,
     theme: String,
+    /// The repository's working directory: `W` adds a PR's worktree
+    /// relative to it (`worktree-dir`).
+    root: std::path::PathBuf,
+    worktree_settings: WorktreeSettings,
+    /// `W` asked and waits for y / n (the dialog is up).
+    pending_worktree: Option<WorktreePlan>,
+    /// The PR whose fetch + worktree add runs on a worker thread.
+    worktree_in_flight: Option<u64>,
+    /// Its answer, handed to the next tick (which has the context to
+    /// switch pages).
+    worktree_result: Option<(u64, Result<std::path::PathBuf, String>)>,
 }
 
 impl GitHubState {
+    /// The page rooted at the current directory (tests); `new_in` is what
+    /// the page registry uses.
+    #[cfg(test)]
     pub fn new(cfg: &Config) -> Result<Self> {
+        let cwd = std::env::current_dir()?;
+        Self::new_in(&cwd, cfg)
+    }
+
+    pub fn new_in(root: &Path, cfg: &Config) -> Result<Self> {
         let page_cfg = cfg.github_page()?;
         let poll_interval = cfg.github_poll_interval()?;
         let show_closed = cfg.github_show_closed()?;
         let diff_window_cfg = cfg.diff_window()?;
         let theme = cfg.theme()?;
+        let worktree_settings = cfg.pr_worktree()?;
 
         let ids = GhPaneIds::from_config(&page_cfg);
         // Build select→detail and reverse detail→select dispatch maps.
@@ -451,7 +478,92 @@ impl GitHubState {
             view_keymap: view_km,
             diff_window_cfg,
             theme,
+            root: root.to_path_buf(),
+            worktree_settings,
+            pending_worktree: None,
+            worktree_in_flight: None,
+            worktree_result: None,
         })
+    }
+
+    /// The worktrees of the repository (empty when git cannot list them).
+    fn worktrees(&self) -> Vec<crate::worktrees::domain::types::Worktree> {
+        crate::worktrees::domain::worktree::list_worktrees(&self.root).unwrap_or_default()
+    }
+
+    /// `W` on PR `number`: show its existing worktree, refuse a conflicting
+    /// directory / branch, or ask before fetching and adding one.
+    fn open_worktree(&mut self, ctx: &mut AppContext, number: u64) {
+        if self.worktree_in_flight.is_some() {
+            ctx.status_message = Some("A worktree is still being added...".into());
+            return;
+        }
+        let plan = WorktreePlan::new(&self.worktree_settings, &self.root, number);
+        if let Some(wt) = plan.existing(&self.worktrees()) {
+            ctx.status_message = Some(format!(
+                "PR #{number} is checked out in {}",
+                wt.display_path
+            ));
+            ctx.select_worktree = Some(wt.path.clone());
+            ctx.request_page("worktrees");
+            return;
+        }
+        if let Some(why) = plan.conflict(&self.root) {
+            ctx.show_error("Cannot add the worktree", why);
+            return;
+        }
+        self.pending_worktree = Some(plan);
+    }
+
+    /// The question `W` asks: the two commands about to run.
+    pub fn worktree_question(&self) -> Option<(String, String)> {
+        let plan = self.pending_worktree.as_ref()?;
+        let [fetch, add] = plan.commands();
+        Some((
+            format!("Open PR #{} as a worktree?", plan.number),
+            format!("{fetch}\n{add}\n\nThe current checkout is left as it is."),
+        ))
+    }
+
+    /// Answer the `W` question: `y` / `Enter` run the commands on a worker
+    /// thread, anything else cancels.
+    fn answer_worktree(&mut self, ctx: &mut AppContext, key: KeyEvent) {
+        let Some(plan) = self.pending_worktree.take() else {
+            return;
+        };
+        match key.code {
+            KeyCode::Char('y') | KeyCode::Char('Y') | KeyCode::Enter => {}
+            KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc | KeyCode::Char('q') => {
+                ctx.status_message = Some("Cancelled".into());
+                return;
+            }
+            _ => {
+                // Not an answer: keep asking.
+                self.pending_worktree = Some(plan);
+                return;
+            }
+        }
+        let Some(tx) = self.bg_tx.clone() else {
+            return;
+        };
+        ctx.status_message = Some(format!(
+            "Fetching PR #{} and adding {}...",
+            plan.number, plan.display_path
+        ));
+        self.worktree_in_flight = Some(plan.number);
+        let root = self.root.clone();
+        std::thread::spawn(move || {
+            let result = plan.run(&root);
+            let _ = tx.send(GhBgMessage::WorktreeAdded {
+                number: plan.number,
+                result,
+            });
+        });
+    }
+
+    /// Whether a fetch + worktree add is running (status bar).
+    pub fn worktree_in_flight(&self) -> Option<u64> {
+        self.worktree_in_flight
     }
 
     /// The diff window for PR `number` (`d`), labelled from the list row
@@ -469,7 +581,17 @@ impl GitHubState {
             GhDetailContent::Pr(d) if d.number == number => Some(d.as_ref()),
             _ => None,
         };
-        crate::github::pr_diff::open(&self.diff_window_cfg, &self.theme, number, item, detail)
+        // `e` in the window edits the PR's own checkout when one exists.
+        let plan = WorktreePlan::new(&self.worktree_settings, &self.root, number);
+        let local_root = plan.existing(&self.worktrees()).map(|w| w.path.clone());
+        crate::github::pr_diff::open(
+            &self.diff_window_cfg,
+            &self.theme,
+            number,
+            item,
+            detail,
+            local_root,
+        )
     }
 
     /// Initialize on first switch to GitHub View.
@@ -670,6 +792,10 @@ impl GitHubState {
                     if let Ok(client::ListCheck::Fresh(next)) = result {
                         self.apply_runs_check(next);
                     }
+                }
+                GhBgMessage::WorktreeAdded { number, result } => {
+                    self.worktree_in_flight = None;
+                    self.worktree_result = Some((number, result));
                 }
             }
         }
@@ -888,6 +1014,7 @@ impl GitHubState {
                     Ok(window) => action = PageAction::Push(window),
                     Err(e) => ctx.show_error("Cannot open the diff", format!("{e:#}")),
                 },
+                PaneEvent::OpenPrWorktree(number) => self.open_worktree(ctx, number),
                 PaneEvent::SelectionChanged => {
                     self.sync_active_detail();
                 }
@@ -990,6 +1117,11 @@ impl crate::core::app::PageState for GitHubState {
     }
 
     fn handle_key(&mut self, ctx: &mut AppContext, key: KeyEvent) -> Result<PageAction> {
+        // The `W` question takes the next key.
+        if self.pending_worktree.is_some() {
+            self.answer_worktree(ctx, key);
+            return Ok(PageAction::None);
+        }
         // Search input mode intercepts all keys
         if self.pane.handle_search_input(&mut self.panes, ctx, key) {
             // A confirmed search moves a list selection without an event.
@@ -1008,13 +1140,35 @@ impl crate::core::app::PageState for GitHubState {
         status_bar::render_gh_header(f, ctx, self, frame.header);
         pane::render_page_content(self, f, ctx, frame.content);
         status_bar::render_gh_status_bar(f, ctx, self, frame.status_bar);
+        if let Some((title, message)) = self.worktree_question() {
+            crate::core::ui::confirm_dialog::render_question(
+                f,
+                area,
+                &title,
+                &message,
+                "y / Enter: run   n / Esc: cancel",
+            );
+        }
     }
 
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active
+        self.pane.search.active || self.pending_worktree.is_some()
     }
 
     fn on_tick(&mut self, ctx: &mut AppContext) {
+        // A finished `W`: show the new worktree, or why there is none.
+        if let Some((number, result)) = self.worktree_result.take() {
+            match result {
+                Ok(path) => {
+                    let plan = WorktreePlan::new(&self.worktree_settings, &self.root, number);
+                    ctx.status_message =
+                        Some(format!("Added {} for PR #{number}", plan.display_path));
+                    ctx.select_worktree = Some(path);
+                    ctx.request_page("worktrees");
+                }
+                Err(e) => ctx.show_error("Cannot add the worktree", e),
+            }
+        }
         let Some(tx) = self.bg_tx.clone() else {
             return;
         };
@@ -1396,6 +1550,24 @@ mod kdl_regression {
         );
     }
 
+    fn test_ctx() -> AppContext {
+        AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: std::path::PathBuf::new(),
+            needs_full_redraw: false,
+            last_input: Instant::now(),
+            auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
+        }
+    }
+
     fn state() -> GitHubState {
         let mut st = GitHubState::new(&Config::builtin()).expect("github page");
         let (tx, _rx) = mpsc::channel();
@@ -1424,6 +1596,8 @@ mod kdl_regression {
             needs_full_redraw: false,
             last_input: Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         };
         st.process_events(&mut c, vec![PaneEvent::ToggleClosed])
             .unwrap();
@@ -1581,6 +1755,8 @@ mod kdl_regression {
             needs_full_redraw: false,
             last_input: Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         };
         term.draw(|f| st.render(f, &ctx, f.area())).unwrap();
         let buf = term.backend().buffer().clone();
@@ -1597,7 +1773,7 @@ mod kdl_regression {
 
         // `d` on a PR: the diff window replays `gh pr diff` too (PR #183
         // is among the recorded diffs).
-        let src = crate::github::pr_diff::source_for(183, None, None);
+        let src = crate::github::pr_diff::source_for(183, None, None, None);
         let mut window =
             crate::diff_window::DiffWindowState::new(&st.diff_window_cfg, &st.theme, src)
                 .expect("diff window");
@@ -1619,6 +1795,118 @@ mod kdl_regression {
             .collect::<Vec<_>>()
             .join("\n");
         assert!(text.contains("PR #183"), "window header: {text}");
+    }
+
+    /// `W` on a PR asks before running anything: the dialog shows the two
+    /// commands, takes every key, and `n` / `Esc` cancel. (Running them
+    /// needs the network; the domain tests cover that with a local origin.)
+    #[test]
+    fn w_asks_before_adding_a_worktree() {
+        use crate::core::app::PageState;
+        use crate::github::domain::types::GhPrListItem;
+        let mut st = state();
+        let pl = st.panes.ids.pr_list;
+        st.panes.pr_tab.list.set_items(vec![GhPrListItem {
+            number: 999_999,
+            title: "big".into(),
+            state: "OPEN".into(),
+            author: None,
+            labels: vec![],
+            head_ref_name: "feat/big".into(),
+            base_ref_name: "main".into(),
+            created_at: String::new(),
+            review_decision: None,
+            is_draft: false,
+            stack: None,
+        }]);
+        st.pane.set_focus(pl);
+        let mut ctx = test_ctx();
+        st.handle_key(&mut ctx, key("W")).unwrap();
+        let plan = st.pending_worktree.clone().expect("the question is up");
+        assert_eq!(plan.number, 999_999);
+        assert_eq!(plan.branch, "pr/999999");
+        assert!(st.intercepts_all_keys());
+        let (title, message) = st.worktree_question().unwrap();
+        assert_eq!(title, "Open PR #999999 as a worktree?");
+        assert!(message.contains("git fetch origin refs/pull/999999/head"));
+        assert!(message.contains("git worktree add ../"), "{message}");
+        assert!(message.contains("-b pr/999999 FETCH_HEAD"), "{message}");
+        // The dialog is drawn over the page.
+        use ratatui::backend::TestBackend;
+        let mut term = ratatui::Terminal::new(TestBackend::new(120, 40)).unwrap();
+        term.draw(|f| st.render(f, &ctx, f.area())).unwrap();
+        let buf = term.backend().buffer().clone();
+        let text: String = (0..buf.area.height)
+            .map(|y| {
+                (0..buf.area.width)
+                    .map(|x| buf[(x, y)].symbol().to_string())
+                    .collect::<String>()
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        assert!(text.contains("Open PR #999999 as a worktree?"), "{text}");
+        assert!(text.contains("y / Enter: run"), "{text}");
+        // Other keys do not leak to the page; `n` cancels.
+        st.handle_key(&mut ctx, key("j")).unwrap();
+        assert!(st.pending_worktree.is_some(), "j is not an answer");
+        st.handle_key(&mut ctx, key("n")).unwrap();
+        assert!(st.pending_worktree.is_none());
+        assert_eq!(ctx.status_message.as_deref(), Some("Cancelled"));
+        assert!(st.worktree_in_flight.is_none());
+        // `Esc` cancels too.
+        st.handle_key(&mut ctx, key("W")).unwrap();
+        assert!(st.pending_worktree.is_some());
+        st.handle_key(&mut ctx, key("Esc")).unwrap();
+        assert!(st.pending_worktree.is_none());
+    }
+
+    /// A PR whose worktree already exists is shown on the Worktrees page
+    /// instead of being asked about again; a finished add does the same.
+    #[test]
+    fn w_switches_to_an_existing_worktree() {
+        use crate::core::app::PageState;
+        let mut st = state();
+        let mut ctx = test_ctx();
+        // The main worktree counts as "the worktree of this PR" when it
+        // sits at the plan's path (CI checks out a detached HEAD, so the
+        // branch match is not relied on): `{n}` is mandatory in the
+        // config, but the state takes any template.
+        let list = st.worktrees();
+        let main = list.iter().find(|w| w.is_main).expect("main worktree");
+        st.worktree_settings.dir = "../".into();
+        st.worktree_settings.name = main
+            .path
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .into_owned();
+        st.open_worktree(&mut ctx, 5);
+        assert!(
+            st.pending_worktree.is_none(),
+            "no question for an existing worktree"
+        );
+        assert_eq!(ctx.page_request, Some("worktrees"));
+        assert_eq!(ctx.select_worktree.as_deref(), Some(main.path.as_path()));
+        assert!(ctx
+            .status_message
+            .as_deref()
+            .is_some_and(|m| m.starts_with("PR #5 is checked out in")));
+
+        // The worker's answer is applied on the next tick.
+        let mut ctx = test_ctx();
+        st.worktree_result = Some((7, Ok(std::path::PathBuf::from("/tmp/x-pr-7"))));
+        st.on_tick(&mut ctx);
+        assert_eq!(ctx.page_request, Some("worktrees"));
+        assert_eq!(
+            ctx.select_worktree.as_deref(),
+            Some(std::path::Path::new("/tmp/x-pr-7"))
+        );
+        st.worktree_result = Some((7, Err("git fetch failed: no such ref".into())));
+        st.on_tick(&mut ctx);
+        assert_eq!(
+            ctx.error_dialog.as_ref().map(|d| d.title.as_str()),
+            Some("Cannot add the worktree")
+        );
     }
 
     #[test]
@@ -1682,6 +1970,8 @@ mod kdl_regression {
             needs_full_redraw: false,
             last_input: std::time::Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         };
         let events = st.dispatch_key(key("Enter"));
         assert!(matches!(events.as_slice(), [PaneEvent::SetFocus(id)] if *id == rd));
@@ -1763,6 +2053,8 @@ mod rate_limit {
             needs_full_redraw: false,
             last_input: std::time::Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         }
     }
 

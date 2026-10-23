@@ -313,6 +313,8 @@ fn run_tui(cfg: Config) -> Result<()> {
         needs_full_redraw: false,
         last_input: std::time::Instant::now(),
         auto_refresh: cfg.github_auto_refresh()?,
+        page_request: None,
+        select_worktree: None,
     };
     let mut app = App::new(ctx, pages, &cfg)?;
 

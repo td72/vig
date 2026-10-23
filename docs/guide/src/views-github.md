@@ -39,6 +39,29 @@ and `e` opens the selected file in `$EDITOR` when the working tree has it
 (a PR's file need not exist locally). A diff too large for GitHub to
 render is reported in the status bar.
 
+`W` on a pull request goes one step further and checks the PR out as a
+**git worktree** next to the repository, so you can run it, test it and
+edit it without touching your current checkout. vig first shows the two
+commands it is about to run and waits for `y`:
+
+```text
+git fetch origin refs/pull/<n>/head
+git worktree add ../<repo>-pr-<n> -b pr/<n> FETCH_HEAD
+```
+
+`refs/pull/<n>/head` exists for every pull request, forks included. The
+fetch runs in the background; when the worktree is in place vig switches
+to the [Worktrees view](views-worktrees.md) with it selected (and, back in
+the diff window, `e` now opens files from that checkout). A PR that
+already has a worktree — one checked out on that branch, or at that path —
+is shown there instead of being asked about again; a directory or branch
+of the same name that is *not* a worktree of the PR is reported as an
+error and nothing is created. The location and names come from
+[`worktree-dir`](config-reference.md#worktree-dir),
+[`worktree-name`](config-reference.md#worktree-name) and
+[`worktree-branch`](config-reference.md#worktree-branch). vig never
+removes a worktree: `git worktree remove` stays with you.
+
 The lists show open items. `x` brings in the closed issues and the merged /
 closed pull requests as well (dimmed, with their state icon: `✓` closed,
 `⊕` merged; the header reads `GitHub · closed`), and `x` again leaves them
@@ -87,6 +110,7 @@ following.
 | `w` (issue / PR detail) | Toggle watch mode (auto-refresh the open item) |
 | `x` (issue / PR list) | Show / hide closed issues and merged / closed PRs |
 | `d` (PR list / detail) | Show the PR's diff in a window: changed files + side-by-side diff (`q` / `Esc` back, `o` Files tab, `y` copy, `e` edit, `r` re-fetch) |
+| `W` (PR list / detail) | Open the PR as a worktree: `git fetch` its head + `git worktree add` after a confirmation, then jump to it on the Worktrees view |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |
 | `]` / `[` (run detail) | Next / previous failed step in the log |
 | `G` (run detail, Log) | Jump to the end and resume following |

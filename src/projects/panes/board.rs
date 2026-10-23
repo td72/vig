@@ -2397,6 +2397,8 @@ mod roadmap_render_tests {
             needs_full_redraw: false,
             last_input: std::time::Instant::now(),
             auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
         };
         term.draw(|f| {
             let area = f.area();
@@ -2458,6 +2460,8 @@ mod roadmap_render_tests {
                 needs_full_redraw: false,
                 last_input: std::time::Instant::now(),
                 auto_refresh: true,
+                page_request: None,
+                select_worktree: None,
             };
             p.render(f, &ctx, &sh, area);
         })

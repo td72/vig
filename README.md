@@ -236,6 +236,13 @@ with the Git view's folding, search and `i` cursor mode — fetched with
 `gh pr diff` (a REST call: no GraphQL points, works for forks); `q` / `Esc`
 returns to the PR, `o` opens its Files tab, `e` edits the file when the
 working tree has it.
+`W` on a pull request checks it out next to the repository as a git worktree:
+after a confirmation showing the two commands, vig runs `git fetch origin
+refs/pull/<n>/head` (forks included) and `git worktree add ../<repo>-pr-<n> -b
+pr/<n> FETCH_HEAD`, leaving the current checkout untouched, then shows the new
+worktree on the Worktrees view (`worktree-dir` / `worktree-name` /
+`worktree-branch` set the location and names; an existing worktree of the PR
+is shown instead; vig never removes one).
 Nothing in this view reruns, cancels or deletes anything.
 
 | Key | Action |
@@ -248,6 +255,7 @@ Nothing in this view reruns, cancels or deletes anything.
 | `y` | Copy the item URL |
 | `x` | Show / hide closed issues and merged / closed PRs in the lists (`github-show-closed` sets the start) |
 | `d` (PR list / detail) | Show the PR's diff: changed files + side-by-side diff in a window (`q` / `Esc` back, `o` Files tab, `e` edit, `r` re-fetch) |
+| `W` (PR list / detail) | Open the PR as a worktree: `git fetch` its head + `git worktree add`, after confirming; then jump to it on the Worktrees view |
 | `Esc` | Back to list |
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |

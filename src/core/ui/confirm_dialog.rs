@@ -46,12 +46,29 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
         Some(d) => d,
         None => return,
     };
+    render_box(
+        f,
+        area,
+        &dialog.title,
+        Color::Red,
+        &dialog.message,
+        "Press any key to dismiss",
+    );
+}
 
-    let dialog_width = 54u16.min(area.width.saturating_sub(4));
+/// A yes / no question in the same box, in a calmer colour: `message`
+/// (word-wrapped; its own line breaks are kept) above `hint`
+/// (e.g. `y: run   n / Esc: cancel`).
+pub fn render_question(f: &mut Frame, area: Rect, title: &str, message: &str, hint: &str) {
+    render_box(f, area, title, Color::Yellow, message, hint);
+}
+
+fn render_box(f: &mut Frame, area: Rect, title: &str, accent: Color, message: &str, hint: &str) {
+    let dialog_width = 64u16.min(area.width.saturating_sub(4));
     let inner_w = dialog_width.saturating_sub(2) as usize;
     let text_w = inner_w.saturating_sub(2); // 1 char padding each side
 
-    let msg_lines = wrap_text(&dialog.message, text_w);
+    let msg_lines = wrap_text(message, text_w);
     let total_lines = 1 + 1 + msg_lines.len() + 1 + 1; // title, blank, msg..., blank, dismiss
     let dialog_height = (total_lines as u16 + 2).min(area.height.saturating_sub(4));
     let x = (area.width.saturating_sub(dialog_width)) / 2;
@@ -65,9 +82,9 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
     // Title
     lines.push(pad_line(
         Line::from(Span::styled(
-            format!(" {}", dialog.title),
+            format!(" {title}"),
             Style::default()
-                .fg(Color::Red)
+                .fg(accent)
                 .bg(BG)
                 .add_modifier(Modifier::BOLD),
         )),
@@ -101,10 +118,10 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
         BG,
     ));
 
-    // Dismiss hint
+    // Dismiss / answer hint
     lines.push(pad_line(
         Line::from(Span::styled(
-            " Press any key to dismiss".to_string(),
+            format!(" {hint}"),
             Style::default().fg(Color::DarkGray).bg(BG),
         )),
         inner_w,
@@ -123,7 +140,7 @@ pub fn render(f: &mut Frame, ctx: &AppContext, area: Rect) {
 
     let block = Block::default()
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::Red).bg(BG))
+        .border_style(Style::default().fg(accent).bg(BG))
         .style(Style::default().bg(BG));
 
     let para = Paragraph::new(lines).block(block);

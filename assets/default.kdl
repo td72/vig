@@ -51,6 +51,14 @@ projects-poll-interval "30s"
 // pull requests) hidden: "on" or "off". `x` toggles it while running.
 projects-hide-closed "off"
 
+// Where `W` on a pull request puts its worktree (`git fetch` of the PR's
+// head + `git worktree add`, after a confirmation): the directory, relative
+// to the main worktree, and the directory / branch names, where `{repo}`
+// is the main worktree's directory name and `{n}` the PR number.
+worktree-dir "../"
+worktree-name "{repo}-pr-{n}"
+worktree-branch "pr/{n}"
+
 // Where the Projects roadmap opens (`start`: days / weeks / months from
 // today; earlier items are reachable with h) and its initial zoom
 // ("month", "week" or "day"). Absent: the earliest item, week scale.
@@ -225,6 +233,7 @@ page "github" {
             "Enter" "OpenDetail"
             "BackTab" "SwitchTab"
             "d" "ShowDiff"
+            "W" "OpenWorktree"
             "o" "OpenBrowser"
             "y" "CopyUrl"
             "x" "ToggleClosed"
@@ -268,6 +277,7 @@ page "github" {
             "BackTab" "CycleBackward"
             "w" "ToggleWatch"
             "d" "ShowDiff"
+            "W" "OpenWorktree"
             "o" "OpenItem"
             "y" "CopyUrl"
             "Esc" "Esc"
