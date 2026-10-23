@@ -13,6 +13,11 @@ use std::path::Path;
 
 /// Runs whose jobs and logs are recorded (the demos open the first few).
 const RUNS_WITH_JOBS: usize = 3;
+/// Pull requests whose diff is recorded (the demo opens one near the top).
+const PRS_WITH_DIFF: usize = 3;
+/// A diff larger than this is not kept as a fixture (a PR that re-records
+/// fixtures or GIFs would add megabytes to the checkout).
+const MAX_DIFF_BYTES: usize = 256 * 1024;
 
 pub fn record(dir: &Path) -> Result<()> {
     std::fs::create_dir_all(dir).with_context(|| format!("create {}", dir.display()))?;
@@ -47,6 +52,19 @@ pub fn record(dir: &Path) -> Result<()> {
     let _ = gh::list_pr_stacks(50);
     for p in &prs {
         gh::get_pr(p.number).map_err(anyhow::Error::msg)?;
+    }
+    step("pull request diffs");
+    for p in prs.iter().take(PRS_WITH_DIFF) {
+        let patch = gh::pr_diff(p.number).map_err(anyhow::Error::msg)?;
+        if patch.len() > MAX_DIFF_BYTES {
+            let name = gh_fixture::name_for(&["pr", "diff", &p.number.to_string()]);
+            std::fs::remove_file(dir.join(&name)).with_context(|| format!("remove {name}"))?;
+            eprintln!(
+                "warning: diff of PR #{} not kept ({} bytes > {MAX_DIFF_BYTES})",
+                p.number,
+                patch.len()
+            );
+        }
     }
     step("workflow runs, jobs and logs");
     let runs = actions::list_runs(actions::RUN_LIST_LIMIT).map_err(anyhow::Error::msg)?;

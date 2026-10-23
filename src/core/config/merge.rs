@@ -45,12 +45,13 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "repo-config" => replace_single(default, unode),
             "projects-view" => replace_named(default, unode),
             "app" => merge_app(default, unode)?,
-            "page" => merge_page(default, unode)?,
+            "page" => merge_block(default, unode, "page")?,
+            "window" => merge_block(default, unode, "window")?,
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
                  `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, \
-                 `projects-poll-interval`, `projects-board`, `projects-view`, `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`, `repo-config`, `app`, or `page`)"
+                 `projects-poll-interval`, `projects-board`, `projects-view`, `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`, `repo-config`, `app`, `page`, or `window`)"
             ))
             }
         }
@@ -110,12 +111,14 @@ fn merge_key_entries(target: &mut KdlDocument, source: &KdlDocument) {
     }
 }
 
-fn merge_page(default: &mut KdlDocument, unode: &KdlNode) -> Result<()> {
-    let page_name = arg0(unode).ok_or_else(|| anyhow!("page block missing name argument"))?;
+/// Merge a `page "<name>"` or `window "<name>"` block: `layout`, `tabs`
+/// and `bind` replace the defaults wholesale, `pane` blocks merge per key.
+fn merge_block(default: &mut KdlDocument, unode: &KdlNode, kind: &str) -> Result<()> {
+    let page_name = arg0(unode).ok_or_else(|| anyhow!("{kind} block missing name argument"))?;
     let dpage = find_mut(default, |n| {
-        n.name().value() == "page" && arg0(n) == Some(page_name)
+        n.name().value() == kind && arg0(n) == Some(page_name)
     })
-    .ok_or_else(|| anyhow!("unknown page {page_name:?}"))?;
+    .ok_or_else(|| anyhow!("unknown {kind} {page_name:?}"))?;
     let Some(uchildren) = unode.children() else {
         return Ok(());
     };
@@ -131,7 +134,7 @@ fn merge_page(default: &mut KdlDocument, unode: &KdlNode) -> Result<()> {
             "pane" => merge_pane(dchildren, un, page_name)?,
             other => {
                 return Err(anyhow!(
-                    "page {page_name:?}: unknown block {other:?} \
+                    "{kind} {page_name:?}: unknown block {other:?} \
                      (expected `layout`, `tabs`, `bind`, or `pane`)"
                 ))
             }

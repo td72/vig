@@ -1,4 +1,5 @@
 use crate::core::app::AppContext;
+use crate::diff_window::DiffWindowState;
 use crate::docker::state::DockerState;
 use crate::files::state::FilesState;
 use crate::git::state::GitState;
@@ -90,6 +91,115 @@ pub fn render_header(f: &mut Frame, ctx: &AppContext, git: &GitState, area: Rect
         ],
         area,
     );
+}
+
+/// Header of a pushed diff window: no tab row (the window is not a page),
+/// the badge / refs / title of what it shows and how to close it.
+pub fn render_diff_window_header(
+    f: &mut Frame,
+    _ctx: &AppContext,
+    win: &DiffWindowState,
+    area: Rect,
+) {
+    let mut spans = vec![
+        Span::styled(
+            " vig ",
+            Style::default()
+                .fg(Color::Black)
+                .bg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::raw(" "),
+        Span::styled(
+            format!(" {} ", win.source.badge),
+            Style::default().fg(Color::Black).bg(Color::Magenta),
+        ),
+    ];
+    if let Some(refs) = &win.source.refs {
+        spans.push(Span::raw(" "));
+        spans.push(Span::styled(
+            format!(" {refs} "),
+            Style::default().fg(Color::Black).bg(Color::Yellow),
+        ));
+    }
+    if !win.source.title.is_empty() {
+        spans.push(Span::raw(" "));
+        spans.push(Span::styled(
+            win.source.title.clone(),
+            Style::default().fg(Color::White),
+        ));
+    }
+    spans.push(Span::raw("  "));
+    spans.push(Span::styled(
+        "q close  ? help",
+        Style::default().fg(Color::DarkGray),
+    ));
+    f.render_widget(Paragraph::new(Line::from(spans)), area);
+}
+
+/// Status bar of a diff window: the fetch state, else the file count and
+/// the +/- totals as on the Git page.
+pub fn render_diff_window_status_bar(
+    f: &mut Frame,
+    ctx: &AppContext,
+    win: &DiffWindowState,
+    area: Rect,
+) {
+    if win.pane.search.active {
+        render_search_prompt(f, &win.pane.search.input, area);
+        return;
+    }
+    let n = win.file_count;
+    let counts = || {
+        vec![
+            Span::styled(
+                format!(" {n} file{}", if n == 1 { "" } else { "s" }),
+                Style::default().fg(Color::White),
+            ),
+            Span::raw("  "),
+            Span::styled(
+                format!("+{}", win.stats.additions),
+                Style::default().fg(Color::Green),
+            ),
+            Span::raw(" "),
+            Span::styled(
+                format!("-{}", win.stats.deletions),
+                Style::default().fg(Color::Red),
+            ),
+        ]
+    };
+    let line = if let Some(ref msg) = ctx.status_message {
+        Line::from(Span::styled(
+            format!(" {msg}"),
+            Style::default().fg(Color::Yellow),
+        ))
+    } else if let Some(ref err) = win.error {
+        Line::from(Span::styled(
+            format!(" {err}"),
+            Style::default().fg(Color::Red),
+        ))
+    } else if win.loading && n == 0 {
+        Line::from(Span::styled(
+            " Fetching diff...",
+            Style::default().fg(Color::Yellow),
+        ))
+    } else if win.loading {
+        let mut spans = counts();
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            "refreshing...",
+            Style::default().fg(Color::DarkGray),
+        ));
+        Line::from(spans)
+    } else if n == 0 {
+        Line::from(Span::styled(
+            " No changes",
+            Style::default().fg(Color::Green),
+        ))
+    } else {
+        Line::from(counts())
+    };
+    f.render_widget(Paragraph::new(line), area);
 }
 
 pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, area: Rect) {

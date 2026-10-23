@@ -463,6 +463,14 @@ impl crate::core::app::PageState for GitState {
 
         // Search input mode intercepts all keys
         if self.pane.handle_search_input(&mut self.panes, ctx, key) {
+            // A confirmed search moves a list selection without an event:
+            // the detail (diff / log) follows here.
+            let origin = self.pane.search.origin;
+            if !self.pane.search.active
+                && (self.select_bindings.contains_key(&origin) || origin == self.panes.ids.git_log)
+            {
+                self.sync_detail(origin);
+            }
             return Ok(PageAction::None);
         }
 

@@ -2,7 +2,7 @@
 
 use super::git_output;
 use super::types::Stash;
-use crate::git::domain::diff::{files_from_diff, FileDiff};
+use crate::git::domain::diff::FileDiff;
 use anyhow::Result;
 use std::path::Path;
 
@@ -107,11 +107,7 @@ fn include_untracked_unsupported(stderr: &str) -> bool {
 
 /// Parse a unified diff into side-by-side `FileDiff`s via libgit2.
 pub fn patch_to_files(patch: &[u8]) -> Result<Vec<FileDiff>> {
-    if patch.iter().all(|b| b.is_ascii_whitespace()) {
-        return Ok(Vec::new());
-    }
-    let diff = git2::Diff::from_buffer(patch)?;
-    files_from_diff(&diff)
+    crate::git::domain::diff::files_from_patch(patch)
 }
 
 #[cfg(test)]

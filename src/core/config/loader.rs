@@ -434,6 +434,7 @@ impl Config {
         self.procs_page()?;
         self.worktrees_page()?;
         self.projects_page()?;
+        self.diff_window()?;
         self.app_entries()?;
         self.theme()?;
         self.icons()?;
@@ -1134,8 +1135,19 @@ impl Config {
         self.page("projects")
     }
 
+    /// The `window "diff"` block: the layout and keys of the diff window a
+    /// PR opens on top of the GitHub page (`d`). Not a page: it has no
+    /// slot in `pages` and no `app` key, so it is loaded separately.
+    pub fn diff_window(&self) -> Result<LoadedPageConfig> {
+        self.block("window", "diff")
+    }
+
     fn page(&self, name: &str) -> Result<LoadedPageConfig> {
-        load_page_from_doc(&self.doc, &self.default_doc, name)
+        self.block("page", name)
+    }
+
+    fn block(&self, kind: &str, name: &str) -> Result<LoadedPageConfig> {
+        load_page_from_doc(&self.doc, &self.default_doc, kind, name)
             .map(|mut p| {
                 p.source = self.source.clone();
                 p
@@ -1190,14 +1202,15 @@ pub fn load_app_entries() -> Vec<(String, String)> {
         .expect("default.kdl app block is always valid")
 }
 
-fn page_children<'a>(doc: &'a KdlDocument, page_name: &str) -> Result<&'a KdlDocument> {
+/// The children of the `<kind> "<name>"` block (`page` or `window`).
+fn page_children<'a>(doc: &'a KdlDocument, kind: &str, page_name: &str) -> Result<&'a KdlDocument> {
     doc.nodes()
         .iter()
-        .filter(|n| n.name().value() == "page")
+        .filter(|n| n.name().value() == kind)
         .find(|n| n.get(0usize).and_then(|v| v.as_string()) == Some(page_name))
-        .ok_or_else(|| anyhow!("page {page_name:?} not found"))?
+        .ok_or_else(|| anyhow!("{kind} {page_name:?} not found"))?
         .children()
-        .ok_or_else(|| anyhow!("page {page_name:?} has no children block"))
+        .ok_or_else(|| anyhow!("{kind} {page_name:?} has no children block"))
 }
 
 /// The `layout { }` block's children, and its single root element.
@@ -1221,15 +1234,16 @@ fn layout_block<'a>(
 fn load_page_from_doc(
     doc: &KdlDocument,
     default_doc: &KdlDocument,
+    kind: &str,
     page_name: &str,
 ) -> Result<LoadedPageConfig> {
-    let children = page_children(doc, page_name)?;
+    let children = page_children(doc, kind, page_name)?;
     let (layout_doc, layout_root) = layout_block(children, page_name)?;
 
     // Pane IDs come from the *default* page's `pane` blocks, in declaration
     // order, so a user layout can rearrange (or leave out) panes without
     // renumbering them.
-    let default_children = page_children(default_doc, page_name)?;
+    let default_children = page_children(default_doc, kind, page_name)?;
     let pane_ids = build_pane_ids(default_children);
 
     // Build name_map from pane_ids for layout / tab / slot parsing.
@@ -2148,6 +2162,75 @@ mod tests {
         // App block switches to it with "6".
         let entries = Config::builtin().app_entries().unwrap();
         assert!(entries.contains(&("6".to_string(), "page:worktrees".to_string())));
+    }
+
+    /// The diff window (`d` on a PR) is a `window` block, not a page: it
+    /// has the Git page's file tree / diff view panes and keys, closes
+    /// with q / Esc, and is absent from `pages` and the `app` block.
+    #[test]
+    fn diff_window_ids_keys_and_bindings() {
+        use crate::core::keymap::{KeyInput, ViewAction};
+        use crossterm::event::KeyEvent;
+        let cfg = Config::builtin().diff_window().unwrap();
+        assert_eq!(cfg.name, "diff");
+        assert_eq!(cfg.resolve_id("file_tree"), Some(0));
+        assert_eq!(cfg.resolve_id("diff_view"), Some(1));
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1]);
+        assert_eq!(
+            cfg.bindings,
+            vec![("file_tree".to_string(), "diff_view".to_string())]
+        );
+        for name in ["view", "file_tree", "diff_view"] {
+            assert!(
+                cfg.pane_keys.contains_key(name),
+                "missing pane keys for {name}"
+            );
+        }
+        let view = cfg.keymap::<ViewAction>("view").unwrap();
+        let look = |s: &str| {
+            let ki: KeyInput = s.parse().unwrap();
+            view.lookup(KeyEvent::new(ki.code, ki.modifiers)).copied()
+        };
+        assert_eq!(look("q"), Some(ViewAction::Close));
+        assert_eq!(look("Esc"), Some(ViewAction::Close));
+        assert_eq!(look("o"), Some(ViewAction::OpenBrowser));
+        assert_eq!(look("y"), Some(ViewAction::CopyUrl));
+        assert_eq!(look("e"), Some(ViewAction::OpenEditor));
+        assert!(!Config::builtin()
+            .builtin_page_names()
+            .iter()
+            .any(|p| p == "diff"));
+        // The GitHub page opens it with `d` from the PR list and detail.
+        let gh = Config::builtin().github_page().unwrap();
+        for pane in ["pr_list", "pr_detail"] {
+            assert!(
+                gh.pane_keys[pane]
+                    .iter()
+                    .any(|e| matches!(e, crate::core::config::keymap_builder::KeymapEntry::Binding { key, action } if key == "d" && action == "ShowDiff")),
+                "{pane} binds d to ShowDiff"
+            );
+        }
+    }
+
+    /// A user config customises the window like a page (`window "diff"`),
+    /// and an unknown window name is an error.
+    #[test]
+    fn user_config_overrides_the_diff_window() {
+        use crate::core::keymap::{KeyInput, ViewAction};
+        use crossterm::event::KeyEvent;
+        let cfg = user(r#"window "diff" { pane "view" { keys { "x" "Close" } } }"#).unwrap();
+        let view = cfg
+            .diff_window()
+            .unwrap()
+            .keymap::<ViewAction>("view")
+            .unwrap();
+        let ki: KeyInput = "x".parse().unwrap();
+        assert_eq!(
+            view.lookup(KeyEvent::new(ki.code, ki.modifiers)).copied(),
+            Some(ViewAction::Close)
+        );
+        let err = format!("{:#}", user(r#"window "popup" { }"#).unwrap_err());
+        assert!(err.contains("unknown window \"popup\""), "{err}");
     }
 
     #[test]

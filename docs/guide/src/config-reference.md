@@ -46,6 +46,7 @@ Conventions used below:
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
 | [`app`](#app) | `Ctrl+c` quit, `1`…`7` page switch | merged per key |
 | [`page`](#the-page-block) | see [Pages and panes](#pages-and-panes) | per element, see below |
+| [`window`](#window-diff) | the diff window `d` opens on a PR | per element, like `page` |
 
 A config stating every top-level node (each at its default here, so this
 loads and changes nothing):
@@ -78,7 +79,7 @@ colors "red"
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
 //   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`, `pages`,
-//   `repo-config`, `app`, or `page`)
+//   `repo-config`, `app`, `page`, or `window`)
 ```
 
 ## Top-level nodes
@@ -810,6 +811,42 @@ Panes: `issue_list`, `pr_list`, `run_list` (the three columns) and
 
 In `run_detail`, `Nav.JumpBottom` (`G`) also resumes following a running
 job's log.
+
+### Window `diff`
+
+The window `d` opens on top of the GitHub page with a pull request's
+changed files and side-by-side diff. It is not a page: it has no slot in
+`pages` and no `app` key, so it is configured in its own `window "diff"`
+block, with the same `layout` / `tabs` / `bind` / `pane` elements and
+merge rules as a `page`. Its panes are the Git page's `file_tree` and
+`diff_view`, with the same actions (and the same cursor / visual mode
+keys in the diff view).
+
+```kdl
+window "diff" {
+    layout {
+        split direction="horizontal" {
+            place "file_tree" size="40"
+            place "diff_view" size="min:20"
+        }
+    }
+    pane "view" {
+        keys {
+            "Backspace" "Close"
+        }
+    }
+}
+```
+
+| Pane | Action | Default key | Meaning |
+|---|---|---|---|
+| `view` | `Close` | `q`, `Esc` | close the window (`Esc` first clears a search, then steps diff → tree → close; `q` closes outright) |
+| | `Help` / `Refresh` | `?` / `r` | help overlay / fetch the diff again |
+| | `OpenEditor` | `e` | open the selected file in `$EDITOR` (when the working tree has it) |
+| | `OpenBrowser` / `CopyUrl` | `o` / `y` | the PR's Files tab in the browser / its URL |
+| | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | tree ↔ diff |
+| `file_tree` (nav, search) | `ToggleDir` / `ExpandOrOpen` / `FocusDiff` | `Space` / `Enter`, `Right`, `l` / `i` | as on the Git page |
+| `diff_view` (nav, search) | `ScrollLeft` / `ScrollRight` / `EnterNormalMode` | `h`, `Left` / `l`, `Right` / `i` | as on the Git page |
 
 ### Page `files`
 

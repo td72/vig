@@ -116,6 +116,10 @@ impl GhListItem for GhPrListItem {
         client::pr_url(self.number)
     }
 
+    fn diff_event(&self) -> Option<PaneEvent> {
+        Some(PaneEvent::ShowPrDiff(self.number))
+    }
+
     fn load_disk_cache() -> Option<Vec<Self>> {
         disk_cache::load_pr_list()
     }
@@ -174,6 +178,45 @@ mod tests {
                 size: 3,
             }),
         }
+    }
+
+    /// `d` on a PR row asks the page for that PR's diff window; the
+    /// header labels come from the row (refs, title) or the detail.
+    #[test]
+    fn show_diff_names_the_selected_pr() {
+        use crate::core::config::Config;
+        use crate::core::pane::{Pane, PaneShared};
+        use crate::core::search::SearchState;
+        use crate::github::panes::gh_list::GhListAction;
+        use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+        let mut pane = new_pane(1, 4, 0);
+        pane.set_keymap(
+            Config::builtin()
+                .github_page()
+                .unwrap()
+                .keymap::<GhListAction>("pr_list")
+                .unwrap(),
+        );
+        pane.set_items(vec![pr(10, None), pr(11, None)]);
+        pane.selected_idx = 1;
+        let shared = PaneShared {
+            focused_pane: 1,
+            previous_pane: 1,
+            search: SearchState::new(),
+        };
+        let events = pane.handle_key(
+            &shared,
+            KeyEvent::new(KeyCode::Char('d'), KeyModifiers::NONE),
+        );
+        assert!(matches!(events[..], [PaneEvent::ShowPrDiff(11)]));
+
+        let src = crate::github::pr_diff::source_for(11, pane.items.get(1), None);
+        assert_eq!(src.badge, "PR #11");
+        assert_eq!(src.refs.as_deref(), Some("feat/11 → main"));
+        assert_eq!(src.title, "pr 11");
+        let bare = crate::github::pr_diff::source_for(12, None, None);
+        assert_eq!(bare.refs, None);
+        assert_eq!(bare.title, "");
     }
 
     #[test]

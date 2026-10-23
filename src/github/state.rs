@@ -350,6 +350,10 @@ pub struct GitHubState {
     probe_reset: bool,
     layout_config: PageLayoutConfig,
     view_keymap: Keymap<ViewAction>,
+    /// The `window "diff"` block and the theme, for the diff window `d`
+    /// pushes on top of this page.
+    diff_window_cfg: LoadedPageConfig,
+    theme: String,
 }
 
 impl GitHubState {
@@ -357,6 +361,8 @@ impl GitHubState {
         let page_cfg = cfg.github_page()?;
         let poll_interval = cfg.github_poll_interval()?;
         let show_closed = cfg.github_show_closed()?;
+        let diff_window_cfg = cfg.diff_window()?;
+        let theme = cfg.theme()?;
 
         let ids = GhPaneIds::from_config(&page_cfg);
         // Build select→detail and reverse detail→select dispatch maps.
@@ -443,7 +449,27 @@ impl GitHubState {
             probe_reset: true,
             layout_config: page_cfg.layout,
             view_keymap: view_km,
+            diff_window_cfg,
+            theme,
         })
+    }
+
+    /// The diff window for PR `number` (`d`), labelled from the list row
+    /// and the shown detail. A PR not in the list (a stale cache) still
+    /// opens: the window then fetches the diff by number alone.
+    fn pr_diff_window(&self, number: u64) -> Result<crate::core::app::Page> {
+        let item = self
+            .panes
+            .pr_tab
+            .list
+            .items
+            .iter()
+            .find(|p| p.number == number);
+        let detail = match &self.panes.pr_tab.detail.content {
+            GhDetailContent::Pr(d) if d.number == number => Some(d.as_ref()),
+            _ => None,
+        };
+        crate::github::pr_diff::open(&self.diff_window_cfg, &self.theme, number, item, detail)
     }
 
     /// Initialize on first switch to GitHub View.
@@ -849,6 +875,7 @@ impl GitHubState {
         ctx: &mut AppContext,
         events: Vec<PaneEvent>,
     ) -> Result<PageAction> {
+        let mut action = PageAction::None;
         for event in events {
             if pane::process_common_event(&mut self.pane, ctx, &event) {
                 continue;
@@ -857,6 +884,10 @@ impl GitHubState {
                 PaneEvent::SetFocus(id) if self.detail_bindings.contains_key(&id) => {
                     self.sync_active_detail();
                 }
+                PaneEvent::ShowPrDiff(number) => match self.pr_diff_window(number) {
+                    Ok(window) => action = PageAction::Push(window),
+                    Err(e) => ctx.show_error("Cannot open the diff", format!("{e:#}")),
+                },
                 PaneEvent::SelectionChanged => {
                     self.sync_active_detail();
                 }
@@ -905,7 +936,7 @@ impl GitHubState {
                 _ => {}
             }
         }
-        Ok(PageAction::None)
+        Ok(action)
     }
 
     // === View-level key handling ===
@@ -1563,6 +1594,31 @@ mod kdl_regression {
             .join("\n");
         assert!(text.contains("Workflow Runs"), "runs column rendered");
         assert!(text.contains('#'), "issue numbers rendered");
+
+        // `d` on a PR: the diff window replays `gh pr diff` too (PR #183
+        // is among the recorded diffs).
+        let src = crate::github::pr_diff::source_for(183, None, None);
+        let mut window =
+            crate::diff_window::DiffWindowState::new(&st.diff_window_cfg, &st.theme, src)
+                .expect("diff window");
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while window.file_count == 0 && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(20));
+            window.drain_background();
+        }
+        assert!(window.file_count > 0, "diff files from fixtures");
+        assert_eq!(window.error, None);
+        term.draw(|f| window.render(f, &ctx, f.area())).unwrap();
+        let buf = term.backend().buffer().clone();
+        let text: String = (0..buf.area.height)
+            .map(|y| {
+                (0..buf.area.width)
+                    .map(|x| buf[(x, y)].symbol().to_string())
+                    .collect::<String>()
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        assert!(text.contains("PR #183"), "window header: {text}");
     }
 
     #[test]
