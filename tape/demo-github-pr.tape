@@ -123,9 +123,16 @@ Sleep 1.5s
 Escape
 Sleep 800ms
 
-# Esc steps back to the file tree, then closes the window
+# Esc steps back to the file tree. O (open with an app) finds the PR's
+# file is not in this checkout: the status line points to W instead
 Escape
 Sleep 1s
+Type "O"
+Sleep 1.5s
+
+# Esc closes the window, Esc again returns to the PR list
+Escape
+Sleep 800ms
 Escape
 Sleep 1.5s
 

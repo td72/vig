@@ -13,7 +13,10 @@ base of your choosing. Four panes across the top and main area:
 
 The view watches the working directory and refreshes the diff automatically
 when files change; `r` refreshes by hand. `e` opens the selected file in
-`$EDITOR`.
+`$EDITOR`; `o` opens it with the OS default application and `O` asks which
+application to use (the name is remembered for next time), as in the
+[Files view](views-files.md). A file the working tree no longer has (a
+deletion) is reported in the status bar instead.
 
 ## Moving between panes
 

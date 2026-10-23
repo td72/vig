@@ -119,6 +119,8 @@ page "git" {
             "Tab" "CyclePaneForward"
             "BackTab" "CyclePaneBackward"
             "e" "OpenEditor"
+            "o" "OpenDefault"
+            "O" "OpenWith"
         }
     }
 
@@ -324,7 +326,9 @@ window "diff" {
             "?" "Help"
             "r" "Refresh"
             "e" "OpenEditor"
-            "o" "OpenBrowser"
+            "o" "OpenDefault"
+            "O" "OpenWith"
+            "b" "OpenBrowser"
             "y" "CopyUrl"
             "Tab" "CyclePaneForward"
             "BackTab" "CyclePaneBackward"

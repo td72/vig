@@ -7,6 +7,7 @@ pub use crate::core::pane::PaneEvent;
 use crate::core::pane::{self, Pane, PaneSet, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::tab::Tab;
+use crate::core::ui::open_with::{open_path_message, OpenWithPrompt};
 use crate::core::ui::status_bar;
 use crate::git::domain::diff::{DiffMeta, FileDiff};
 use crate::git::domain::repository::Repo;
@@ -162,6 +163,8 @@ impl PaneSet for GitPanes {
 pub struct GitState {
     pub pane: PaneShared,
     pub panes: GitPanes,
+    /// `O`: the application name to open the selected file with.
+    pub open_with: OpenWithPrompt,
     pub repo: Repo,
     pub diff_meta: DiffMeta,
     pub diff_base_ref: Option<String>,
@@ -227,6 +230,7 @@ impl GitState {
                 reflog,
                 ids,
             },
+            open_with: OpenWithPrompt::default(),
             repo,
             diff_meta: DiffMeta {
                 branch_name: result.branch_name,
@@ -279,6 +283,19 @@ impl GitState {
 
     pub fn selected_file(&self) -> Option<&FileDiff> {
         self.panes.file_tab.list.selected_file()
+    }
+
+    /// The selected file's path in the working tree, for `o` / `O`; a
+    /// deleted file (no such path) is reported instead.
+    fn selected_local_path(&self, ctx: &mut AppContext) -> Option<std::path::PathBuf> {
+        let file = self.selected_file()?;
+        let path = ctx.workdir.join(&file.path);
+        if path.is_file() {
+            Some(path)
+        } else {
+            ctx.status_message = Some(format!("{} is not in the working tree", file.path));
+            None
+        }
     }
 
     pub fn load_branches(&mut self) {
@@ -416,6 +433,18 @@ impl GitState {
                     }
                     return Ok(PageAction::None);
                 }
+                ViewAction::OpenDefault => {
+                    if let Some(path) = self.selected_local_path(ctx) {
+                        ctx.status_message = Some(open_path_message(&path, None));
+                    }
+                    return Ok(PageAction::None);
+                }
+                ViewAction::OpenWith => {
+                    if self.selected_local_path(ctx).is_some() {
+                        self.open_with.start();
+                    }
+                    return Ok(PageAction::None);
+                }
                 _ => {} // Navigation actions handled in dispatch_key
             }
         }
@@ -460,6 +489,15 @@ impl crate::core::app::PageState for GitState {
             let events = self.dispatch_key(key);
             return self.process_events(ctx, events);
         }
+        // The `O` prompt takes every key until Enter / Esc.
+        if self.open_with.active {
+            if let Some(app) = self.open_with.handle_key(key) {
+                if let Some(path) = self.selected_local_path(ctx) {
+                    ctx.status_message = Some(open_path_message(&path, Some(&app)));
+                }
+            }
+            return Ok(PageAction::None);
+        }
 
         // Search input mode intercepts all keys
         if self.pane.handle_search_input(&mut self.panes, ctx, key) {
@@ -489,7 +527,7 @@ impl crate::core::app::PageState for GitState {
     }
 
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active || self.panes.branch_tab.list.is_modal()
+        self.pane.search.active || self.panes.branch_tab.list.is_modal() || self.open_with.active
     }
 
     fn on_fs_change(&mut self, ctx: &mut AppContext) -> Result<()> {
@@ -522,6 +560,71 @@ impl crate::core::app::PageState for GitState {
 
     fn drain_background(&mut self) {
         self.panes.file_tab.detail.drain_background();
+    }
+}
+
+#[cfg(test)]
+mod open_keys {
+    use super::*;
+    use crate::core::app::PageState;
+    use crate::core::keymap::KeyInput;
+    use std::time::Instant;
+
+    fn key(s: &str) -> KeyEvent {
+        let ki: KeyInput = s.parse().unwrap();
+        KeyEvent::new(ki.code, ki.modifiers)
+    }
+
+    fn ctx(workdir: std::path::PathBuf) -> AppContext {
+        AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir,
+            needs_full_redraw: false,
+            last_input: Instant::now(),
+            auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
+        }
+    }
+
+    /// `O` prompts for an application (taking every key until Enter /
+    /// Esc) when the selected file exists; a file the working tree lacks
+    /// is reported and nothing is asked. `o` reports the same.
+    #[test]
+    fn open_with_prompt_and_missing_file() {
+        let cwd = std::env::current_dir().unwrap();
+        let mut st = GitState::new(&cwd, &Config::builtin()).expect("git page");
+        let path = st.repo.workdir().to_path_buf();
+        let mut ctx = ctx(path.clone());
+        // Make sure a file is selected: the tree may be empty on a clean
+        // tree, in which case the keys simply do nothing.
+        let Some(file) = st.selected_file().map(|f| f.path.clone()) else {
+            st.handle_key(&mut ctx, key("O")).unwrap();
+            assert!(!st.open_with.active);
+            return;
+        };
+        if path.join(&file).is_file() {
+            st.handle_key(&mut ctx, key("O")).unwrap();
+            assert!(st.open_with.active);
+            assert!(st.intercepts_all_keys());
+            st.handle_key(&mut ctx, key("q")).unwrap();
+            assert_eq!(st.open_with.input, "q", "keys go to the prompt");
+            st.handle_key(&mut ctx, key("Esc")).unwrap();
+            assert!(!st.open_with.active);
+        } else {
+            st.handle_key(&mut ctx, key("o")).unwrap();
+            assert!(ctx
+                .status_message
+                .as_deref()
+                .is_some_and(|m| m.contains("not in the working tree")));
+            assert!(!st.open_with.active);
+        }
     }
 }
 

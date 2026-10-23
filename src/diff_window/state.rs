@@ -6,6 +6,7 @@ use crate::core::page::{ExternalCommand, PageAction};
 use crate::core::pane::{self, Pane, PaneEvent, PaneSet, PaneShared};
 use crate::core::search::SearchState;
 use crate::core::tab::Tab;
+use crate::core::ui::open_with::{open_path_message, OpenWithPrompt};
 use crate::core::ui::status_bar;
 use crate::git::domain::diff::{compute_stats, files_from_patch, DiffStats, FileDiff};
 use crate::git::panes::diff_view::keys::DiffScrollAction;
@@ -79,6 +80,8 @@ pub struct DiffWindowState {
     pub pane: PaneShared,
     pub panes: DiffWindowPanes,
     pub source: DiffSource,
+    /// `O`: the application name to open the selected file with.
+    pub open_with: OpenWithPrompt,
     pub stats: DiffStats,
     pub file_count: usize,
     /// A fetch is outstanding (the cached patch, if any, is shown meanwhile).
@@ -140,6 +143,7 @@ impl DiffWindowState {
                 ids,
             },
             source,
+            open_with: OpenWithPrompt::default(),
             stats: DiffStats {
                 additions: 0,
                 deletions: 0,
@@ -277,6 +281,18 @@ impl DiffWindowState {
                     return Ok(PageAction::None);
                 }
                 ViewAction::OpenEditor => return Ok(self.open_editor(ctx)),
+                ViewAction::OpenDefault => {
+                    if let Some(path) = self.selected_local_path(ctx) {
+                        ctx.status_message = Some(open_path_message(&path, None));
+                    }
+                    return Ok(PageAction::None);
+                }
+                ViewAction::OpenWith => {
+                    if self.selected_local_path(ctx).is_some() {
+                        self.open_with.start();
+                    }
+                    return Ok(PageAction::None);
+                }
                 ViewAction::OpenBrowser => {
                     match &self.source.url {
                         Some(url) => ctx.open_url(url),
@@ -299,24 +315,30 @@ impl DiffWindowState {
         Ok(PageAction::None)
     }
 
-    /// `e`: the selected file in `$EDITOR`, when the working tree has it
-    /// (a PR's file need not exist locally).
-    fn open_editor(&self, ctx: &mut AppContext) -> PageAction {
-        let Some(file) = self.selected_file() else {
-            return PageAction::None;
-        };
-        let candidates = self
+    /// The selected file on disk, for `e` / `o` / `O`: in the PR's own
+    /// worktree when there is one, else in vig's working tree. A file in
+    /// neither (a PR's file need not exist locally) is reported instead.
+    fn selected_local_path(&self, ctx: &mut AppContext) -> Option<PathBuf> {
+        let file = self.selected_file()?;
+        let found = self
             .source
             .local_root
             .iter()
             .chain(std::iter::once(&ctx.workdir))
             .map(|root| root.join(&file.path))
-            .collect::<Vec<_>>();
-        let Some(path) = candidates.into_iter().find(|p| p.is_file()) else {
+            .find(|p| p.is_file());
+        if found.is_none() {
             ctx.status_message = Some(format!(
                 "{} is not in the working tree (W opens the PR as a worktree)",
                 file.path
             ));
+        }
+        found
+    }
+
+    /// `e`: the selected file in `$EDITOR`.
+    fn open_editor(&self, ctx: &mut AppContext) -> PageAction {
+        let Some(path) = self.selected_local_path(ctx) else {
             return PageAction::None;
         };
         let editor = std::env::var("EDITOR")
@@ -360,6 +382,15 @@ impl PageState for DiffWindowState {
             self.process_events(ctx, events);
             return Ok(PageAction::None);
         }
+        // The `O` prompt takes every key until Enter / Esc.
+        if self.open_with.active {
+            if let Some(app) = self.open_with.handle_key(key) {
+                if let Some(path) = self.selected_local_path(ctx) {
+                    ctx.status_message = Some(open_path_message(&path, Some(&app)));
+                }
+            }
+            return Ok(PageAction::None);
+        }
         if self.pane.handle_search_input(&mut self.panes, ctx, key) {
             // A confirmed tree search moves the selection without an
             // event: the diff follows here.
@@ -380,7 +411,7 @@ impl PageState for DiffWindowState {
     }
 
     fn intercepts_all_keys(&self) -> bool {
-        self.pane.search.active
+        self.pane.search.active || self.open_with.active
     }
 
     fn on_suspend_return(
@@ -649,6 +680,44 @@ index 1111111..2222222 100644
                 .any(|(k, v)| k.contains('q') && v == "Close window"),
             "{help:?}"
         );
-        assert!(help.iter().any(|(k, v)| k == "o" && v == "Open in browser"));
+        assert!(help.iter().any(|(k, v)| k == "b" && v == "Open in browser"));
+        assert!(help
+            .iter()
+            .any(|(k, v)| k == "o" && v == "Open with default app"));
+    }
+
+    /// `o` / `O` open the selected file like the Files view does: `O`
+    /// prompts for an application and takes every key until Enter / Esc;
+    /// a file the working tree lacks is reported instead.
+    #[test]
+    fn open_keys_prompt_or_report_a_missing_file() {
+        let mut win = window(source(Ok(PATCH), None));
+        settle(&mut win);
+        let mut ctx = ctx();
+        // Nothing to open: the PR's files are not on this disk.
+        win.handle_key(&mut ctx, key("o")).unwrap();
+        assert!(ctx
+            .status_message
+            .as_deref()
+            .is_some_and(|m| m.contains("not in the working tree")));
+        assert!(!win.open_with.active, "no prompt for a missing file");
+        // With the file present, `O` opens the prompt and Esc cancels it.
+        let dir = std::env::temp_dir().join(format!("vig-open-keys-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("src")).unwrap();
+        std::fs::write(dir.join("src/lib.rs"), "fn a() {}\n").unwrap();
+        ctx.workdir = dir.clone();
+        ctx.status_message = None;
+        win.handle_key(&mut ctx, key("O")).unwrap();
+        assert!(win.open_with.active);
+        assert!(win.intercepts_all_keys());
+        assert!(screen(&mut win).contains("Open with:"));
+        win.handle_key(&mut ctx, key("q")).unwrap();
+        assert_eq!(win.open_with.input, "q", "keys go to the prompt");
+        assert!(matches!(
+            win.handle_key(&mut ctx, key("Esc")).unwrap(),
+            PageAction::None
+        ));
+        assert!(!win.open_with.active);
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

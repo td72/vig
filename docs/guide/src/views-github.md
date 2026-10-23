@@ -34,10 +34,12 @@ comes from `gh pr diff`, a REST call that costs no GraphQL points and works
 for pull requests from forks and branches you never fetched; the last diff
 seen is cached on disk and shown at once while a fresh one is fetched (`r`
 fetches again). `Esc` steps back — diff → tree → close — and `q` closes
-outright; `o` opens the PR's Files tab in the browser, `y` copies that URL,
-and `e` opens the selected file in `$EDITOR` when the working tree has it
-(a PR's file need not exist locally). A diff too large for GitHub to
-render is reported in the status bar.
+outright; `b` opens the PR's Files tab in the browser and `y` copies that
+URL. `e` / `o` / `O` open the selected file — in `$EDITOR`, with the OS
+default application, or with an application you name — when the working
+tree has it (a PR's file need not exist locally; see `W` below for a
+checkout of the PR itself). A diff too large for GitHub to render is
+reported in the status bar.
 
 `W` on a pull request goes one step further and checks the PR out as a
 **git worktree** next to the repository, so you can run it, test it and
@@ -109,7 +111,7 @@ following.
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `w` (issue / PR detail) | Toggle watch mode (auto-refresh the open item) |
 | `x` (issue / PR list) | Show / hide closed issues and merged / closed PRs |
-| `d` (PR list / detail) | Show the PR's diff in a window: changed files + side-by-side diff (`q` / `Esc` back, `o` Files tab, `y` copy, `e` edit, `r` re-fetch) |
+| `d` (PR list / detail) | Show the PR's diff in a window: changed files + side-by-side diff (`q` / `Esc` back, `b` Files tab, `y` copy, `e` / `o` / `O` edit / open the file, `r` re-fetch) |
 | `W` (PR list / detail) | Open the PR as a worktree: `git fetch` its head + `git worktree add` after a confirmation, then jump to it on the Worktrees view |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |
 | `]` / `[` (run detail) | Next / previous failed step in the log |

@@ -234,8 +234,9 @@ immediately and a successful fetch clears the backoff.
 changed files as a tree on the left, the side-by-side diff on the right,
 with the Git view's folding, search and `i` cursor mode — fetched with
 `gh pr diff` (a REST call: no GraphQL points, works for forks); `q` / `Esc`
-returns to the PR, `o` opens its Files tab, `e` edits the file when the
-working tree has it.
+returns to the PR, `b` opens its Files tab in the browser, and `e` / `o` /
+`O` edit or open the file when the working tree (or the PR's worktree)
+has it.
 `W` on a pull request checks it out next to the repository as a git worktree:
 after a confirmation showing the two commands, vig runs `git fetch origin
 refs/pull/<n>/head` (forks included) and `git worktree add ../<repo>-pr-<n> -b
@@ -254,7 +255,7 @@ Nothing in this view reruns, cancels or deletes anything.
 | `o` | Open in browser (issue, PR, run or the selected job) |
 | `y` | Copy the item URL |
 | `x` | Show / hide closed issues and merged / closed PRs in the lists (`github-show-closed` sets the start) |
-| `d` (PR list / detail) | Show the PR's diff: changed files + side-by-side diff in a window (`q` / `Esc` back, `o` Files tab, `e` edit, `r` re-fetch) |
+| `d` (PR list / detail) | Show the PR's diff: changed files + side-by-side diff in a window (`q` / `Esc` back, `b` Files tab, `e` / `o` / `O` edit / open the file, `r` re-fetch) |
 | `W` (PR list / detail) | Open the PR as a worktree: `git fetch` its head + `git worktree add`, after confirming; then jump to it on the Worktrees view |
 | `Esc` | Back to list |
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
@@ -300,6 +301,7 @@ default.
 | `Esc` (preview) | Clear the search / back to the file list |
 | `/` `n` `N` | Search file names |
 | `e` | Open selected file in external editor |
+| `o` / `O` | Open the selected file with the default app / with an app you name (as in the Files view) |
 | `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |
 | `O` | Open selected entry with an app you name (`open -a <app>` on macOS) |
 | `m` | Toggle Markdown rendering in the preview |
