@@ -71,7 +71,9 @@ pub trait GhListItem: Sized + Send + 'static {
     fn empty_message() -> &'static str;
     /// Render one row; `tree` carries the indent / guide prefix when the
     /// item is nested under another one.
-    fn render_item(&self, tree: &TreePos) -> ListItem<'static>;
+    /// The row, laid out for a list `width` columns wide (inside the
+    /// borders).
+    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static>;
     fn number(&self) -> u64;
     /// Number of the item this one is nested under, if any. `items` is the
     /// whole fetched list, for parents that must be resolved by lookup.
@@ -319,7 +321,7 @@ impl<T: GhListItem> GhListPane<T> {
                     .enumerate()
                     .map(|(idx, item)| {
                         let tree = self.positions.get(idx).cloned().unwrap_or_default();
-                        let mut li = item.render_item(&tree);
+                        let mut li = item.render_item(&tree, area.width.saturating_sub(2));
                         let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
                         if hl.is_active() {
                             use ratatui::style::Style;

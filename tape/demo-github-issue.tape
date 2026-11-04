@@ -86,6 +86,13 @@ Sleep 1.5s
 Escape
 Sleep 1.5s
 
+# `/` finds issues by assignee too
+Type "/@td72"
+Enter
+Sleep 2s
+Escape
+Sleep 1s
+
 # Copy the selected issue's URL (y) — the status bar shows "Copied <url>"
 Type "y"
 Sleep 2.5s

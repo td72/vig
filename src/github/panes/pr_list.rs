@@ -20,7 +20,7 @@ impl GhListItem for GhPrListItem {
         "No pull requests"
     }
 
-    fn render_item(&self, tree: &TreePos) -> ListItem<'static> {
+    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static> {
         let (icon, icon_color) = match self.state.as_str() {
             "MERGED" => ("⊕", Color::Magenta),
             "CLOSED" => ("✓", Color::Red),
@@ -43,12 +43,20 @@ impl GhListItem for GhPrListItem {
                 Style::default().fg(Color::Yellow),
             ),
             Span::raw(" "),
-            Span::styled(self.title.clone(), title_style),
         ];
-        spans.extend(people::row_spans(
+        let people = people::row_spans(
             &logins(&self.assignees),
             &reviewer_handles(&self.review_requests),
-        ));
+        );
+        let before = people::spans_width(&spans);
+        let title = people::fit_title(
+            &self.title,
+            before,
+            people::spans_width(&people),
+            width as usize,
+        );
+        spans.push(Span::styled(title, title_style));
+        spans.extend(people);
 
         // Review badge
         if let Some(ref decision) = self.review_decision {

@@ -1,13 +1,23 @@
 //! Assignees and pending review requests, as list rows and detail headers
 //! show them.
 
+use crate::core::text::truncate_to_width;
 use ratatui::{
     style::{Color, Style},
     text::{Line, Span},
 };
+use unicode_width::UnicodeWidthStr;
+
+/// A title keeps at least this many columns before the people are cut
+/// instead.
+const MIN_TITLE_WIDTH: usize = 12;
 
 /// The marker in front of a pending reviewer in a list row.
 pub(crate) const REVIEWER_ARROW: &str = "→";
+
+/// The people's color in a row: dimmer than the title, still legible on
+/// the selection background (DarkGray is not).
+const PEOPLE_FG: Color = Color::Gray;
 
 /// List-row spans after the title: ` @alice @bob` for the assignees and
 /// ` → carol` for the reviewers still to review. Empty when there is
@@ -17,13 +27,13 @@ pub(crate) fn row_spans(assignees: &[&str], reviewers: &[&str]) -> Vec<Span<'sta
     for login in assignees {
         spans.push(Span::styled(
             format!(" @{login}"),
-            Style::default().fg(Color::DarkGray),
+            Style::default().fg(PEOPLE_FG),
         ));
     }
     if !reviewers.is_empty() {
         spans.push(Span::styled(
             format!(" {REVIEWER_ARROW} {}", reviewers.join(", ")),
-            Style::default().fg(Color::DarkGray),
+            Style::default().fg(PEOPLE_FG),
         ));
     }
     spans
@@ -46,6 +56,26 @@ pub(crate) fn header_line(assignees: &[&str], reviewers: &[&str]) -> Option<Line
         spans.push(Span::raw(reviewers.join(", ")));
     }
     Some(Line::from(spans))
+}
+
+/// Columns the `spans` take.
+pub(crate) fn spans_width(spans: &[Span<'_>]) -> usize {
+    spans.iter().map(|s| s.content.width()).sum()
+}
+
+/// The `title` cut so that the people after it still fit a row `width`
+/// columns wide whose first `before` columns are taken (prefix, icon,
+/// number): a long title loses its tail, not its assignees — down to
+/// `MIN_TITLE_WIDTH` columns, below which the people are cut instead.
+pub(crate) fn fit_title(title: &str, before: usize, people_width: usize, width: usize) -> String {
+    let avail = width.saturating_sub(before);
+    if title.width() + people_width <= avail {
+        return title.to_string();
+    }
+    let keep = avail
+        .saturating_sub(people_width)
+        .max(MIN_TITLE_WIDTH.min(avail));
+    truncate_to_width(title, keep)
 }
 
 /// `@alice @bob` for a list's search text, so `/` finds items by assignee.
@@ -81,6 +111,20 @@ mod tests {
         assert_eq!(line.to_string(), "  Assignees: alice Reviewers: carol");
         let line = header_line(&[], &["carol"]).unwrap();
         assert_eq!(line.to_string(), "  Reviewers: carol");
+    }
+
+    #[test]
+    fn fit_title_keeps_the_people_visible() {
+        let people = spans_width(&row_spans(&["alice"], &[]));
+        assert_eq!(people, 7);
+        // Fits: untouched.
+        assert_eq!(fit_title("short", 6, people, 40), "short");
+        // Too long: the title gives way to the people (30 - 6 - 7 = 17).
+        let long = "a title that runs past the column";
+        assert_eq!(fit_title(long, 6, people, 30), "a title that run…");
+        // Too narrow for both: the title keeps its minimum, people are cut.
+        assert_eq!(fit_title(long, 6, people, 20), "a title tha…");
+        assert_eq!(fit_title(long, 6, people, 10), "a t…");
     }
 
     #[test]

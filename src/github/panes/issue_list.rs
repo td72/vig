@@ -20,7 +20,7 @@ impl GhListItem for GhIssueListItem {
         "No issues"
     }
 
-    fn render_item(&self, tree: &TreePos) -> ListItem<'static> {
+    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static> {
         let open = self.state == "OPEN";
         let icon = if open { "●" } else { "✓" };
         let icon_color = if open { Color::Green } else { Color::Red };
@@ -31,6 +31,7 @@ impl GhListItem for GhIssueListItem {
             Style::default().fg(Color::DarkGray)
         };
 
+        let people = people::row_spans(&logins(&self.assignees), &[]);
         let mut spans = vec![
             Span::raw(" "),
             Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
@@ -41,9 +42,16 @@ impl GhListItem for GhIssueListItem {
                 Style::default().fg(Color::Yellow),
             ),
             Span::raw(" "),
-            Span::styled(self.title.clone(), title_style),
         ];
-        spans.extend(people::row_spans(&logins(&self.assignees), &[]));
+        let before = people::spans_width(&spans);
+        let title = people::fit_title(
+            &self.title,
+            before,
+            people::spans_width(&people),
+            width as usize,
+        );
+        spans.push(Span::styled(title, title_style));
+        spans.extend(people);
         ListItem::new(Line::from(spans))
     }
 
