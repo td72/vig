@@ -12,6 +12,7 @@ pub mod pane;
 pub mod search;
 pub mod syntax;
 pub mod tab;
+pub mod text;
 pub mod theme;
 pub mod tree;
 pub mod tui;

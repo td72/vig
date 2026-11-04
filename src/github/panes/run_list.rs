@@ -85,7 +85,7 @@ impl GhListItem for WorkflowRun {
         "No workflow runs"
     }
 
-    fn render_item(&self, _tree: &TreePos) -> ListItem<'static> {
+    fn render_item(&self, _tree: &TreePos, _width: u16) -> ListItem<'static> {
         render_run_row(self, now_secs())
     }
 

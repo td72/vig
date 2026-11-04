@@ -51,13 +51,14 @@ Sleep 2s
 Type "l"
 Sleep 1.5s
 
-# Navigate PR list
+# Navigate PR list: a row names the assignees (@td72) and, when a review
+# is pending, the reviewers still to review (→ bob)
 Type "j"
 Sleep 800ms
-Type "j"
+Type "k"
 Sleep 800ms
 
-# Open PR detail
+# Open PR detail (the header lists the assignees)
 Enter
 Sleep 3s
 
@@ -106,7 +107,7 @@ Type "j"
 Sleep 1.5s
 
 # Search the file tree by path
-Type "/loader"
+Type "/people"
 Enter
 Sleep 2s
 

@@ -8,6 +8,7 @@ use crate::core::keymap::{
 };
 use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
+use crate::core::text::truncate_to_width;
 use crate::core::theme;
 use crate::projects::domain::filter::{self, Filter};
 use crate::projects::domain::roadmap::{self, Zoom};
@@ -24,7 +25,7 @@ use ratatui::{
     Frame,
 };
 use std::collections::HashSet;
-use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
+use unicode_width::UnicodeWidthStr;
 
 /// Narrowest a kanban column gets before the board scrolls horizontally.
 const MIN_COLUMN_WIDTH: u16 = 24;
@@ -1657,28 +1658,6 @@ fn card_lines(
         Span::raw(" ".repeat(width.saturating_sub(sub_w))),
     ];
     vec![Line::from(first), Line::from(second)]
-}
-
-/// Cut `s` to at most `width` columns, ending in `…` when cut.
-pub fn truncate_to_width(s: &str, width: usize) -> String {
-    if s.width() <= width {
-        return s.to_string();
-    }
-    if width == 0 {
-        return String::new();
-    }
-    let mut out = String::new();
-    let mut w = 0;
-    for c in s.chars() {
-        let cw = c.width().unwrap_or(0);
-        if w + cw > width.saturating_sub(1) {
-            break;
-        }
-        out.push(c);
-        w += cw;
-    }
-    out.push('…');
-    out
 }
 
 impl Pane<PaneEvent> for BoardPane {

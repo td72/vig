@@ -24,6 +24,14 @@ browser. In an issue or PR detail, `w` toggles **watch mode**: vig re-fetches
 the open item about every 10 seconds so a conversation or CI status you are
 waiting on stays current.
 
+Each row shows the item's assignees after the title (`@alice`) and, on a
+pull request, the reviewers it is still waiting for (`→ bob`). GitHub keeps
+a review request only until that person reviews, so the arrow names
+exactly who has yet to look; a submitted review moves its author to the
+Reviews sub-pane. The detail header repeats both lists in full
+(`Assignees: … Reviewers: …`, teams by their slug), and `/` in a list
+matches assignees too — `/@alice` finds everything assigned to alice.
+
 `d` on a pull request — in the list or in its detail — opens the PR's diff
 in a window on top of the page: the changed files as a tree on the left,
 the side-by-side diff on the right, exactly as the [Git view](views-git.md)

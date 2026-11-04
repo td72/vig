@@ -213,6 +213,7 @@ mod tests {
             labels: vec![],
             created_at: "2025-01-01T00:00:00Z".to_string(),
             parent: None,
+            assignees: vec![],
         }];
 
         let path = tmp.join("issues.json");
@@ -230,6 +231,7 @@ mod tests {
             comments: vec![],
             labels: vec![],
             created_at: "2025-01-01T00:00:00Z".to_string(),
+            assignees: vec![],
         };
 
         let path = tmp.join("issue/88888.json");

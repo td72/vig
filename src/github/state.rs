@@ -1724,7 +1724,7 @@ mod kdl_regression {
         let Some(dir) = gh_fixture::recorded_dir() else {
             return;
         };
-        gh_fixture::set_replay_dir(Some(dir));
+        gh_fixture::set_replay_dir(Some(dir.clone()));
         let mut st = GitHubState::new(&Config::builtin()).expect("github page");
         st.probe_reset = false;
         st.initialize();
@@ -1771,9 +1771,21 @@ mod kdl_regression {
         assert!(text.contains("Workflow Runs"), "runs column rendered");
         assert!(text.contains('#'), "issue numbers rendered");
 
-        // `d` on a PR: the diff window replays `gh pr diff` too (PR #183
-        // is among the recorded diffs).
-        let src = crate::github::pr_diff::source_for(183, None, None, None);
+        // `d` on a PR: the diff window replays `gh pr diff` too, for any
+        // PR whose diff the recording kept (`pr_diff_<n>.out`).
+        let number = std::fs::read_dir(&dir)
+            .unwrap()
+            .filter_map(|e| e.ok())
+            .filter_map(|e| {
+                let name = e.file_name().to_string_lossy().into_owned();
+                name.strip_prefix("pr_diff_")?
+                    .strip_suffix(".out")?
+                    .parse::<u64>()
+                    .ok()
+            })
+            .min()
+            .expect("a recorded pr diff");
+        let src = crate::github::pr_diff::source_for(number, None, None, None);
         let mut window =
             crate::diff_window::DiffWindowState::new(&st.diff_window_cfg, &st.theme, src)
                 .expect("diff window");
@@ -1794,7 +1806,10 @@ mod kdl_regression {
             })
             .collect::<Vec<_>>()
             .join("\n");
-        assert!(text.contains("PR #183"), "window header: {text}");
+        assert!(
+            text.contains(&format!("PR #{number}")),
+            "window header: {text}"
+        );
     }
 
     /// `W` on a PR asks before running anything: the dialog shows the two
@@ -1818,6 +1833,8 @@ mod kdl_regression {
             review_decision: None,
             is_draft: false,
             stack: None,
+            assignees: vec![],
+            review_requests: vec![],
         }]);
         st.pane.set_focus(pl);
         let mut ctx = test_ctx();

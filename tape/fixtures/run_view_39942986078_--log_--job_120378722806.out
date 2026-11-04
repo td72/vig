@@ -1,0 +1,256 @@
+homebrew	UNKNOWN STEP	﻿2026-10-23T11:00:03.0141092Z Current runner version: '2.338.0'
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0168260Z ##[group]Runner Image Provisioner
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0169563Z Hosted Compute Agent
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0170700Z Version: 20261012.601
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0171657Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0172701Z Build Date: 2026-10-12T17:48:21Z
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0173678Z Worker ID: {fcd17f90-2cc0-4c3d-a2c2-c6717ca82caa}
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0174706Z Region: northcentralus
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0175548Z Cloud: Azure
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0176332Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0178048Z ##[group]Operating System
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0178939Z Ubuntu
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0179711Z 24.04.5
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0180822Z LTS
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0181754Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0182586Z ##[group]Runner Image
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0183546Z Image: ubuntu-24.04
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0184593Z Version: 20261012.334.1
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0186251Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0188081Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0189335Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0190990Z ##[group]GITHUB_TOKEN Permissions
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0194843Z Actions: read
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0195866Z Metadata: read
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0196705Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0199431Z Secret source: Actions
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0201186Z Cache mode: write
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0202506Z Prepare workflow directory
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0527956Z Prepare all required actions
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.0579477Z Getting action download info
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.3334559Z Download action repository 'actions/create-github-app-token@v1' (SHA:d72941d797fd3113feb6b93fd0dec494b13a2547)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:03.7171148Z Download action repository 'actions/download-artifact@v7' (SHA:37930b1c2abaa49bbe596cd826c3c89aef350131)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.0659104Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.2192348Z Complete job name: homebrew
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.3078760Z ##[group]Run actions/create-github-app-token@v1
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.3080482Z with:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.3081695Z   app-id: ***
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.3095771Z   private-key: ***
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.3096679Z   owner: td72
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.3097599Z   repositories: homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.3098578Z   github-api-url: https://api.github.com
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.3099843Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.4190458Z owner and repositories set, creating token for repositories "homebrew-tap" owned by "td72"
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.9357296Z ##[group]Run actions/download-artifact@v7
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.9359316Z with:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.9361052Z   run-id: 39942399332
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.9374281Z   github-token: ***
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.9376019Z   merge-multiple: true
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.9377709Z   repository: td72/vig
+homebrew	UNKNOWN STEP	2026-10-23T11:00:04.9379373Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.0845207Z Fetching artifact list for workflow run 39942399332 in repository td72/vig
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3155096Z Found 3 artifact(s)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3161235Z No input name, artifact-ids or pattern filtered specified, downloading all artifacts
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3165705Z Preparing to download the following artifacts:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3171400Z - vig-aarch64-unknown-linux-gnu (ID: 12497230976, Size: 8646667, Expected Digest: sha256:7bbd951553b8d9ee5b81319687cfc248614cd9f75badd142778b7b02868e5ff1)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3189747Z - vig-aarch64-apple-darwin (ID: 12496199376, Size: 7766829, Expected Digest: sha256:ddf0bcd0e752fab23ceb34a0cfb68f06c78ba2c0030da81a3fef0b575536dea7)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3197850Z - vig-x86_64-unknown-linux-gnu (ID: 12496003807, Size: 8574586, Expected Digest: sha256:d00c1fb4b303719ad47db9c3a1d9c9a6936e4d0e0de2849f5a3d13802cc93ac2)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3205243Z Downloading artifact '12497230976' from 'td72/vig'
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3210008Z Downloading artifact '12496199376' from 'td72/vig'
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.3217836Z Downloading artifact '12496003807' from 'td72/vig'
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.4774639Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/f5eb0a29-80a1-8e38-830a-1519acd7311d/workflow-job-run-8c5d06de-0722-5631-829e-c4ee1608d0ec/artifacts/1c695ffc2b6749250362cf6d6d28ac2e4c61428e5e82064ab8daed8c6cf6e05c.zip
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.4780854Z Starting download of artifact to: /home/runner/work/vig/vig
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.5402497Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/f5eb0a29-80a1-8e38-830a-1519acd7311d/workflow-job-run-969c7336-ae8d-5a6f-b4be-3f481ab885ac/artifacts/26fe75a994ed2ceac0ee61c6484cc01fd93f85d963a228b2c9f8f6bc5d78c7e3.zip
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.5409775Z Starting download of artifact to: /home/runner/work/vig/vig
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.6049360Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/f5eb0a29-80a1-8e38-830a-1519acd7311d/workflow-job-run-1a07c58f-fae7-5d89-8fbc-af68d578253c/artifacts/1762b283d0f601eb191915fdfdae9886828280756a28f8ba9cbe015dc39aadcd.zip
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.6057753Z Starting download of artifact to: /home/runner/work/vig/vig
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.6605975Z (node:2265) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+homebrew	UNKNOWN STEP	2026-10-23T11:00:05.6611267Z (Use `node --trace-deprecation ...` to show where the warning was created)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.0799511Z SHA256 digest of downloaded artifact is d00c1fb4b303719ad47db9c3a1d9c9a6936e4d0e0de2849f5a3d13802cc93ac2
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.0803122Z Artifact download completed successfully.
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1036043Z SHA256 digest of downloaded artifact is 7bbd951553b8d9ee5b81319687cfc248614cd9f75badd142778b7b02868e5ff1
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1039128Z Artifact download completed successfully.
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1725430Z SHA256 digest of downloaded artifact is ddf0bcd0e752fab23ceb34a0cfb68f06c78ba2c0030da81a3fef0b575536dea7
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1726913Z Artifact download completed successfully.
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1727872Z Total of 3 artifact(s) downloaded
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1731124Z Download artifact has finished successfully
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1956766Z ##[group]Run actions/checkout@v6
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1957382Z with:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1958026Z   repository: td72/homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1961168Z   token: ***
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1961751Z   path: homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1962301Z   ssh-strict: true
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1962855Z   ssh-user: git
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1963443Z   persist-credentials: true
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1963985Z   clean: true
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1964545Z   sparse-checkout-cone-mode: true
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1965151Z   fetch-depth: 1
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1965684Z   fetch-tags: false
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1966268Z   show-progress: true
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1966796Z   lfs: false
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1967297Z   submodules: false
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1967896Z   set-safe-directory: true
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1968463Z   allow-unsafe-pr-checkout: false
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.1969090Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2898303Z Syncing repository: td72/homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2901597Z ##[group]Getting Git version info
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2902759Z Working directory is '/home/runner/work/vig/vig/homebrew-tap'
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2904440Z [command]/usr/bin/git version
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2935015Z git version 2.55.0
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2953811Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2967628Z Temporarily overriding HOME='/home/runner/work/_temp/3fb52f9b-9c87-4d4e-988e-502cfed15edf' before making global git config changes
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2969582Z Adding repository directory to the temporary git global config as a safe directory
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.2971626Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig/homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.3019205Z ##[group]Determining repository object format
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5180523Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5182519Z ##[group]Initializing the repository
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5192313Z [command]/usr/bin/git init /home/runner/work/vig/vig/homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5341964Z hint: Using 'master' as the name for the initial branch. This default branch name
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5347274Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5348810Z hint: to use in all of your new repositories, which will suppress this warning,
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5349746Z hint: call:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5351294Z hint:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5352219Z hint: 	git config --global init.defaultBranch <name>
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5353521Z hint:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5355300Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5357663Z hint: 'development'. The just-created branch can be renamed via this command:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5359657Z hint:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5361487Z hint: 	git branch -m <name>
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5363121Z hint:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5364855Z hint: Disable this message with "git config set advice.defaultBranchName false"
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5367075Z Initialized empty Git repository in /home/runner/work/vig/vig/homebrew-tap/.git/
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5371527Z [command]/usr/bin/git remote add origin https://github.com/td72/homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5442027Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5443846Z ##[group]Disabling automatic garbage collection
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5447541Z [command]/usr/bin/git config --local gc.auto 0
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5497980Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5499587Z ##[group]Setting up auth
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5501006Z Removing SSH command configuration
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5514525Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5556168Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5895112Z Removing HTTP extra header
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5901918Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.5935052Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6116064Z Removing includeIf entries pointing to credentials config files
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6123021Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6155240Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6347430Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6391891Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/homebrew-tap/.git.path /home/runner/work/_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6429299Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/homebrew-tap/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6464514Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/homebrew-tap/.git.path /github/runner_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6497018Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/homebrew-tap/.git/worktrees/*.path /github/runner_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6526605Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6527538Z ##[group]Determining the default branch
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.6529887Z Retrieving the default branch name
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.8389961Z Default branch 'main'
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.8391918Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.8393367Z ##[group]Fetching the repository
+homebrew	UNKNOWN STEP	2026-10-23T11:00:06.8398921Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2440377Z From https://github.com/td72/homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2442094Z  * [new branch]      main       -> origin/main
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2448456Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2450013Z ##[group]Determining the checkout info
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2451569Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2454396Z [command]/usr/bin/git sparse-checkout disable
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2513949Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2546257Z ##[group]Checking out the ref
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2550828Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2603240Z Switched to a new branch 'main'
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2608406Z branch 'main' set up to track 'origin/main'.
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2613367Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2653826Z [command]/usr/bin/git log -1 --format=%H
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2679542Z 05389d3f4b23c6e54ef179b98add7c7c30fe4bba
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2842760Z ##[group]Run VERSION="v0.18.0"
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2843425Z ^[[36;1mVERSION="v0.18.0"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2844026Z ^[[36;1mVERSION="${VERSION#v}"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2844711Z ^[[36;1mSHA_LINUX_X86=$(cut -d ' ' -f 1 vig-x86_64-unknown-linux-gnu.tar.gz.sha256)^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2845519Z ^[[36;1mSHA_LINUX_ARM=$(cut -d ' ' -f 1 vig-aarch64-unknown-linux-gnu.tar.gz.sha256)^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2846305Z ^[[36;1mSHA_MACOS_ARM=$(cut -d ' ' -f 1 vig-aarch64-apple-darwin.tar.gz.sha256)^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2847001Z ^[[36;1m^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2847497Z ^[[36;1mcat > homebrew-tap/Formula/vig.rb <<FORMULA^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2848127Z ^[[36;1mclass Vig < Formula^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2848908Z ^[[36;1m  desc "Read-only TUI cockpit for busy repositories - git, GitHub PRs/CI/projects, containers and processes at a glance"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2849797Z ^[[36;1m  homepage "https://github.com/td72/vig"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2850645Z ^[[36;1m  license "MIT"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2851304Z ^[[36;1m  version "${VERSION}"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2851865Z ^[[36;1m^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2852305Z ^[[36;1m  on_macos do^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2852817Z ^[[36;1m    on_arm do^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2853544Z ^[[36;1m      url "https://github.com/td72/vig/releases/download/v#{version}/vig-aarch64-apple-darwin.tar.gz"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2854336Z ^[[36;1m      sha256 "${SHA_MACOS_ARM}"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2854838Z ^[[36;1m    end^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2855790Z ^[[36;1m  end^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2856314Z ^[[36;1m^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2856764Z ^[[36;1m  on_linux do^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2857277Z ^[[36;1m    on_arm do^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2858706Z ^[[36;1m      url "https://github.com/td72/vig/releases/download/v#{version}/vig-aarch64-unknown-linux-gnu.tar.gz"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2859446Z ^[[36;1m      sha256 "${SHA_LINUX_ARM}"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2860051Z ^[[36;1m    end^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2860728Z ^[[36;1m    on_intel do^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2861509Z ^[[36;1m      url "https://github.com/td72/vig/releases/download/v#{version}/vig-x86_64-unknown-linux-gnu.tar.gz"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2862239Z ^[[36;1m      sha256 "${SHA_LINUX_X86}"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2862786Z ^[[36;1m    end^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2863252Z ^[[36;1m  end^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2863742Z ^[[36;1m^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2864189Z ^[[36;1m  def install^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2864736Z ^[[36;1m    bin.install "vig"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2865221Z ^[[36;1m  end^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2865708Z ^[[36;1m^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2866178Z ^[[36;1m  test do^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2866756Z ^[[36;1m    assert_match version.to_s, shell_output("#{bin}/vig --version")^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2867387Z ^[[36;1m  end^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2867901Z ^[[36;1mend^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.2868527Z ^[[36;1mFORMULA^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3062954Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3063637Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3246748Z ##[group]Run cd homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3247417Z ^[[36;1mcd homebrew-tap^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3247996Z ^[[36;1mgit config user.name "github-actions[bot]"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3248826Z ^[[36;1mgit config user.email "github-actions[bot]@users.noreply.github.com"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3249483Z ^[[36;1mgit add Formula/vig.rb^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3250072Z ^[[36;1mif ! git diff --cached --quiet; then^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3250913Z ^[[36;1m  git commit -m "vig v${VERSION}"^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3251459Z ^[[36;1m  git push^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3251968Z ^[[36;1mfi^[[0m
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3294959Z shell: /usr/bin/bash -e {0}
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3295977Z ##[endgroup]
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3458253Z [main e2ee453] vig v
+homebrew	UNKNOWN STEP	2026-10-23T11:00:07.3459095Z  1 file changed, 4 insertions(+), 4 deletions(-)
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.5837160Z To https://github.com/td72/homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.5838011Z    05389d3..e2ee453  main -> main
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6015355Z Post job cleanup.
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6826515Z [command]/usr/bin/git version
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6863711Z git version 2.55.0
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6899865Z Temporarily overriding HOME='/home/runner/work/_temp/98fad3b1-a309-48e0-b2aa-954125a5522e' before making global git config changes
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6901660Z Adding repository directory to the temporary git global config as a safe directory
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6905829Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig/homebrew-tap
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6936787Z Removing SSH command configuration
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6943979Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.6975936Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7198800Z Removing HTTP extra header
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7205270Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7241602Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7444551Z Removing includeIf entries pointing to credentials config files
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7451098Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7485983Z includeif.gitdir:/home/runner/work/vig/vig/homebrew-tap/.git.path
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7488363Z includeif.gitdir:/home/runner/work/vig/vig/homebrew-tap/.git/worktrees/*.path
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7490638Z includeif.gitdir:/github/workspace/homebrew-tap/.git.path
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7493012Z includeif.gitdir:/github/workspace/homebrew-tap/.git/worktrees/*.path
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7497714Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/homebrew-tap/.git.path
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7518530Z /home/runner/work/_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7530737Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/homebrew-tap/.git.path /home/runner/work/_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7567544Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/homebrew-tap/.git/worktrees/*.path
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7591634Z /home/runner/work/_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7603188Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/homebrew-tap/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7639967Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/homebrew-tap/.git.path
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7659593Z /github/runner_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7668562Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/homebrew-tap/.git.path /github/runner_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7705163Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/homebrew-tap/.git/worktrees/*.path
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7724760Z /github/runner_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7735206Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/homebrew-tap/.git/worktrees/*.path /github/runner_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7781600Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.7980019Z Removing credentials config '/home/runner/work/_temp/git-credentials-8f5c4c8a-26f3-4fc5-958e-1050e847d1b6.config'
+homebrew	UNKNOWN STEP	2026-10-23T11:00:08.8256639Z Post job cleanup.
+homebrew	UNKNOWN STEP	2026-10-23T11:00:09.1866526Z Token revoked
+homebrew	UNKNOWN STEP	2026-10-23T11:00:09.2283583Z Cleaning up orphan processes
+homebrew	UNKNOWN STEP	2026-10-23T11:00:09.2520137Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/create-github-app-token@v1. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
