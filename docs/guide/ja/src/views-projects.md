@@ -75,7 +75,8 @@ API 呼び出しなし）。どのレイアウトでもグループ化・ソー�
 ます。対応: タイトルの自由語、`field:value`（`,` 区切りの複数値・引用符付き
 の値）、`-` による否定、`is:issue|pr|draft`、`is:open|closed|merged`
 （マージ済み PR は closed としても扱い、状態が不明なアイテムは open 扱い）、
-`no:` / `has:`、`assignee:`（`@me` はサインイン中のログイン）、`label:`、
+`no:` / `has:`、`assignee:`（`@me` はサインイン中のログイン — `gh` が
+保存したもの、または [`github-login`](config-reference.md#github-login)）、`label:`、
 `milestone:`、`repo:`。範囲（`>`、`..`）・ワイルドカードは評価できないため、
 ステータスバーに `⚠ filter: unsupported "…"` と出して無視します。フィルタ
 で隠れた件数もステータスバーに `(3 filtered out)` と表示されます。

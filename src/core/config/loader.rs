@@ -467,6 +467,7 @@ impl Config {
         self.github_poll_interval()?;
         self.github_auto_refresh()?;
         self.github_show_closed()?;
+        self.github_login()?;
         self.projects_poll_interval()?;
         self.projects_board()?;
         self.projects_views()?;
@@ -843,6 +844,35 @@ impl Config {
                 self.describe()
             )),
         }
+    }
+
+    /// The login to treat as "me" on the GitHub and Projects pages
+    /// (`github-login "alice"`; `assignee:@me`). `None` when absent: vig
+    /// then asks `gh` which account is signed in.
+    pub fn github_login(&self) -> Result<Option<String>> {
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "github-login")
+        else {
+            return Ok(None);
+        };
+        let invalid = |what: &str| {
+            anyhow!(
+                "invalid {}: bad github-login ({what}); expected one login, e.g. `github-login \"alice\"`",
+                self.describe()
+            )
+        };
+        let args = string_args(node).map_err(invalid)?;
+        let [login] = args.as_slice() else {
+            return Err(invalid("expected exactly one string"));
+        };
+        let login = login.trim();
+        if login.contains(char::is_whitespace) || login.starts_with('@') {
+            return Err(invalid("a login has no spaces and no leading @"));
+        }
+        Ok(Some(login.to_string()))
     }
 
     /// Where the Projects roadmap opens and at which zoom
@@ -2934,6 +2964,29 @@ mod tests {
             .expect_err("expected an error")
             .to_string();
         assert!(msg.contains("github-show-closed expects"), "{msg}");
+    }
+
+    #[test]
+    fn github_login_default_override_and_validation() {
+        assert_eq!(Config::builtin().github_login().unwrap(), None);
+        assert_eq!(
+            user(r#"github-login "alice""#)
+                .unwrap()
+                .github_login()
+                .unwrap()
+                .as_deref(),
+            Some("alice")
+        );
+        for bad in [
+            r#"github-login "@alice""#,
+            r#"github-login "alice bob""#,
+            r#"github-login "alice" "bob""#,
+            r#"github-login"#,
+            r#"github-login 1"#,
+        ] {
+            let msg = user(bad).expect_err(bad).to_string();
+            assert!(msg.contains("bad github-login"), "{bad}: {msg}");
+        }
     }
 
     #[test]

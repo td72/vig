@@ -70,7 +70,7 @@ impl ProjectsPaneIds {
 pub enum ProjectsBgMessage {
     /// `gh repo view`: the repository and its linked projects.
     Repo(Result<RepoInfo, String>),
-    /// `gh api user`: the signed-in login (`assignee:@me` in view filters).
+    /// The signed-in login (`assignee:@me` in view filters).
     Viewer(Option<String>),
     Board {
         number: u64,
@@ -155,6 +155,8 @@ pub struct ProjectsState {
     /// `projects-poll-interval`: how often the shown board is probed for
     /// changes while the page is shown.
     poll_interval: Duration,
+    /// `github-login`: the login to treat as "me" without asking `gh`.
+    github_login: Option<String>,
     last_probe: Option<Instant>,
     probe_inflight: bool,
     /// Probes paused after a rate-limited answer: since when, for how long
@@ -203,6 +205,7 @@ impl ProjectsState {
         let pinned = cfg.projects_board()?;
         let local_views = cfg.projects_views()?;
         let poll_interval = cfg.projects_poll_interval()?;
+        let github_login = cfg.github_login()?;
         // Validates the bind declarations (projects → board while the list
         // is placed, board → detail).
         let _ = page_cfg.resolve_select_bindings();
@@ -252,6 +255,7 @@ impl ProjectsState {
             board_inflight: HashSet::new(),
             use_disk_cache: true,
             poll_interval,
+            github_login,
             last_probe: None,
             probe_inflight: false,
             probe_backoff: None,
@@ -304,13 +308,17 @@ impl ProjectsState {
         });
     }
 
-    /// `gh api user` once per session, for `assignee:@me` filters.
+    /// The signed-in login once per session, for `assignee:@me` filters:
+    /// `github-login` from the config, else what `gh` stored locally
+    /// (`gh config get`), else `gh api user` (see `github::domain::viewer`).
     fn spawn_viewer(&mut self) {
         let Some(tx) = self.bg_tx.clone() else {
             return;
         };
+        let configured = self.github_login.clone();
         std::thread::spawn(move || {
-            let _ = tx.send(ProjectsBgMessage::Viewer(client::viewer_login()));
+            let login = crate::github::domain::viewer::resolve(configured.as_deref());
+            let _ = tx.send(ProjectsBgMessage::Viewer(login));
         });
     }
 

@@ -88,7 +88,10 @@ pub fn record(dir: &Path) -> Result<()> {
 
     step("linked projects");
     let info = projects::repo_info().map_err(anyhow::Error::msg)?;
-    let _ = projects::viewer_login();
+    // The signed-in login: `gh config get` (what the demo replays) and
+    // `gh api user` (the fallback when `gh` has no `user` entry).
+    let _ = crate::github::domain::viewer::from_gh_config();
+    let _ = crate::github::domain::viewer::from_api();
     for project in info.linked_projects() {
         step(&format!("project #{} ({})", project.number, project.title));
         let board = graphql::fetch_board(&project.owner.login, &project.owner.kind, project.number)

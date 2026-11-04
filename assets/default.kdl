@@ -25,6 +25,11 @@ github-auto-refresh "on"
 // in the lists: "on" or "off". `x` toggles it while running.
 github-show-closed "off"
 
+// Who "me" is on the GitHub and Projects pages (`assignee:@me`): a login.
+// Absent, vig uses the account `gh auth login` stored (`gh config get -h
+// github.com user` - no request), and `gh api user` only as a last resort.
+// github-login "alice"
+
 // How often the Procs view re-reads processes and listening ports
 // ("2s", "500ms", ...; at least 250ms). Sampling pauses while another view is shown.
 procs-refresh-interval "2s"

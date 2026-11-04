@@ -36,6 +36,7 @@ Conventions used below:
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | replaced |
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
 | [`github-show-closed`](#github-show-closed) | `"off"` | replaced |
+| [`github-login`](#github-login) | absent (asked of `gh`) | replaced |
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
 | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
 | [`projects-view`](#projects-view) | none | replaced by name, else appended |
@@ -83,7 +84,7 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
+//   `github-show-closed`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
 //   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
 //   `repo-config`, `app`, `page`, or `window`)
@@ -301,6 +302,26 @@ disk cache keeps only the open lists.
 
 ```kdl
 github-show-closed "on"
+```
+
+### `github-login`
+
+Who "me" is: the login the GitHub and Projects pages treat as the viewer
+(`assignee:@me` in a Projects filter). Absent, vig reads the account `gh
+auth login` stored — `gh config get -h github.com user`, a local lookup
+that costs no request and follows `gh auth switch` — and only when `gh`
+has no `user` entry for the host (a token signed in without one) falls
+back to `gh api user`, remembering that answer in `vig/viewer.json` under
+the cache directory so later starts do not ask again. Set it to skip the
+lookup, or to look at a repository as a different account than the one
+`gh` is signed in as.
+
+- **Form** — `github-login "<login>"` — one GitHub login, no `@`
+- **Default** — absent
+- **Merge** — replaces the default.
+
+```kdl
+github-login "alice"
 ```
 
 ### `projects-board`
