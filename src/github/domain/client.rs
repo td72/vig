@@ -258,7 +258,7 @@ pub fn list_issues(limit: usize, all: bool) -> Result<Vec<GhIssueListItem>, Stri
     }
     args.extend([
         "--json",
-        "number,title,state,author,labels,createdAt,parent",
+        "number,title,state,author,labels,createdAt,parent,assignees",
         "--limit",
         &limit,
     ]);
@@ -275,7 +275,7 @@ pub fn list_prs(limit: usize, all: bool) -> Result<Vec<GhPrListItem>, String> {
     }
     args.extend([
         "--json",
-        "number,title,state,author,labels,headRefName,baseRefName,createdAt,reviewDecision,isDraft",
+        "number,title,state,author,labels,headRefName,baseRefName,createdAt,reviewDecision,isDraft,assignees,reviewRequests",
         "--limit",
         &limit,
     ]);
@@ -294,7 +294,7 @@ pub fn get_issue_in(repo: Option<&str>, number: u64) -> Result<GhIssueDetail, St
         "view",
         &number,
         "--json",
-        "number,title,state,author,body,comments,labels,createdAt",
+        "number,title,state,author,body,comments,labels,createdAt,assignees",
     ];
     if let Some(repo) = repo {
         args.extend(["--repo", repo]);
@@ -314,7 +314,7 @@ pub fn get_pr_in(repo: Option<&str>, number: u64) -> Result<GhPrDetail, String> 
         "view",
         &number,
         "--json",
-        "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName",
+        "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName,assignees,reviewRequests",
     ];
     if let Some(repo) = repo {
         args.extend(["--repo", repo]);

@@ -449,6 +449,7 @@ mod tests {
             }],
             labels: vec![],
             created_at: "2026-08-26T10:00:00Z".into(),
+            assignees: vec![],
         }
     }
 

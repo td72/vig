@@ -8,6 +8,7 @@ use crate::github::domain::actions::time::{
 };
 use crate::github::domain::actions::types::{RunState, WorkflowRun};
 use crate::github::domain::types::*;
+use crate::github::panes::people;
 use crate::github::state::{GhDetailContent, GhDetailPane};
 use ratatui::{
     layout::{Constraint, Layout, Rect},
@@ -480,7 +481,9 @@ pub(crate) fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
         &detail.state,
     );
     spans.extend(build_label_spans(&detail.labels));
-    vec![title_line, Line::from(spans)]
+    let mut lines = vec![title_line, Line::from(spans)];
+    lines.extend(people::header_line(&logins(&detail.assignees), &[]));
+    lines
 }
 
 pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
@@ -522,7 +525,12 @@ pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
     }
 
     spans.extend(build_label_spans(&detail.labels));
-    vec![title_line, Line::from(spans)]
+    let mut lines = vec![title_line, Line::from(spans)];
+    lines.extend(people::header_line(
+        &logins(&detail.assignees),
+        &reviewer_handles(&detail.review_requests),
+    ));
+    lines
 }
 
 fn badge(text: &str, bg: Color) -> Span<'static> {

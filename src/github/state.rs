@@ -1818,6 +1818,8 @@ mod kdl_regression {
             review_decision: None,
             is_draft: false,
             stack: None,
+            assignees: vec![],
+            review_requests: vec![],
         }]);
         st.pane.set_focus(pl);
         let mut ctx = test_ctx();

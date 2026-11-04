@@ -1,7 +1,8 @@
 use crate::core::pane::PaneEvent;
-use crate::github::domain::types::GhIssueListItem;
+use crate::github::domain::types::{logins, GhIssueListItem};
 use crate::github::domain::{client, disk_cache};
 use crate::github::panes::gh_list::{GhListItem, GhListPane, TreePos};
+use crate::github::panes::people;
 use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
 use ratatui::{
@@ -30,7 +31,7 @@ impl GhListItem for GhIssueListItem {
             Style::default().fg(Color::DarkGray)
         };
 
-        ListItem::new(Line::from(vec![
+        let mut spans = vec![
             Span::raw(" "),
             Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
             Span::styled(icon, Style::default().fg(icon_color)),
@@ -41,7 +42,9 @@ impl GhListItem for GhIssueListItem {
             ),
             Span::raw(" "),
             Span::styled(self.title.clone(), title_style),
-        ]))
+        ];
+        spans.extend(people::row_spans(&logins(&self.assignees), &[]));
+        ListItem::new(Line::from(spans))
     }
 
     fn number(&self) -> u64 {
@@ -53,7 +56,12 @@ impl GhListItem for GhIssueListItem {
     }
 
     fn search_text(&self) -> String {
-        format!("#{} {}", self.number, self.title)
+        format!(
+            "#{} {}{}",
+            self.number,
+            self.title,
+            people::search_text(&logins(&self.assignees))
+        )
     }
 
     fn browser_event(&self) -> PaneEvent {

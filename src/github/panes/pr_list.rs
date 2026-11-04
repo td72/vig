@@ -1,7 +1,8 @@
 use crate::core::pane::PaneEvent;
-use crate::github::domain::types::GhPrListItem;
+use crate::github::domain::types::{logins, reviewer_handles, GhPrListItem};
 use crate::github::domain::{client, disk_cache};
 use crate::github::panes::gh_list::{GhListItem, GhListPane, TreePos};
+use crate::github::panes::people;
 use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
 use ratatui::{
@@ -44,6 +45,10 @@ impl GhListItem for GhPrListItem {
             Span::raw(" "),
             Span::styled(self.title.clone(), title_style),
         ];
+        spans.extend(people::row_spans(
+            &logins(&self.assignees),
+            &reviewer_handles(&self.review_requests),
+        ));
 
         // Review badge
         if let Some(ref decision) = self.review_decision {
@@ -105,7 +110,12 @@ impl GhListItem for GhPrListItem {
     }
 
     fn search_text(&self) -> String {
-        format!("#{} {}", self.number, self.title)
+        format!(
+            "#{} {}{}",
+            self.number,
+            self.title,
+            people::search_text(&logins(&self.assignees))
+        )
     }
 
     fn browser_event(&self) -> PaneEvent {
@@ -181,6 +191,8 @@ mod tests {
                 position,
                 size: 3,
             }),
+            assignees: vec![],
+            review_requests: vec![],
         }
     }
 
