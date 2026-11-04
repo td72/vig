@@ -34,6 +34,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | 置換 |
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
 | [`github-show-closed`](#github-show-closed) | `"off"` | 置換 |
+| [`github-login`](#github-login) | なし（`gh` に問い合わせ） | 置換 |
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
 | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
 | [`projects-view`](#projects-view) | なし | 同名は置換、他は追加 |
@@ -81,7 +82,7 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
+//   `github-show-closed`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
 //   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
 //   `repo-config`, `app`, `page`, or `window`)
@@ -294,6 +295,26 @@ open の一覧だけを残します。
 
 ```kdl
 github-show-closed "on"
+```
+
+### `github-login`
+
+「自分」が誰か: GitHub ページと Projects ページが閲覧者として扱うログイン
+名です（Projects のフィルタの `assignee:@me`）。未設定なら vig は `gh auth
+login` が保存したアカウントを読みます — `gh config get -h github.com user`
+というローカルの参照で、リクエストは発生せず `gh auth switch` にも追従
+します。`gh` にそのホストの `user` エントリが無い場合（`user` 無しでトークン
+サインインした場合）だけ `gh api user` にフォールバックし、その答えを
+キャッシュディレクトリの `vig/viewer.json` に記憶して次回以降は問い合わせ
+ません。この参照を省きたいとき、あるいは `gh` のサインイン先とは別の
+アカウントとして眺めたいときに設定します。
+
+- **書式** — `github-login "<login>"` — GitHub のログイン名 1 つ、`@` なし
+- **デフォルト** — なし
+- **マージ** — デフォルトを置換。
+
+```kdl
+github-login "alice"
 ```
 
 ### `projects-board`
