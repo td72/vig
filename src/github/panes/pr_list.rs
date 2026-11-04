@@ -11,6 +11,21 @@ use ratatui::{
     widgets::ListItem,
 };
 
+/// State icon of an open pull request that is still a draft.
+pub(crate) const DRAFT_ICON: &str = "◌";
+
+/// The one-column review mark after the state icon: `✓` approved, `✗`
+/// changes requested, `◯` a required review still missing, blank when
+/// there is no decision (nothing reviewed and no branch protection).
+pub(crate) fn review_mark(decision: Option<&str>) -> (&'static str, Color) {
+    match decision {
+        Some("APPROVED") => ("✓", Color::Green),
+        Some("CHANGES_REQUESTED") => ("✗", Color::Red),
+        Some("REVIEW_REQUIRED") => ("◯", Color::Yellow),
+        _ => (" ", Color::Reset),
+    }
+}
+
 impl GhListItem for GhPrListItem {
     fn pane_title() -> &'static str {
         "Pull Requests"
@@ -21,79 +36,7 @@ impl GhListItem for GhPrListItem {
     }
 
     fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static> {
-        let (icon, icon_color) = match self.state.as_str() {
-            "MERGED" => ("⊕", Color::Magenta),
-            "CLOSED" => ("✓", Color::Red),
-            _ => ("●", Color::Green),
-        };
-        // Merged / closed PRs (shown with `x`) are dimmed.
-        let title_style = if self.state == "OPEN" {
-            Style::default()
-        } else {
-            Style::default().fg(Color::DarkGray)
-        };
-
-        let mut spans = vec![
-            Span::raw(" "),
-            Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
-            Span::styled(icon, Style::default().fg(icon_color)),
-            Span::raw(" "),
-            Span::styled(
-                format!("#{}", self.number),
-                Style::default().fg(Color::Yellow),
-            ),
-            Span::raw(" "),
-        ];
-        let people = people::row_spans(
-            &logins(&self.assignees),
-            &reviewer_handles(&self.review_requests),
-        );
-        let before = people::spans_width(&spans);
-        let title = people::fit_title(
-            &self.title,
-            before,
-            people::spans_width(&people),
-            width as usize,
-        );
-        spans.push(Span::styled(title, title_style));
-        spans.extend(people);
-
-        // Review badge
-        if let Some(ref decision) = self.review_decision {
-            match decision.as_str() {
-                "APPROVED" => {
-                    spans.push(Span::raw(" "));
-                    spans.push(Span::styled("✓", Style::default().fg(Color::Green)));
-                }
-                "CHANGES_REQUESTED" => {
-                    spans.push(Span::raw(" "));
-                    spans.push(Span::styled("✗", Style::default().fg(Color::Red)));
-                }
-                _ => {}
-            }
-        }
-
-        // Draft badge
-        if self.is_draft {
-            spans.push(Span::raw(" "));
-            spans.push(Span::styled(
-                "[draft]",
-                Style::default().fg(Color::DarkGray),
-            ));
-        }
-
-        // GitHub Stack: the bottom row names the stack, nested rows show
-        // the branch they build on.
-        if let Some(stack) = &self.stack {
-            let note = if tree.depth == 0 {
-                format!(" stack #{}", stack.number)
-            } else {
-                format!(" ← {}", self.base_ref_name)
-            };
-            spans.push(Span::styled(note, Style::default().fg(Color::DarkGray)));
-        }
-
-        ListItem::new(Line::from(spans))
+        ListItem::new(Line::from(row_spans(self, tree, width)))
     }
 
     fn number(&self) -> u64 {
@@ -170,6 +113,67 @@ impl GhListItem for GhPrListItem {
     }
 }
 
+/// The spans of one list row: state icon, review mark, number, title,
+/// people, then the stack note.
+fn row_spans(item: &GhPrListItem, tree: &TreePos, width: u16) -> Vec<Span<'static>> {
+    let open = item.state == "OPEN";
+    let (icon, icon_color) = match item.state.as_str() {
+        "MERGED" => ("⊕", Color::Magenta),
+        "CLOSED" => ("✓", Color::Red),
+        // A draft is hollow and dimmed, as on GitHub.
+        _ if item.is_draft => (DRAFT_ICON, Color::DarkGray),
+        _ => ("●", Color::Green),
+    };
+    // Merged / closed PRs (shown with `x`) are dimmed.
+    let title_style = if open {
+        Style::default()
+    } else {
+        Style::default().fg(Color::DarkGray)
+    };
+    let (mark, mark_color) = review_mark(item.review_decision.as_deref());
+    let mark_color = if open { mark_color } else { Color::DarkGray };
+
+    let mut spans = vec![
+        Span::raw(" "),
+        Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
+        Span::styled(icon, Style::default().fg(icon_color)),
+        Span::raw(" "),
+        Span::styled(mark, Style::default().fg(mark_color)),
+        Span::raw(" "),
+        Span::styled(
+            format!("#{}", item.number),
+            Style::default().fg(Color::Yellow),
+        ),
+        Span::raw(" "),
+    ];
+    let people = people::row_spans(
+        &logins(&item.assignees),
+        &reviewer_handles(&item.review_requests),
+    );
+    let before = people::spans_width(&spans);
+    let title = people::fit_title(
+        &item.title,
+        before,
+        people::spans_width(&people),
+        width as usize,
+    );
+    spans.push(Span::styled(title, title_style));
+    spans.extend(people);
+
+    // GitHub Stack: the bottom row names the stack, nested rows show
+    // the branch they build on.
+    if let Some(stack) = &item.stack {
+        let note = if tree.depth == 0 {
+            format!(" stack #{}", stack.number)
+        } else {
+            format!(" ← {}", item.base_ref_name)
+        };
+        spans.push(Span::styled(note, Style::default().fg(Color::DarkGray)));
+    }
+
+    spans
+}
+
 pub type GhPrListPane = GhListPane<GhPrListItem>;
 
 pub fn new_pane(pane_id: usize, detail_id: usize, switch_target: usize) -> GhPrListPane {
@@ -202,6 +206,45 @@ mod tests {
             assignees: vec![],
             review_requests: vec![],
         }
+    }
+
+    fn row_text(item: &GhPrListItem) -> String {
+        let tree = TreePos {
+            depth: 0,
+            prefix: String::new(),
+        };
+        row_spans(item, &tree, 80)
+            .iter()
+            .map(|s| s.content.as_ref())
+            .collect()
+    }
+
+    /// The draft state and the review decision lead the row, so they
+    /// survive a narrow column; nothing trails the title for them.
+    #[test]
+    fn draft_icon_and_review_mark_lead_the_row() {
+        let mut item = pr(1, None);
+        assert_eq!(row_text(&item), " ●   #1 pr 1");
+
+        item.is_draft = true;
+        assert_eq!(row_text(&item), " ◌   #1 pr 1");
+        assert!(!row_text(&item).contains("draft"));
+
+        item.is_draft = false;
+        item.review_decision = Some("APPROVED".into());
+        assert_eq!(row_text(&item), " ● ✓ #1 pr 1");
+        item.review_decision = Some("CHANGES_REQUESTED".into());
+        assert_eq!(row_text(&item), " ● ✗ #1 pr 1");
+        item.review_decision = Some("REVIEW_REQUIRED".into());
+        assert_eq!(row_text(&item), " ● ◯ #1 pr 1");
+        // gh reports no decision as an empty string.
+        item.review_decision = Some(String::new());
+        assert_eq!(row_text(&item), " ●   #1 pr 1");
+
+        // A merged PR keeps its mark; the row is dimmed as a whole.
+        item.state = "MERGED".into();
+        item.review_decision = Some("APPROVED".into());
+        assert_eq!(row_text(&item), " ⊕ ✓ #1 pr 1");
     }
 
     /// `d` on a PR row asks the page for that PR's diff window; the

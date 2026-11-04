@@ -32,6 +32,20 @@ Reviews sub-pane. The detail header repeats both lists in full
 (`Assignees: … Reviewers: …`, teams by their slug), and `/` in a list
 matches assignees too — `/@alice` finds everything assigned to alice.
 
+A pull request's state and review decision lead its row, so a narrow
+column never cuts them off. A draft shows `◌` (dimmed) in place of the
+green `●`; the one-column mark after the icon reads `✓` approved, `✗`
+changes requested or `◯` review required, and stays blank when there is
+no decision — nothing reviewed yet, or no branch protection asking for
+one. The detail header adds a `DRAFT` badge next to the state and the
+same decision spelled out.
+
+```text
+ ● ✓ #57 Files view: image preview @alice
+ ◌   #58 WIP: highlight my items @alice → carol
+ ● ✗ #59 Release 0.17.0 @bob
+```
+
 `d` on a pull request — in the list or in its detail — opens the PR's diff
 in a window on top of the page: the changed files as a tree on the left,
 the side-by-side diff on the right, exactly as the [Git view](views-git.md)

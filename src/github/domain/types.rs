@@ -193,6 +193,9 @@ pub struct GhPrDetail {
     pub assignees: Vec<GhAuthor>,
     #[serde(rename = "reviewRequests", default)]
     pub review_requests: Vec<GhReviewRequest>,
+    /// Still a draft (absent in older caches).
+    #[serde(rename = "isDraft", default)]
+    pub is_draft: bool,
 }
 
 #[cfg(test)]
