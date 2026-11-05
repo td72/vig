@@ -1,0 +1,382 @@
+diff --git a/README.md b/README.md
+index 698edcb..fe820cc 100644
+--- a/README.md
++++ b/README.md
+@@ -216,6 +216,7 @@ Browse GitHub Issues, Pull Requests and Actions workflow runs directly within vi
+ Bodies and comments are rendered as Markdown (headings, lists, task lists, code, tables narrowed to fit the pane width where possible).
+ Sub-issues are listed under their parent issue as a tree, and PRs in a GitHub Stack (as created by [`gh stack`](https://github.com/github/gh-stack)) are nested bottom-to-top under the PR they build on.
+ Each row names the assignees (`@alice`) and, on a PR, the reviewers still to review (`→ bob`; a submitted review moves its author to the Reviews sub-pane); the detail header lists them in full, and `/` finds items by assignee.
++A PR row leads with its state and review decision so they survive a narrow column: a draft is `◌` instead of `●`, and the mark after it reads `✓` approved, `✗` changes requested, `◯` review required (blank when there is no decision); the detail header carries a `DRAFT` badge.
+ The issue, PR and workflow run lists refresh themselves when something changes: every `github-poll-interval` vig sends one conditional request per list (a `304` answer costs no API points) and re-fetches a list only when its answer moves.
+ 
+ The third column lists the latest 50 workflow runs (`gh run list`) with their
+diff --git a/docs/README.ja.md b/docs/README.ja.md
+index 008881a..d9b7f87 100644
+--- a/docs/README.ja.md
++++ b/docs/README.ja.md
+@@ -212,6 +212,7 @@ GitHub の Issue・Pull Request・Actions のワークフロー実行を vig 内
+ 本文とコメントは Markdown としてレンダリングされる (見出し・リスト・タスクリスト・コード・可能な範囲でペイン幅に収まるよう縮めたテーブル)。
+ sub-issue は親 issue の下に、GitHub Stack ([`gh stack`](https://github.com/github/gh-stack) で作るスタック PR) は下から順に土台の PR の下にツリー表示される。
+ 各行には担当者 (`@alice`) と、PR ではまだレビューしていないレビュー依頼先 (`→ bob`。レビューを投稿した人は Reviews サブペインに移る) が並び、詳細のヘッダには全員が表示される。`/` は担当者名でも検索できる。
++PR の行は状態とレビュー判定を先頭に置くので、列が狭くても切れない。draft は `●` の代わりに `◌`、その次の 1 桁は `✓` approved・`✗` changes requested・`◯` review required (判定がなければ空白)。詳細のヘッダには `DRAFT` バッジが付く。
+ issue / PR / ワークフロー実行の一覧は変化があったときだけ自動更新される: `github-poll-interval` ごとに一覧ごとの条件付きリクエストを 1 回送り (`304` 応答は API ポイントを消費しない)、答えが変わった一覧だけ再取得する。
+ 
+ 3 列目には最新 50 件のワークフロー実行（`gh run list`）がステータス・ワークフロー名・実行番号・
+diff --git a/docs/guide/ja/src/views-github.md b/docs/guide/ja/src/views-github.md
+index d5462f9..68ff1e4 100644
+--- a/docs/guide/ja/src/views-github.md
++++ b/docs/guide/ja/src/views-github.md
+@@ -32,6 +32,19 @@ CI ステータス）を切り替えます。`o` でブラウザで開きます
+ チームは slug）、一覧の `/` は担当者名にもマッチします — `/@alice` で alice
+ 担当の項目だけを辿れます。
+ 
++Pull Request の行は状態とレビュー判定を先頭に置くので、列が狭くても
++切れません。draft は緑の `●` の代わりに薄い `◌`、アイコンの次の 1 桁は
++`✓` approved・`✗` changes requested・`◯` review required で、判定がなければ
++空白です（まだ誰もレビューしていない、またはブランチ保護がレビューを
++求めていない）。詳細のヘッダには状態の隣に `DRAFT` バッジと、同じ判定の
++表記が並びます。
++
++```text
++ ● ✓ #57 Files view: image preview @alice
++ ◌   #58 WIP: highlight my items @alice → carol
++ ● ✗ #59 Release 0.17.0 @bob
++```
++
+ Pull Request で `d` を押すと（一覧でも詳細でも）、その PR の diff をページ
+ の上に重なるウィンドウで開きます。左に変更ファイルのツリー、右にサイド
+ バイサイドの diff という、[Git view](views-git.md) が作業ツリーの差分を
+diff --git a/docs/guide/src/views-github.md b/docs/guide/src/views-github.md
+index 21b335e..4f8a7a2 100644
+--- a/docs/guide/src/views-github.md
++++ b/docs/guide/src/views-github.md
+@@ -32,6 +32,20 @@ Reviews sub-pane. The detail header repeats both lists in full
+ (`Assignees: … Reviewers: …`, teams by their slug), and `/` in a list
+ matches assignees too — `/@alice` finds everything assigned to alice.
+ 
++A pull request's state and review decision lead its row, so a narrow
++column never cuts them off. A draft shows `◌` (dimmed) in place of the
++green `●`; the one-column mark after the icon reads `✓` approved, `✗`
++changes requested or `◯` review required, and stays blank when there is
++no decision — nothing reviewed yet, or no branch protection asking for
++one. The detail header adds a `DRAFT` badge next to the state and the
++same decision spelled out.
++
++```text
++ ● ✓ #57 Files view: image preview @alice
++ ◌   #58 WIP: highlight my items @alice → carol
++ ● ✗ #59 Release 0.17.0 @bob
++```
++
+ `d` on a pull request — in the list or in its detail — opens the PR's diff
+ in a window on top of the page: the changed files as a tree on the left,
+ the side-by-side diff on the right, exactly as the [Git view](views-git.md)
+diff --git a/src/github/domain/client.rs b/src/github/domain/client.rs
+index b785bf8..8b184bb 100644
+--- a/src/github/domain/client.rs
++++ b/src/github/domain/client.rs
+@@ -314,7 +314,7 @@ pub fn get_pr_in(repo: Option<&str>, number: u64) -> Result<GhPrDetail, String>
+         "view",
+         &number,
+         "--json",
+-        "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName,assignees,reviewRequests",
++        "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName,assignees,reviewRequests,isDraft",
+     ];
+     if let Some(repo) = repo {
+         args.extend(["--repo", repo]);
+diff --git a/src/github/domain/types.rs b/src/github/domain/types.rs
+index f6ba048..a819a19 100644
+--- a/src/github/domain/types.rs
++++ b/src/github/domain/types.rs
+@@ -193,6 +193,9 @@ pub struct GhPrDetail {
+     pub assignees: Vec<GhAuthor>,
+     #[serde(rename = "reviewRequests", default)]
+     pub review_requests: Vec<GhReviewRequest>,
++    /// Still a draft (absent in older caches).
++    #[serde(rename = "isDraft", default)]
++    pub is_draft: bool,
+ }
+ 
+ #[cfg(test)]
+diff --git a/src/github/panes/detail_view/view.rs b/src/github/panes/detail_view/view.rs
+index 73ab199..3294653 100644
+--- a/src/github/panes/detail_view/view.rs
++++ b/src/github/panes/detail_view/view.rs
+@@ -494,6 +494,10 @@ pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
+         &detail.created_at,
+         &detail.state,
+     );
++    if detail.is_draft {
++        spans.push(Span::raw(" "));
++        spans.push(badge("DRAFT", Color::Rgb(110, 119, 129)));
++    }
+     spans.push(Span::raw(" "));
+     spans.push(badge(&detail.head_ref_name, Color::Rgb(130, 80, 160)));
+     spans.push(Span::raw(" "));
+@@ -856,6 +860,45 @@ fn build_comments_lines(
+ mod tests {
+     use super::*;
+ 
++    /// A draft PR carries a `DRAFT` badge in its header next to the state.
++    #[test]
++    fn pr_header_badges_a_draft() {
++        let mut detail = GhPrDetail {
++            number: 7,
++            title: "WIP".into(),
++            state: "OPEN".into(),
++            author: None,
++            body: String::new(),
++            comments: vec![],
++            reviews: vec![],
++            labels: vec![],
++            created_at: "2026-08-28T08:17:23Z".into(),
++            review_decision: Some("REVIEW_REQUIRED".into()),
++            status_check_rollup: None,
++            additions: 1,
++            deletions: 2,
++            changed_files: 3,
++            head_ref_name: "feat/x".into(),
++            assignees: vec![],
++            review_requests: vec![],
++            is_draft: true,
++        };
++        let text = |detail: &GhPrDetail| -> String {
++            build_pr_header(detail)[1]
++                .spans
++                .iter()
++                .map(|s| s.content.as_ref())
++                .collect()
++        };
++        let line = text(&detail);
++        assert!(line.contains(" OPEN   DRAFT   feat/x "), "{line}");
++        assert!(line.contains("◯ REVIEW REQUIRED"), "{line}");
++
++        detail.is_draft = false;
++        let line = text(&detail);
++        assert!(!line.contains("DRAFT"), "{line}");
++    }
++
+     #[test]
+     fn run_header_shows_title_state_branch_event_duration_and_age() {
+         let run = WorkflowRun {
+diff --git a/src/github/panes/pr_list.rs b/src/github/panes/pr_list.rs
+index ee8db44..93f1378 100644
+--- a/src/github/panes/pr_list.rs
++++ b/src/github/panes/pr_list.rs
+@@ -11,6 +11,21 @@ use ratatui::{
+     widgets::ListItem,
+ };
+ 
++/// State icon of an open pull request that is still a draft.
++pub(crate) const DRAFT_ICON: &str = "◌";
++
++/// The one-column review mark after the state icon: `✓` approved, `✗`
++/// changes requested, `◯` a required review still missing, blank when
++/// there is no decision (nothing reviewed and no branch protection).
++pub(crate) fn review_mark(decision: Option<&str>) -> (&'static str, Color) {
++    match decision {
++        Some("APPROVED") => ("✓", Color::Green),
++        Some("CHANGES_REQUESTED") => ("✗", Color::Red),
++        Some("REVIEW_REQUIRED") => ("◯", Color::Yellow),
++        _ => (" ", Color::Reset),
++    }
++}
++
+ impl GhListItem for GhPrListItem {
+     fn pane_title() -> &'static str {
+         "Pull Requests"
+@@ -21,79 +36,7 @@ impl GhListItem for GhPrListItem {
+     }
+ 
+     fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static> {
+-        let (icon, icon_color) = match self.state.as_str() {
+-            "MERGED" => ("⊕", Color::Magenta),
+-            "CLOSED" => ("✓", Color::Red),
+-            _ => ("●", Color::Green),
+-        };
+-        // Merged / closed PRs (shown with `x`) are dimmed.
+-        let title_style = if self.state == "OPEN" {
+-            Style::default()
+-        } else {
+-            Style::default().fg(Color::DarkGray)
+-        };
+-
+-        let mut spans = vec![
+-            Span::raw(" "),
+-            Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
+-            Span::styled(icon, Style::default().fg(icon_color)),
+-            Span::raw(" "),
+-            Span::styled(
+-                format!("#{}", self.number),
+-                Style::default().fg(Color::Yellow),
+-            ),
+-            Span::raw(" "),
+-        ];
+-        let people = people::row_spans(
+-            &logins(&self.assignees),
+-            &reviewer_handles(&self.review_requests),
+-        );
+-        let before = people::spans_width(&spans);
+-        let title = people::fit_title(
+-            &self.title,
+-            before,
+-            people::spans_width(&people),
+-            width as usize,
+-        );
+-        spans.push(Span::styled(title, title_style));
+-        spans.extend(people);
+-
+-        // Review badge
+-        if let Some(ref decision) = self.review_decision {
+-            match decision.as_str() {
+-                "APPROVED" => {
+-                    spans.push(Span::raw(" "));
+-                    spans.push(Span::styled("✓", Style::default().fg(Color::Green)));
+-                }
+-                "CHANGES_REQUESTED" => {
+-                    spans.push(Span::raw(" "));
+-                    spans.push(Span::styled("✗", Style::default().fg(Color::Red)));
+-                }
+-                _ => {}
+-            }
+-        }
+-
+-        // Draft badge
+-        if self.is_draft {
+-            spans.push(Span::raw(" "));
+-            spans.push(Span::styled(
+-                "[draft]",
+-                Style::default().fg(Color::DarkGray),
+-            ));
+-        }
+-
+-        // GitHub Stack: the bottom row names the stack, nested rows show
+-        // the branch they build on.
+-        if let Some(stack) = &self.stack {
+-            let note = if tree.depth == 0 {
+-                format!(" stack #{}", stack.number)
+-            } else {
+-                format!(" ← {}", self.base_ref_name)
+-            };
+-            spans.push(Span::styled(note, Style::default().fg(Color::DarkGray)));
+-        }
+-
+-        ListItem::new(Line::from(spans))
++        ListItem::new(Line::from(row_spans(self, tree, width)))
+     }
+ 
+     fn number(&self) -> u64 {
+@@ -170,6 +113,67 @@ impl GhListItem for GhPrListItem {
+     }
+ }
+ 
++/// The spans of one list row: state icon, review mark, number, title,
++/// people, then the stack note.
++fn row_spans(item: &GhPrListItem, tree: &TreePos, width: u16) -> Vec<Span<'static>> {
++    let open = item.state == "OPEN";
++    let (icon, icon_color) = match item.state.as_str() {
++        "MERGED" => ("⊕", Color::Magenta),
++        "CLOSED" => ("✓", Color::Red),
++        // A draft is hollow and dimmed, as on GitHub.
++        _ if item.is_draft => (DRAFT_ICON, Color::DarkGray),
++        _ => ("●", Color::Green),
++    };
++    // Merged / closed PRs (shown with `x`) are dimmed.
++    let title_style = if open {
++        Style::default()
++    } else {
++        Style::default().fg(Color::DarkGray)
++    };
++    let (mark, mark_color) = review_mark(item.review_decision.as_deref());
++    let mark_color = if open { mark_color } else { Color::DarkGray };
++
++    let mut spans = vec![
++        Span::raw(" "),
++        Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
++        Span::styled(icon, Style::default().fg(icon_color)),
++        Span::raw(" "),
++        Span::styled(mark, Style::default().fg(mark_color)),
++        Span::raw(" "),
++        Span::styled(
++            format!("#{}", item.number),
++            Style::default().fg(Color::Yellow),
++        ),
++        Span::raw(" "),
++    ];
++    let people = people::row_spans(
++        &logins(&item.assignees),
++        &reviewer_handles(&item.review_requests),
++    );
++    let before = people::spans_width(&spans);
++    let title = people::fit_title(
++        &item.title,
++        before,
++        people::spans_width(&people),
++        width as usize,
++    );
++    spans.push(Span::styled(title, title_style));
++    spans.extend(people);
++
++    // GitHub Stack: the bottom row names the stack, nested rows show
++    // the branch they build on.
++    if let Some(stack) = &item.stack {
++        let note = if tree.depth == 0 {
++            format!(" stack #{}", stack.number)
++        } else {
++            format!(" ← {}", item.base_ref_name)
++        };
++        spans.push(Span::styled(note, Style::default().fg(Color::DarkGray)));
++    }
++
++    spans
++}
++
+ pub type GhPrListPane = GhListPane<GhPrListItem>;
+ 
+ pub fn new_pane(pane_id: usize, detail_id: usize, switch_target: usize) -> GhPrListPane {
+@@ -204,6 +208,45 @@ mod tests {
+         }
+     }
+ 
++    fn row_text(item: &GhPrListItem) -> String {
++        let tree = TreePos {
++            depth: 0,
++            prefix: String::new(),
++        };
++        row_spans(item, &tree, 80)
++            .iter()
++            .map(|s| s.content.as_ref())
++            .collect()
++    }
++
++    /// The draft state and the review decision lead the row, so they
++    /// survive a narrow column; nothing trails the title for them.
++    #[test]
++    fn draft_icon_and_review_mark_lead_the_row() {
++        let mut item = pr(1, None);
++        assert_eq!(row_text(&item), " ●   #1 pr 1");
++
++        item.is_draft = true;
++        assert_eq!(row_text(&item), " ◌   #1 pr 1");
++        assert!(!row_text(&item).contains("draft"));
++
++        item.is_draft = false;
++        item.review_decision = Some("APPROVED".into());
++        assert_eq!(row_text(&item), " ● ✓ #1 pr 1");
++        item.review_decision = Some("CHANGES_REQUESTED".into());
++        assert_eq!(row_text(&item), " ● ✗ #1 pr 1");
++        item.review_decision = Some("REVIEW_REQUIRED".into());
++        assert_eq!(row_text(&item), " ● ◯ #1 pr 1");
++        // gh reports no decision as an empty string.
++        item.review_decision = Some(String::new());
++        assert_eq!(row_text(&item), " ●   #1 pr 1");
++
++        // A merged PR keeps its mark; the row is dimmed as a whole.
++        item.state = "MERGED".into();
++        item.review_decision = Some("APPROVED".into());
++        assert_eq!(row_text(&item), " ⊕ ✓ #1 pr 1");
++    }
++
+     /// `d` on a PR row asks the page for that PR's diff window; the
+     /// header labels come from the row (refs, title) or the detail.
+     #[test]

@@ -3,4 +3,4 @@ github.com
   - Active account: true
   - Git operations protocol: ssh
   - Token: gho_************************************
-  - Token scopes: 'admin:org', 'gist', 'project', 'repo'
+  - Token scopes: 'gist', 'project', 'read:org', 'repo'
