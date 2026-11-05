@@ -50,6 +50,14 @@ Sleep 3s
 Type "x"
 Sleep 2s
 
+# Items for me (assigned, or waiting for my review) have a yellow icon and
+# my login in bold; `m` keeps only those (`· mine` in the header), `m`
+# again shows everything
+Type "m"
+Sleep 3s
+Type "m"
+Sleep 2s
+
 # Navigate issue list with j/k
 Type "j"
 Sleep 800ms
