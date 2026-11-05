@@ -1,0 +1,1518 @@
+diff --git a/README.md b/README.md
+index fe820cc..9fe5def 100644
+--- a/README.md
++++ b/README.md
+@@ -217,6 +217,7 @@ Bodies and comments are rendered as Markdown (headings, lists, task lists, code,
+ Sub-issues are listed under their parent issue as a tree, and PRs in a GitHub Stack (as created by [`gh stack`](https://github.com/github/gh-stack)) are nested bottom-to-top under the PR they build on.
+ Each row names the assignees (`@alice`) and, on a PR, the reviewers still to review (`→ bob`; a submitted review moves its author to the Reviews sub-pane); the detail header lists them in full, and `/` finds items by assignee.
+ A PR row leads with its state and review decision so they survive a narrow column: a draft is `◌` instead of `●`, and the mark after it reads `✓` approved, `✗` changes requested, `◯` review required (blank when there is no decision); the detail header carries a `DRAFT` badge.
++What is yours stands out: an item assigned to you, or a PR waiting for your review, gets a yellow state icon and your login in bold yellow (in the rows and the detail header), and `m` keeps only those items (`github-mine-only` sets the start; who "you" are comes from `github-login`, else from what `gh auth login` stored).
+ The issue, PR and workflow run lists refresh themselves when something changes: every `github-poll-interval` vig sends one conditional request per list (a `304` answer costs no API points) and re-fetches a list only when its answer moves.
+ 
+ The third column lists the latest 50 workflow runs (`gh run list`) with their
+@@ -257,6 +258,7 @@ Nothing in this view reruns, cancels or deletes anything.
+ | `o` | Open in browser (issue, PR, run or the selected job) |
+ | `y` | Copy the item URL |
+ | `x` | Show / hide closed issues and merged / closed PRs in the lists (`github-show-closed` sets the start) |
++| `m` | Only the items for you (assigned, or waiting for your review) / all items (`github-mine-only` sets the start) |
+ | `d` (PR list / detail) | Show the PR's diff: changed files + side-by-side diff in a window (`q` / `Esc` back, `b` Files tab, `e` / `o` / `O` edit / open the file, `r` re-fetch) |
+ | `W` (PR list / detail) | Open the PR as a worktree: `git fetch` its head + `git worktree add`, after confirming; then jump to it on the Worktrees view |
+ | `Esc` | Back to list |
+@@ -422,7 +424,9 @@ board explains how to link one (the repository's Projects tab or
+ to one board, by title or project number
+ ([Config Reference](https://td72.github.io/vig/config-reference.html#projects-board)). Cards show the item type (`●` issue, `⇅` pull request,
+ `✎` draft), number, title and assignees; a card whose item lives in another
+-repository carries a dimmed `owner/repo` prefix before its number. `t`
++repository carries a dimmed `owner/repo` prefix before its number, and an
++item assigned to you has a yellow icon and your login in bold yellow (in the
++table too). `t`
+ switches to a table with one row per item and the project's fields (Status,
+ Priority, Estimate, Iteration, dates, custom text / number fields) as
+ sortable columns. The detail pane lists every field value of the selected
+diff --git a/assets/default.kdl b/assets/default.kdl
+index 86fed62..1bf2380 100644
+--- a/assets/default.kdl
++++ b/assets/default.kdl
+@@ -25,6 +25,11 @@ github-auto-refresh "on"
+ // in the lists: "on" or "off". `x` toggles it while running.
+ github-show-closed "off"
+ 
++// Start the GitHub page with only the items for you - assigned to you, or
++// waiting for your review - in the lists: "on" or "off". `m` toggles it
++// while running; who "you" are is `github-login` below.
++github-mine-only "off"
++
+ // Who "me" is on the GitHub and Projects pages (`assignee:@me`): a login.
+ // Absent, vig uses the account `gh auth login` stored (`gh config get -h
+ // github.com user` - no request), and `gh api user` only as a last resort.
+@@ -228,6 +233,7 @@ page "github" {
+             "o" "OpenBrowser"
+             "y" "CopyUrl"
+             "x" "ToggleClosed"
++            "m" "ToggleMine"
+             "Esc" "Esc"
+         }
+     }
+@@ -244,6 +250,7 @@ page "github" {
+             "o" "OpenBrowser"
+             "y" "CopyUrl"
+             "x" "ToggleClosed"
++            "m" "ToggleMine"
+             "Esc" "Esc"
+         }
+     }
+diff --git a/assets/demo-github-issue.gif b/assets/demo-github-issue.gif
+index 33b0597..6066ce0 100644
+--- a/assets/demo-github-issue.gif
++++ b/assets/demo-github-issue.gif
+@@ -1,3 +1,3 @@
+ version https://git-lfs.github.com/spec/v1
+-oid sha256:8cf5c2ca3a8f7bcd15f32b260320ad9b6fc027167a75ffcce5dcc69088019c4f
+-size 814089
++oid sha256:d0aedeebd9fb3415a5408ee5d034a816dcdec70b35e610998264ade30f2ad220
++size 830204
+diff --git a/assets/demo-github-pr.gif b/assets/demo-github-pr.gif
+index a0a5589..92d468d 100644
+--- a/assets/demo-github-pr.gif
++++ b/assets/demo-github-pr.gif
+@@ -1,3 +1,3 @@
+ version https://git-lfs.github.com/spec/v1
+-oid sha256:2f636bb5a08eeba2d0f3ae53c18bdc43d20f3063387fe45f01cf5c02ec6d324c
+-size 1665702
++oid sha256:08681050291ee87cd7d639eaef44ad881b7ef7dd3b275cb1aaf09cc766d09702
++size 1670029
+diff --git a/docs/README.ja.md b/docs/README.ja.md
+index d9b7f87..44fc272 100644
+--- a/docs/README.ja.md
++++ b/docs/README.ja.md
+@@ -213,6 +213,7 @@ GitHub の Issue・Pull Request・Actions のワークフロー実行を vig 内
+ sub-issue は親 issue の下に、GitHub Stack ([`gh stack`](https://github.com/github/gh-stack) で作るスタック PR) は下から順に土台の PR の下にツリー表示される。
+ 各行には担当者 (`@alice`) と、PR ではまだレビューしていないレビュー依頼先 (`→ bob`。レビューを投稿した人は Reviews サブペインに移る) が並び、詳細のヘッダには全員が表示される。`/` は担当者名でも検索できる。
+ PR の行は状態とレビュー判定を先頭に置くので、列が狭くても切れない。draft は `●` の代わりに `◌`、その次の 1 桁は `✓` approved・`✗` changes requested・`◯` review required (判定がなければ空白)。詳細のヘッダには `DRAFT` バッジが付く。
++自分宛のものは目立つ: 自分が担当者の項目と自分のレビュー待ちの PR は状態アイコンが黄色になり、自分のログイン名が太字の黄色で出る (行でも詳細のヘッダでも)。`m` でそれらだけに絞れる (初期状態は `github-mine-only`。「自分」は `github-login`、無ければ `gh auth login` が保存したアカウント)。
+ issue / PR / ワークフロー実行の一覧は変化があったときだけ自動更新される: `github-poll-interval` ごとに一覧ごとの条件付きリクエストを 1 回送り (`304` 応答は API ポイントを消費しない)、答えが変わった一覧だけ再取得する。
+ 
+ 3 列目には最新 50 件のワークフロー実行（`gh run list`）がステータス・ワークフロー名・実行番号・
+@@ -244,6 +245,7 @@ Worktrees view に移って新しい worktree を選択します（場所と名
+ | `o` | ブラウザで開く（issue / PR / 実行、または選択中のジョブ） |
+ | `y` | アイテムの URL をコピー |
+ | `x` | 一覧に closed な issue / マージ済み・closed な PR を表示 / 非表示（初期状態は `github-show-closed`） |
++| `m` | 自分宛の項目（担当、または自分のレビュー待ち）だけ / 全部（初期状態は `github-mine-only`） |
+ | `d`（PR の一覧 / 詳細） | PR の diff を表示: 変更ファイル + サイドバイサイド diff のウィンドウ（`q` / `Esc` で戻る、`b` Files タブ、`e` / `o` / `O` でファイルを編集 / 起動、`r` 再取得） |
+ | `W`（PR の一覧 / 詳細） | PR を worktree として開く: 確認後に head を `git fetch` + `git worktree add`、Worktrees view でその worktree を選択 |
+ | `Esc` | 一覧に戻る |
+@@ -389,7 +391,7 @@ GraphQL で取得 — 1 回あたり数ポイント）。ページ表示中は `
+ `gh project link`）を案内します。設定のトップレベルに `projects-board` を書くと、
+ タイトルまたはプロジェクト番号でボードを 1 つに固定できます（[設定リファレンス](https://td72.github.io/vig/ja/config-reference.html#projects-board)）。カードにはアイテム種別（`●` issue、`⇅` pull request、
+ `✎` draft）、番号、タイトル、担当者を表示し、別リポジトリのアイテムには番号の前に薄い色で
+-`owner/repo` が付きます。`t` でテーブルモードに切り替わり、1 行 1 アイテムで
++`owner/repo` が付きます。自分が担当者のアイテムはアイコンが黄色、自分のログイン名が太字の黄色です（テーブルでも同様）。`t` でテーブルモードに切り替わり、1 行 1 アイテムで
+ プロジェクトのフィールド（Status、Priority、Estimate、Iteration、日付、カスタムのテキスト /
+ 数値フィールド）を列として表示・ソートできます。詳細ペインは選択中アイテムの全フィールド値に続けて、
+ GitHub View と同じ issue / PR の本文とコメントを表示します（draft は本文のみ）。500 件を超えるプロジェクトではステータスバーに `(truncated)` と出ます。
+diff --git a/docs/guide/ja/src/config-reference.md b/docs/guide/ja/src/config-reference.md
+index 5ee02ac..97ecb58 100644
+--- a/docs/guide/ja/src/config-reference.md
++++ b/docs/guide/ja/src/config-reference.md
+@@ -34,6 +34,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
+ | [`github-poll-interval`](#github-poll-interval) | `"5s"` | 置換 |
+ | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
+ | [`github-show-closed`](#github-show-closed) | `"off"` | 置換 |
++| [`github-mine-only`](#github-mine-only) | `"off"` | 置換 |
+ | [`github-login`](#github-login) | なし（`gh` に問い合わせ） | 置換 |
+ | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
+ | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
+@@ -63,6 +64,7 @@ procs-history "120"
+ github-poll-interval "5s"
+ github-auto-refresh "on"
+ github-show-closed "off"
++github-mine-only "off"
+ projects-poll-interval "30s"
+ projects-hide-closed "off"
+ worktree-dir "../"
+@@ -82,7 +84,7 @@ colors "red"
+ // → unknown top-level block "colors" (expected `theme`, `icons`,
+ //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
+ //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
+-//   `github-show-closed`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
++//   `github-show-closed`, `github-mine-only`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
+ //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
+ //   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
+ //   `repo-config`, `app`, `page`, or `window`)
+@@ -297,10 +299,27 @@ open の一覧だけを残します。
+ github-show-closed "on"
+ ```
+ 
++### `github-mine-only`
++
++GitHub ページの issue / PR 一覧を、自分宛のもの — 自分が担当者、または
++自分のレビュー待ち — だけに絞った状態で始めるか。実行中はどちらの一覧でも
++`m` で切り替えられ、絞っている間はヘッダが `GitHub · mine` になります。
++取得済みの一覧を手元で絞るだけで、サインイン中のログイン名が分かって
++から効きます（[`github-login`](#github-login) を参照）。
++
++- **書式** — `github-mine-only "<mode>"` — `"on"` か `"off"`
++- **デフォルト** — `"off"`
++- **マージ** — デフォルトを置換。
++
++```kdl
++github-mine-only "on"
++```
++
+ ### `github-login`
+ 
+ 「自分」が誰か: GitHub ページと Projects ページが閲覧者として扱うログイン
+-名です（Projects のフィルタの `assignee:@me`）。未設定なら vig は `gh auth
++名です（GitHub ページの強調表示と `m`、Projects のフィルタの `assignee:@me`
++とカードの強調表示）。未設定なら vig は `gh auth
+ login` が保存したアカウントを読みます — `gh config get -h github.com user`
+ というローカルの参照で、リクエストは発生せず `gh auth switch` にも追従
+ します。`gh` にそのホストの `user` エントリが無い場合（`user` 無しでトークン
+diff --git a/docs/guide/ja/src/views-github.md b/docs/guide/ja/src/views-github.md
+index 68ff1e4..8d514cb 100644
+--- a/docs/guide/ja/src/views-github.md
++++ b/docs/guide/ja/src/views-github.md
+@@ -45,6 +45,18 @@ Pull Request の行は状態とレビュー判定を先頭に置くので、列
+  ● ✗ #59 Release 0.17.0 @bob
+ ```
+ 
++**自分宛** のものは目立ちます。自分が担当者の issue / PR と、自分の
++レビューを待っている PR は状態アイコンが黄色になり、自分のログイン名は
++出てくる場所すべて — 行と、詳細ヘッダの `Assignees:` / `Reviewers:`
++行 — で太字の黄色です。どちらの一覧でも `m` でそれらだけに絞り
++（ヘッダは `GitHub · mine`）、もう一度 `m` で全部に戻ります。取得済みの
++一覧を手元で絞るだけなので API は使いません。
++[`github-mine-only`](config-reference.md#github-mine-only) で最初から
++絞った状態で始められます。「自分」が誰かは
++[`github-login`](config-reference.md#github-login)、無ければ `gh auth
++login` が保存したアカウントです。それが分かるまでは何も強調されず、`m`
++も待ちます。
++
+ Pull Request で `d` を押すと（一覧でも詳細でも）、その PR の diff をページ
+ の上に重なるウィンドウで開きます。左に変更ファイルのツリー、右にサイド
+ バイサイドの diff という、[Git view](views-git.md) が作業ツリーの差分を
+@@ -130,6 +142,7 @@ tail のように追記されます。`]` / `[` で失敗ステップ間をジ
+ | `h` / `l`（詳細） | 本文 ↔ 右側のサブペイン。実行の場合は Jobs ↔ Log |
+ | `w`（issue / PR の詳細） | watch モードの切り替え（表示中アイテムの自動再取得） |
+ | `x`（issue / PR の一覧） | closed な issue / マージ済み・closed な PR を表示 / 非表示 |
++| `m`（issue / PR の一覧） | 自分宛の項目（担当、または自分のレビュー待ち）だけ / 全部 |
+ | `d`（PR の一覧 / 詳細） | PR の diff をウィンドウで表示: 変更ファイル + サイドバイサイド diff（`q` / `Esc` で戻る、`b` Files タブ、`y` コピー、`e` / `o` / `O` でファイルを編集 / 起動、`r` 再取得） |
+ | `W`（PR の一覧 / 詳細） | PR を worktree として開く: 確認後に head を `git fetch` + `git worktree add`、Worktrees view でその worktree へ |
+ | `i` / `Enter`（実行の詳細・Jobs） | ジョブのログを表示（ステップ行ならそのステップへスクロール） |
+diff --git a/docs/guide/ja/src/views-projects.md b/docs/guide/ja/src/views-projects.md
+index b5a549d..b78cd7b 100644
+--- a/docs/guide/ja/src/views-projects.md
++++ b/docs/guide/ja/src/views-projects.md
+@@ -10,7 +10,11 @@
+ 列は `Status` の選択肢を GitHub 上の順に 1 列ずつ、加えてステータス未設定の
+ アイテム用の `No status` 列です。カードにはアイテム種別（`●` issue、`⇅`
+ pull request、`✎` draft）、番号、タイトル、担当者を表示し、別リポジトリの
+-アイテムには番号の前に薄い色で `owner/repo` が付きます。
++アイテムには番号の前に薄い色で `owner/repo` が付きます。自分が担当者の
++アイテムは目立ちます: アイコンが黄色になり、担当者の中の自分のログイン名が
++太字の黄色です（テーブルの Assignees 列も同様）。「自分」が誰かは
++[`github-login`](config-reference.md#github-login)、無ければ `gh auth login`
++が保存したアカウントで、`assignee:@me` が絞るのと同じログイン名です。
+ 
+ ## 複数のリンク済みプロジェクトと固定
+ 
+diff --git a/docs/guide/src/config-reference.md b/docs/guide/src/config-reference.md
+index f74a8f6..f623f23 100644
+--- a/docs/guide/src/config-reference.md
++++ b/docs/guide/src/config-reference.md
+@@ -36,6 +36,7 @@ Conventions used below:
+ | [`github-poll-interval`](#github-poll-interval) | `"5s"` | replaced |
+ | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
+ | [`github-show-closed`](#github-show-closed) | `"off"` | replaced |
++| [`github-mine-only`](#github-mine-only) | `"off"` | replaced |
+ | [`github-login`](#github-login) | absent (asked of `gh`) | replaced |
+ | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
+ | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
+@@ -65,6 +66,7 @@ procs-history "120"
+ github-poll-interval "5s"
+ github-auto-refresh "on"
+ github-show-closed "off"
++github-mine-only "off"
+ projects-poll-interval "30s"
+ projects-hide-closed "off"
+ worktree-dir "../"
+@@ -84,7 +86,7 @@ colors "red"
+ // → unknown top-level block "colors" (expected `theme`, `icons`,
+ //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
+ //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
+-//   `github-show-closed`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
++//   `github-show-closed`, `github-mine-only`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
+ //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
+ //   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
+ //   `repo-config`, `app`, `page`, or `window`)
+@@ -304,10 +306,27 @@ disk cache keeps only the open lists.
+ github-show-closed "on"
+ ```
+ 
++### `github-mine-only`
++
++Whether the GitHub page's issue and PR lists start with only the items for
++you — assigned to you, or waiting for your review. `m` on either list
++toggles it while vig runs; the header reads `GitHub · mine` while the
++filter is on. It is a local filter over the fetched lists, applied once
++the signed-in login is known (see [`github-login`](#github-login)).
++
++- **Form** — `github-mine-only "<mode>"` — `"on"` or `"off"`
++- **Default** — `"off"`
++- **Merge** — replaces the default.
++
++```kdl
++github-mine-only "on"
++```
++
+ ### `github-login`
+ 
+ Who "me" is: the login the GitHub and Projects pages treat as the viewer
+-(`assignee:@me` in a Projects filter). Absent, vig reads the account `gh
++(the highlighted items and `m` on the GitHub page, `assignee:@me` in a
++Projects filter and the highlighted cards). Absent, vig reads the account `gh
+ auth login` stored — `gh config get -h github.com user`, a local lookup
+ that costs no request and follows `gh auth switch` — and only when `gh`
+ has no `user` entry for the host (a token signed in without one) falls
+diff --git a/docs/guide/src/views-github.md b/docs/guide/src/views-github.md
+index 4f8a7a2..f7cc741 100644
+--- a/docs/guide/src/views-github.md
++++ b/docs/guide/src/views-github.md
+@@ -46,6 +46,18 @@ same decision spelled out.
+  ● ✗ #59 Release 0.17.0 @bob
+ ```
+ 
++What is **yours** stands out. An issue or PR assigned to you, or a PR
++waiting for your review, gets a yellow state icon, and your login is bold
++yellow wherever it appears — in the rows and in the detail header's
++`Assignees:` / `Reviewers:` line. `m` on either list keeps only those
++items (the header reads `GitHub · mine`), and `m` again shows everything;
++it is a local filter over what was fetched, so it costs nothing.
++[`github-mine-only`](config-reference.md#github-mine-only) starts the
++page filtered. Who "you" are is
++[`github-login`](config-reference.md#github-login), else the account
++`gh auth login` stored; until that is known nothing is highlighted and
++`m` waits.
++
+ `d` on a pull request — in the list or in its detail — opens the PR's diff
+ in a window on top of the page: the changed files as a tree on the left,
+ the side-by-side diff on the right, exactly as the [Git view](views-git.md)
+@@ -133,6 +145,7 @@ following.
+ | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
+ | `w` (issue / PR detail) | Toggle watch mode (auto-refresh the open item) |
+ | `x` (issue / PR list) | Show / hide closed issues and merged / closed PRs |
++| `m` (issue / PR list) | Only the items for you (assigned, or waiting for your review) / all items |
+ | `d` (PR list / detail) | Show the PR's diff in a window: changed files + side-by-side diff (`q` / `Esc` back, `b` Files tab, `y` copy, `e` / `o` / `O` edit / open the file, `r` re-fetch) |
+ | `W` (PR list / detail) | Open the PR as a worktree: `git fetch` its head + `git worktree add` after a confirmation, then jump to it on the Worktrees view |
+ | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |
+diff --git a/docs/guide/src/views-projects.md b/docs/guide/src/views-projects.md
+index c2a9ed2..0480d58 100644
+--- a/docs/guide/src/views-projects.md
++++ b/docs/guide/src/views-projects.md
+@@ -10,6 +10,10 @@ away: one column per `Status` option in GitHub's order, plus a `No status`
+ column for items without one. Cards show the item type (`●` issue, `⇅` pull
+ request, `✎` draft), number, title and assignees; a card whose item lives in
+ another repository carries a dimmed `owner/repo` prefix before its number.
++An item assigned to you stands out: a yellow icon, and your login in bold
++yellow among the assignees (the table's Assignees cell too). Who "you"
++are is [`github-login`](config-reference.md#github-login), else the
++account `gh auth login` stored — the same login `assignee:@me` filters by.
+ 
+ ## Several linked projects, and pinning one
+ 
+diff --git a/src/core/config/loader.rs b/src/core/config/loader.rs
+index 8291d81..01a142f 100644
+--- a/src/core/config/loader.rs
++++ b/src/core/config/loader.rs
+@@ -467,6 +467,7 @@ impl Config {
+         self.github_poll_interval()?;
+         self.github_auto_refresh()?;
+         self.github_show_closed()?;
++        self.github_mine_only()?;
+         self.github_login()?;
+         self.projects_poll_interval()?;
+         self.projects_board()?;
+@@ -822,25 +823,37 @@ impl Config {
+     /// merged items included (`github-show-closed "on"` / `"off"`, default
+     /// off; `x` toggles it).
+     pub fn github_show_closed(&self) -> Result<bool> {
++        self.on_off("github-show-closed", false)
++    }
++
++    /// Whether the GitHub page's issue / PR lists start with only the
++    /// viewer's items (`github-mine-only "on"` / `"off"`, default off; `m`
++    /// toggles it).
++    pub fn github_mine_only(&self) -> Result<bool> {
++        self.on_off("github-mine-only", false)
++    }
++
++    /// An `<name> "on"` / `"off"` node, `default` when absent.
++    fn on_off(&self, name: &str, default: bool) -> Result<bool> {
+         let mode = self
+             .doc
+             .nodes()
+             .iter()
+-            .find(|n| n.name().value() == "github-show-closed")
++            .find(|n| n.name().value() == name)
+             .map(|n| {
+                 n.get(0usize)
+                     .and_then(|v| v.as_string())
+                     .map(str::to_string)
+-                    .ok_or_else(|| anyhow!("github-show-closed block missing mode argument"))
++                    .ok_or_else(|| anyhow!("{name} block missing mode argument"))
+             })
+             .transpose()
+-            .with_context(|| format!("invalid {}", self.describe()))?
+-            .unwrap_or_else(|| "off".to_string());
+-        match mode.as_str() {
+-            "on" => Ok(true),
+-            "off" => Ok(false),
+-            _ => Err(anyhow!(
+-                "invalid {}: github-show-closed expects \"on\" or \"off\"",
++            .with_context(|| format!("invalid {}", self.describe()))?;
++        match mode.as_deref() {
++            None => Ok(default),
++            Some("on") => Ok(true),
++            Some("off") => Ok(false),
++            Some(_) => Err(anyhow!(
++                "invalid {}: {name} expects \"on\" or \"off\"",
+                 self.describe()
+             )),
+         }
+@@ -2966,6 +2979,25 @@ mod tests {
+         assert!(msg.contains("github-show-closed expects"), "{msg}");
+     }
+ 
++    #[test]
++    fn github_mine_only_default_override_and_validation() {
++        assert!(!Config::builtin().github_mine_only().unwrap());
++        assert!(user(r#"github-mine-only "on""#)
++            .unwrap()
++            .github_mine_only()
++            .unwrap());
++        let msg = user(r#"github-mine-only "yes""#)
++            .expect_err("expected an error")
++            .to_string();
++        assert!(msg.contains("github-mine-only expects"), "{msg}");
++        // The missing argument is the cause under "invalid config file".
++        let msg = format!(
++            "{:#}",
++            user(r#"github-mine-only"#).expect_err("expected an error")
++        );
++        assert!(msg.contains("missing mode argument"), "{msg}");
++    }
++
+     #[test]
+     fn github_login_default_override_and_validation() {
+         assert_eq!(Config::builtin().github_login().unwrap(), None);
+diff --git a/src/core/config/merge.rs b/src/core/config/merge.rs
+index 1f1e45c..b3b46b9 100644
+--- a/src/core/config/merge.rs
++++ b/src/core/config/merge.rs
+@@ -36,6 +36,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
+             | "github-poll-interval"
+             | "github-auto-refresh"
+             | "github-show-closed"
++            | "github-mine-only"
+             | "github-login"
+             | "projects-poll-interval"
+             | "projects-board"
+@@ -54,7 +55,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
+             other => {
+                 return Err(anyhow!(
+                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
+-                 `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, `github-login`, \
++                 `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, `github-mine-only`, `github-login`, \
+                  `projects-poll-interval`, `projects-board`, `projects-view`, `projects-filter`, `projects-hide-closed`, `projects-roadmap`, \
+                  `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`, `repo-config`, `app`, `page`, or `window`)"
+             ))
+diff --git a/src/core/pane.rs b/src/core/pane.rs
+index 61e8d13..7e81c8c 100644
+--- a/src/core/pane.rs
++++ b/src/core/pane.rs
+@@ -148,6 +148,8 @@ pub enum PaneEvent {
+     OpenRunLog,
+     /// Issue / PR lists: show or hide closed and merged items (both lists).
+     ToggleClosed,
++    /// Issue / PR lists: only the viewer's items, or all (both lists).
++    ToggleMine,
+     /// PR list / detail: open this PR's diff in a window on top of the page.
+     ShowPrDiff(u64),
+     /// PR list / detail: fetch this PR's head into a worktree (`W`).
+diff --git a/src/core/ui/status_bar.rs b/src/core/ui/status_bar.rs
+index 3fdba6e..efc0a5a 100644
+--- a/src/core/ui/status_bar.rs
++++ b/src/core/ui/status_bar.rs
+@@ -217,6 +217,9 @@ pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, area:
+             Style::default().fg(Color::DarkGray),
+         ));
+     }
++    if gh.mine_only() {
++        spans.push(Span::styled(" · mine", Style::default().fg(Color::Yellow)));
++    }
+     render_header_common(f, ctx, spans, area);
+ }
+ 
+diff --git a/src/github/panes/detail_view/mod.rs b/src/github/panes/detail_view/mod.rs
+index 4719014..5db3eed 100644
+--- a/src/github/panes/detail_view/mod.rs
++++ b/src/github/panes/detail_view/mod.rs
+@@ -185,6 +185,8 @@ pub struct GhDetailViewPane {
+     /// (`github-poll-interval`).
+     poll_interval: Duration,
+     keymap: Keymap<DetailAction>,
++    /// The signed-in login, highlighted in the header's people line.
++    viewer: Option<String>,
+ }
+ 
+ impl GhDetailViewPane {
+@@ -207,9 +209,18 @@ impl GhDetailViewPane {
+             watch_error: None,
+             poll_interval: jobs::JOBS_POLL_INTERVAL,
+             keymap: default_keymap(),
++            viewer: None,
+         }
+     }
+ 
++    pub fn set_viewer(&mut self, login: Option<String>) {
++        self.viewer = login;
++    }
++
++    pub fn viewer(&self) -> Option<&str> {
++        self.viewer.as_deref()
++    }
++
+     pub fn set_keymap(&mut self, km: Keymap<DetailAction>) {
+         self.keymap = km;
+     }
+diff --git a/src/github/panes/detail_view/view.rs b/src/github/panes/detail_view/view.rs
+index 3294653..e04f62f 100644
+--- a/src/github/panes/detail_view/view.rs
++++ b/src/github/panes/detail_view/view.rs
+@@ -87,8 +87,8 @@ pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &PaneShared, are
+ 
+     // Build header lines
+     let header_lines = match &dv.content {
+-        GhDetailContent::Issue(detail) => build_issue_header(detail),
+-        GhDetailContent::Pr(detail) => build_pr_header(detail),
++        GhDetailContent::Issue(detail) => build_issue_header(detail, dv.viewer()),
++        GhDetailContent::Pr(detail) => build_pr_header(detail, dv.viewer()),
+         _ => unreachable!(),
+     };
+ 
+@@ -472,7 +472,11 @@ fn build_detail_header_base(
+     (title_line, spans)
+ }
+ 
+-pub(crate) fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
++/// The issue header; `viewer` is highlighted among the assignees.
++pub(crate) fn build_issue_header(
++    detail: &GhIssueDetail,
++    viewer: Option<&str>,
++) -> Vec<Line<'static>> {
+     let (title_line, mut spans) = build_detail_header_base(
+         detail.number,
+         &detail.title,
+@@ -482,11 +486,13 @@ pub(crate) fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
+     );
+     spans.extend(build_label_spans(&detail.labels));
+     let mut lines = vec![title_line, Line::from(spans)];
+-    lines.extend(people::header_line(&logins(&detail.assignees), &[]));
++    lines.extend(people::header_line(&logins(&detail.assignees), &[], viewer));
+     lines
+ }
+ 
+-pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
++/// The PR header; `viewer` is highlighted among the assignees and
++/// reviewers.
++pub(crate) fn build_pr_header(detail: &GhPrDetail, viewer: Option<&str>) -> Vec<Line<'static>> {
+     let (title_line, mut spans) = build_detail_header_base(
+         detail.number,
+         &detail.title,
+@@ -533,6 +539,7 @@ pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
+     lines.extend(people::header_line(
+         &logins(&detail.assignees),
+         &reviewer_handles(&detail.review_requests),
++        viewer,
+     ));
+     lines
+ }
+@@ -884,7 +891,7 @@ mod tests {
+             is_draft: true,
+         };
+         let text = |detail: &GhPrDetail| -> String {
+-            build_pr_header(detail)[1]
++            build_pr_header(detail, None)[1]
+                 .spans
+                 .iter()
+                 .map(|s| s.content.as_ref())
+diff --git a/src/github/panes/gh_list.rs b/src/github/panes/gh_list.rs
+index f2e5b34..4de73a6 100644
+--- a/src/github/panes/gh_list.rs
++++ b/src/github/panes/gh_list.rs
+@@ -22,6 +22,8 @@ pub enum GhListAction {
+     CopyUrl,
+     /// Show / hide closed issues and merged / closed PRs (both lists).
+     ToggleClosed,
++    /// Keep only the items for the viewer (both lists).
++    ToggleMine,
+     /// PR list: open the selected PR's diff window.
+     ShowDiff,
+     /// PR list: fetch the selected PR into a worktree (after confirming).
+@@ -32,7 +34,7 @@ pub enum GhListAction {
+ 
+ crate::impl_pane_action_from_str!(
+     GhListAction, nav: Nav, search: Search, esc: Esc,
+-    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed, ShowDiff, OpenWorktree
++    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed, ToggleMine, ShowDiff, OpenWorktree
+ );
+ 
+ impl ActionHelp for GhListAction {
+@@ -44,6 +46,7 @@ impl ActionHelp for GhListAction {
+             GhListAction::OpenBrowser => Some("Open in browser"),
+             GhListAction::CopyUrl => Some("Copy URL"),
+             GhListAction::ToggleClosed => Some("Show / hide closed items"),
++            GhListAction::ToggleMine => Some("Only my items / all items"),
+             GhListAction::ShowDiff => Some("Show diff (files + side-by-side)"),
+             GhListAction::OpenWorktree => Some("Open as a worktree (fetch + worktree add)"),
+             GhListAction::Search(sa) => sa.label(),
+@@ -66,14 +69,21 @@ pub fn default_keymap(switch_key: KeyCode) -> Keymap<GhListAction> {
+ 
+ // === Trait for item-specific behavior ===
+ 
+-pub trait GhListItem: Sized + Send + 'static {
++pub trait GhListItem: Sized + Send + Clone + 'static {
+     fn pane_title() -> &'static str;
+     fn empty_message() -> &'static str;
+     /// Render one row; `tree` carries the indent / guide prefix when the
+     /// item is nested under another one.
+     /// The row, laid out for a list `width` columns wide (inside the
+     /// borders).
+-    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static>;
++    /// The row, `width` columns wide; `viewer` is the signed-in login
++    /// (highlighted where it appears) when known.
++    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static>;
++    /// Whether the item is for `viewer`: assigned to them, or waiting for
++    /// their review. Runs are nobody's.
++    fn is_mine(&self, _viewer: &str) -> bool {
++        false
++    }
+     fn number(&self) -> u64;
+     /// Number of the item this one is nested under, if any. `items` is the
+     /// whole fetched list, for parents that must be resolved by lookup.
+@@ -135,9 +145,17 @@ pub fn copy_url_event(url: Option<String>) -> PaneEvent {
+ // === Generic list pane ===
+ 
+ pub struct GhListPane<T: GhListItem> {
++    /// The rows shown: `all_items`, or with `mine_only` the viewer's.
+     pub items: Vec<T>,
+     /// Tree placement per row of `items`.
+     positions: Vec<TreePos>,
++    /// Everything fetched, before the `mine_only` filter.
++    all_items: Vec<T>,
++    /// `m` / `github-mine-only`: list only the viewer's items (no effect
++    /// until the viewer is known).
++    pub mine_only: bool,
++    /// The signed-in login, once resolved.
++    viewer: Option<String>,
+     pub selected_idx: usize,
+     pub loading: bool,
+     /// `x` / `github-show-closed`: fetch closed and merged items too. The
+@@ -161,6 +179,9 @@ impl<T: GhListItem> GhListPane<T> {
+         Self {
+             items: Vec::new(),
+             positions: Vec::new(),
++            all_items: Vec::new(),
++            mine_only: false,
++            viewer: None,
+             selected_idx: 0,
+             loading: false,
+             show_closed: false,
+@@ -230,11 +251,39 @@ impl<T: GhListItem> GhListPane<T> {
+         self.set_items(items);
+     }
+ 
++    /// The signed-in login: highlighted in the rows, and what `mine_only`
++    /// keeps.
++    pub fn set_viewer(&mut self, login: Option<String>) {
++        self.viewer = login;
++        self.refilter();
++    }
++
++    /// `m`: list only the viewer's items, or everything again.
++    pub fn set_mine_only(&mut self, mine_only: bool) {
++        self.mine_only = mine_only;
++        self.refilter();
++    }
++
+     /// Replace the list, keeping the selection on the same item when it is
+     /// still listed (a refresh prepends new items) and clamping the index
+     /// otherwise.
+     pub(crate) fn set_items(&mut self, items: Vec<T>) {
++        self.all_items = items;
++        self.refilter();
++    }
++
++    /// Rebuild the rows from `all_items` under the current filter.
++    fn refilter(&mut self) {
+         let keep = self.selected_number();
++        let items: Vec<T> = match (&self.viewer, self.mine_only) {
++            (Some(me), true) => self
++                .all_items
++                .iter()
++                .filter(|i| i.is_mine(me))
++                .cloned()
++                .collect(),
++            _ => self.all_items.clone(),
++        };
+         let (items, positions) = nest_items(items);
+         self.items = items;
+         self.positions = positions;
+@@ -269,6 +318,7 @@ impl<T: GhListItem> GhListPane<T> {
+                 }
+             }
+             GhListAction::ToggleClosed => return vec![PaneEvent::ToggleClosed],
++            GhListAction::ToggleMine => return vec![PaneEvent::ToggleMine],
+             GhListAction::ShowDiff => {
+                 if let Some(ev) = self
+                     .items
+@@ -321,7 +371,11 @@ impl<T: GhListItem> GhListPane<T> {
+                     .enumerate()
+                     .map(|(idx, item)| {
+                         let tree = self.positions.get(idx).cloned().unwrap_or_default();
+-                        let mut li = item.render_item(&tree, area.width.saturating_sub(2));
++                        let mut li = item.render_item(
++                            &tree,
++                            area.width.saturating_sub(2),
++                            self.viewer.as_deref(),
++                        );
+                         let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
+                         if hl.is_active() {
+                             use ratatui::style::Style;
+diff --git a/src/github/panes/issue_list.rs b/src/github/panes/issue_list.rs
+index b5e959e..69f28df 100644
+--- a/src/github/panes/issue_list.rs
++++ b/src/github/panes/issue_list.rs
+@@ -20,10 +20,18 @@ impl GhListItem for GhIssueListItem {
+         "No issues"
+     }
+ 
+-    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static> {
++    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static> {
+         let open = self.state == "OPEN";
++        let assignees = logins(&self.assignees);
+         let icon = if open { "●" } else { "✓" };
+-        let icon_color = if open { Color::Green } else { Color::Red };
++        // An open issue of the viewer's takes their color.
++        let icon_color = if !open {
++            Color::Red
++        } else if people::names_me(&assignees, viewer) {
++            people::MINE_FG
++        } else {
++            Color::Green
++        };
+         // Closed issues (shown with `x`) are dimmed.
+         let title_style = if open {
+             Style::default()
+@@ -31,7 +39,7 @@ impl GhListItem for GhIssueListItem {
+             Style::default().fg(Color::DarkGray)
+         };
+ 
+-        let people = people::row_spans(&logins(&self.assignees), &[]);
++        let people = people::row_spans(&assignees, &[], viewer);
+         let mut spans = vec![
+             Span::raw(" "),
+             Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
+@@ -59,6 +67,10 @@ impl GhListItem for GhIssueListItem {
+         self.number
+     }
+ 
++    fn is_mine(&self, viewer: &str) -> bool {
++        people::names_me(&logins(&self.assignees), Some(viewer))
++    }
++
+     fn parent_number(&self, _items: &[Self]) -> Option<u64> {
+         self.parent.as_ref().map(|p| p.number)
+     }
+diff --git a/src/github/panes/people.rs b/src/github/panes/people.rs
+index 058a604..f805328 100644
+--- a/src/github/panes/people.rs
++++ b/src/github/panes/people.rs
+@@ -3,7 +3,7 @@
+ 
+ use crate::core::text::truncate_to_width;
+ use ratatui::{
+-    style::{Color, Style},
++    style::{Color, Modifier, Style},
+     text::{Line, Span},
+ };
+ use unicode_width::UnicodeWidthStr;
+@@ -19,21 +19,63 @@ pub(crate) const REVIEWER_ARROW: &str = "→";
+ /// the selection background (DarkGray is not).
+ const PEOPLE_FG: Color = Color::Gray;
+ 
++/// The color of everything that points at the viewer: their login among
++/// the people, and the state icon of an item that is theirs.
++pub(crate) const MINE_FG: Color = Color::Yellow;
++
++/// Whether `login` is the viewer (GitHub logins are case-insensitive).
++pub(crate) fn is_me(login: &str, viewer: Option<&str>) -> bool {
++    viewer.is_some_and(|me| me.eq_ignore_ascii_case(login))
++}
++
++/// Whether the viewer is among `logins`.
++pub(crate) fn names_me(logins: &[&str], viewer: Option<&str>) -> bool {
++    logins.iter().any(|l| is_me(l, viewer))
++}
++
++/// A login's style among the people: the viewer stands out.
++fn login_style(login: &str, viewer: Option<&str>, others: Style) -> Style {
++    if is_me(login, viewer) {
++        Style::default().fg(MINE_FG).add_modifier(Modifier::BOLD)
++    } else {
++        others
++    }
++}
++
+ /// List-row spans after the title: ` @alice @bob` for the assignees and
+-/// ` → carol` for the reviewers still to review. Empty when there is
+-/// nobody.
+-pub(crate) fn row_spans(assignees: &[&str], reviewers: &[&str]) -> Vec<Span<'static>> {
++/// ` → carol` for the reviewers still to review; the viewer's login is
++/// highlighted. Empty when there is nobody.
++pub(crate) fn row_spans(
++    assignees: &[&str],
++    reviewers: &[&str],
++    viewer: Option<&str>,
++) -> Vec<Span<'static>> {
++    let others = Style::default().fg(PEOPLE_FG);
+     let mut spans = Vec::new();
+     for login in assignees {
+         spans.push(Span::styled(
+             format!(" @{login}"),
+-            Style::default().fg(PEOPLE_FG),
++            login_style(login, viewer, others),
+         ));
+     }
+     if !reviewers.is_empty() {
++        spans.push(Span::styled(format!(" {REVIEWER_ARROW} "), others));
++        spans.extend(joined(reviewers, viewer, others));
++    }
++    spans
++}
++
++/// `logins` separated by `, `, each in its own span so the viewer's can
++/// differ.
++fn joined(logins: &[&str], viewer: Option<&str>, others: Style) -> Vec<Span<'static>> {
++    let mut spans = Vec::with_capacity(logins.len() * 2);
++    for (i, login) in logins.iter().enumerate() {
++        if i > 0 {
++            spans.push(Span::styled(", ", others));
++        }
+         spans.push(Span::styled(
+-            format!(" {REVIEWER_ARROW} {}", reviewers.join(", ")),
+-            Style::default().fg(PEOPLE_FG),
++            login.to_string(),
++            login_style(login, viewer, others),
+         ));
+     }
+     spans
+@@ -41,7 +83,11 @@ pub(crate) fn row_spans(assignees: &[&str], reviewers: &[&str]) -> Vec<Span<'sta
+ 
+ /// The detail header's people line — `  Assignees: alice, bob   Reviewers:
+ /// carol` — or `None` when there is nobody to show.
+-pub(crate) fn header_line(assignees: &[&str], reviewers: &[&str]) -> Option<Line<'static>> {
++pub(crate) fn header_line(
++    assignees: &[&str],
++    reviewers: &[&str],
++    viewer: Option<&str>,
++) -> Option<Line<'static>> {
+     if assignees.is_empty() && reviewers.is_empty() {
+         return None;
+     }
+@@ -49,11 +95,11 @@ pub(crate) fn header_line(assignees: &[&str], reviewers: &[&str]) -> Option<Line
+     let mut spans = vec![Span::raw(" ")];
+     if !assignees.is_empty() {
+         spans.push(Span::styled(" Assignees: ", label));
+-        spans.push(Span::raw(assignees.join(", ")));
++        spans.extend(joined(assignees, viewer, Style::default()));
+     }
+     if !reviewers.is_empty() {
+         spans.push(Span::styled(" Reviewers: ", label));
+-        spans.push(Span::raw(reviewers.join(", ")));
++        spans.extend(joined(reviewers, viewer, Style::default()));
+     }
+     Some(Line::from(spans))
+ }
+@@ -96,26 +142,61 @@ mod tests {
+ 
+     #[test]
+     fn row_spans_list_assignees_then_pending_reviewers() {
+-        assert!(row_spans(&[], &[]).is_empty());
+-        assert_eq!(text(&row_spans(&["alice", "bob"], &[])), " @alice @bob");
++        assert!(row_spans(&[], &[], None).is_empty());
+         assert_eq!(
+-            text(&row_spans(&["alice"], &["carol", "team-x"])),
++            text(&row_spans(&["alice", "bob"], &[], None)),
++            " @alice @bob"
++        );
++        assert_eq!(
++            text(&row_spans(&["alice"], &["carol", "team-x"], None)),
+             " @alice → carol, team-x"
+         );
+     }
+ 
++    /// The viewer's login is the only highlighted span, in a row and in
++    /// the header; the match ignores case.
++    #[test]
++    fn the_viewer_stands_out_among_the_people() {
++        let mine = |s: &Span<'static>| s.style.fg == Some(MINE_FG);
++        let spans = row_spans(&["alice", "Bob"], &["carol", "bob"], Some("bob"));
++        assert_eq!(text(&spans), " @alice @Bob → carol, bob");
++        let highlighted: Vec<&str> = spans
++            .iter()
++            .filter(|s| mine(s))
++            .map(|s| s.content.as_ref())
++            .collect();
++        assert_eq!(highlighted, vec![" @Bob", "bob"]);
++        assert!(row_spans(&["alice"], &[], Some("bob"))
++            .iter()
++            .all(|s| !mine(s)));
++
++        let line = header_line(&["alice", "bob"], &["carol"], Some("bob")).unwrap();
++        assert_eq!(line.to_string(), "  Assignees: alice, bob Reviewers: carol");
++        let highlighted: Vec<&str> = line
++            .spans
++            .iter()
++            .filter(|s| mine(s))
++            .map(|s| s.content.as_ref())
++            .collect();
++        assert_eq!(highlighted, vec!["bob"]);
++
++        assert!(names_me(&["alice", "BOB"], Some("bob")));
++        assert!(!names_me(&["alice"], Some("bob")));
++        assert!(!names_me(&["bob"], None));
++    }
++
+     #[test]
+     fn header_line_only_when_someone_is_named() {
+-        assert!(header_line(&[], &[]).is_none());
+-        let line = header_line(&["alice"], &["carol"]).unwrap();
++        assert!(header_line(&[], &[], None).is_none());
++        let line = header_line(&["alice"], &["carol"], None).unwrap();
+         assert_eq!(line.to_string(), "  Assignees: alice Reviewers: carol");
+-        let line = header_line(&[], &["carol"]).unwrap();
++        let line = header_line(&[], &["carol"], None).unwrap();
+         assert_eq!(line.to_string(), "  Reviewers: carol");
+     }
+ 
+     #[test]
+     fn fit_title_keeps_the_people_visible() {
+-        let people = spans_width(&row_spans(&["alice"], &[]));
++        let people = spans_width(&row_spans(&["alice"], &[], None));
+         assert_eq!(people, 7);
+         // Fits: untouched.
+         assert_eq!(fit_title("short", 6, people, 40), "short");
+diff --git a/src/github/panes/pr_list.rs b/src/github/panes/pr_list.rs
+index 93f1378..8c7b78f 100644
+--- a/src/github/panes/pr_list.rs
++++ b/src/github/panes/pr_list.rs
+@@ -35,8 +35,14 @@ impl GhListItem for GhPrListItem {
+         "No pull requests"
+     }
+ 
+-    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static> {
+-        ListItem::new(Line::from(row_spans(self, tree, width)))
++    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static> {
++        ListItem::new(Line::from(row_spans(self, tree, width, viewer)))
++    }
++
++    fn is_mine(&self, viewer: &str) -> bool {
++        let me = Some(viewer);
++        people::names_me(&logins(&self.assignees), me)
++            || people::names_me(&reviewer_handles(&self.review_requests), me)
+     }
+ 
+     fn number(&self) -> u64 {
+@@ -115,13 +121,23 @@ impl GhListItem for GhPrListItem {
+ 
+ /// The spans of one list row: state icon, review mark, number, title,
+ /// people, then the stack note.
+-fn row_spans(item: &GhPrListItem, tree: &TreePos, width: u16) -> Vec<Span<'static>> {
++fn row_spans(
++    item: &GhPrListItem,
++    tree: &TreePos,
++    width: u16,
++    viewer: Option<&str>,
++) -> Vec<Span<'static>> {
+     let open = item.state == "OPEN";
++    let assignees = logins(&item.assignees);
++    let reviewers = reviewer_handles(&item.review_requests);
++    let mine = people::names_me(&assignees, viewer) || people::names_me(&reviewers, viewer);
+     let (icon, icon_color) = match item.state.as_str() {
+         "MERGED" => ("⊕", Color::Magenta),
+         "CLOSED" => ("✓", Color::Red),
+-        // A draft is hollow and dimmed, as on GitHub.
++        // A draft is hollow and dimmed, as on GitHub; an open PR of the
++        // viewer's takes their color.
+         _ if item.is_draft => (DRAFT_ICON, Color::DarkGray),
++        _ if mine => ("●", people::MINE_FG),
+         _ => ("●", Color::Green),
+     };
+     // Merged / closed PRs (shown with `x`) are dimmed.
+@@ -146,10 +162,7 @@ fn row_spans(item: &GhPrListItem, tree: &TreePos, width: u16) -> Vec<Span<'stati
+         ),
+         Span::raw(" "),
+     ];
+-    let people = people::row_spans(
+-        &logins(&item.assignees),
+-        &reviewer_handles(&item.review_requests),
+-    );
++    let people = people::row_spans(&assignees, &reviewers, viewer);
+     let before = people::spans_width(&spans);
+     let title = people::fit_title(
+         &item.title,
+@@ -213,7 +226,7 @@ mod tests {
+             depth: 0,
+             prefix: String::new(),
+         };
+-        row_spans(item, &tree, 80)
++        row_spans(item, &tree, 80, None)
+             .iter()
+             .map(|s| s.content.as_ref())
+             .collect()
+diff --git a/src/github/panes/run_list.rs b/src/github/panes/run_list.rs
+index 660ce78..a07a7e7 100644
+--- a/src/github/panes/run_list.rs
++++ b/src/github/panes/run_list.rs
+@@ -85,7 +85,12 @@ impl GhListItem for WorkflowRun {
+         "No workflow runs"
+     }
+ 
+-    fn render_item(&self, _tree: &TreePos, _width: u16) -> ListItem<'static> {
++    fn render_item(
++        &self,
++        _tree: &TreePos,
++        _width: u16,
++        _viewer: Option<&str>,
++    ) -> ListItem<'static> {
+         render_run_row(self, now_secs())
+     }
+ 
+diff --git a/src/github/state.rs b/src/github/state.rs
+index 0f285e5..cc07144 100644
+--- a/src/github/state.rs
++++ b/src/github/state.rs
+@@ -130,6 +130,9 @@ pub enum GhDetailPane {
+ 
+ pub enum GhBgMessage {
+     AuthStatus(Result<(), String>),
++    /// The signed-in login (`github::domain::viewer::resolve`), `None`
++    /// when it could not be told.
++    Viewer(Option<String>),
+     /// A list fetch; `show_closed` is the variant it asked for, so a
+     /// result that no longer matches the pane (after `x`) is dropped.
+     IssueList {
+@@ -340,6 +343,13 @@ pub struct GitHubState {
+     /// `x` / `github-show-closed`: the issue / PR lists include closed and
+     /// merged items.
+     show_closed: bool,
++    /// `m` / `github-mine-only`: the issue / PR lists keep only the
++    /// viewer's items.
++    mine_only: bool,
++    /// `github-login`, when configured; else the viewer is asked of `gh`.
++    github_login: Option<String>,
++    /// The signed-in login once resolved (`GhBgMessage::Viewer`).
++    viewer: Option<String>,
+     list_watermark: client::ListWatermark,
+     list_check_inflight: bool,
+     last_list_check: Option<Instant>,
+@@ -387,6 +397,8 @@ impl GitHubState {
+         let page_cfg = cfg.github_page()?;
+         let poll_interval = cfg.github_poll_interval()?;
+         let show_closed = cfg.github_show_closed()?;
++        let mine_only = cfg.github_mine_only()?;
++        let github_login = cfg.github_login()?;
+         let diff_window_cfg = cfg.diff_window()?;
+         let theme = cfg.theme()?;
+         let worktree_settings = cfg.pr_worktree()?;
+@@ -408,10 +420,12 @@ impl GitHubState {
+ 
+         let mut issue_list = issue_list::new_pane(ids.issue_list, ids.issue_detail, ids.pr_list);
+         issue_list.show_closed = show_closed;
++        issue_list.mine_only = mine_only;
+         issue_list.set_keymap(issue_list_km);
+ 
+         let mut pr_list = pr_list::new_pane(ids.pr_list, ids.pr_detail, ids.issue_list);
+         pr_list.show_closed = show_closed;
++        pr_list.mine_only = mine_only;
+         pr_list.set_keymap(pr_list_km);
+ 
+         let mut run_list = run_list::new_pane(ids.run_list, ids.run_detail, ids.pr_list);
+@@ -465,6 +479,9 @@ impl GitHubState {
+             poll_interval,
+             rate_limit: None,
+             show_closed,
++            mine_only,
++            github_login,
++            viewer: None,
+             list_watermark: client::ListWatermark::default(),
+             list_check_inflight: false,
+             last_list_check: None,
+@@ -613,6 +630,14 @@ impl GitHubState {
+             let _ = tx_auth.send(GhBgMessage::AuthStatus(auth));
+         });
+ 
++        // Who "me" is: `github-login`, else what `gh` stored (no request).
++        let tx_viewer = tx.clone();
++        let configured = self.github_login.clone();
++        std::thread::spawn(move || {
++            let login = crate::github::domain::viewer::resolve(configured.as_deref());
++            let _ = tx_viewer.send(GhBgMessage::Viewer(login));
++        });
++
+         // Each pane loads its disk cache + spawns background fetch
+         self.panes.issue_tab.list.initialize(&tx);
+         self.panes.pr_tab.list.initialize(&tx);
+@@ -697,6 +722,7 @@ impl GitHubState {
+                 _ => fetch_ok |= fetch_succeeded(&msg),
+             }
+             match msg {
++                GhBgMessage::Viewer(login) => self.set_viewer(login),
+                 GhBgMessage::AuthStatus(result) => match result {
+                     Ok(()) => {
+                         self.gh_available = Some(true);
+@@ -933,6 +959,33 @@ impl GitHubState {
+         self.show_closed
+     }
+ 
++    /// The signed-in login, for the rows, the headers and `m`.
++    fn set_viewer(&mut self, login: Option<String>) {
++        self.viewer = login.clone();
++        self.panes.issue_tab.list.set_viewer(login.clone());
++        self.panes.pr_tab.list.set_viewer(login.clone());
++        self.panes.issue_tab.detail.set_viewer(login.clone());
++        self.panes.pr_tab.detail.set_viewer(login);
++    }
++
++    /// `m`: keep only the viewer's items in both lists, or all again. A
++    /// local refilter — nothing is fetched.
++    fn toggle_mine(&mut self) {
++        self.mine_only = !self.mine_only;
++        self.panes.issue_tab.list.set_mine_only(self.mine_only);
++        self.panes.pr_tab.list.set_mine_only(self.mine_only);
++    }
++
++    /// Whether the lists keep only the viewer's items (header marker).
++    pub fn mine_only(&self) -> bool {
++        self.mine_only
++    }
++
++    /// The signed-in login once resolved.
++    pub fn viewer(&self) -> Option<&str> {
++        self.viewer.as_deref()
++    }
++
+     /// Age of the issue / PR lists for the status bar: `lists 12s ago`.
+     pub fn lists_age(&self) -> Option<String> {
+         let secs = self.lists_refreshed_at?.elapsed().as_secs() as i64;
+@@ -1023,6 +1076,16 @@ impl GitHubState {
+                         self.panes.run_tab.detail.open_selected_log(&tx);
+                     }
+                 }
++                PaneEvent::ToggleMine => {
++                    self.toggle_mine();
++                    ctx.status_message = Some(match (self.mine_only, self.viewer()) {
++                        (true, Some(me)) => format!("Only items for @{me} (m shows all)"),
++                        (true, None) => {
++                            "Only my items once the signed-in login is known (m shows all)".into()
++                        }
++                        (false, _) => "All items shown".into(),
++                    });
++                }
+                 PaneEvent::ToggleClosed => {
+                     self.toggle_closed();
+                     ctx.status_message = Some(
+@@ -1642,6 +1705,93 @@ mod kdl_regression {
+         assert!(st.show_closed() && st.panes.issue_tab.list.show_closed);
+     }
+ 
++    /// `m` keeps only the viewer's items in both lists — a local filter
++    /// over what was fetched, applied once the viewer is known — and the
++    /// config sets the start state.
++    #[test]
++    fn m_keeps_only_the_viewers_items() {
++        use crate::github::domain::types::{GhAuthor, GhIssueListItem};
++        fn issue(number: u64, assignee: &str) -> GhIssueListItem {
++            GhIssueListItem {
++                number,
++                title: format!("issue {number}"),
++                state: "OPEN".into(),
++                author: None,
++                labels: vec![],
++                created_at: String::new(),
++                parent: None,
++                assignees: vec![GhAuthor {
++                    login: assignee.into(),
++                }],
++            }
++        }
++        let mut st = state();
++        assert!(!st.mine_only());
++        st.panes.issue_tab.list.set_items(vec![
++            issue(1, "alice"),
++            issue(2, "bob"),
++            issue(3, "Alice"),
++        ]);
++        let mut c = AppContext {
++            should_quit: false,
++            active_page: 0,
++            page_labels: vec![],
++            page_keys: vec![],
++            show_help: false,
++            status_message: None,
++            error_dialog: None,
++            workdir: std::path::PathBuf::new(),
++            needs_full_redraw: false,
++            last_input: Instant::now(),
++            auto_refresh: true,
++            page_request: None,
++            select_worktree: None,
++        };
++        // Toggled before the viewer is known: nothing filtered yet.
++        st.process_events(&mut c, vec![PaneEvent::ToggleMine])
++            .unwrap();
++        assert!(st.mine_only() && st.panes.pr_tab.list.mine_only);
++        assert_eq!(st.panes.issue_tab.list.item_count(), 3);
++        assert!(c
++            .status_message
++            .as_deref()
++            .is_some_and(|m| m.contains("once the signed-in login")));
++        // The viewer arrives: the filter applies, case-insensitively.
++        let tx = st.bg_tx.clone().unwrap();
++        let (tx2, rx2) = mpsc::channel();
++        st.bg_rx = Some(rx2);
++        drop(tx);
++        tx2.send(GhBgMessage::Viewer(Some("alice".into()))).unwrap();
++        st.drain_bg_messages();
++        assert_eq!(st.viewer(), Some("alice"));
++        let numbers: Vec<u64> = st
++            .panes
++            .issue_tab
++            .list
++            .items
++            .iter()
++            .map(|i| i.number)
++            .collect();
++        assert_eq!(numbers, vec![1, 3]);
++        assert_eq!(st.panes.issue_tab.detail.viewer(), Some("alice"));
++        // A refresh keeps the filter; `m` again shows everything.
++        st.panes
++            .issue_tab
++            .list
++            .set_items(vec![issue(1, "alice"), issue(2, "bob")]);
++        assert_eq!(st.panes.issue_tab.list.item_count(), 1);
++        st.process_events(&mut c, vec![PaneEvent::ToggleMine])
++            .unwrap();
++        assert!(!st.mine_only());
++        assert_eq!(st.panes.issue_tab.list.item_count(), 2);
++        assert_eq!(c.status_message.as_deref(), Some("All items shown"));
++
++        let doc: kdl::KdlDocument = r#"github-mine-only "on""#.parse().unwrap();
++        let cfg = Config::with_user(&doc, std::path::PathBuf::from("/u/config.kdl")).unwrap();
++        let st = GitHubState::new(&cfg).expect("github page");
++        assert!(st.mine_only() && st.panes.issue_tab.list.mine_only);
++    }
++
+     /// The first `200` answer of the change check is only a baseline; a
+     /// later answer with a moved watermark re-fetches both lists and
+     /// raises the `↻ updated` notice, an unchanged one does nothing.
+diff --git a/src/projects/panes/board.rs b/src/projects/panes/board.rs
+index 65b6319..f09416c 100644
+--- a/src/projects/panes/board.rs
++++ b/src/projects/panes/board.rs
+@@ -10,6 +10,7 @@ use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
+ use crate::core::search::SearchMatch;
+ use crate::core::text::truncate_to_width;
+ use crate::core::theme;
++use crate::github::panes::people;
+ use crate::projects::domain::filter::{self, Filter};
+ use crate::projects::domain::roadmap::{self, Zoom};
+ use crate::projects::domain::types::{
+@@ -1222,8 +1223,14 @@ impl BoardPane {
+                 } else {
+                     None
+                 };
+-                for line in card_lines(item, self.repo.as_deref(), width, selected, hl.fg_override)
+-                {
++                for line in card_lines(
++                    item,
++                    self.repo.as_deref(),
++                    width,
++                    selected,
++                    hl.fg_override,
++                    self.viewer.as_deref(),
++                ) {
+                     lines.push(match bg {
+                         Some(bg) => line.style(Style::default().bg(bg)),
+                         None => line,
+@@ -1333,6 +1340,17 @@ impl BoardPane {
+             let mut row = Row::new(cells.iter().enumerate().map(|(ci, text)| {
+                 let mut style = match self.table_cols[ci] {
+                     TableColumn::Number => Style::default().fg(Color::Yellow),
++                    // The viewer's row: their assignees cell stands out.
++                    TableColumn::Assignees
++                        if item
++                            .assignees()
++                            .iter()
++                            .any(|a| people::is_me(a, self.viewer.as_deref())) =>
++                    {
++                        Style::default()
++                            .fg(people::MINE_FG)
++                            .add_modifier(Modifier::BOLD)
++                    }
+                     TableColumn::Assignees => Style::default().fg(Color::Gray),
+                     TableColumn::Title => Style::default(),
+                     TableColumn::Field { .. } => Style::default().fg(Color::Blue),
+@@ -1606,9 +1624,15 @@ fn card_lines(
+     width: usize,
+     selected: bool,
+     fg_override: Option<Color>,
++    viewer: Option<&str>,
+ ) -> Vec<Line<'static>> {
+     let kind = item.kind();
++    let assignees = item.assignees();
++    // An item of the viewer's takes their color on the icon, and their
++    // login stands out among the assignees.
++    let mine = assignees.iter().any(|a| people::is_me(a, viewer));
+     let icon_color = match kind {
++        _ if mine => people::MINE_FG,
+         ItemKind::Issue => Color::Green,
+         ItemKind::PullRequest => Color::Magenta,
+         ItemKind::Draft | ItemKind::Other => Color::DarkGray,
+@@ -1647,16 +1671,54 @@ fn card_lines(
+         Span::styled(title, title_style),
+         Span::raw(" ".repeat(width.saturating_sub(title_w))),
+     ];
+-    let mut parts: Vec<String> = item.assignees().iter().map(|a| format!("@{a}")).collect();
++    let mut parts: Vec<(String, bool)> = assignees
++        .iter()
++        .map(|a| (format!("@{a}"), people::is_me(a, viewer)))
++        .collect();
+     if let Some(labels) = item.field_text("labels") {
+-        parts.push(labels);
+-    }
+-    let sub = truncate_to_width(&parts.join("  "), width.saturating_sub(2));
++        parts.push((labels, false));
++    }
++    let joined = parts
++        .iter()
++        .map(|(text, _)| text.as_str())
++        .collect::<Vec<_>>()
++        .join("  ");
++    let sub = truncate_to_width(&joined, width.saturating_sub(2));
+     let sub_w = 2 + sub.width();
+-    let second = vec![
+-        Span::styled(format!("  {sub}"), Style::default().fg(fg(Color::Gray))),
+-        Span::raw(" ".repeat(width.saturating_sub(sub_w))),
+-    ];
++    let others = Style::default().fg(fg(Color::Gray));
++    let mut second = vec![Span::styled("  ", others)];
++    // The cut text split back into its parts, so the viewer's login keeps
++    // its style; the cut tail (ending in `…`) belongs to the part it
++    // starts in.
++    let mut rest = sub.as_str();
++    for (i, (text, mine)) in parts.iter().enumerate() {
++        if rest.is_empty() {
++            break;
++        }
++        let chunk = if i > 0 {
++            format!("  {text}")
++        } else {
++            text.clone()
++        };
++        let style = if *mine {
++            Style::default()
++                .fg(fg(people::MINE_FG))
++                .add_modifier(Modifier::BOLD)
++        } else {
++            others
++        };
++        match rest.strip_prefix(chunk.as_str()) {
++            Some(after) => {
++                second.push(Span::styled(chunk, style));
++                rest = after;
++            }
++            None => {
++                second.push(Span::styled(rest.to_string(), style));
++                break;
++            }
++        }
++    }
++    second.push(Span::raw(" ".repeat(width.saturating_sub(sub_w))));
+     vec![Line::from(first), Line::from(second)]
+ }
+ 
+@@ -2257,14 +2319,14 @@ mod tests {
+     #[test]
+     fn cards_truncate_and_pad_to_the_column_width() {
+         let b = board();
+-        let lines = card_lines(&b.items[0], Some("td72/vig"), 20, false, None);
++        let lines = card_lines(&b.items[0], Some("td72/vig"), 20, false, None, None);
+         let text = text_of(&lines);
+         assert_eq!(text[0].width(), 20);
+         assert!(text[0].starts_with("● #114 Config"));
+         assert!(text[0].ends_with('…'));
+         assert_eq!(text[1].trim_end(), "  @td72  enhancement");
+         // A draft shows no number and has an empty second line.
+-        let lines = card_lines(&b.items[2], Some("td72/vig"), 40, true, None);
++        let lines = card_lines(&b.items[2], Some("td72/vig"), 40, true, None, None);
+         let first = &text_of(&lines)[0];
+         assert!(first.starts_with("✎ Record the Projects demo tape"));
+         assert_eq!(lines[1].spans[0].content.trim(), "");
+@@ -2273,15 +2335,49 @@ mod tests {
+         assert_eq!(truncate_to_width("x", 0), "");
+     }
+ 
++    /// The viewer's card: their color on the icon and their login bold
++    /// among the assignees, the rest untouched; a cut second line keeps
++    /// the styles of the parts that remain.
++    #[test]
++    fn cards_highlight_the_viewer() {
++        let b = board();
++        let lines = card_lines(&b.items[0], Some("td72/vig"), 40, false, None, Some("TD72"));
++        assert_eq!(lines[0].spans[0].style.fg, Some(people::MINE_FG));
++        let second = &lines[1].spans;
++        assert_eq!(second[1].content, "@td72");
++        assert_eq!(second[1].style.fg, Some(people::MINE_FG));
++        assert!(second[1].style.add_modifier.contains(Modifier::BOLD));
++        assert_eq!(second[2].content, "  enhancement");
++        assert_eq!(second[2].style.fg, Some(Color::Gray));
++        assert_eq!(text_of(&lines)[1].trim_end(), "  @td72  enhancement");
++        // Someone else's: the plain colors.
++        let lines = card_lines(
++            &b.items[0],
++            Some("td72/vig"),
++            40,
++            false,
++            None,
++            Some("alice"),
++        );
++        assert_eq!(lines[0].spans[0].style.fg, Some(Color::Green));
++        assert_eq!(lines[1].spans[1].style.fg, Some(Color::Gray));
++        // Cut inside the labels: the login span is whole, the tail is gray.
++        let lines = card_lines(&b.items[0], Some("td72/vig"), 14, false, None, Some("td72"));
++        let second = &lines[1].spans;
++        assert_eq!(second[1].content, "@td72");
++        assert_eq!(second[2].content, "  enha…");
++        assert_eq!(second[2].style.fg, Some(Color::Gray));
++    }
++
+     #[test]
+     fn cards_of_other_repositories_carry_a_dimmed_prefix() {
+         let b = board();
+         // Same repository (any case): the bare number.
+-        let lines = card_lines(&b.items[0], Some("TD72/Vig"), 40, false, None);
++        let lines = card_lines(&b.items[0], Some("TD72/Vig"), 40, false, None, None);
+         assert!(text_of(&lines)[0].starts_with("● #114 Config"));
+         assert_eq!(lines[0].spans[1].content, "");
+         // Another repository: `owner/repo#n`, the prefix dimmed.
+-        let lines = card_lines(&b.items[0], Some("td72/other"), 40, false, None);
++        let lines = card_lines(&b.items[0], Some("td72/other"), 40, false, None, None);
+         let text = text_of(&lines);
+         assert!(text[0].starts_with("● td72/vig#114 Config"), "{}", text[0]);
+         assert_eq!(text[0].width(), 40);
+@@ -2289,9 +2385,9 @@ mod tests {
+         assert_eq!(lines[0].spans[1].style.fg, Some(Color::DarkGray));
+         assert_eq!(lines[0].spans[2].content, "#114 ");
+         // Unknown current repository or a draft: no prefix.
+-        let lines = card_lines(&b.items[0], None, 40, false, None);
++        let lines = card_lines(&b.items[0], None, 40, false, None, None);
+         assert!(text_of(&lines)[0].starts_with("● #114 Config"));
+-        let lines = card_lines(&b.items[2], Some("td72/other"), 40, false, None);
++        let lines = card_lines(&b.items[2], Some("td72/other"), 40, false, None, None);
+         assert!(text_of(&lines)[0].starts_with("✎ Record"));
+         assert_eq!(
+             cross_repo_prefix(&b.items[0], Some("acme/x")),
+diff --git a/src/projects/panes/detail.rs b/src/projects/panes/detail.rs
+index ba7b24a..3303e74 100644
+--- a/src/projects/panes/detail.rs
++++ b/src/projects/panes/detail.rs
+@@ -77,10 +77,10 @@ impl ItemDetail {
+         }
+     }
+ 
+-    fn header(&self) -> Vec<Line<'static>> {
++    fn header(&self, viewer: Option<&str>) -> Vec<Line<'static>> {
+         match self {
+-            Self::Issue(d) => build_issue_header(d),
+-            Self::Pr(d) => build_pr_header(d),
++            Self::Issue(d) => build_issue_header(d, viewer),
++            Self::Pr(d) => build_pr_header(d, viewer),
+         }
+     }
+ }
+@@ -111,6 +111,8 @@ pub struct DetailPane {
+     scroll: usize,
+     view_height: u16,
+     line_count: usize,
++    /// The signed-in login, highlighted in the header's people line.
++    viewer: Option<String>,
+ }
+ 
+ impl DetailPane {
+@@ -126,9 +128,14 @@ impl DetailPane {
+             scroll: 0,
+             view_height: 20,
+             line_count: 0,
++            viewer: None,
+         }
+     }
+ 
++    pub fn set_viewer(&mut self, login: Option<String>) {
++        self.viewer = login;
++    }
++
+     pub fn set_keymap(&mut self, km: Keymap<DetailAction>) {
+         self.keymap = km;
+     }
+@@ -278,7 +285,7 @@ impl DetailPane {
+         };
+         let kind = item.kind();
+         let mut lines: Vec<Line<'static>> = match &self.detail {
+-            Some(d) => d.header(),
++            Some(d) => d.header(self.viewer.as_deref()),
+             None => item_header(item),
+         };
+         lines.push(Line::default());
+diff --git a/src/projects/state.rs b/src/projects/state.rs
+index be06ad4..05b9645 100644
+--- a/src/projects/state.rs
++++ b/src/projects/state.rs
+@@ -643,6 +643,7 @@ impl ProjectsState {
+         for msg in messages {
+             match msg {
+                 ProjectsBgMessage::Viewer(login) => {
++                    self.panes.detail.set_viewer(login.clone());
+                     self.panes.board.set_viewer(login);
+                 }
+                 ProjectsBgMessage::Repo(result) => {
+diff --git a/tape/demo-github-issue.tape b/tape/demo-github-issue.tape
+index 817a42b..14cc968 100644
+--- a/tape/demo-github-issue.tape
++++ b/tape/demo-github-issue.tape
+@@ -50,6 +50,14 @@ Sleep 3s
+ Type "x"
+ Sleep 2s
+ 
++# Items for me (assigned, or waiting for my review) have a yellow icon and
++# my login in bold; `m` keeps only those (`· mine` in the header), `m`
++# again shows everything
++Type "m"
++Sleep 3s
++Type "m"
++Sleep 2s
++
+ # Navigate issue list with j/k
+ Type "j"
+ Sleep 800ms
