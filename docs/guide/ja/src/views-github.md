@@ -32,6 +32,19 @@ CI ステータス）を切り替えます。`o` でブラウザで開きます�
 チームは slug）、一覧の `/` は担当者名にもマッチします — `/@alice` で alice
 担当の項目だけを辿れます。
 
+Pull Request の行は状態とレビュー判定を先頭に置くので、列が狭くても
+切れません。draft は緑の `●` の代わりに薄い `◌`、アイコンの次の 1 桁は
+`✓` approved・`✗` changes requested・`◯` review required で、判定がなければ
+空白です（まだ誰もレビューしていない、またはブランチ保護がレビューを
+求めていない）。詳細のヘッダには状態の隣に `DRAFT` バッジと、同じ判定の
+表記が並びます。
+
+```text
+ ● ✓ #57 Files view: image preview @alice
+ ◌   #58 WIP: highlight my items @alice → carol
+ ● ✗ #59 Release 0.17.0 @bob
+```
+
 Pull Request で `d` を押すと（一覧でも詳細でも）、その PR の diff をページ
 の上に重なるウィンドウで開きます。左に変更ファイルのツリー、右にサイド
 バイサイドの diff という、[Git view](views-git.md) が作業ツリーの差分を

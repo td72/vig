@@ -1,0 +1,959 @@
+lint	Set up job	﻿2026-11-05T07:45:44.5485332Z Current runner version: '2.338.2'
+lint	Set up job	2026-11-05T07:45:44.5505267Z ##[group]Runner Image Provisioner
+lint	Set up job	2026-11-05T07:45:44.5505836Z Hosted Compute Agent
+lint	Set up job	2026-11-05T07:45:44.5506308Z Version: 20261021.618
+lint	Set up job	2026-11-05T07:45:44.5506690Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+lint	Set up job	2026-11-05T07:45:44.5507114Z Build Date: 2026-10-21T00:45:21Z
+lint	Set up job	2026-11-05T07:45:44.5507581Z Worker ID: {08a4d7f4-a8b3-4194-87f9-14436d657795}
+lint	Set up job	2026-11-05T07:45:44.5508002Z Region: westus3
+lint	Set up job	2026-11-05T07:45:44.5508395Z Cloud: Azure
+lint	Set up job	2026-11-05T07:45:44.5508758Z ##[endgroup]
+lint	Set up job	2026-11-05T07:45:44.5509616Z ##[group]Operating System
+lint	Set up job	2026-11-05T07:45:44.5510032Z Ubuntu
+lint	Set up job	2026-11-05T07:45:44.5510362Z 26.04.1
+lint	Set up job	2026-11-05T07:45:44.5510734Z LTS
+lint	Set up job	2026-11-05T07:45:44.5511065Z ##[endgroup]
+lint	Set up job	2026-11-05T07:45:44.5511403Z ##[group]Runner Image
+lint	Set up job	2026-11-05T07:45:44.5511796Z Image: ubuntu-26.04
+lint	Set up job	2026-11-05T07:45:44.5512160Z Version: 20261025.179.1
+lint	Set up job	2026-11-05T07:45:44.5512802Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261025.179/images/ubuntu/Ubuntu2604-Readme.md
+lint	Set up job	2026-11-05T07:45:44.5513931Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261025.179
+lint	Set up job	2026-11-05T07:45:44.5514808Z ##[endgroup]
+lint	Set up job	2026-11-05T07:45:44.5515568Z ##[group]GITHUB_TOKEN Permissions
+lint	Set up job	2026-11-05T07:45:44.5516866Z Contents: read
+lint	Set up job	2026-11-05T07:45:44.5517225Z Metadata: read
+lint	Set up job	2026-11-05T07:45:44.5517640Z Packages: read
+lint	Set up job	2026-11-05T07:45:44.5517998Z ##[endgroup]
+lint	Set up job	2026-11-05T07:45:44.5519346Z Secret source: Actions
+lint	Set up job	2026-11-05T07:45:44.5519948Z Cache mode: write
+lint	Set up job	2026-11-05T07:45:44.5520378Z Prepare workflow directory
+lint	Set up job	2026-11-05T07:45:44.5735657Z Prepare all required actions
+lint	Set up job	2026-11-05T07:45:44.5768471Z Getting action download info
+lint	Set up job	2026-11-05T07:45:44.9257288Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+lint	Set up job	2026-11-05T07:45:45.0371528Z Download action repository 'actions-rust-lang/setup-rust-toolchain@v1' (SHA:166cdcfd11aee3cb47222f9ddb555ce30ddb9659)
+lint	Set up job	2026-11-05T07:45:45.2961345Z Download action repository 'awalsh128/cache-apt-pkgs-action@v1' (SHA:553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9)
+lint	Set up job	2026-11-05T07:45:46.0356689Z Download action repository 'j178/prek-action@v1' (SHA:0bb87d7f00b0c99306c8bcb8b8beba1eb581c037)
+lint	Set up job	2026-11-05T07:45:46.3451186Z Getting action download info
+lint	Set up job	2026-11-05T07:45:46.4694454Z Download action repository 'Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4' (SHA:c19371144df3bb44fab255c43d04cbc2ab54d1c4)
+lint	Set up job	2026-11-05T07:45:47.2770479Z Getting action download info
+lint	Set up job	2026-11-05T07:45:47.4159233Z Download action repository 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9' (SHA:55cc8345863c7cc4c66a329aec7e433d2d1c52a9)
+lint	Set up job	2026-11-05T07:45:47.5253002Z Download action repository 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f' (SHA:bbbca2ddaa5d8feaa63e36b76fdaad77386f024f)
+lint	Set up job	2026-11-05T07:45:47.6542806Z Getting action download info
+lint	Set up job	2026-11-05T07:45:47.7921688Z Download action repository 'actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7' (SHA:8b402f58fbc84540c8b491a91e594a4576fec3d7)
+lint	Set up job	2026-11-05T07:45:48.2906268Z Complete job name: lint
+lint	Run actions/checkout@v6	﻿2026-11-05T07:45:48.3457492Z ##[group]Run actions/checkout@v6
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3457830Z with:
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3457950Z   repository: td72/vig
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3459426Z   token: ***
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3459544Z   ssh-strict: true
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3459664Z   ssh-user: git
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3459811Z   persist-credentials: true
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3459953Z   clean: true
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3460117Z   sparse-checkout-cone-mode: true
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3460268Z   fetch-depth: 1
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3460384Z   fetch-tags: false
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3460506Z   show-progress: true
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3460644Z   lfs: false
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3460762Z   submodules: false
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3460882Z   set-safe-directory: true
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3461028Z   allow-unsafe-pr-checkout: false
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.3461246Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5759549Z Syncing repository: td72/vig
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5760535Z ##[group]Getting Git version info
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5761169Z Working directory is '/home/runner/work/vig/vig'
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5761523Z [command]/usr/bin/git version
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5775574Z git version 2.56.0
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5789882Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5800088Z Temporarily overriding HOME='/home/runner/work/_temp/46e4fe77-d7e5-4831-9201-209b22644b2b' before making global git config changes
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5801130Z Adding repository directory to the temporary git global config as a safe directory
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5803631Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5866370Z Deleting the contents of '/home/runner/work/vig/vig'
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5875155Z ##[group]Determining repository object format
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5875684Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5876143Z ##[group]Initializing the repository
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5876510Z [command]/usr/bin/git init /home/runner/work/vig/vig
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5970600Z hint: Using 'master' as the name for the initial branch. This default branch name
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5971065Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5971403Z hint: to use in all of your new repositories, which will suppress this warning,
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5971738Z hint: call:
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5971881Z hint:
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5972036Z hint: 	git config --global init.defaultBranch <name>
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5972206Z hint:
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5972369Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5972635Z hint: 'development'. The just-created branch can be renamed via this command:
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5972840Z hint:
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5972959Z hint: 	git branch -m <name>
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5973098Z hint:
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5973273Z hint: Disable this message with "git config set advice.defaultBranchName false"
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5982729Z Initialized empty Git repository in /home/runner/work/vig/vig/.git/
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.5993510Z [command]/usr/bin/git remote add origin https://github.com/td72/vig
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6045041Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6045586Z ##[group]Disabling automatic garbage collection
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6048464Z [command]/usr/bin/git config --local gc.auto 0
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6079359Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6080039Z ##[group]Setting up auth
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6080457Z Removing SSH command configuration
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6085882Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6117399Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6540793Z Removing HTTP extra header
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6546145Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6573116Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6783696Z Removing includeIf entries pointing to credentials config files
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6789261Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.6818183Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.7041498Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.7074504Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.7101038Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.7130856Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.7157167Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.7178933Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.7179293Z ##[group]Fetching the repository
+lint	Run actions/checkout@v6	2026-11-05T07:45:48.7184709Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ea99f8d17bca17fd22e1f9eb87bdaa1e042312b4:refs/remotes/pull/213/merge
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4774947Z From https://github.com/td72/vig
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4775801Z  * [new ref]         ea99f8d17bca17fd22e1f9eb87bdaa1e042312b4 -> pull/213/merge
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4780792Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4781365Z ##[group]Determining the checkout info
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4781740Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4785474Z [command]/usr/bin/git sparse-checkout disable
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4830172Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4864716Z ##[group]Checking out the ref
+lint	Run actions/checkout@v6	2026-11-05T07:45:49.4865212Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/213/merge
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0481978Z Note: switching to 'refs/remotes/pull/213/merge'.
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0482355Z 
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0482575Z You are in 'detached HEAD' state. You can look around, make experimental
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0482975Z changes and commit them, and you can discard any commits you make in this
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0483346Z state without impacting any branches by switching back to a branch.
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0483565Z 
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0483756Z If you want to create a new branch to retain commits you create, you may
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0484295Z do so (now or later) by using -c with the switch command. Example:
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0484521Z 
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0484620Z   git switch -c <new-branch-name>
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0484764Z 
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0484864Z Or undo this operation with:
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0484991Z 
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0485087Z   git switch -
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0485218Z 
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0485382Z Turn off this advice by setting config variable advice.detachedHead to false
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0485629Z 
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0485905Z HEAD is now at ea99f8d Merge 5bc5f4af3f4dd0a00c2c3b70b410b4737d484383 into bcf722a8a0ce0f789d7a991ac369118cca9e31f9
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0792511Z ##[endgroup]
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0795411Z [command]/usr/bin/git log -1 --format=%H
+lint	Run actions/checkout@v6	2026-11-05T07:45:50.0815710Z ea99f8d17bca17fd22e1f9eb87bdaa1e042312b4
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-11-05T07:45:50.1085602Z ##[group]Run actions-rust-lang/setup-rust-toolchain@v1
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1085829Z with:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1085964Z   components: clippy, rustfmt
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1086117Z   cache: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1086238Z   cache-on-failure: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1086370Z   cache-bin: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1086492Z   cache-provider: github
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1086632Z   cache-all-crates: false
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1086797Z   cache-workspace-crates: false
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1086949Z   cache-save-if: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1087072Z   cache-targets: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1087193Z   matcher: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1087316Z   rustflags: -D warnings
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1087438Z   override: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1087554Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1126750Z ##[start-action display=Unbork mac;id=__actions-rust-lang_setup-rust-toolchain.__run]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1137745Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run;outcome=skipped;conclusion=skipped;duration_ms=0]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1160772Z ##[start-action display=Run : construct rustup command line;id=__actions-rust-lang_setup-rust-toolchain.flags]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1188883Z ##[group]Run : construct rustup command line
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1189154Z ^[[36;1m: construct rustup command line^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1189423Z ^[[36;1mecho "targets=$(for t in ${_srt_targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1189777Z ^[[36;1mecho "components=$(for c in ${_srt_components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1190045Z ^[[36;1mecho "downgrade=" >> $GITHUB_OUTPUT^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1216414Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1216604Z env:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1216713Z   _srt_targets: 
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1216838Z   _srt_components: clippy, rustfmt
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1216985Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1302873Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=14]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1306381Z ##[start-action display=Setting Environment Variables;id=__actions-rust-lang_setup-rust-toolchain.__run_2]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1318948Z ##[group]Run if [[ ! -v CARGO_INCREMENTAL ]]; then
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1319171Z ^[[36;1mif [[ ! -v CARGO_INCREMENTAL ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1319351Z ^[[36;1m  echo "CARGO_INCREMENTAL=0" >> $GITHUB_ENV^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1319513Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1319644Z ^[[36;1mif [[ ! -v CARGO_PROFILE_DEV_DEBUG ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1319835Z ^[[36;1m  echo "CARGO_PROFILE_DEV_DEBUG=0" >> $GITHUB_ENV^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1319997Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1320120Z ^[[36;1mif [[ ! -v CARGO_TERM_COLOR ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1320304Z ^[[36;1m  echo "CARGO_TERM_COLOR=always" >> $GITHUB_ENV^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1320461Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1320581Z ^[[36;1mif [[ ! -v RUST_BACKTRACE ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1320750Z ^[[36;1m  echo "RUST_BACKTRACE=short" >> $GITHUB_ENV^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1320912Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1321060Z ^[[36;1mif [[ ( ! -v RUSTFLAGS ) && $_srt_NEW_RUSTFLAGS != "" ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1321275Z ^[[36;1m  echo "RUSTFLAGS=$_srt_NEW_RUSTFLAGS" >> $GITHUB_ENV^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1321507Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1321631Z ^[[36;1m# Enable faster sparse index on nightly^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1321834Z ^[[36;1m# The value is ignored on stable and causes no problems^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1322123Z ^[[36;1m# https://internals.rust-lang.org/t/call-for-testing-cargo-sparse-registry/16862^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1322402Z ^[[36;1mif [[ ! -v CARGO_UNSTABLE_SPARSE_REGISTRY ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1322610Z ^[[36;1m  echo "CARGO_UNSTABLE_SPARSE_REGISTRY=true" >> $GITHUB_ENV^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1322806Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1322987Z ^[[36;1mif [[ ! -v CARGO_REGISTRIES_CRATES_IO_PROTOCOL ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1323212Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1323545Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1343538Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1343721Z env:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1343843Z   _srt_NEW_RUSTFLAGS: -D warnings
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1343985Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1386542Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=7]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1387900Z ##[start-action display=Install Rust Problem Matcher;id=__actions-rust-lang_setup-rust-toolchain.__run_3]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1401042Z ##[group]Run echo "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1401443Z ^[[36;1mecho "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1421155Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1421339Z env:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1421455Z   CARGO_INCREMENTAL: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1421612Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1421754Z   CARGO_TERM_COLOR: always
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1421883Z   RUST_BACKTRACE: short
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1422129Z   RUSTFLAGS: -D warnings
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1422267Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1422430Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1422589Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1472030Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=8]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1473842Z ##[start-action display=Install rustup, if needed;id=__actions-rust-lang_setup-rust-toolchain.__run_4]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1510024Z ##[group]Run if ! command -v rustup &> /dev/null ; then
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1510259Z ^[[36;1mif ! command -v rustup &> /dev/null ; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1510600Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1510909Z ^[[36;1m^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1511058Z ^[[36;1m  # Resolve the correct CARGO_HOME path depending on OS^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1511257Z ^[[36;1m  if [[ "$RUNNER_OS" == "Windows" ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1511493Z ^[[36;1m    echo "${CARGO_HOME:-$USERPROFILE/.cargo}/bin" | sed 's|/|\\|g' >> $GITHUB_PATH^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1511707Z ^[[36;1m  else^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1511863Z ^[[36;1m    echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1512037Z ^[[36;1m  fi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1512147Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1531258Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1531434Z env:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1531550Z   CARGO_INCREMENTAL: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1531684Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1531820Z   CARGO_TERM_COLOR: always
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1531949Z   RUST_BACKTRACE: short
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1532079Z   RUSTFLAGS: -D warnings
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1532222Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1532389Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1532550Z   RUNNER_OS: Linux
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1532667Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1571997Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=9]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1574676Z ##[start-action display=rustup toolchain install stable;id=__actions-rust-lang_setup-rust-toolchain.__run_5]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1586981Z ##[group]Run # Check if value is set
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1587175Z ^[[36;1m# Check if value is set^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1587333Z ^[[36;1mif [[ -n "$_srt_rust_src_dir" ]]^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1587480Z ^[[36;1mthen^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1587616Z ^[[36;1m  # If value is set the directory must exist^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1587792Z ^[[36;1m  if [[ -d "$_srt_rust_src_dir" ]]^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1587940Z ^[[36;1m  then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1588059Z ^[[36;1m    cd "$_srt_rust_src_dir"^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1588191Z ^[[36;1m  else^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1588490Z ^[[36;1m    echo "'rust-src-dir' does not point to an existing directory" >&2^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1588748Z ^[[36;1m    echo "The value of 'rust-src-dir' is: ${_srt_rust_src_dir}" >&2^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1588945Z ^[[36;1m    exit 1^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1589060Z ^[[36;1m  fi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1589169Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1589357Z ^[[36;1mif [[ -z "$_srt_toolchain" && ( -f "rust-toolchain" || -f "rust-toolchain.toml") ]]^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1589569Z ^[[36;1mthen^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1589713Z ^[[36;1m  # Install the toolchain as specified in the file^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1589938Z ^[[36;1m  # rustup show is the old way that implicitly installed a toolchain^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1590164Z ^[[36;1m  # rustup toolchain install is the new explicit way^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1590422Z ^[[36;1m  # https://github.com/rust-lang/rustup/issues/3635#issuecomment-2343511297^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1590678Z ^[[36;1m  rustup show active-toolchain || rustup toolchain install^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1590877Z ^[[36;1m  if [[ -n $_srt_components ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1591062Z ^[[36;1m    rustup component add ${_srt_components//,/ }^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1591309Z ^[[36;1m  fi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1591428Z ^[[36;1m  if [[ -n $_srt_targets ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1591592Z ^[[36;1m    rustup target add ${_srt_targets//,/ }^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1591745Z ^[[36;1m  fi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1591852Z ^[[36;1melse^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1591976Z ^[[36;1m  if [[ -z "$_srt_toolchain" ]]^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1592121Z ^[[36;1m  then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1592237Z ^[[36;1m    _srt_toolchain=stable^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1592383Z ^[[36;1m  fi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1592646Z ^[[36;1m  rustup toolchain install ${_srt_toolchain//,/ }  --component clippy --component rustfmt --profile minimal --no-self-update^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1592947Z ^[[36;1m  # Take the last element from the list^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1593112Z ^[[36;1m  if [[ "$_srt_override" == "true" ]]^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1593262Z ^[[36;1m  then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1593401Z ^[[36;1m    rustup override set ${_srt_toolchain//*,/ }^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1593563Z ^[[36;1m  fi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1593673Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1612632Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1612806Z env:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1612921Z   CARGO_INCREMENTAL: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1613049Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1613187Z   CARGO_TERM_COLOR: always
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1613314Z   RUST_BACKTRACE: short
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1613443Z   RUSTFLAGS: -D warnings
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1613579Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1613741Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1613898Z   _srt_toolchain: 
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1614014Z   _srt_targets: 
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1614283Z   _srt_components: clippy, rustfmt
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1614431Z   _srt_override: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1614549Z   _srt_rust_src_dir: 
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.1614670Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.4441863Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.8642002Z info: latest update on 2026-10-15 for version 1.99.1 (58cf8f9c3 2026-10-13)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.8831459Z info: component clippy is up to date
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.8831810Z info: component rustfmt is up to date
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.8841853Z 
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.8915216Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.8915549Z 
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.8988403Z info: override toolchain for /home/runner/work/vig/vig set to stable-x86_64-unknown-linux-gnu
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9012844Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=743]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9015708Z ##[start-action display=Print installed versions;id=__actions-rust-lang_setup-rust-toolchain.versions]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9033560Z ##[group]Run echo "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9034044Z ^[[36;1mecho "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9034459Z ^[[36;1mrustc --version --verbose^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9034649Z ^[[36;1mecho "cargo-version=$(cargo --version)" >> $GITHUB_OUTPUT^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9034844Z ^[[36;1mcargo --version --verbose^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9035034Z ^[[36;1mecho "rustup-version=$(rustup --version)" >> $GITHUB_OUTPUT^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9035227Z ^[[36;1mrustup --version^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9035361Z ^[[36;1m^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9035610Z ^[[36;1m_srt_DATE=$(rustc --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9035947Z ^[[36;1m_srt_HASH=$(rustc --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9036221Z ^[[36;1mecho "cachekey=$(echo $_srt_DATE$_srt_HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9060421Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9060611Z env:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9060726Z   CARGO_INCREMENTAL: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9060860Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9061105Z   CARGO_TERM_COLOR: always
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9061243Z   RUST_BACKTRACE: short
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9061374Z   RUSTFLAGS: -D warnings
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9061514Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9061679Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9061847Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9298275Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9298611Z binary: rustc
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9298776Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9298971Z commit-date: 2026-10-13
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9299117Z host: x86_64-unknown-linux-gnu
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9299259Z release: 1.99.1
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:50.9568933Z LLVM version: 23.1.1
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4937523Z cargo 1.99.1 (5f94df478 2026-08-27)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4937884Z release: 1.99.1
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4938207Z commit-hash: 5f94df4789f005f9a352888e8355ffc645b7ed0e
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4955434Z commit-date: 2026-08-27
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4955848Z host: x86_64-unknown-linux-gnu
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4956180Z libgit2: 1.9.6 (sys:0.21.0 vendored)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4956562Z libcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4956986Z ssl: OpenSSL 3.6.3 9 Jun 2026
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4957262Z os: Ubuntu 26.4.0 (resolute) [64-bit]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.4974755Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5057370Z info: the currently active `rustc` version is `rustc 1.99.1 (58cf8f9c3 2026-10-13)`
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5092919Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5093367Z rustup 1.29.2 (d8c92c676 2026-10-21)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5174112Z info: the currently active `rustc` version is `rustc 1.99.1 (58cf8f9c3 2026-10-13)`
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5450523Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.versions;outcome=success;conclusion=success;duration_ms=643]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5452694Z ##[start-action display=Downgrade registry access protocol when needed;id=__actions-rust-lang_setup-rust-toolchain.__run_6]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5669749Z ##[group]Run # Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5670305Z ^[[36;1m# Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5670790Z ^[[36;1m# On versions 1.66, 1.67, and 1.68.0-nightly the value "sparse" is still unstable.^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5671290Z ^[[36;1m# https://github.com/dtolnay/rust-toolchain/pull/69#discussion_r1107268108^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5671791Z ^[[36;1m# If we detect an incompatible value, set it to "git" which is always supported.^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5672451Z ^[[36;1mif [[ "rustc 1.99.1 (58cf8f9c3 2026-10-13)" =~ ^rustc\ (1\.6[67]\.|1\.68\.0-nightly) && "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL}" == "sparse" ]]; then^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5673203Z ^[[36;1m  echo "Downgrade cargo registry protocol to git"^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5673594Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git" >> $GITHUB_ENV^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5673918Z ^[[36;1mfi^[[0m
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5703199Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5703410Z env:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5703537Z   CARGO_INCREMENTAL: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5703675Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5703817Z   CARGO_TERM_COLOR: always
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5703954Z   RUST_BACKTRACE: short
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5704087Z   RUSTFLAGS: -D warnings
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5704446Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5704613Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.5704775Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.6087874Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=63]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.6089808Z ##[start-action display=Setup Rust Caching;id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7165427Z ##[group]Run Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7165815Z with:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7165932Z   cache-on-failure: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7166062Z   cache-bin: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7166189Z   cache-provider: github
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7166321Z   cache-all-crates: false
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7166456Z   cache-workspace-crates: false
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7166598Z   cache-targets: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7166713Z   save-if: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7166826Z   prefix-key: v0-rust
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7166949Z   add-job-id-key: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7167086Z   add-rust-environment-hash-key: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7167236Z   lookup-only: false
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7167353Z   cmd-format: {0}
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7167463Z env:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7167578Z   CARGO_INCREMENTAL: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7167708Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7167858Z   CARGO_TERM_COLOR: always
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7167988Z   RUST_BACKTRACE: short
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7168118Z   RUSTFLAGS: -D warnings
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7168257Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7168421Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.7168578Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.9097091Z (node:2315) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:51.9097548Z (Use `node --trace-deprecation ...` to show where the warning was created)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2218303Z ##[group]Cache Configuration
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2219118Z Cache Provider:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2219559Z     github
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2219809Z Workspaces:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2220008Z     /home/runner/work/vig/vig
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2220251Z Cache Paths:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2220446Z     /home/runner/.cargo/bin
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2220686Z     /home/runner/.cargo/.crates.toml
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2220944Z     /home/runner/.cargo/.crates2.json
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2221238Z     /home/runner/.cargo/registry
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2221468Z     /home/runner/.cargo/git
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2221704Z     /home/runner/work/vig/vig/target
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2221932Z Restore Key:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2222129Z     v0-rust-lint-Linux-x64-8e2c72a2
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2222365Z Cache Key:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2222569Z     v0-rust-lint-Linux-x64-8e2c72a2-d993fc43
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2222825Z .. Prefix:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2223021Z   - v0-rust-lint-Linux-x64
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2223250Z .. Environment considered:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2223462Z   - Rust Versions:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2223756Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2224454Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2224789Z   - CARGO_INCREMENTAL
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2225012Z   - CARGO_PROFILE_DEV_DEBUG
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2225243Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2225851Z   - CARGO_TERM_COLOR
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2226060Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2226296Z   - RUST_BACKTRACE
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2226483Z   - RUSTFLAGS
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2226669Z .. Lockfiles considered:
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2226896Z   - /home/runner/work/vig/vig/Cargo.lock
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2227160Z   - /home/runner/work/vig/vig/Cargo.toml
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2227603Z ##[endgroup]
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2227712Z 
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.2227799Z ... Restoring cache ...
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:52.4349356Z Cache hit for: v0-rust-lint-Linux-x64-8e2c72a2-d993fc43
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:53.6515973Z Received 33554432 of 232147698 (14.5%), 32.0 MBs/sec
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:54.6525135Z Received 130023424 of 232147698 (56.0%), 62.0 MBs/sec
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:55.6537424Z Received 130023424 of 232147698 (56.0%), 41.3 MBs/sec
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:56.6549867Z Received 130023424 of 232147698 (56.0%), 31.0 MBs/sec
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:57.6559021Z Received 209715200 of 232147698 (90.3%), 40.0 MBs/sec
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:57.8510782Z Received 232147698 of 232147698 (100.0%), 42.6 MBs/sec
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:57.8511201Z Cache Size: ~221 MB (232147698 B)
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:57.8569400Z [command]/usr/bin/tar -xf /home/runner/work/_temp/8f87ca42-ac57-4d08-829f-e2a44d79e724/cache.tzst -P -C /home/runner/work/vig/vig --use-compress-program unzstd
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:58.6799286Z Cache restored successfully
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:58.6894740Z Restored from cache key "v0-rust-lint-Linux-x64-8e2c72a2-d993fc43" full match: true.
+lint	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:45:58.7113345Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=7102]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	﻿2026-11-05T07:45:58.7204548Z ##[group]Run awalsh128/cache-apt-pkgs-action@v1
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7204760Z with:
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7204899Z   packages: libgit2-dev libssl-dev pkg-config
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7205077Z   execute_install_scripts: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7205234Z   empty_packages_behavior: error
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7205382Z   debug: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7205502Z env:
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7205615Z   CARGO_INCREMENTAL: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7205748Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7205907Z   CARGO_TERM_COLOR: always
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7206042Z   RUST_BACKTRACE: short
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7206177Z   RUSTFLAGS: -D warnings
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7206317Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7206483Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7206651Z   CACHE_ON_FAILURE: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7206782Z ##[endgroup]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7211538Z ##[start-action display=Run ${GITHUB_ACTION_PATH}/pre_cache_action.sh \;id=__awalsh128_cache-apt-pkgs-action.pre-cache]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7223427Z ##[group]Run ${GITHUB_ACTION_PATH}/pre_cache_action.sh \
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7223672Z ^[[36;1m${GITHUB_ACTION_PATH}/pre_cache_action.sh \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7223857Z ^[[36;1m  ~/cache-apt-pkgs \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7224010Z ^[[36;1m  "$VERSION" \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7224326Z ^[[36;1m  "$EXEC_INSTALL_SCRIPTS" \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7224493Z ^[[36;1m  "$DEBUG" \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7224626Z ^[[36;1m  "$ADD_REPOSITORY" \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7224780Z ^[[36;1m  "$PACKAGES"^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7224946Z ^[[36;1mif [ -f ~/cache-apt-pkgs/cache_key.md5 ]; then^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7225183Z ^[[36;1m  echo "CACHE_KEY=$(cat ~/cache-apt-pkgs/cache_key.md5)" >> $GITHUB_ENV^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7225394Z ^[[36;1melse^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7225527Z ^[[36;1m  echo "CACHE_KEY=" >> $GITHUB_ENV^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7225685Z ^[[36;1mfi^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7249855Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7250042Z env:
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7250168Z   CARGO_INCREMENTAL: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7250309Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7250452Z   CARGO_TERM_COLOR: always
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7250585Z   RUST_BACKTRACE: short
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7250719Z   RUSTFLAGS: -D warnings
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7250863Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7251041Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7251205Z   CACHE_ON_FAILURE: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7251337Z   VERSION: 
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7251458Z   EXEC_INSTALL_SCRIPTS: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7251606Z   EMPTY_PACKAGES_BEHAVIOR: error
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7251748Z   DEBUG: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7251869Z   ADD_REPOSITORY: 
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7252012Z   PACKAGES: libgit2-dev libssl-dev pkg-config
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7252181Z ##[endgroup]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:58.7371939Z Normalizing package list...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9327803Z done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9355577Z Validating action arguments (version='', packages='libgit2-dev=1.9.1+ds-1ubuntu1.3 libssl-dev=3.5.5-1ubuntu3.7 pkg-config=2.5.1-4')...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9368151Z done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9368281Z 
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9368380Z Creating cache key...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9394526Z - CPU architecture is 'x86_64'.
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9395014Z - Value to hash is 'libgit2-dev=1.9.1+ds-1ubuntu1.3 libssl-dev=3.5.5-1ubuntu3.7 pkg-config=2.5.1-4 @  3'.
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9426210Z - Value hashed as '4be124c0319e316f6056e9e44cbe4c6a'.
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9426794Z done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9427044Z Hash value written to /home/runner/cache-apt-pkgs/cache_key.md5
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9458643Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.pre-cache;outcome=success;conclusion=success;duration_ms=1224]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9461022Z ##[start-action display=Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9;id=__awalsh128_cache-apt-pkgs-action.load-cache]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9503887Z ##[group]Run actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9504382Z with:
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9504864Z   path: ~/cache-apt-pkgs
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9505119Z   key: cache-apt-pkgs_4be124c0319e316f6056e9e44cbe4c6a
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9505418Z   enableCrossOsArchive: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9505651Z   fail-on-cache-miss: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9505863Z   lookup-only: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9506057Z env:
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9506232Z   CARGO_INCREMENTAL: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9506437Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9506670Z   CARGO_TERM_COLOR: always
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9506879Z   RUST_BACKTRACE: short
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9507091Z   RUSTFLAGS: -D warnings
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9507312Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9507579Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9507843Z   CACHE_ON_FAILURE: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9508072Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:45:59.9508314Z ##[endgroup]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:00.2395780Z Cache hit for: cache-apt-pkgs_4be124c0319e316f6056e9e44cbe4c6a
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2451080Z Received 2952612 of 2952612 (100.0%), 3.7 MBs/sec
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2451520Z Cache Size: ~3 MB (2952612 B)
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2466933Z [command]/usr/bin/tar -xf /home/runner/work/_temp/67f2a4bc-fda5-4d4d-b346-fc2cdbd7b7ae/cache.tzst -P -C /home/runner/work/vig/vig --use-compress-program unzstd
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2613243Z Cache restored successfully
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2666125Z Cache restored from key: cache-apt-pkgs_4be124c0319e316f6056e9e44cbe4c6a
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2740308Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.load-cache;outcome=success;conclusion=success;duration_ms=1327]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2746028Z ##[start-action display=Run ${GITHUB_ACTION_PATH}/post_cache_action.sh \;id=__awalsh128_cache-apt-pkgs-action.post-cache]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2760806Z ##[group]Run ${GITHUB_ACTION_PATH}/post_cache_action.sh \
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2761068Z ^[[36;1m${GITHUB_ACTION_PATH}/post_cache_action.sh \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2761256Z ^[[36;1m  ~/cache-apt-pkgs \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2761408Z ^[[36;1m  / \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2761538Z ^[[36;1m  "$CACHE_HIT" \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2761685Z ^[[36;1m  "$EXEC_INSTALL_SCRIPTS" \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2761847Z ^[[36;1m  "$DEBUG" \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2761983Z ^[[36;1m  "$ADD_REPOSITORY" \^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2762131Z ^[[36;1m  "$PACKAGES"^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2762413Z ^[[36;1mfunction create_list { local list=$(cat ~/cache-apt-pkgs/manifest_${1}.log | tr '\n' ','); echo ${list:0:-1}; };^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2762821Z ^[[36;1mecho "package-version-list=$(create_list main)" >> $GITHUB_OUTPUT^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2763127Z ^[[36;1mecho "all-package-version-list=$(create_list all)" >> $GITHUB_OUTPUT^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2787526Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2787716Z env:
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2787839Z   CARGO_INCREMENTAL: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2787994Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2788144Z   CARGO_TERM_COLOR: always
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2788281Z   RUST_BACKTRACE: short
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2788427Z   RUSTFLAGS: -D warnings
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2788576Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2788754Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2788924Z   CACHE_ON_FAILURE: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2789072Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2789225Z   CACHE_HIT: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2789355Z   EXEC_INSTALL_SCRIPTS: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2789609Z   DEBUG: false
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2789729Z   ADD_REPOSITORY: 
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2789878Z   PACKAGES: libgit2-dev libssl-dev pkg-config
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.2790042Z ##[endgroup]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3021427Z Found 9 files in the cache.
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3043261Z - cache_key.md5
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3065427Z - install.log
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3087678Z - libgit2-1.9=1.9.1+ds-1ubuntu1.3.tar
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3109655Z - libgit2-dev=1.9.1+ds-1ubuntu1.3.tar
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3131792Z - libhttp-parser-dev=2.9.4-6build2.tar
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3153594Z - libhttp-parser2.9=2.9.4-6build2.tar
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3175963Z - libssh2-1-dev=1.11.1-1ubuntu0.26.04.4.tar
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3197667Z - manifest_all.log
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3219764Z - manifest_main.log
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3219911Z 
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3220044Z Reading from main requested packages manifest...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3275533Z - libgit2-dev=1.9.1+ds-1ubuntu1.3
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3301265Z - libssl-dev=3.5.5-1ubuntu3.7
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3326890Z - pkg-config=2.5.1-4
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3327102Z done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3327171Z 
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3386792Z Restoring 5 packages from cache...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3408985Z - libgit2-1.9=1.9.1+ds-1ubuntu1.3.tar restoring...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3490132Z   done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3513497Z - libgit2-dev=1.9.1+ds-1ubuntu1.3.tar restoring...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3672039Z   done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3699511Z - libhttp-parser-dev=2.9.4-6build2.tar restoring...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3775387Z   done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3800348Z - libhttp-parser2.9=2.9.4-6build2.tar restoring...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3867267Z   done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.3891594Z - libssh2-1-dev=1.11.1-1ubuntu0.26.04.4.tar restoring...
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4088084Z   done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4088368Z done
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4090502Z 
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4172292Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.post-cache;outcome=success;conclusion=success;duration_ms=142]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4175632Z ##[start-action display=Run actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f;id=__awalsh128_cache-apt-pkgs-action.upload-logs]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4181958Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.upload-logs;outcome=skipped;conclusion=skipped;duration_ms=0]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4184442Z ##[start-action display=Run actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9;id=__awalsh128_cache-apt-pkgs-action.save-cache]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4191536Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.save-cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4192941Z ##[start-action display=Run rm -rf ~/cache-apt-pkgs;id=__awalsh128_cache-apt-pkgs-action.clean-cache]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4206605Z ##[group]Run rm -rf ~/cache-apt-pkgs
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4206836Z ^[[36;1mrm -rf ~/cache-apt-pkgs^[[0m
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4231086Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4231284Z env:
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4231409Z   CARGO_INCREMENTAL: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4231554Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4231715Z   CARGO_TERM_COLOR: always
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4231853Z   RUST_BACKTRACE: short
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4231991Z   RUSTFLAGS: -D warnings
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4232140Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4232319Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4232487Z   CACHE_ON_FAILURE: true
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4232628Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4232800Z ##[endgroup]
+lint	Run awalsh128/cache-apt-pkgs-action@v1	2026-11-05T07:46:01.4302102Z ##[end-action id=__awalsh128_cache-apt-pkgs-action.clean-cache;outcome=success;conclusion=success;duration_ms=10]
+lint	Run j178/prek-action@v1	﻿2026-11-05T07:46:01.4370495Z ##[group]Run j178/prek-action@v1
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4370663Z with:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4370797Z   extra-args: --all-files
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4370943Z   install-only: false
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4371076Z   prek-version: latest
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4371210Z   working-directory: .
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4372647Z   token: ***
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4372763Z env:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4372994Z   CARGO_INCREMENTAL: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4373133Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4373276Z   CARGO_TERM_COLOR: always
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4373415Z   RUST_BACKTRACE: short
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4373556Z   RUSTFLAGS: -D warnings
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4373701Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4373879Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4374049Z   CACHE_ON_FAILURE: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4374327Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4374488Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4378682Z ##[start-action display=Resolve version;id=__j178_prek-action.resolve]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4390328Z ##[group]Run # Resolve prek version
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4390548Z ^[[36;1m# Resolve prek version^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4390696Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4390813Z ^[[36;1mimport os^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4390940Z ^[[36;1mimport json^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4391078Z ^[[36;1mfrom urllib import request^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4391247Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4391385Z ^[[36;1mprek_version = os.environ['PREK_VERSION']^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4391584Z ^[[36;1mgh_token = os.environ.get('GH_TOKEN', '')^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4391760Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4391884Z ^[[36;1mif prek_version == 'latest':^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4392110Z ^[[36;1m    url = 'https://api.github.com/repos/j178/prek/releases/latest'^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4392365Z ^[[36;1m    headers = {'Accept': 'application/vnd.github+json'}^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4392552Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4392675Z ^[[36;1m    if gh_token:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4392963Z ^[[36;1m        headers['Authorization'] = f'***'^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4393137Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4393247Z ^[[36;1m    try:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4393408Z ^[[36;1m        req = request.Request(url, headers=headers)^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4393616Z ^[[36;1m        with request.urlopen(req) as response:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4393812Z ^[[36;1m            data = json.loads(response.read())^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4394012Z ^[[36;1m            prek_version = data['tag_name']^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4394283Z ^[[36;1m    except Exception as e:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4394444Z ^[[36;1m        if gh_token:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4394703Z ^[[36;1m            print(f'::warning::Authenticated request failed: {e}, falling back to unauthenticated request')^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4394995Z ^[[36;1m            headers.pop('Authorization', None)^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4395198Z ^[[36;1m            req = request.Request(url, headers=headers)^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4395402Z ^[[36;1m            with request.urlopen(req) as response:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4395609Z ^[[36;1m                data = json.loads(response.read())^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4395803Z ^[[36;1m                prek_version = data['tag_name']^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4395974Z ^[[36;1m        else:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4396113Z ^[[36;1m            raise^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4396244Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4396377Z ^[[36;1mversion = prek_version.lstrip('v')^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4396554Z ^[[36;1mversion = f'v{version}'^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4396696Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4396853Z ^[[36;1mwith open(os.environ['GITHUB_OUTPUT'], 'a') as f:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4397048Z ^[[36;1m    f.write(f'version={version}\n')^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4475693Z shell: /usr/bin/python {0}
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4475859Z env:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4475986Z   CARGO_INCREMENTAL: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4476129Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4476276Z   CARGO_TERM_COLOR: always
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4476412Z   RUST_BACKTRACE: short
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4476556Z   RUSTFLAGS: -D warnings
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4476843Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4477027Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4477197Z   CACHE_ON_FAILURE: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4477346Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4477514Z   PREK_VERSION: latest
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4479156Z   GH_TOKEN: ***
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.4479287Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9298382Z ##[end-action id=__j178_prek-action.resolve;outcome=success;conclusion=success;duration_ms=491]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9302351Z ##[start-action display=Install prek;id=__j178_prek-action.__run]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9320509Z ##[group]Run # Installing prek
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9320705Z ^[[36;1m# Installing prek^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9320846Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9320999Z ^[[36;1mecho "::group::Installing prek ${PREK_VERSION}"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9321201Z ^[[36;1mexport PREK_UNMANAGED_INSTALL=1^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9321439Z ^[[36;1mexport PREK_INSTALL_DIR="$RUNNER_TOOL_CACHE/prek/${PREK_VERSION}/$RUNNER_ARCH"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9321707Z ^[[36;1mmkdir -p "$PREK_INSTALL_DIR"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9322041Z ^[[36;1mcurl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/download/${PREK_VERSION}/prek-installer.sh | sh^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9322374Z ^[[36;1mecho "$PREK_INSTALL_DIR" >> $GITHUB_PATH^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9322569Z ^[[36;1mecho "::endgroup::"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9346523Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9346717Z env:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9346836Z   CARGO_INCREMENTAL: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9346974Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9347124Z   CARGO_TERM_COLOR: always
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9347260Z   RUST_BACKTRACE: short
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9347393Z   RUSTFLAGS: -D warnings
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9347543Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9347718Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9347894Z   CACHE_ON_FAILURE: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9348043Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9348203Z   PREK_VERSION: v0.5.10
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9348342Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:01.9387977Z ##[group]Installing prek v0.5.10
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.2609529Z downloading prek 0.5.10 x86_64-unknown-linux-gnu
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.6535128Z no checksums to verify
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.7112068Z installing to /opt/hostedtoolcache/prek/v0.5.10/X64
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.7228222Z   prek
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.7246348Z everything's installed!
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.7269123Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.7277563Z ##[end-action id=__j178_prek-action.__run;outcome=success;conclusion=success;duration_ms=797]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.7280179Z ##[start-action display=Install prek (Windows);id=__j178_prek-action.__run_2]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.7282568Z ##[end-action id=__j178_prek-action.__run_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.7283603Z ##[start-action display=Setup cache;id=__j178_prek-action.__actions_cache]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9011314Z ##[group]Run actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9011546Z with:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9011684Z   path: ~/.cache/prek
+lint	Run j178/prek-action@v1	~\AppData\Local\prek
+lint	Run j178/prek-action@v1	
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9011944Z   key: prek-v1|Linux|X64||3c8c476c57504604fc76efcc05c1852ee1d57fd29e2bcfc241b070cb2d3a49d4
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9012209Z   enableCrossOsArchive: false
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9012364Z   fail-on-cache-miss: false
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9012502Z   lookup-only: false
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9012630Z   save-always: false
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9012759Z env:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9012874Z   CARGO_INCREMENTAL: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9013006Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9013148Z   CARGO_TERM_COLOR: always
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9013283Z   RUST_BACKTRACE: short
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9013419Z   RUSTFLAGS: -D warnings
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9013560Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9013730Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9014531Z   CACHE_ON_FAILURE: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9014758Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run j178/prek-action@v1	2026-11-05T07:46:02.9014927Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.1945496Z Cache hit for: prek-v1|Linux|X64||3c8c476c57504604fc76efcc05c1852ee1d57fd29e2bcfc241b070cb2d3a49d4
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.6774517Z Received 1087 of 1087 (100.0%), 0.0 MBs/sec
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.6775246Z Cache Size: ~0 MB (1087 B)
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.6801179Z [command]/usr/bin/tar -xf /home/runner/work/_temp/262cd052-1456-4bf7-85d9-bba0e62bca73/cache.tzst -P -C /home/runner/work/vig/vig --use-compress-program unzstd
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.6848914Z Cache restored successfully
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.6899616Z Cache restored from key: prek-v1|Linux|X64||3c8c476c57504604fc76efcc05c1852ee1d57fd29e2bcfc241b070cb2d3a49d4
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.6973917Z ##[end-action id=__j178_prek-action.__actions_cache;outcome=success;conclusion=success;duration_ms=968]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.6976999Z ##[start-action display=Run prek;id=__j178_prek-action.__run_3]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7016489Z ##[group]Run # Running prek
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7016685Z ^[[36;1m# Running prek^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7016824Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7016948Z ^[[36;1mimport shlex^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7017084Z ^[[36;1mimport sys^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7017224Z ^[[36;1mimport os^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7017352Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7017545Z ^[[36;1mcmd = ['prek', 'run', '--show-diff-on-failure', '--color=always']^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7017759Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7017899Z ^[[36;1mextra_args = os.environ['EXTRA_ARGS']^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7018079Z ^[[36;1mif extra_args:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7018217Z ^[[36;1m    try:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7018378Z ^[[36;1m        parsed_args = shlex.split(extra_args)^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7018569Z ^[[36;1m        cmd.extend(parsed_args)^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7018744Z ^[[36;1m    except ValueError as e:^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7018958Z ^[[36;1m        print(f'Error parsing extra-args: {e}', file=sys.stderr)^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7019177Z ^[[36;1m        sys.exit(1)^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7019333Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7019463Z ^[[36;1mos.execvp(cmd[0], cmd)^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7056803Z shell: /usr/bin/python {0}
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7056959Z env:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7057088Z   CARGO_INCREMENTAL: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7057233Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7057396Z   CARGO_TERM_COLOR: always
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7057537Z   RUST_BACKTRACE: short
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7057683Z   RUSTFLAGS: -D warnings
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7057837Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7058021Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7058195Z   CACHE_ON_FAILURE: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7058353Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7058525Z   EXTRA_ARGS: --all-files
+lint	Run j178/prek-action@v1	2026-11-05T07:46:03.7058670Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9032935Z trim trailing whitespace^[[32m.................................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9033627Z fix end of files^[[32m.........................................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9034117Z check toml^[[32m...............................................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9034694Z check yaml^[[32m...............................................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9035197Z check for merge conflicts^[[32m................................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9035895Z check for added large files^[[32m..............................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9036428Z cargo fmt^[[32m................................................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9036947Z cargo clippy^[[32m.............................................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9037487Z check gif freshness^[[32m......................................................^[[39m^[[32;7mPassed^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9047644Z ##[end-action id=__j178_prek-action.__run_3;outcome=success;conclusion=success;duration_ms=10207]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9049455Z ##[start-action display=Show verbose logs;id=__j178_prek-action.__run_4]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9064866Z ##[group]Run # Prek verbose logs
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9065076Z ^[[36;1m# Prek verbose logs^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9065340Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9065473Z ^[[36;1mecho "::group::Prek verbose logs"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9065717Z ^[[36;1mcache_dir="$(prek cache dir --no-log-file 2>/dev/null || echo ~/.cache/prek)"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9065957Z ^[[36;1mlog="$cache_dir/prek.log"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9066170Z ^[[36;1mcat "$log" || echo "No prek log file found at $log"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9066359Z ^[[36;1mecho "::endgroup::"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9090334Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9090544Z env:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9090667Z   CARGO_INCREMENTAL: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9090812Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9090974Z   CARGO_TERM_COLOR: always
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9091120Z   RUST_BACKTRACE: short
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9091258Z   RUSTFLAGS: -D warnings
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9091409Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9091583Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9091757Z   CACHE_ON_FAILURE: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9091915Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9092085Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9132898Z ##[group]Prek verbose logs
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9182933Z 2026-11-05T07:46:03.721508Z DEBUG prek: 0.5.10
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9183420Z 2026-11-05T07:46:03.721536Z DEBUG Args: ["prek", "run", "--show-diff-on-failure", "--color=always", "--all-files"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9184596Z 2026-11-05T07:46:03.722930Z DEBUG discover{cwd="/home/runner/work/vig/vig"}: Git repository state state=Repo { root: Ok("/home/runner/work/vig/vig"), git_dir: "/home/runner/work/vig/vig/.git", common_dir: "/home/runner/work/vig/vig/.git", hooks_dir: "/home/runner/work/vig/vig/.git/hooks" }
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9185979Z 2026-11-05T07:46:03.722954Z TRACE discover{cwd="/home/runner/work/vig/vig"}: close time.busy=1.39ms time.idle=2.27µs
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9186583Z 2026-11-05T07:46:03.722969Z TRACE Searching for global config path=/home/runner/.config/prek/prek.toml
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9187210Z 2026-11-05T07:46:03.722978Z TRACE Global config not found or inaccessible, skipping path=/home/runner/.config/prek/prek.toml
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9187797Z 2026-11-05T07:46:03.722989Z DEBUG Found workspace root at `/home/runner/work/vig/vig`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9188192Z 2026-11-05T07:46:03.722991Z TRACE Include selectors: ``
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9188499Z 2026-11-05T07:46:03.722993Z TRACE Skip selectors: ``
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9189045Z 2026-11-05T07:46:03.723020Z DEBUG discover{root="/home/runner/work/vig/vig" config=None refresh=false}: Cache is too old (94149s > 3600s), invalidating
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9189589Z 2026-11-05T07:46:03.723053Z DEBUG discover{root="/home/runner/work/vig/vig" config=None refresh=false}: Performing fresh workspace discovery
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9190233Z 2026-11-05T07:46:03.723067Z TRACE discover{root="/home/runner/work/vig/vig" config=None refresh=false}:list_submodules{git_root="/home/runner/work/vig/vig"}: close time.busy=4.95µs time.idle=251ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9190801Z 2026-11-05T07:46:03.723618Z DEBUG discover{root="/home/runner/work/vig/vig" config=None refresh=false}: Loading project configuration path=prek.toml
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9191316Z 2026-11-05T07:46:03.723926Z DEBUG discover{root="/home/runner/work/vig/vig" config=None refresh=false}: opened gitignore file: /home/runner/work/vig/vig/.gitignore
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9191861Z 2026-11-05T07:46:03.723956Z DEBUG discover{root="/home/runner/work/vig/vig" config=None refresh=false}: opened gitignore file: /home/runner/work/vig/vig/.git/info/exclude
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9192374Z 2026-11-05T07:46:03.724216Z TRACE discover{root="/home/runner/work/vig/vig" config=None refresh=false}: close time.busy=1.21ms time.idle=340ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9192972Z 2026-11-05T07:46:03.724326Z TRACE Checking lock resource="store" path=/home/runner/.cache/prek/.lock
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9193263Z 2026-11-05T07:46:03.724334Z DEBUG Acquired lock resource="store"
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9193551Z 2026-11-05T07:46:03.724431Z TRACE Released lock path=/home/runner/.cache/prek/.lock
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9194327Z 2026-11-05T07:46:03.724438Z DEBUG Hooks going to run: ["trailing-whitespace", "end-of-file-fixer", "check-toml", "check-yaml", "check-merge-conflict", "check-added-large-files", "cargo-fmt", "cargo-clippy", "check-gif-freshness"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9195102Z 2026-11-05T07:46:03.724453Z TRACE ls_files{cwd="/home/runner/work/vig/vig"}: Executing `cd /home/runner/work/vig/vig && /usr/bin/git -c core.useBuiltinFSMonitor=false --literal-pathspecs ls-files -z -- /home/runner/work/vig/vig`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9195716Z 2026-11-05T07:46:03.725744Z TRACE ls_files{cwd="/home/runner/work/vig/vig"}: close time.busy=242µs time.idle=1.05ms
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9196033Z 2026-11-05T07:46:03.725754Z DEBUG All files in the workspace: 352
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9196282Z 2026-11-05T07:46:03.726276Z TRACE Files for project `.` after filtered: 352
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9196585Z 2026-11-05T07:46:03.726279Z DEBUG Running priority group with priority 0: ["trailing-whitespace"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9197019Z 2026-11-05T07:46:03.726313Z TRACE matching_filenames{hook="trailing-whitespace"}: close time.busy=22.7µs time.idle=220ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9197416Z 2026-11-05T07:46:03.726318Z TRACE Files for hook `trailing-whitespace` after filtering matched=true filenames=210
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9197863Z 2026-11-05T07:46:03.727074Z  INFO run{hook_id=trailing-whitespace language=system}: close time.busy=46.2µs time.idle=703µs
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9198233Z 2026-11-05T07:46:03.727092Z DEBUG Running priority group with priority 1: ["end-of-file-fixer"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9198652Z 2026-11-05T07:46:03.727106Z TRACE matching_filenames{hook="end-of-file-fixer"}: close time.busy=10.8µs time.idle=170ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9199042Z 2026-11-05T07:46:03.727111Z TRACE Files for hook `end-of-file-fixer` after filtering matched=true filenames=210
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9199473Z 2026-11-05T07:46:03.727468Z  INFO run{hook_id=end-of-file-fixer language=system}: close time.busy=18.1µs time.idle=336µs
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9199824Z 2026-11-05T07:46:03.727483Z DEBUG Running priority group with priority 2: ["check-toml"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9200211Z 2026-11-05T07:46:03.727488Z TRACE matching_filenames{hook="check-toml"}: close time.busy=1.33µs time.idle=220ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9200567Z 2026-11-05T07:46:03.727500Z TRACE Files for hook `check-toml` after filtering matched=true filenames=6
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9200969Z 2026-11-05T07:46:03.729029Z  INFO run{hook_id=check-toml language=system}: close time.busy=11.7µs time.idle=1.51ms
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9201311Z 2026-11-05T07:46:03.729043Z DEBUG Running priority group with priority 3: ["check-yaml"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9201649Z 2026-11-05T07:46:03.729047Z TRACE matching_filenames{hook="check-yaml"}: close time.busy=982ns time.idle=210ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9202002Z 2026-11-05T07:46:03.729052Z TRACE Files for hook `check-yaml` after filtering matched=true filenames=4
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9202400Z 2026-11-05T07:46:03.729282Z  INFO run{hook_id=check-yaml language=system}: close time.busy=15.5µs time.idle=212µs
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9202757Z 2026-11-05T07:46:03.729294Z DEBUG Running priority group with priority 4: ["check-merge-conflict"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9203187Z 2026-11-05T07:46:03.729300Z TRACE matching_filenames{hook="check-merge-conflict"}: close time.busy=2.75µs time.idle=220ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9203581Z 2026-11-05T07:46:03.729306Z TRACE Files for hook `check-merge-conflict` after filtering matched=true filenames=336
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9204034Z 2026-11-05T07:46:03.729321Z  INFO run{hook_id=check-merge-conflict language=system}: close time.busy=10.6µs time.idle=310ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9207223Z 2026-11-05T07:46:03.729330Z DEBUG Running priority group with priority 5: ["check-added-large-files"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9207817Z 2026-11-05T07:46:03.729334Z TRACE matching_filenames{hook="check-added-large-files"}: close time.busy=2.09µs time.idle=170ns
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9208238Z 2026-11-05T07:46:03.729338Z TRACE Files for hook `check-added-large-files` after filtering matched=true filenames=352
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9208951Z 2026-11-05T07:46:03.729364Z TRACE run{hook_id=check-added-large-files language=system}: Executing `cd /home/runner/work/vig/vig && /usr/bin/git -c core.useBuiltinFSMonitor=false diff --no-ext-diff --cached --relative --name-only --diff-filter=A -z`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9209644Z 2026-11-05T07:46:03.730882Z  INFO run{hook_id=check-added-large-files language=system}: close time.busy=250µs time.idle=1.29ms
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9210303Z 2026-11-05T07:46:03.730899Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: Executing `cd /home/runner/work/vig/vig && /usr/bin/git -c core.useBuiltinFSMonitor=false diff --full-index --no-ext-diff --no-textconv --ignore-submodules -- /home/runner/work/vig/vig`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9210993Z 2026-11-05T07:46:03.756155Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: close time.busy=158µs time.idle=25.1ms
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9211351Z 2026-11-05T07:46:03.756184Z DEBUG Running priority group with priority 6: ["cargo-fmt"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9211678Z 2026-11-05T07:46:03.756204Z TRACE Files for hook `cargo-fmt` after filtering matched=true filenames=0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9212052Z 2026-11-05T07:46:03.756359Z TRACE run{hook_id=cargo-fmt language=system}: Running cargo-fmt total_files=0 concurrency=4
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9212515Z 2026-11-05T07:46:03.756454Z TRACE run{hook_id=cargo-fmt language=system}: Executing `cd /home/runner/work/vig/vig && /home/runner/.cargo/bin/cargo fmt --check`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9213008Z 2026-11-05T07:46:04.952358Z  INFO run{hook_id=cargo-fmt language=system}: close time.busy=479µs time.idle=1.20s
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9213631Z 2026-11-05T07:46:04.952440Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: Executing `cd /home/runner/work/vig/vig && /usr/bin/git -c core.useBuiltinFSMonitor=false diff --full-index --no-ext-diff --no-textconv --ignore-submodules -- /home/runner/work/vig/vig`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9214666Z 2026-11-05T07:46:04.978902Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: close time.busy=465µs time.idle=26.0ms
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9215134Z 2026-11-05T07:46:04.978947Z DEBUG Running priority group with priority 7: ["cargo-clippy"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9215473Z 2026-11-05T07:46:04.978968Z TRACE Files for hook `cargo-clippy` after filtering matched=true filenames=0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9215860Z 2026-11-05T07:46:04.979051Z TRACE run{hook_id=cargo-clippy language=system}: Running cargo-clippy total_files=0 concurrency=4
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9216385Z 2026-11-05T07:46:04.979137Z TRACE run{hook_id=cargo-clippy language=system}: Executing `cd /home/runner/work/vig/vig && /home/runner/.cargo/bin/cargo clippy --all-targets -- -D warnings`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9216928Z 2026-11-05T07:46:13.848041Z  INFO run{hook_id=cargo-clippy language=system}: close time.busy=500µs time.idle=8.87s
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9217567Z 2026-11-05T07:46:13.848092Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: Executing `cd /home/runner/work/vig/vig && /usr/bin/git -c core.useBuiltinFSMonitor=false diff --full-index --no-ext-diff --no-textconv --ignore-submodules -- /home/runner/work/vig/vig`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9218256Z 2026-11-05T07:46:13.873791Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: close time.busy=417µs time.idle=25.3ms
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9218623Z 2026-11-05T07:46:13.873833Z DEBUG Running priority group with priority 8: ["check-gif-freshness"]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9218981Z 2026-11-05T07:46:13.873839Z TRACE Files for hook `check-gif-freshness` after filtering matched=true filenames=0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9219404Z 2026-11-05T07:46:13.873941Z TRACE run{hook_id=check-gif-freshness language=system}: Running check-gif-freshness total_files=0 concurrency=4
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9219952Z 2026-11-05T07:46:13.874022Z TRACE run{hook_id=check-gif-freshness language=system}: Executing `cd /home/runner/work/vig/vig && /usr/bin/bash -c staged=$(git diff --cached --name-only)
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9220455Z tapes=$(echo "$staged" | grep '\.tape$' || true)
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9220637Z if [ -z "$tapes" ]; then exit 0; fi
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9220798Z for tape in $tapes; do
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9221037Z   gif="assets/$(basename "${tape%.tape}").gif"
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9221228Z   if ! echo "$staged" | grep -qF "$gif"; then
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9221490Z     echo "$tape was modified but $gif is not staged — run: mise run demo:all"
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9221707Z     exit 1
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9221820Z   fi
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9221935Z done
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9222038Z `
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9222337Z 2026-11-05T07:46:13.878579Z  INFO run{hook_id=check-gif-freshness language=system}: close time.busy=416µs time.idle=4.31ms
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9222983Z 2026-11-05T07:46:13.878620Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: Executing `cd /home/runner/work/vig/vig && /usr/bin/git -c core.useBuiltinFSMonitor=false diff --full-index --no-ext-diff --no-textconv --ignore-submodules -- /home/runner/work/vig/vig`
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9223675Z 2026-11-05T07:46:13.903004Z TRACE diff_worktree{path="/home/runner/work/vig/vig"}: close time.busy=171µs time.idle=24.2ms
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9224253Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9227696Z ##[end-action id=__j178_prek-action.__run_4;outcome=success;conclusion=success;duration_ms=17]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9229296Z ##[start-action display=Prune cache;id=__j178_prek-action.__run_5]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9253032Z ##[group]Run # Prune prek cache
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9253236Z ^[[36;1m# Prune prek cache^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9253383Z ^[[36;1m^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9253520Z ^[[36;1mecho "::group::Pruning prek cache"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9253732Z ^[[36;1mprek cache gc -v || echo "Failed to prune prek cache"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9253934Z ^[[36;1mecho "::endgroup::"^[[0m
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9277022Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9277217Z env:
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9277344Z   CARGO_INCREMENTAL: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9277487Z   CARGO_PROFILE_DEV_DEBUG: 0
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9277639Z   CARGO_TERM_COLOR: always
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9277779Z   RUST_BACKTRACE: short
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9278023Z   RUSTFLAGS: -D warnings
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9278182Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9278364Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9278536Z   CACHE_ON_FAILURE: true
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9278686Z   CACHE_KEY: 4be124c0319e316f6056e9e44cbe4c6a
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9278852Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9319057Z ##[group]Pruning prek cache
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9348942Z Nothing to clean
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9355635Z ##[endgroup]
+lint	Run j178/prek-action@v1	2026-11-05T07:46:13.9361101Z ##[end-action id=__j178_prek-action.__run_5;outcome=success;conclusion=success;duration_ms=13]
+lint	Post Run j178/prek-action@v1	﻿2026-11-05T07:46:13.9445241Z Post job cleanup.
+lint	Post Run j178/prek-action@v1	2026-11-05T07:46:13.9447817Z ##[start-action display=Setup cache;id=__c8c6a669-77d3-4c24-b2a4-1ad9db298935.__actions_cache]
+lint	Post Run j178/prek-action@v1	2026-11-05T07:46:14.1104975Z Post job cleanup.
+lint	Post Run j178/prek-action@v1	2026-11-05T07:46:14.1916657Z Cache hit occurred on the primary key prek-v1|Linux|X64||3c8c476c57504604fc76efcc05c1852ee1d57fd29e2bcfc241b070cb2d3a49d4, not saving cache.
+lint	Post Run j178/prek-action@v1	2026-11-05T07:46:14.1977144Z ##[end-action id=__c8c6a669-77d3-4c24-b2a4-1ad9db298935.__actions_cache;outcome=success;conclusion=success;duration_ms=252]
+lint	Post Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-11-05T07:46:14.2071110Z Post job cleanup.
+lint	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:46:14.2073297Z ##[start-action display=Setup Rust Caching;id=__51db0ede-5591-40e6-a60b-2362903ec2a8.__Swatinem_rust-cache]
+lint	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:46:14.2100021Z Post job cleanup.
+lint	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:46:14.3911611Z Cache up-to-date.
+lint	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:46:14.3912671Z (node:2784) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+lint	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:46:14.3913076Z (Use `node --trace-deprecation ...` to show where the warning was created)
+lint	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T07:46:14.4041081Z ##[end-action id=__51db0ede-5591-40e6-a60b-2362903ec2a8.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=196]
+lint	Post Run actions/checkout@v6	﻿2026-11-05T07:46:14.4101031Z Post job cleanup.
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.4691776Z [command]/usr/bin/git version
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.4727519Z git version 2.56.0
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.4755621Z Temporarily overriding HOME='/home/runner/work/_temp/fdb93c75-88ca-49ad-ad13-7e03d480cee3' before making global git config changes
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.4756580Z Adding repository directory to the temporary git global config as a safe directory
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.4759745Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.4794355Z Removing SSH command configuration
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.4799437Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.4837993Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5076386Z Removing HTTP extra header
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5080955Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5122707Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5353822Z Removing includeIf entries pointing to credentials config files
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5360672Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5382509Z includeif.gitdir:/home/runner/work/vig/vig/.git.path
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5382935Z includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5383256Z includeif.gitdir:/github/workspace/.git.path
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5383473Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5389900Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git.path
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5409261Z /home/runner/work/_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5417486Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5446912Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5466139Z /home/runner/work/_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5473442Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5500301Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5518211Z /github/runner_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5524592Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5551464Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5569648Z /github/runner_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5611391Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5640016Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+lint	Post Run actions/checkout@v6	2026-11-05T07:46:14.5849947Z Removing credentials config '/home/runner/work/_temp/git-credentials-801ce634-13bd-4b74-8d5a-f767d9e6d269.config'
+lint	Complete job	﻿2026-11-05T07:46:14.5983026Z Cleaning up orphan processes

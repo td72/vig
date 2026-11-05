@@ -51,8 +51,9 @@ Sleep 2s
 Type "l"
 Sleep 1.5s
 
-# Navigate PR list: a row names the assignees (@td72) and, when a review
-# is pending, the reviewers still to review (→ bob)
+# Navigate PR list: a draft leads with ◌, the mark after the icon is the
+# review decision (✓ / ✗ / ◯), then the assignees (@td72) and, when a
+# review is pending, the reviewers still to review (→ bob)
 Type "j"
 Sleep 800ms
 Type "k"

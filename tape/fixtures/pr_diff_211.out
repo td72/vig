@@ -1,0 +1,488 @@
+diff --git a/assets/default.kdl b/assets/default.kdl
+index bbd004d..86fed62 100644
+--- a/assets/default.kdl
++++ b/assets/default.kdl
+@@ -25,6 +25,11 @@ github-auto-refresh "on"
+ // in the lists: "on" or "off". `x` toggles it while running.
+ github-show-closed "off"
+ 
++// Who "me" is on the GitHub and Projects pages (`assignee:@me`): a login.
++// Absent, vig uses the account `gh auth login` stored (`gh config get -h
++// github.com user` - no request), and `gh api user` only as a last resort.
++// github-login "alice"
++
+ // How often the Procs view re-reads processes and listening ports
+ // ("2s", "500ms", ...; at least 250ms). Sampling pauses while another view is shown.
+ procs-refresh-interval "2s"
+diff --git a/docs/guide/ja/src/config-reference.md b/docs/guide/ja/src/config-reference.md
+index bea0f2b..5ee02ac 100644
+--- a/docs/guide/ja/src/config-reference.md
++++ b/docs/guide/ja/src/config-reference.md
+@@ -34,6 +34,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
+ | [`github-poll-interval`](#github-poll-interval) | `"5s"` | 置換 |
+ | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
+ | [`github-show-closed`](#github-show-closed) | `"off"` | 置換 |
++| [`github-login`](#github-login) | なし（`gh` に問い合わせ） | 置換 |
+ | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
+ | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
+ | [`projects-view`](#projects-view) | なし | 同名は置換、他は追加 |
+@@ -81,7 +82,7 @@ colors "red"
+ // → unknown top-level block "colors" (expected `theme`, `icons`,
+ //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
+ //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
+-//   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
++//   `github-show-closed`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
+ //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
+ //   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
+ //   `repo-config`, `app`, `page`, or `window`)
+@@ -296,6 +297,26 @@ open の一覧だけを残します。
+ github-show-closed "on"
+ ```
+ 
++### `github-login`
++
++「自分」が誰か: GitHub ページと Projects ページが閲覧者として扱うログイン
++名です（Projects のフィルタの `assignee:@me`）。未設定なら vig は `gh auth
++login` が保存したアカウントを読みます — `gh config get -h github.com user`
++というローカルの参照で、リクエストは発生せず `gh auth switch` にも追従
++します。`gh` にそのホストの `user` エントリが無い場合（`user` 無しでトークン
++サインインした場合）だけ `gh api user` にフォールバックし、その答えを
++キャッシュディレクトリの `vig/viewer.json` に記憶して次回以降は問い合わせ
++ません。この参照を省きたいとき、あるいは `gh` のサインイン先とは別の
++アカウントとして眺めたいときに設定します。
++
++- **書式** — `github-login "<login>"` — GitHub のログイン名 1 つ、`@` なし
++- **デフォルト** — なし
++- **マージ** — デフォルトを置換。
++
++```kdl
++github-login "alice"
++```
++
+ ### `projects-board`
+ 
+ Projects ページを 1 つのボードに固定します。引数は 1 つで、ボードの
+diff --git a/docs/guide/ja/src/views-projects.md b/docs/guide/ja/src/views-projects.md
+index 314125b..b5a549d 100644
+--- a/docs/guide/ja/src/views-projects.md
++++ b/docs/guide/ja/src/views-projects.md
+@@ -75,7 +75,8 @@ API 呼び出しなし）。どのレイアウトでもグループ化・ソー
+ ます。対応: タイトルの自由語、`field:value`（`,` 区切りの複数値・引用符付き
+ の値）、`-` による否定、`is:issue|pr|draft`、`is:open|closed|merged`
+ （マージ済み PR は closed としても扱い、状態が不明なアイテムは open 扱い）、
+-`no:` / `has:`、`assignee:`（`@me` はサインイン中のログイン）、`label:`、
++`no:` / `has:`、`assignee:`（`@me` はサインイン中のログイン — `gh` が
++保存したもの、または [`github-login`](config-reference.md#github-login)）、`label:`、
+ `milestone:`、`repo:`。範囲（`>`、`..`）・ワイルドカードは評価できないため、
+ ステータスバーに `⚠ filter: unsupported "…"` と出して無視します。フィルタ
+ で隠れた件数もステータスバーに `(3 filtered out)` と表示されます。
+diff --git a/docs/guide/src/config-reference.md b/docs/guide/src/config-reference.md
+index 4c7cc75..f74a8f6 100644
+--- a/docs/guide/src/config-reference.md
++++ b/docs/guide/src/config-reference.md
+@@ -36,6 +36,7 @@ Conventions used below:
+ | [`github-poll-interval`](#github-poll-interval) | `"5s"` | replaced |
+ | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
+ | [`github-show-closed`](#github-show-closed) | `"off"` | replaced |
++| [`github-login`](#github-login) | absent (asked of `gh`) | replaced |
+ | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
+ | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
+ | [`projects-view`](#projects-view) | none | replaced by name, else appended |
+@@ -83,7 +84,7 @@ colors "red"
+ // → unknown top-level block "colors" (expected `theme`, `icons`,
+ //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
+ //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
+-//   `github-show-closed`, `projects-poll-interval`, `projects-board`, `projects-view`,
++//   `github-show-closed`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
+ //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
+ //   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
+ //   `repo-config`, `app`, `page`, or `window`)
+@@ -303,6 +304,26 @@ disk cache keeps only the open lists.
+ github-show-closed "on"
+ ```
+ 
++### `github-login`
++
++Who "me" is: the login the GitHub and Projects pages treat as the viewer
++(`assignee:@me` in a Projects filter). Absent, vig reads the account `gh
++auth login` stored — `gh config get -h github.com user`, a local lookup
++that costs no request and follows `gh auth switch` — and only when `gh`
++has no `user` entry for the host (a token signed in without one) falls
++back to `gh api user`, remembering that answer in `vig/viewer.json` under
++the cache directory so later starts do not ask again. Set it to skip the
++lookup, or to look at a repository as a different account than the one
++`gh` is signed in as.
++
++- **Form** — `github-login "<login>"` — one GitHub login, no `@`
++- **Default** — absent
++- **Merge** — replaces the default.
++
++```kdl
++github-login "alice"
++```
++
+ ### `projects-board`
+ 
+ Pins the Projects page to one board. The single argument is either a board
+diff --git a/docs/guide/src/views-projects.md b/docs/guide/src/views-projects.md
+index 1a1f47b..c2a9ed2 100644
+--- a/docs/guide/src/views-projects.md
++++ b/docs/guide/src/views-projects.md
+@@ -73,7 +73,8 @@ no extra API call — before grouping and sorting, in every layout. Supported:
+ free-text title words, `field:value` with `,` lists and quoted values, `-`
+ negation, `is:issue|pr|draft`, `is:open|closed|merged` (a merged PR counts
+ as closed; an item whose state is unknown counts as open), `no:` / `has:`,
+-`assignee:` (`@me` is the signed-in login), `label:`, `milestone:`,
++`assignee:` (`@me` is the signed-in login — what `gh` stored, or
++[`github-login`](config-reference.md#github-login)), `label:`, `milestone:`,
+ `repo:`. Ranges (`>`, `..`) and wildcards cannot be evaluated: the status
+ bar says `⚠ filter: unsupported "…"` and those tokens are ignored. The
+ status bar also counts what the filter hid (`(3 filtered out)`).
+diff --git a/src/core/config/loader.rs b/src/core/config/loader.rs
+index 2c501ad..8291d81 100644
+--- a/src/core/config/loader.rs
++++ b/src/core/config/loader.rs
+@@ -467,6 +467,7 @@ impl Config {
+         self.github_poll_interval()?;
+         self.github_auto_refresh()?;
+         self.github_show_closed()?;
++        self.github_login()?;
+         self.projects_poll_interval()?;
+         self.projects_board()?;
+         self.projects_views()?;
+@@ -845,6 +846,35 @@ impl Config {
+         }
+     }
+ 
++    /// The login to treat as "me" on the GitHub and Projects pages
++    /// (`github-login "alice"`; `assignee:@me`). `None` when absent: vig
++    /// then asks `gh` which account is signed in.
++    pub fn github_login(&self) -> Result<Option<String>> {
++        let Some(node) = self
++            .doc
++            .nodes()
++            .iter()
++            .find(|n| n.name().value() == "github-login")
++        else {
++            return Ok(None);
++        };
++        let invalid = |what: &str| {
++            anyhow!(
++                "invalid {}: bad github-login ({what}); expected one login, e.g. `github-login \"alice\"`",
++                self.describe()
++            )
++        };
++        let args = string_args(node).map_err(invalid)?;
++        let [login] = args.as_slice() else {
++            return Err(invalid("expected exactly one string"));
++        };
++        let login = login.trim();
++        if login.contains(char::is_whitespace) || login.starts_with('@') {
++            return Err(invalid("a login has no spaces and no leading @"));
++        }
++        Ok(Some(login.to_string()))
++    }
++
+     /// Where the Projects roadmap opens and at which zoom
+     /// (`projects-roadmap { start "-7d"; zoom "week" }`); all unset when
+     /// the node is absent.
+@@ -2936,6 +2966,29 @@ mod tests {
+         assert!(msg.contains("github-show-closed expects"), "{msg}");
+     }
+ 
++    #[test]
++    fn github_login_default_override_and_validation() {
++        assert_eq!(Config::builtin().github_login().unwrap(), None);
++        assert_eq!(
++            user(r#"github-login "alice""#)
++                .unwrap()
++                .github_login()
++                .unwrap()
++                .as_deref(),
++            Some("alice")
++        );
++        for bad in [
++            r#"github-login "@alice""#,
++            r#"github-login "alice bob""#,
++            r#"github-login "alice" "bob""#,
++            r#"github-login"#,
++            r#"github-login 1"#,
++        ] {
++            let msg = user(bad).expect_err(bad).to_string();
++            assert!(msg.contains("bad github-login"), "{bad}: {msg}");
++        }
++    }
++
+     #[test]
+     fn pr_worktree_settings_default_override_and_validation() {
+         let s = Config::builtin().pr_worktree().unwrap();
+diff --git a/src/core/config/merge.rs b/src/core/config/merge.rs
+index 726a7ee..1f1e45c 100644
+--- a/src/core/config/merge.rs
++++ b/src/core/config/merge.rs
+@@ -36,6 +36,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
+             | "github-poll-interval"
+             | "github-auto-refresh"
+             | "github-show-closed"
++            | "github-login"
+             | "projects-poll-interval"
+             | "projects-board"
+             | "projects-filter"
+@@ -53,7 +54,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
+             other => {
+                 return Err(anyhow!(
+                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
+-                 `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, \
++                 `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, `github-login`, \
+                  `projects-poll-interval`, `projects-board`, `projects-view`, `projects-filter`, `projects-hide-closed`, `projects-roadmap`, \
+                  `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`, `repo-config`, `app`, `page`, or `window`)"
+             ))
+diff --git a/src/fixtures.rs b/src/fixtures.rs
+index 86e693c..6eb8e31 100644
+--- a/src/fixtures.rs
++++ b/src/fixtures.rs
+@@ -88,7 +88,10 @@ pub fn record(dir: &Path) -> Result<()> {
+ 
+     step("linked projects");
+     let info = projects::repo_info().map_err(anyhow::Error::msg)?;
+-    let _ = projects::viewer_login();
++    // The signed-in login: `gh config get` (what the demo replays) and
++    // `gh api user` (the fallback when `gh` has no `user` entry).
++    let _ = crate::github::domain::viewer::from_gh_config();
++    let _ = crate::github::domain::viewer::from_api();
+     for project in info.linked_projects() {
+         step(&format!("project #{} ({})", project.number, project.title));
+         let board = graphql::fetch_board(&project.owner.login, &project.owner.kind, project.number)
+diff --git a/src/github/domain/mod.rs b/src/github/domain/mod.rs
+index 85d3da7..d912967 100644
+--- a/src/github/domain/mod.rs
++++ b/src/github/domain/mod.rs
+@@ -4,3 +4,4 @@ pub(crate) mod disk_cache;
+ pub(crate) mod pr_worktree;
+ pub(crate) mod remote;
+ pub(crate) mod types;
++pub(crate) mod viewer;
+diff --git a/src/github/domain/viewer.rs b/src/github/domain/viewer.rs
+new file mode 100644
+index 0000000..52e7896
+--- /dev/null
++++ b/src/github/domain/viewer.rs
+@@ -0,0 +1,130 @@
++//! The signed-in GitHub login — "me" for `assignee:@me` filters and for
++//! telling the items aimed at the viewer apart — resolved without an API
++//! request wherever possible.
++
++use super::client::run_gh;
++use std::collections::HashMap;
++use std::path::PathBuf;
++
++/// The host the login is looked up for (vig reads github.com remotes only).
++const HOST: &str = "github.com";
++
++/// The login, in this order: `configured` (`github-login` in the config);
++/// `gh config get -h github.com user`, the account `gh auth login` stored
++/// locally (no request, and it follows `gh auth switch`); the login a
++/// previous `gh api user` cached on disk; `gh api user` itself, cached for
++/// the next start. `None` when none of them knows.
++pub fn resolve(configured: Option<&str>) -> Option<String> {
++    if let Some(login) = configured.map(str::trim).filter(|l| !l.is_empty()) {
++        return Some(login.to_string());
++    }
++    from_gh_config().or_else(|| {
++        load_cached().or_else(|| {
++            let login = from_api()?;
++            save_cached(&login);
++            Some(login)
++        })
++    })
++}
++
++/// `gh config get -h github.com user`: the signed-in login as `gh` stores
++/// it, read from its hosts file — no request.
++pub fn from_gh_config() -> Option<String> {
++    non_empty(
++        run_gh(
++            &["config", "get", "-h", HOST, "user"],
++            "gh config get failed",
++        )
++        .ok()?,
++    )
++}
++
++/// `gh api user` (REST, no GraphQL points): the last resort.
++pub fn from_api() -> Option<String> {
++    non_empty(run_gh(&["api", "user", "--jq", ".login"], "gh api user failed").ok()?)
++}
++
++fn non_empty(out: Vec<u8>) -> Option<String> {
++    let login = String::from_utf8_lossy(&out).trim().to_string();
++    (!login.is_empty()).then_some(login)
++}
++
++/// `<cache_dir>/vig/viewer.json`: `{ "<host>": "<login>" }`. Not under the
++/// per-repository cache — a login belongs to the host.
++fn cache_path() -> Option<PathBuf> {
++    // Replayed fixtures must not be mixed with (or leak into) real caches.
++    if crate::core::gh_fixture::active() {
++        return None;
++    }
++    Some(dirs::cache_dir()?.join("vig").join("viewer.json"))
++}
++
++fn load_cached() -> Option<String> {
++    let data = std::fs::read(cache_path()?).ok()?;
++    let map: HashMap<String, String> = serde_json::from_slice(&data).ok()?;
++    map.get(HOST).cloned().filter(|l| !l.is_empty())
++}
++
++fn save_cached(login: &str) {
++    let Some(path) = cache_path() else {
++        return;
++    };
++    let mut map: HashMap<String, String> = std::fs::read(&path)
++        .ok()
++        .and_then(|d| serde_json::from_slice(&d).ok())
++        .unwrap_or_default();
++    map.insert(HOST.to_string(), login.to_string());
++    if let Some(parent) = path.parent() {
++        let _ = std::fs::create_dir_all(parent);
++    }
++    if let Ok(json) = serde_json::to_vec(&map) {
++        let _ = std::fs::write(&path, json);
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn a_configured_login_is_used_as_is() {
++        assert_eq!(resolve(Some(" alice ")).as_deref(), Some("alice"));
++    }
++
++    /// Replay is process-global: run in a child process.
++    #[test]
++    fn gh_config_first_then_the_api() {
++        crate::core::gh_fixture::run_isolated(
++            "github::domain::viewer::tests::gh_config_first_then_the_api_isolated",
++        );
++    }
++
++    #[test]
++    #[ignore = "run through gh_config_first_then_the_api (own process)"]
++    fn gh_config_first_then_the_api_isolated() {
++        use crate::core::gh_fixture;
++        let dir = std::env::temp_dir().join(format!("vig-viewer-{}", std::process::id()));
++        let _ = std::fs::remove_dir_all(&dir);
++        std::fs::create_dir_all(&dir).unwrap();
++        let config = dir.join(gh_fixture::name_for(&["config", "get", "-h", HOST, "user"]));
++        let api = dir.join(gh_fixture::name_for(&["api", "user", "--jq", ".login"]));
++        gh_fixture::set_replay_dir(Some(dir.clone()));
++
++        // Nothing recorded: unknown.
++        assert_eq!(resolve(None), None);
++        // `gh api user` alone: the fallback (no disk cache under replay).
++        std::fs::write(&api, "bob\n").unwrap();
++        assert_eq!(resolve(None).as_deref(), Some("bob"));
++        // `gh config get` wins once it knows.
++        std::fs::write(&config, "alice\n").unwrap();
++        assert_eq!(resolve(None).as_deref(), Some("alice"));
++        // An empty `user` entry is no answer.
++        std::fs::write(&config, "\n").unwrap();
++        assert_eq!(resolve(None).as_deref(), Some("bob"));
++        // The config still beats everything.
++        assert_eq!(resolve(Some("carol")).as_deref(), Some("carol"));
++
++        gh_fixture::set_replay_dir(None);
++        let _ = std::fs::remove_dir_all(&dir);
++    }
++}
+diff --git a/src/projects/domain/client.rs b/src/projects/domain/client.rs
+index 54594f5..c8530c5 100644
+--- a/src/projects/domain/client.rs
++++ b/src/projects/domain/client.rs
+@@ -191,18 +191,6 @@ fn fetch_views_as(
+     Ok((views, api_remaining))
+ }
+ 
+-/// The signed-in login (`gh api user`, REST — no GraphQL points), for
+-/// `assignee:@me` in view filters. `None` when unavailable.
+-pub fn viewer_login() -> Option<String> {
+-    let out = crate::github::domain::client::run_gh(
+-        &["api", "user", "--jq", ".login"],
+-        "gh api user failed",
+-    )
+-    .ok()?;
+-    let login = String::from_utf8_lossy(&out).trim().to_string();
+-    (!login.is_empty()).then_some(login)
+-}
+-
+ /// Whether a `gh` error means the token lacks the `project` scope
+ /// (`gh project` prints "missing required scopes [project]"; the GraphQL
+ /// API asks for `read:project`).
+diff --git a/src/projects/state.rs b/src/projects/state.rs
+index ab28047..be06ad4 100644
+--- a/src/projects/state.rs
++++ b/src/projects/state.rs
+@@ -70,7 +70,7 @@ impl ProjectsPaneIds {
+ pub enum ProjectsBgMessage {
+     /// `gh repo view`: the repository and its linked projects.
+     Repo(Result<RepoInfo, String>),
+-    /// `gh api user`: the signed-in login (`assignee:@me` in view filters).
++    /// The signed-in login (`assignee:@me` in view filters).
+     Viewer(Option<String>),
+     Board {
+         number: u64,
+@@ -155,6 +155,8 @@ pub struct ProjectsState {
+     /// `projects-poll-interval`: how often the shown board is probed for
+     /// changes while the page is shown.
+     poll_interval: Duration,
++    /// `github-login`: the login to treat as "me" without asking `gh`.
++    github_login: Option<String>,
+     last_probe: Option<Instant>,
+     probe_inflight: bool,
+     /// Probes paused after a rate-limited answer: since when, for how long
+@@ -203,6 +205,7 @@ impl ProjectsState {
+         let pinned = cfg.projects_board()?;
+         let local_views = cfg.projects_views()?;
+         let poll_interval = cfg.projects_poll_interval()?;
++        let github_login = cfg.github_login()?;
+         // Validates the bind declarations (projects → board while the list
+         // is placed, board → detail).
+         let _ = page_cfg.resolve_select_bindings();
+@@ -252,6 +255,7 @@ impl ProjectsState {
+             board_inflight: HashSet::new(),
+             use_disk_cache: true,
+             poll_interval,
++            github_login,
+             last_probe: None,
+             probe_inflight: false,
+             probe_backoff: None,
+@@ -304,13 +308,17 @@ impl ProjectsState {
+         });
+     }
+ 
+-    /// `gh api user` once per session, for `assignee:@me` filters.
++    /// The signed-in login once per session, for `assignee:@me` filters:
++    /// `github-login` from the config, else what `gh` stored locally
++    /// (`gh config get`), else `gh api user` (see `github::domain::viewer`).
+     fn spawn_viewer(&mut self) {
+         let Some(tx) = self.bg_tx.clone() else {
+             return;
+         };
++        let configured = self.github_login.clone();
+         std::thread::spawn(move || {
+-            let _ = tx.send(ProjectsBgMessage::Viewer(client::viewer_login()));
++            let login = crate::github::domain::viewer::resolve(configured.as_deref());
++            let _ = tx.send(ProjectsBgMessage::Viewer(login));
+         });
+     }
+ 
+diff --git a/tape/fixtures/config_get_-h_github.com_user.out b/tape/fixtures/config_get_-h_github.com_user.out
+new file mode 100644
+index 0000000..d2ebbbb
+--- /dev/null
++++ b/tape/fixtures/config_get_-h_github.com_user.out
+@@ -0,0 +1 @@
++td72

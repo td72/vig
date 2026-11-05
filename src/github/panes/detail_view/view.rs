@@ -494,6 +494,10 @@ pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
         &detail.created_at,
         &detail.state,
     );
+    if detail.is_draft {
+        spans.push(Span::raw(" "));
+        spans.push(badge("DRAFT", Color::Rgb(110, 119, 129)));
+    }
     spans.push(Span::raw(" "));
     spans.push(badge(&detail.head_ref_name, Color::Rgb(130, 80, 160)));
     spans.push(Span::raw(" "));
@@ -855,6 +859,45 @@ fn build_comments_lines(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A draft PR carries a `DRAFT` badge in its header next to the state.
+    #[test]
+    fn pr_header_badges_a_draft() {
+        let mut detail = GhPrDetail {
+            number: 7,
+            title: "WIP".into(),
+            state: "OPEN".into(),
+            author: None,
+            body: String::new(),
+            comments: vec![],
+            reviews: vec![],
+            labels: vec![],
+            created_at: "2026-08-28T08:17:23Z".into(),
+            review_decision: Some("REVIEW_REQUIRED".into()),
+            status_check_rollup: None,
+            additions: 1,
+            deletions: 2,
+            changed_files: 3,
+            head_ref_name: "feat/x".into(),
+            assignees: vec![],
+            review_requests: vec![],
+            is_draft: true,
+        };
+        let text = |detail: &GhPrDetail| -> String {
+            build_pr_header(detail)[1]
+                .spans
+                .iter()
+                .map(|s| s.content.as_ref())
+                .collect()
+        };
+        let line = text(&detail);
+        assert!(line.contains(" OPEN   DRAFT   feat/x "), "{line}");
+        assert!(line.contains("◯ REVIEW REQUIRED"), "{line}");
+
+        detail.is_draft = false;
+        let line = text(&detail);
+        assert!(!line.contains("DRAFT"), "{line}");
+    }
 
     #[test]
     fn run_header_shows_title_state_branch_event_duration_and_age() {

@@ -55,7 +55,16 @@ pub fn record(dir: &Path) -> Result<()> {
     }
     step("pull request diffs");
     for p in prs.iter().take(PRS_WITH_DIFF) {
-        let patch = gh::pr_diff(p.number).map_err(anyhow::Error::msg)?;
+        // `gh pr diff` refuses a diff that contains terminal escape
+        // sequences (fixtures of job logs, say); such a PR is left
+        // without a diff fixture, as a too-large one is below.
+        let patch = match gh::pr_diff(p.number) {
+            Ok(patch) => patch,
+            Err(err) => {
+                eprintln!("warning: diff of PR #{} not kept ({err})", p.number);
+                continue;
+            }
+        };
         if patch.len() > MAX_DIFF_BYTES {
             let name = gh_fixture::name_for(&["pr", "diff", &p.number.to_string()]);
             std::fs::remove_file(dir.join(&name)).with_context(|| format!("remove {name}"))?;

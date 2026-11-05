@@ -216,6 +216,7 @@ Browse GitHub Issues, Pull Requests and Actions workflow runs directly within vi
 Bodies and comments are rendered as Markdown (headings, lists, task lists, code, tables narrowed to fit the pane width where possible).
 Sub-issues are listed under their parent issue as a tree, and PRs in a GitHub Stack (as created by [`gh stack`](https://github.com/github/gh-stack)) are nested bottom-to-top under the PR they build on.
 Each row names the assignees (`@alice`) and, on a PR, the reviewers still to review (`→ bob`; a submitted review moves its author to the Reviews sub-pane); the detail header lists them in full, and `/` finds items by assignee.
+A PR row leads with its state and review decision so they survive a narrow column: a draft is `◌` instead of `●`, and the mark after it reads `✓` approved, `✗` changes requested, `◯` review required (blank when there is no decision); the detail header carries a `DRAFT` badge.
 The issue, PR and workflow run lists refresh themselves when something changes: every `github-poll-interval` vig sends one conditional request per list (a `304` answer costs no API points) and re-fetches a list only when its answer moves.
 
 The third column lists the latest 50 workflow runs (`gh run list`) with their

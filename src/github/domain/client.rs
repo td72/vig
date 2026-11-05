@@ -314,7 +314,7 @@ pub fn get_pr_in(repo: Option<&str>, number: u64) -> Result<GhPrDetail, String> 
         "view",
         &number,
         "--json",
-        "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName,assignees,reviewRequests",
+        "number,title,state,author,body,comments,reviews,labels,createdAt,reviewDecision,statusCheckRollup,additions,deletions,changedFiles,headRefName,assignees,reviewRequests,isDraft",
     ];
     if let Some(repo) = repo {
         args.extend(["--repo", repo]);
