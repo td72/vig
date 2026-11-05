@@ -36,6 +36,7 @@ Conventions used below:
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | replaced |
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | replaced |
 | [`github-show-closed`](#github-show-closed) | `"off"` | replaced |
+| [`github-mine-only`](#github-mine-only) | `"off"` | replaced |
 | [`github-login`](#github-login) | absent (asked of `gh`) | replaced |
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | replaced |
 | [`projects-board`](#projects-board) | absent (all linked boards) | replaced |
@@ -65,6 +66,7 @@ procs-history "120"
 github-poll-interval "5s"
 github-auto-refresh "on"
 github-show-closed "off"
+github-mine-only "off"
 projects-poll-interval "30s"
 projects-hide-closed "off"
 worktree-dir "../"
@@ -84,7 +86,7 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `github-show-closed`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
+//   `github-show-closed`, `github-mine-only`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
 //   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
 //   `repo-config`, `app`, `page`, or `window`)
@@ -304,10 +306,27 @@ disk cache keeps only the open lists.
 github-show-closed "on"
 ```
 
+### `github-mine-only`
+
+Whether the GitHub page's issue and PR lists start with only the items for
+you — assigned to you, or waiting for your review. `m` on either list
+toggles it while vig runs; the header reads `GitHub · mine` while the
+filter is on. It is a local filter over the fetched lists, applied once
+the signed-in login is known (see [`github-login`](#github-login)).
+
+- **Form** — `github-mine-only "<mode>"` — `"on"` or `"off"`
+- **Default** — `"off"`
+- **Merge** — replaces the default.
+
+```kdl
+github-mine-only "on"
+```
+
 ### `github-login`
 
 Who "me" is: the login the GitHub and Projects pages treat as the viewer
-(`assignee:@me` in a Projects filter). Absent, vig reads the account `gh
+(the highlighted items and `m` on the GitHub page, `assignee:@me` in a
+Projects filter and the highlighted cards). Absent, vig reads the account `gh
 auth login` stored — `gh config get -h github.com user`, a local lookup
 that costs no request and follows `gh auth switch` — and only when `gh`
 has no `user` entry for the host (a token signed in without one) falls

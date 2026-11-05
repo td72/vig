@@ -77,10 +77,10 @@ impl ItemDetail {
         }
     }
 
-    fn header(&self) -> Vec<Line<'static>> {
+    fn header(&self, viewer: Option<&str>) -> Vec<Line<'static>> {
         match self {
-            Self::Issue(d) => build_issue_header(d),
-            Self::Pr(d) => build_pr_header(d),
+            Self::Issue(d) => build_issue_header(d, viewer),
+            Self::Pr(d) => build_pr_header(d, viewer),
         }
     }
 }
@@ -111,6 +111,8 @@ pub struct DetailPane {
     scroll: usize,
     view_height: u16,
     line_count: usize,
+    /// The signed-in login, highlighted in the header's people line.
+    viewer: Option<String>,
 }
 
 impl DetailPane {
@@ -126,7 +128,12 @@ impl DetailPane {
             scroll: 0,
             view_height: 20,
             line_count: 0,
+            viewer: None,
         }
+    }
+
+    pub fn set_viewer(&mut self, login: Option<String>) {
+        self.viewer = login;
     }
 
     pub fn set_keymap(&mut self, km: Keymap<DetailAction>) {
@@ -278,7 +285,7 @@ impl DetailPane {
         };
         let kind = item.kind();
         let mut lines: Vec<Line<'static>> = match &self.detail {
-            Some(d) => d.header(),
+            Some(d) => d.header(self.viewer.as_deref()),
             None => item_header(item),
         };
         lines.push(Line::default());

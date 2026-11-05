@@ -20,10 +20,18 @@ impl GhListItem for GhIssueListItem {
         "No issues"
     }
 
-    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static> {
+    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static> {
         let open = self.state == "OPEN";
+        let assignees = logins(&self.assignees);
         let icon = if open { "●" } else { "✓" };
-        let icon_color = if open { Color::Green } else { Color::Red };
+        // An open issue of the viewer's takes their color.
+        let icon_color = if !open {
+            Color::Red
+        } else if people::names_me(&assignees, viewer) {
+            people::MINE_FG
+        } else {
+            Color::Green
+        };
         // Closed issues (shown with `x`) are dimmed.
         let title_style = if open {
             Style::default()
@@ -31,7 +39,7 @@ impl GhListItem for GhIssueListItem {
             Style::default().fg(Color::DarkGray)
         };
 
-        let people = people::row_spans(&logins(&self.assignees), &[]);
+        let people = people::row_spans(&assignees, &[], viewer);
         let mut spans = vec![
             Span::raw(" "),
             Span::styled(tree.prefix.clone(), Style::default().fg(Color::DarkGray)),
@@ -57,6 +65,10 @@ impl GhListItem for GhIssueListItem {
 
     fn number(&self) -> u64 {
         self.number
+    }
+
+    fn is_mine(&self, viewer: &str) -> bool {
+        people::names_me(&logins(&self.assignees), Some(viewer))
     }
 
     fn parent_number(&self, _items: &[Self]) -> Option<u64> {

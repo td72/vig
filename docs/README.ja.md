@@ -213,6 +213,7 @@ GitHub の Issue・Pull Request・Actions のワークフロー実行を vig 内
 sub-issue は親 issue の下に、GitHub Stack ([`gh stack`](https://github.com/github/gh-stack) で作るスタック PR) は下から順に土台の PR の下にツリー表示される。
 各行には担当者 (`@alice`) と、PR ではまだレビューしていないレビュー依頼先 (`→ bob`。レビューを投稿した人は Reviews サブペインに移る) が並び、詳細のヘッダには全員が表示される。`/` は担当者名でも検索できる。
 PR の行は状態とレビュー判定を先頭に置くので、列が狭くても切れない。draft は `●` の代わりに `◌`、その次の 1 桁は `✓` approved・`✗` changes requested・`◯` review required (判定がなければ空白)。詳細のヘッダには `DRAFT` バッジが付く。
+自分宛のものは目立つ: 自分が担当者の項目と自分のレビュー待ちの PR は状態アイコンが黄色になり、自分のログイン名が太字の黄色で出る (行でも詳細のヘッダでも)。`m` でそれらだけに絞れる (初期状態は `github-mine-only`。「自分」は `github-login`、無ければ `gh auth login` が保存したアカウント)。
 issue / PR / ワークフロー実行の一覧は変化があったときだけ自動更新される: `github-poll-interval` ごとに一覧ごとの条件付きリクエストを 1 回送り (`304` 応答は API ポイントを消費しない)、答えが変わった一覧だけ再取得する。
 
 3 列目には最新 50 件のワークフロー実行（`gh run list`）がステータス・ワークフロー名・実行番号・
@@ -244,6 +245,7 @@ Worktrees view に移って新しい worktree を選択します（場所と名�
 | `o` | ブラウザで開く（issue / PR / 実行、または選択中のジョブ） |
 | `y` | アイテムの URL をコピー |
 | `x` | 一覧に closed な issue / マージ済み・closed な PR を表示 / 非表示（初期状態は `github-show-closed`） |
+| `m` | 自分宛の項目（担当、または自分のレビュー待ち）だけ / 全部（初期状態は `github-mine-only`） |
 | `d`（PR の一覧 / 詳細） | PR の diff を表示: 変更ファイル + サイドバイサイド diff のウィンドウ（`q` / `Esc` で戻る、`b` Files タブ、`e` / `o` / `O` でファイルを編集 / 起動、`r` 再取得） |
 | `W`（PR の一覧 / 詳細） | PR を worktree として開く: 確認後に head を `git fetch` + `git worktree add`、Worktrees view でその worktree を選択 |
 | `Esc` | 一覧に戻る |
@@ -389,7 +391,7 @@ GraphQL で取得 — 1 回あたり数ポイント）。ページ表示中は `
 `gh project link`）を案内します。設定のトップレベルに `projects-board` を書くと、
 タイトルまたはプロジェクト番号でボードを 1 つに固定できます（[設定リファレンス](https://td72.github.io/vig/ja/config-reference.html#projects-board)）。カードにはアイテム種別（`●` issue、`⇅` pull request、
 `✎` draft）、番号、タイトル、担当者を表示し、別リポジトリのアイテムには番号の前に薄い色で
-`owner/repo` が付きます。`t` でテーブルモードに切り替わり、1 行 1 アイテムで
+`owner/repo` が付きます。自分が担当者のアイテムはアイコンが黄色、自分のログイン名が太字の黄色です（テーブルでも同様）。`t` でテーブルモードに切り替わり、1 行 1 アイテムで
 プロジェクトのフィールド（Status、Priority、Estimate、Iteration、日付、カスタムのテキスト /
 数値フィールド）を列として表示・ソートできます。詳細ペインは選択中アイテムの全フィールド値に続けて、
 GitHub View と同じ issue / PR の本文とコメントを表示します（draft は本文のみ）。500 件を超えるプロジェクトではステータスバーに `(truncated)` と出ます。

@@ -87,8 +87,8 @@ pub fn render(f: &mut Frame, dv: &mut GhDetailViewPane, shared: &PaneShared, are
 
     // Build header lines
     let header_lines = match &dv.content {
-        GhDetailContent::Issue(detail) => build_issue_header(detail),
-        GhDetailContent::Pr(detail) => build_pr_header(detail),
+        GhDetailContent::Issue(detail) => build_issue_header(detail, dv.viewer()),
+        GhDetailContent::Pr(detail) => build_pr_header(detail, dv.viewer()),
         _ => unreachable!(),
     };
 
@@ -472,7 +472,11 @@ fn build_detail_header_base(
     (title_line, spans)
 }
 
-pub(crate) fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
+/// The issue header; `viewer` is highlighted among the assignees.
+pub(crate) fn build_issue_header(
+    detail: &GhIssueDetail,
+    viewer: Option<&str>,
+) -> Vec<Line<'static>> {
     let (title_line, mut spans) = build_detail_header_base(
         detail.number,
         &detail.title,
@@ -482,11 +486,13 @@ pub(crate) fn build_issue_header(detail: &GhIssueDetail) -> Vec<Line<'static>> {
     );
     spans.extend(build_label_spans(&detail.labels));
     let mut lines = vec![title_line, Line::from(spans)];
-    lines.extend(people::header_line(&logins(&detail.assignees), &[]));
+    lines.extend(people::header_line(&logins(&detail.assignees), &[], viewer));
     lines
 }
 
-pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
+/// The PR header; `viewer` is highlighted among the assignees and
+/// reviewers.
+pub(crate) fn build_pr_header(detail: &GhPrDetail, viewer: Option<&str>) -> Vec<Line<'static>> {
     let (title_line, mut spans) = build_detail_header_base(
         detail.number,
         &detail.title,
@@ -533,6 +539,7 @@ pub(crate) fn build_pr_header(detail: &GhPrDetail) -> Vec<Line<'static>> {
     lines.extend(people::header_line(
         &logins(&detail.assignees),
         &reviewer_handles(&detail.review_requests),
+        viewer,
     ));
     lines
 }
@@ -884,7 +891,7 @@ mod tests {
             is_draft: true,
         };
         let text = |detail: &GhPrDetail| -> String {
-            build_pr_header(detail)[1]
+            build_pr_header(detail, None)[1]
                 .spans
                 .iter()
                 .map(|s| s.content.as_ref())

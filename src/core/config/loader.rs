@@ -467,6 +467,7 @@ impl Config {
         self.github_poll_interval()?;
         self.github_auto_refresh()?;
         self.github_show_closed()?;
+        self.github_mine_only()?;
         self.github_login()?;
         self.projects_poll_interval()?;
         self.projects_board()?;
@@ -822,25 +823,37 @@ impl Config {
     /// merged items included (`github-show-closed "on"` / `"off"`, default
     /// off; `x` toggles it).
     pub fn github_show_closed(&self) -> Result<bool> {
+        self.on_off("github-show-closed", false)
+    }
+
+    /// Whether the GitHub page's issue / PR lists start with only the
+    /// viewer's items (`github-mine-only "on"` / `"off"`, default off; `m`
+    /// toggles it).
+    pub fn github_mine_only(&self) -> Result<bool> {
+        self.on_off("github-mine-only", false)
+    }
+
+    /// An `<name> "on"` / `"off"` node, `default` when absent.
+    fn on_off(&self, name: &str, default: bool) -> Result<bool> {
         let mode = self
             .doc
             .nodes()
             .iter()
-            .find(|n| n.name().value() == "github-show-closed")
+            .find(|n| n.name().value() == name)
             .map(|n| {
                 n.get(0usize)
                     .and_then(|v| v.as_string())
                     .map(str::to_string)
-                    .ok_or_else(|| anyhow!("github-show-closed block missing mode argument"))
+                    .ok_or_else(|| anyhow!("{name} block missing mode argument"))
             })
             .transpose()
-            .with_context(|| format!("invalid {}", self.describe()))?
-            .unwrap_or_else(|| "off".to_string());
-        match mode.as_str() {
-            "on" => Ok(true),
-            "off" => Ok(false),
-            _ => Err(anyhow!(
-                "invalid {}: github-show-closed expects \"on\" or \"off\"",
+            .with_context(|| format!("invalid {}", self.describe()))?;
+        match mode.as_deref() {
+            None => Ok(default),
+            Some("on") => Ok(true),
+            Some("off") => Ok(false),
+            Some(_) => Err(anyhow!(
+                "invalid {}: {name} expects \"on\" or \"off\"",
                 self.describe()
             )),
         }
@@ -2964,6 +2977,25 @@ mod tests {
             .expect_err("expected an error")
             .to_string();
         assert!(msg.contains("github-show-closed expects"), "{msg}");
+    }
+
+    #[test]
+    fn github_mine_only_default_override_and_validation() {
+        assert!(!Config::builtin().github_mine_only().unwrap());
+        assert!(user(r#"github-mine-only "on""#)
+            .unwrap()
+            .github_mine_only()
+            .unwrap());
+        let msg = user(r#"github-mine-only "yes""#)
+            .expect_err("expected an error")
+            .to_string();
+        assert!(msg.contains("github-mine-only expects"), "{msg}");
+        // The missing argument is the cause under "invalid config file".
+        let msg = format!(
+            "{:#}",
+            user(r#"github-mine-only"#).expect_err("expected an error")
+        );
+        assert!(msg.contains("missing mode argument"), "{msg}");
     }
 
     #[test]

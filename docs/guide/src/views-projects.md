@@ -10,6 +10,10 @@ away: one column per `Status` option in GitHub's order, plus a `No status`
 column for items without one. Cards show the item type (`●` issue, `⇅` pull
 request, `✎` draft), number, title and assignees; a card whose item lives in
 another repository carries a dimmed `owner/repo` prefix before its number.
+An item assigned to you stands out: a yellow icon, and your login in bold
+yellow among the assignees (the table's Assignees cell too). Who "you"
+are is [`github-login`](config-reference.md#github-login), else the
+account `gh auth login` stored — the same login `assignee:@me` filters by.
 
 ## Several linked projects, and pinning one
 

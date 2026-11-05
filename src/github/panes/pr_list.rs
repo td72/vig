@@ -35,8 +35,14 @@ impl GhListItem for GhPrListItem {
         "No pull requests"
     }
 
-    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static> {
-        ListItem::new(Line::from(row_spans(self, tree, width)))
+    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static> {
+        ListItem::new(Line::from(row_spans(self, tree, width, viewer)))
+    }
+
+    fn is_mine(&self, viewer: &str) -> bool {
+        let me = Some(viewer);
+        people::names_me(&logins(&self.assignees), me)
+            || people::names_me(&reviewer_handles(&self.review_requests), me)
     }
 
     fn number(&self) -> u64 {
@@ -115,13 +121,23 @@ impl GhListItem for GhPrListItem {
 
 /// The spans of one list row: state icon, review mark, number, title,
 /// people, then the stack note.
-fn row_spans(item: &GhPrListItem, tree: &TreePos, width: u16) -> Vec<Span<'static>> {
+fn row_spans(
+    item: &GhPrListItem,
+    tree: &TreePos,
+    width: u16,
+    viewer: Option<&str>,
+) -> Vec<Span<'static>> {
     let open = item.state == "OPEN";
+    let assignees = logins(&item.assignees);
+    let reviewers = reviewer_handles(&item.review_requests);
+    let mine = people::names_me(&assignees, viewer) || people::names_me(&reviewers, viewer);
     let (icon, icon_color) = match item.state.as_str() {
         "MERGED" => ("⊕", Color::Magenta),
         "CLOSED" => ("✓", Color::Red),
-        // A draft is hollow and dimmed, as on GitHub.
+        // A draft is hollow and dimmed, as on GitHub; an open PR of the
+        // viewer's takes their color.
         _ if item.is_draft => (DRAFT_ICON, Color::DarkGray),
+        _ if mine => ("●", people::MINE_FG),
         _ => ("●", Color::Green),
     };
     // Merged / closed PRs (shown with `x`) are dimmed.
@@ -146,10 +162,7 @@ fn row_spans(item: &GhPrListItem, tree: &TreePos, width: u16) -> Vec<Span<'stati
         ),
         Span::raw(" "),
     ];
-    let people = people::row_spans(
-        &logins(&item.assignees),
-        &reviewer_handles(&item.review_requests),
-    );
+    let people = people::row_spans(&assignees, &reviewers, viewer);
     let before = people::spans_width(&spans);
     let title = people::fit_title(
         &item.title,
@@ -213,7 +226,7 @@ mod tests {
             depth: 0,
             prefix: String::new(),
         };
-        row_spans(item, &tree, 80)
+        row_spans(item, &tree, 80, None)
             .iter()
             .map(|s| s.content.as_ref())
             .collect()

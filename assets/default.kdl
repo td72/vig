@@ -25,6 +25,11 @@ github-auto-refresh "on"
 // in the lists: "on" or "off". `x` toggles it while running.
 github-show-closed "off"
 
+// Start the GitHub page with only the items for you - assigned to you, or
+// waiting for your review - in the lists: "on" or "off". `m` toggles it
+// while running; who "you" are is `github-login` below.
+github-mine-only "off"
+
 // Who "me" is on the GitHub and Projects pages (`assignee:@me`): a login.
 // Absent, vig uses the account `gh auth login` stored (`gh config get -h
 // github.com user` - no request), and `gh api user` only as a last resort.
@@ -228,6 +233,7 @@ page "github" {
             "o" "OpenBrowser"
             "y" "CopyUrl"
             "x" "ToggleClosed"
+            "m" "ToggleMine"
             "Esc" "Esc"
         }
     }
@@ -244,6 +250,7 @@ page "github" {
             "o" "OpenBrowser"
             "y" "CopyUrl"
             "x" "ToggleClosed"
+            "m" "ToggleMine"
             "Esc" "Esc"
         }
     }

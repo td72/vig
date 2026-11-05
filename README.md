@@ -217,6 +217,7 @@ Bodies and comments are rendered as Markdown (headings, lists, task lists, code,
 Sub-issues are listed under their parent issue as a tree, and PRs in a GitHub Stack (as created by [`gh stack`](https://github.com/github/gh-stack)) are nested bottom-to-top under the PR they build on.
 Each row names the assignees (`@alice`) and, on a PR, the reviewers still to review (`→ bob`; a submitted review moves its author to the Reviews sub-pane); the detail header lists them in full, and `/` finds items by assignee.
 A PR row leads with its state and review decision so they survive a narrow column: a draft is `◌` instead of `●`, and the mark after it reads `✓` approved, `✗` changes requested, `◯` review required (blank when there is no decision); the detail header carries a `DRAFT` badge.
+What is yours stands out: an item assigned to you, or a PR waiting for your review, gets a yellow state icon and your login in bold yellow (in the rows and the detail header), and `m` keeps only those items (`github-mine-only` sets the start; who "you" are comes from `github-login`, else from what `gh auth login` stored).
 The issue, PR and workflow run lists refresh themselves when something changes: every `github-poll-interval` vig sends one conditional request per list (a `304` answer costs no API points) and re-fetches a list only when its answer moves.
 
 The third column lists the latest 50 workflow runs (`gh run list`) with their
@@ -257,6 +258,7 @@ Nothing in this view reruns, cancels or deletes anything.
 | `o` | Open in browser (issue, PR, run or the selected job) |
 | `y` | Copy the item URL |
 | `x` | Show / hide closed issues and merged / closed PRs in the lists (`github-show-closed` sets the start) |
+| `m` | Only the items for you (assigned, or waiting for your review) / all items (`github-mine-only` sets the start) |
 | `d` (PR list / detail) | Show the PR's diff: changed files + side-by-side diff in a window (`q` / `Esc` back, `b` Files tab, `e` / `o` / `O` edit / open the file, `r` re-fetch) |
 | `W` (PR list / detail) | Open the PR as a worktree: `git fetch` its head + `git worktree add`, after confirming; then jump to it on the Worktrees view |
 | `Esc` | Back to list |
@@ -422,7 +424,9 @@ board explains how to link one (the repository's Projects tab or
 to one board, by title or project number
 ([Config Reference](https://td72.github.io/vig/config-reference.html#projects-board)). Cards show the item type (`●` issue, `⇅` pull request,
 `✎` draft), number, title and assignees; a card whose item lives in another
-repository carries a dimmed `owner/repo` prefix before its number. `t`
+repository carries a dimmed `owner/repo` prefix before its number, and an
+item assigned to you has a yellow icon and your login in bold yellow (in the
+table too). `t`
 switches to a table with one row per item and the project's fields (Status,
 Priority, Estimate, Iteration, dates, custom text / number fields) as
 sortable columns. The detail pane lists every field value of the selected

@@ -643,6 +643,7 @@ impl ProjectsState {
         for msg in messages {
             match msg {
                 ProjectsBgMessage::Viewer(login) => {
+                    self.panes.detail.set_viewer(login.clone());
                     self.panes.board.set_viewer(login);
                 }
                 ProjectsBgMessage::Repo(result) => {
