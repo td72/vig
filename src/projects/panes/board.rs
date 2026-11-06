@@ -10,6 +10,7 @@ use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::text::truncate_to_width;
 use crate::core::theme;
+use crate::github::panes::people;
 use crate::projects::domain::filter::{self, Filter};
 use crate::projects::domain::roadmap::{self, Zoom};
 use crate::projects::domain::types::{
@@ -1222,8 +1223,14 @@ impl BoardPane {
                 } else {
                     None
                 };
-                for line in card_lines(item, self.repo.as_deref(), width, selected, hl.fg_override)
-                {
+                for line in card_lines(
+                    item,
+                    self.repo.as_deref(),
+                    width,
+                    selected,
+                    hl.fg_override,
+                    self.viewer.as_deref(),
+                ) {
                     lines.push(match bg {
                         Some(bg) => line.style(Style::default().bg(bg)),
                         None => line,
@@ -1333,6 +1340,17 @@ impl BoardPane {
             let mut row = Row::new(cells.iter().enumerate().map(|(ci, text)| {
                 let mut style = match self.table_cols[ci] {
                     TableColumn::Number => Style::default().fg(Color::Yellow),
+                    // The viewer's row: their assignees cell stands out.
+                    TableColumn::Assignees
+                        if item
+                            .assignees()
+                            .iter()
+                            .any(|a| people::is_me(a, self.viewer.as_deref())) =>
+                    {
+                        Style::default()
+                            .fg(people::MINE_FG)
+                            .add_modifier(Modifier::BOLD)
+                    }
                     TableColumn::Assignees => Style::default().fg(Color::Gray),
                     TableColumn::Title => Style::default(),
                     TableColumn::Field { .. } => Style::default().fg(Color::Blue),
@@ -1606,9 +1624,15 @@ fn card_lines(
     width: usize,
     selected: bool,
     fg_override: Option<Color>,
+    viewer: Option<&str>,
 ) -> Vec<Line<'static>> {
     let kind = item.kind();
+    let assignees = item.assignees();
+    // An item of the viewer's takes their color on the icon, and their
+    // login stands out among the assignees.
+    let mine = assignees.iter().any(|a| people::is_me(a, viewer));
     let icon_color = match kind {
+        _ if mine => people::MINE_FG,
         ItemKind::Issue => Color::Green,
         ItemKind::PullRequest => Color::Magenta,
         ItemKind::Draft | ItemKind::Other => Color::DarkGray,
@@ -1647,16 +1671,54 @@ fn card_lines(
         Span::styled(title, title_style),
         Span::raw(" ".repeat(width.saturating_sub(title_w))),
     ];
-    let mut parts: Vec<String> = item.assignees().iter().map(|a| format!("@{a}")).collect();
+    let mut parts: Vec<(String, bool)> = assignees
+        .iter()
+        .map(|a| (format!("@{a}"), people::is_me(a, viewer)))
+        .collect();
     if let Some(labels) = item.field_text("labels") {
-        parts.push(labels);
+        parts.push((labels, false));
     }
-    let sub = truncate_to_width(&parts.join("  "), width.saturating_sub(2));
+    let joined = parts
+        .iter()
+        .map(|(text, _)| text.as_str())
+        .collect::<Vec<_>>()
+        .join("  ");
+    let sub = truncate_to_width(&joined, width.saturating_sub(2));
     let sub_w = 2 + sub.width();
-    let second = vec![
-        Span::styled(format!("  {sub}"), Style::default().fg(fg(Color::Gray))),
-        Span::raw(" ".repeat(width.saturating_sub(sub_w))),
-    ];
+    let others = Style::default().fg(fg(Color::Gray));
+    let mut second = vec![Span::styled("  ", others)];
+    // The cut text split back into its parts, so the viewer's login keeps
+    // its style; the cut tail (ending in `…`) belongs to the part it
+    // starts in.
+    let mut rest = sub.as_str();
+    for (i, (text, mine)) in parts.iter().enumerate() {
+        if rest.is_empty() {
+            break;
+        }
+        let chunk = if i > 0 {
+            format!("  {text}")
+        } else {
+            text.clone()
+        };
+        let style = if *mine {
+            Style::default()
+                .fg(fg(people::MINE_FG))
+                .add_modifier(Modifier::BOLD)
+        } else {
+            others
+        };
+        match rest.strip_prefix(chunk.as_str()) {
+            Some(after) => {
+                second.push(Span::styled(chunk, style));
+                rest = after;
+            }
+            None => {
+                second.push(Span::styled(rest.to_string(), style));
+                break;
+            }
+        }
+    }
+    second.push(Span::raw(" ".repeat(width.saturating_sub(sub_w))));
     vec![Line::from(first), Line::from(second)]
 }
 
@@ -2257,14 +2319,14 @@ mod tests {
     #[test]
     fn cards_truncate_and_pad_to_the_column_width() {
         let b = board();
-        let lines = card_lines(&b.items[0], Some("td72/vig"), 20, false, None);
+        let lines = card_lines(&b.items[0], Some("td72/vig"), 20, false, None, None);
         let text = text_of(&lines);
         assert_eq!(text[0].width(), 20);
         assert!(text[0].starts_with("● #114 Config"));
         assert!(text[0].ends_with('…'));
         assert_eq!(text[1].trim_end(), "  @td72  enhancement");
         // A draft shows no number and has an empty second line.
-        let lines = card_lines(&b.items[2], Some("td72/vig"), 40, true, None);
+        let lines = card_lines(&b.items[2], Some("td72/vig"), 40, true, None, None);
         let first = &text_of(&lines)[0];
         assert!(first.starts_with("✎ Record the Projects demo tape"));
         assert_eq!(lines[1].spans[0].content.trim(), "");
@@ -2273,15 +2335,49 @@ mod tests {
         assert_eq!(truncate_to_width("x", 0), "");
     }
 
+    /// The viewer's card: their color on the icon and their login bold
+    /// among the assignees, the rest untouched; a cut second line keeps
+    /// the styles of the parts that remain.
+    #[test]
+    fn cards_highlight_the_viewer() {
+        let b = board();
+        let lines = card_lines(&b.items[0], Some("td72/vig"), 40, false, None, Some("TD72"));
+        assert_eq!(lines[0].spans[0].style.fg, Some(people::MINE_FG));
+        let second = &lines[1].spans;
+        assert_eq!(second[1].content, "@td72");
+        assert_eq!(second[1].style.fg, Some(people::MINE_FG));
+        assert!(second[1].style.add_modifier.contains(Modifier::BOLD));
+        assert_eq!(second[2].content, "  enhancement");
+        assert_eq!(second[2].style.fg, Some(Color::Gray));
+        assert_eq!(text_of(&lines)[1].trim_end(), "  @td72  enhancement");
+        // Someone else's: the plain colors.
+        let lines = card_lines(
+            &b.items[0],
+            Some("td72/vig"),
+            40,
+            false,
+            None,
+            Some("alice"),
+        );
+        assert_eq!(lines[0].spans[0].style.fg, Some(Color::Green));
+        assert_eq!(lines[1].spans[1].style.fg, Some(Color::Gray));
+        // Cut inside the labels: the login span is whole, the tail is gray.
+        let lines = card_lines(&b.items[0], Some("td72/vig"), 14, false, None, Some("td72"));
+        let second = &lines[1].spans;
+        assert_eq!(second[1].content, "@td72");
+        assert_eq!(second[2].content, "  enha…");
+        assert_eq!(second[2].style.fg, Some(Color::Gray));
+    }
+
     #[test]
     fn cards_of_other_repositories_carry_a_dimmed_prefix() {
         let b = board();
         // Same repository (any case): the bare number.
-        let lines = card_lines(&b.items[0], Some("TD72/Vig"), 40, false, None);
+        let lines = card_lines(&b.items[0], Some("TD72/Vig"), 40, false, None, None);
         assert!(text_of(&lines)[0].starts_with("● #114 Config"));
         assert_eq!(lines[0].spans[1].content, "");
         // Another repository: `owner/repo#n`, the prefix dimmed.
-        let lines = card_lines(&b.items[0], Some("td72/other"), 40, false, None);
+        let lines = card_lines(&b.items[0], Some("td72/other"), 40, false, None, None);
         let text = text_of(&lines);
         assert!(text[0].starts_with("● td72/vig#114 Config"), "{}", text[0]);
         assert_eq!(text[0].width(), 40);
@@ -2289,9 +2385,9 @@ mod tests {
         assert_eq!(lines[0].spans[1].style.fg, Some(Color::DarkGray));
         assert_eq!(lines[0].spans[2].content, "#114 ");
         // Unknown current repository or a draft: no prefix.
-        let lines = card_lines(&b.items[0], None, 40, false, None);
+        let lines = card_lines(&b.items[0], None, 40, false, None, None);
         assert!(text_of(&lines)[0].starts_with("● #114 Config"));
-        let lines = card_lines(&b.items[2], Some("td72/other"), 40, false, None);
+        let lines = card_lines(&b.items[2], Some("td72/other"), 40, false, None, None);
         assert!(text_of(&lines)[0].starts_with("✎ Record"));
         assert_eq!(
             cross_repo_prefix(&b.items[0], Some("acme/x")),

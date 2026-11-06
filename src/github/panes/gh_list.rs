@@ -22,6 +22,8 @@ pub enum GhListAction {
     CopyUrl,
     /// Show / hide closed issues and merged / closed PRs (both lists).
     ToggleClosed,
+    /// Keep only the items for the viewer (both lists).
+    ToggleMine,
     /// PR list: open the selected PR's diff window.
     ShowDiff,
     /// PR list: fetch the selected PR into a worktree (after confirming).
@@ -32,7 +34,7 @@ pub enum GhListAction {
 
 crate::impl_pane_action_from_str!(
     GhListAction, nav: Nav, search: Search, esc: Esc,
-    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed, ShowDiff, OpenWorktree
+    OpenDetail, SwitchTab, OpenBrowser, CopyUrl, ToggleClosed, ToggleMine, ShowDiff, OpenWorktree
 );
 
 impl ActionHelp for GhListAction {
@@ -44,6 +46,7 @@ impl ActionHelp for GhListAction {
             GhListAction::OpenBrowser => Some("Open in browser"),
             GhListAction::CopyUrl => Some("Copy URL"),
             GhListAction::ToggleClosed => Some("Show / hide closed items"),
+            GhListAction::ToggleMine => Some("Only my items / all items"),
             GhListAction::ShowDiff => Some("Show diff (files + side-by-side)"),
             GhListAction::OpenWorktree => Some("Open as a worktree (fetch + worktree add)"),
             GhListAction::Search(sa) => sa.label(),
@@ -66,14 +69,21 @@ pub fn default_keymap(switch_key: KeyCode) -> Keymap<GhListAction> {
 
 // === Trait for item-specific behavior ===
 
-pub trait GhListItem: Sized + Send + 'static {
+pub trait GhListItem: Sized + Send + Clone + 'static {
     fn pane_title() -> &'static str;
     fn empty_message() -> &'static str;
     /// Render one row; `tree` carries the indent / guide prefix when the
     /// item is nested under another one.
     /// The row, laid out for a list `width` columns wide (inside the
     /// borders).
-    fn render_item(&self, tree: &TreePos, width: u16) -> ListItem<'static>;
+    /// The row, `width` columns wide; `viewer` is the signed-in login
+    /// (highlighted where it appears) when known.
+    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static>;
+    /// Whether the item is for `viewer`: assigned to them, or waiting for
+    /// their review. Runs are nobody's.
+    fn is_mine(&self, _viewer: &str) -> bool {
+        false
+    }
     fn number(&self) -> u64;
     /// Number of the item this one is nested under, if any. `items` is the
     /// whole fetched list, for parents that must be resolved by lookup.
@@ -135,9 +145,17 @@ pub fn copy_url_event(url: Option<String>) -> PaneEvent {
 // === Generic list pane ===
 
 pub struct GhListPane<T: GhListItem> {
+    /// The rows shown: `all_items`, or with `mine_only` the viewer's.
     pub items: Vec<T>,
     /// Tree placement per row of `items`.
     positions: Vec<TreePos>,
+    /// Everything fetched, before the `mine_only` filter.
+    all_items: Vec<T>,
+    /// `m` / `github-mine-only`: list only the viewer's items (no effect
+    /// until the viewer is known).
+    pub mine_only: bool,
+    /// The signed-in login, once resolved.
+    viewer: Option<String>,
     pub selected_idx: usize,
     pub loading: bool,
     /// `x` / `github-show-closed`: fetch closed and merged items too. The
@@ -161,6 +179,9 @@ impl<T: GhListItem> GhListPane<T> {
         Self {
             items: Vec::new(),
             positions: Vec::new(),
+            all_items: Vec::new(),
+            mine_only: false,
+            viewer: None,
             selected_idx: 0,
             loading: false,
             show_closed: false,
@@ -230,11 +251,39 @@ impl<T: GhListItem> GhListPane<T> {
         self.set_items(items);
     }
 
+    /// The signed-in login: highlighted in the rows, and what `mine_only`
+    /// keeps.
+    pub fn set_viewer(&mut self, login: Option<String>) {
+        self.viewer = login;
+        self.refilter();
+    }
+
+    /// `m`: list only the viewer's items, or everything again.
+    pub fn set_mine_only(&mut self, mine_only: bool) {
+        self.mine_only = mine_only;
+        self.refilter();
+    }
+
     /// Replace the list, keeping the selection on the same item when it is
     /// still listed (a refresh prepends new items) and clamping the index
     /// otherwise.
     pub(crate) fn set_items(&mut self, items: Vec<T>) {
+        self.all_items = items;
+        self.refilter();
+    }
+
+    /// Rebuild the rows from `all_items` under the current filter.
+    fn refilter(&mut self) {
         let keep = self.selected_number();
+        let items: Vec<T> = match (&self.viewer, self.mine_only) {
+            (Some(me), true) => self
+                .all_items
+                .iter()
+                .filter(|i| i.is_mine(me))
+                .cloned()
+                .collect(),
+            _ => self.all_items.clone(),
+        };
         let (items, positions) = nest_items(items);
         self.items = items;
         self.positions = positions;
@@ -269,6 +318,7 @@ impl<T: GhListItem> GhListPane<T> {
                 }
             }
             GhListAction::ToggleClosed => return vec![PaneEvent::ToggleClosed],
+            GhListAction::ToggleMine => return vec![PaneEvent::ToggleMine],
             GhListAction::ShowDiff => {
                 if let Some(ev) = self
                     .items
@@ -321,7 +371,11 @@ impl<T: GhListItem> GhListPane<T> {
                     .enumerate()
                     .map(|(idx, item)| {
                         let tree = self.positions.get(idx).cloned().unwrap_or_default();
-                        let mut li = item.render_item(&tree, area.width.saturating_sub(2));
+                        let mut li = item.render_item(
+                            &tree,
+                            area.width.saturating_sub(2),
+                            self.viewer.as_deref(),
+                        );
                         let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
                         if hl.is_active() {
                             use ratatui::style::Style;

@@ -36,6 +36,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "github-poll-interval"
             | "github-auto-refresh"
             | "github-show-closed"
+            | "github-mine-only"
             | "github-login"
             | "projects-poll-interval"
             | "projects-board"
@@ -54,7 +55,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             other => {
                 return Err(anyhow!(
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
-                 `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, `github-login`, \
+                 `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, `github-mine-only`, `github-login`, \
                  `projects-poll-interval`, `projects-board`, `projects-view`, `projects-filter`, `projects-hide-closed`, `projects-roadmap`, \
                  `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`, `repo-config`, `app`, `page`, or `window`)"
             ))

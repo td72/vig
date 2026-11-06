@@ -1,0 +1,1181 @@
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	﻿2026-11-05T08:47:10.8578556Z Current runner version: '2.338.2'
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8605160Z ##[group]Runner Image Provisioner
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8606523Z Hosted Compute Agent
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8607278Z Version: 20261028.624
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8607943Z Commit: 54898b74c23fde5556c9b3c3a2290865feef0dfe
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8608763Z Build Date: 2026-10-28T21:51:42Z
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8609513Z Worker ID: {2752d66c-4cbe-4c5c-b70d-0bd370cc47ab}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8610229Z Region: westus2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8610876Z Cloud: Azure
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8611454Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8613336Z ##[group]Operating System
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8614038Z Ubuntu
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8614593Z 24.04.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8615230Z LTS
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8616095Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8616832Z ##[group]Runner Image
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8617486Z Image: ubuntu-24.04-arm
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8618114Z Version: 20261101.172.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8619336Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24-arm64/20261101.172/images/ubuntu/Ubuntu2404-Arm64-Readme.md
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8621292Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24-arm64%2F20261101.172
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8622291Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8623532Z ##[group]GITHUB_TOKEN Permissions
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8626102Z Contents: read
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8626848Z Metadata: read
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8627577Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8629949Z Secret source: Actions
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8631120Z Cache mode: write
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8631953Z Prepare workflow directory
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.8980130Z Prepare all required actions
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:10.9028965Z Getting action download info
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:11.2798201Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:11.3737469Z Download action repository 'actions-rust-lang/setup-rust-toolchain@v1' (SHA:166cdcfd11aee3cb47222f9ddb555ce30ddb9659)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:11.5469967Z Download action repository 'actions/upload-artifact@v6' (SHA:b7c566a772e6b6bfb58ed0dc250532a479d7789f)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:11.7672468Z Getting action download info
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:11.8881360Z Download action repository 'Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4' (SHA:c19371144df3bb44fab255c43d04cbc2ab54d1c4)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Set up job	2026-11-05T08:47:12.3159016Z Complete job name: build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	﻿2026-11-05T08:47:12.4185018Z ##[group]Run actions/checkout@v6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4186796Z with:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4187668Z   repository: td72/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4193944Z   token: ***
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4194693Z   ssh-strict: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4195830Z   ssh-user: git
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4196608Z   persist-credentials: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4197460Z   clean: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4198266Z   sparse-checkout-cone-mode: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4199123Z   fetch-depth: 1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4199972Z   fetch-tags: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4200718Z   show-progress: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4201547Z   lfs: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4202294Z   submodules: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4203063Z   set-safe-directory: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4203999Z   allow-unsafe-pr-checkout: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.4205332Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5107438Z Syncing repository: td72/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5110225Z ##[group]Getting Git version info
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5111341Z Working directory is '/home/runner/work/vig/vig'
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5113219Z [command]/usr/bin/git version
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5196642Z git version 2.56.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5216251Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5231592Z Temporarily overriding HOME='/home/runner/work/_temp/cd2251a8-02fb-484c-bd44-de54e78b4d66' before making global git config changes
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5234036Z Adding repository directory to the temporary git global config as a safe directory
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5236398Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5280121Z Deleting the contents of '/home/runner/work/vig/vig'
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5286890Z ##[group]Determining repository object format
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5288711Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5290026Z ##[group]Initializing the repository
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5293106Z [command]/usr/bin/git init /home/runner/work/vig/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5425876Z hint: Using 'master' as the name for the initial branch. This default branch name
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5428789Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5430683Z hint: to use in all of your new repositories, which will suppress this warning,
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5432114Z hint: call:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5433162Z hint:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5434322Z hint: 	git config --global init.defaultBranch <name>
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5435938Z hint:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5437203Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5438899Z hint: 'development'. The just-created branch can be renamed via this command:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5440449Z hint:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5441698Z hint: 	git branch -m <name>
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5442867Z hint:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5444184Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5446398Z Initialized empty Git repository in /home/runner/work/vig/vig/.git/
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5450526Z [command]/usr/bin/git remote add origin https://github.com/td72/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5490957Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5492884Z ##[group]Disabling automatic garbage collection
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5494020Z [command]/usr/bin/git config --local gc.auto 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5531336Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5533002Z ##[group]Setting up auth
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5533947Z Removing SSH command configuration
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5540324Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5574407Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5922776Z Removing HTTP extra header
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5929575Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.5958706Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6149475Z Removing includeIf entries pointing to credentials config files
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6153864Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6187008Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6384847Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6422404Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6464509Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6491895Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6525879Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6555901Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6557303Z ##[group]Fetching the repository
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:12.6561847Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +81abbdd6441b3650fe2c84c6ab6cff72e40996f5:refs/remotes/pull/214/merge
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1521829Z From https://github.com/td72/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1523230Z  * [new ref]         81abbdd6441b3650fe2c84c6ab6cff72e40996f5 -> pull/214/merge
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1527354Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1528574Z ##[group]Determining the checkout info
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1530000Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1532769Z [command]/usr/bin/git sparse-checkout disable
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1579423Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1612411Z ##[group]Checking out the ref
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.1614010Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/214/merge
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2414086Z Note: switching to 'refs/remotes/pull/214/merge'.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2415288Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2416301Z You are in 'detached HEAD' state. You can look around, make experimental
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2417765Z changes and commit them, and you can discard any commits you make in this
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2419058Z state without impacting any branches by switching back to a branch.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2419800Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2420328Z If you want to create a new branch to retain commits you create, you may
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2421561Z do so (now or later) by using -c with the switch command. Example:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2422277Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2422592Z   git switch -c <new-branch-name>
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2423074Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2423386Z Or undo this operation with:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2423886Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2424188Z   git switch -
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2424611Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2425196Z Turn off this advice by setting config variable advice.detachedHead to false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2426207Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2427091Z HEAD is now at 81abbdd Merge b72a36baa07ed9bff51603dc5fa127df5a7554cb into 120be50b353bbd3605987a910dc302dc4630cccd
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2642520Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2680132Z [command]/usr/bin/git log -1 --format=%H
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions/checkout@v6	2026-11-05T08:47:13.2702440Z 81abbdd6441b3650fe2c84c6ab6cff72e40996f5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-11-05T08:47:13.3306562Z ##[group]Run actions-rust-lang/setup-rust-toolchain@v1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3307603Z with:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3308157Z   cache: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3308772Z   cache-on-failure: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3309470Z   cache-bin: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3310124Z   cache-provider: github
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3310864Z   cache-all-crates: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3311589Z   cache-workspace-crates: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3312276Z   cache-save-if: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3312882Z   cache-targets: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3313482Z   matcher: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3314075Z   rustflags: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3314698Z   override: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3315273Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3390253Z ##[start-action display=Unbork mac;id=__actions-rust-lang_setup-rust-toolchain.__run]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3416123Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run;outcome=skipped;conclusion=skipped;duration_ms=0]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3471188Z ##[start-action display=Run : construct rustup command line;id=__actions-rust-lang_setup-rust-toolchain.flags]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3537521Z ##[group]Run : construct rustup command line
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3538601Z ^[[36;1m: construct rustup command line^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3539795Z ^[[36;1mecho "targets=$(for t in ${_srt_targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3541439Z ^[[36;1mecho "components=$(for c in ${_srt_components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3542739Z ^[[36;1mecho "downgrade=" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3730694Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3731680Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3732215Z   _srt_targets: 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3732797Z   _srt_components: 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3733372Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3872692Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=39]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3881193Z ##[start-action display=Setting Environment Variables;id=__actions-rust-lang_setup-rust-toolchain.__run_2]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3968143Z ##[group]Run if [[ ! -v CARGO_INCREMENTAL ]]; then
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3969069Z ^[[36;1mif [[ ! -v CARGO_INCREMENTAL ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3970043Z ^[[36;1m  echo "CARGO_INCREMENTAL=0" >> $GITHUB_ENV^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3970829Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3971463Z ^[[36;1mif [[ ! -v CARGO_PROFILE_DEV_DEBUG ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3972364Z ^[[36;1m  echo "CARGO_PROFILE_DEV_DEBUG=0" >> $GITHUB_ENV^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3973175Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3973767Z ^[[36;1mif [[ ! -v CARGO_TERM_COLOR ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3974625Z ^[[36;1m  echo "CARGO_TERM_COLOR=always" >> $GITHUB_ENV^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3975681Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3976327Z ^[[36;1mif [[ ! -v RUST_BACKTRACE ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3977191Z ^[[36;1m  echo "RUST_BACKTRACE=short" >> $GITHUB_ENV^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3977967Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3978686Z ^[[36;1mif [[ ( ! -v RUSTFLAGS ) && $_srt_NEW_RUSTFLAGS != "" ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3979721Z ^[[36;1m  echo "RUSTFLAGS=$_srt_NEW_RUSTFLAGS" >> $GITHUB_ENV^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3980556Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3981172Z ^[[36;1m# Enable faster sparse index on nightly^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3982114Z ^[[36;1m# The value is ignored on stable and causes no problems^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3983392Z ^[[36;1m# https://internals.rust-lang.org/t/call-for-testing-cargo-sparse-registry/16862^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3984660Z ^[[36;1mif [[ ! -v CARGO_UNSTABLE_SPARSE_REGISTRY ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3985916Z ^[[36;1m  echo "CARGO_UNSTABLE_SPARSE_REGISTRY=true" >> $GITHUB_ENV^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3986840Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3987645Z ^[[36;1mif [[ ! -v CARGO_REGISTRIES_CRATES_IO_PROTOCOL ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3988769Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.3989717Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4032847Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4033738Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4034292Z   _srt_NEW_RUSTFLAGS: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4034961Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4119030Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=23]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4124070Z ##[start-action display=Install Rust Problem Matcher;id=__actions-rust-lang_setup-rust-toolchain.__run_3]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4171829Z ##[group]Run echo "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4173690Z ^[[36;1mecho "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4212081Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4212996Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4213534Z   CARGO_INCREMENTAL: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4214180Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4214851Z   CARGO_TERM_COLOR: always
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4215753Z   RUST_BACKTRACE: short
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4216409Z   RUSTFLAGS: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4217077Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4217856Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4218606Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4317694Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=19]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4323606Z ##[start-action display=Install rustup, if needed;id=__actions-rust-lang_setup-rust-toolchain.__run_4]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4365282Z ##[group]Run if ! command -v rustup &> /dev/null ; then
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4366497Z ^[[36;1mif ! command -v rustup &> /dev/null ; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4368094Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4369856Z ^[[36;1m^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4370652Z ^[[36;1m  # Resolve the correct CARGO_HOME path depending on OS^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4371646Z ^[[36;1m  if [[ "$RUNNER_OS" == "Windows" ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4372755Z ^[[36;1m    echo "${CARGO_HOME:-$USERPROFILE/.cargo}/bin" | sed 's|/|\\|g' >> $GITHUB_PATH^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4373841Z ^[[36;1m  else^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4374557Z ^[[36;1m    echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4375668Z ^[[36;1m  fi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4376252Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4418776Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4419668Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4420201Z   CARGO_INCREMENTAL: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4420826Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4421478Z   CARGO_TERM_COLOR: always
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4422107Z   RUST_BACKTRACE: short
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4422729Z   RUSTFLAGS: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4423380Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4424141Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4424898Z   RUNNER_OS: Linux
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4425668Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4505091Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=17]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4513399Z ##[start-action display=rustup toolchain install stable;id=__actions-rust-lang_setup-rust-toolchain.__run_5]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4559062Z ##[group]Run # Check if value is set
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4559924Z ^[[36;1m# Check if value is set^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4560652Z ^[[36;1mif [[ -n "$_srt_rust_src_dir" ]]^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4561368Z ^[[36;1mthen^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4562012Z ^[[36;1m  # If value is set the directory must exist^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4562845Z ^[[36;1m  if [[ -d "$_srt_rust_src_dir" ]]^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4563571Z ^[[36;1m  then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4564164Z ^[[36;1m    cd "$_srt_rust_src_dir"^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4564841Z ^[[36;1m  else^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4565895Z ^[[36;1m    echo "'rust-src-dir' does not point to an existing directory" >&2^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4567510Z ^[[36;1m    echo "The value of 'rust-src-dir' is: ${_srt_rust_src_dir}" >&2^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4568453Z ^[[36;1m    exit 1^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4569020Z ^[[36;1m  fi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4569556Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4570412Z ^[[36;1mif [[ -z "$_srt_toolchain" && ( -f "rust-toolchain" || -f "rust-toolchain.toml") ]]^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4571437Z ^[[36;1mthen^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4572117Z ^[[36;1m  # Install the toolchain as specified in the file^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4573202Z ^[[36;1m  # rustup show is the old way that implicitly installed a toolchain^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4574300Z ^[[36;1m  # rustup toolchain install is the new explicit way^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4575761Z ^[[36;1m  # https://github.com/rust-lang/rustup/issues/3635#issuecomment-2343511297^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4577070Z ^[[36;1m  rustup show active-toolchain || rustup toolchain install^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4578043Z ^[[36;1m  if [[ -n $_srt_components ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4578919Z ^[[36;1m    rustup component add ${_srt_components//,/ }^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4579712Z ^[[36;1m  fi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4580302Z ^[[36;1m  if [[ -n $_srt_targets ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4581107Z ^[[36;1m    rustup target add ${_srt_targets//,/ }^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4581862Z ^[[36;1m  fi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4582400Z ^[[36;1melse^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4582974Z ^[[36;1m  if [[ -z "$_srt_toolchain" ]]^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4583676Z ^[[36;1m  then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4584251Z ^[[36;1m    _srt_toolchain=stable^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4584916Z ^[[36;1m  fi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4586052Z ^[[36;1m  rustup toolchain install ${_srt_toolchain//,/ }  --profile minimal --no-self-update^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4587243Z ^[[36;1m  # Take the last element from the list^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4588430Z ^[[36;1m  if [[ "$_srt_override" == "true" ]]^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4589205Z ^[[36;1m  then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4589867Z ^[[36;1m    rustup override set ${_srt_toolchain//*,/ }^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4590664Z ^[[36;1m  fi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4591202Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4633423Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4634341Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4634880Z   CARGO_INCREMENTAL: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4635746Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4636447Z   CARGO_TERM_COLOR: always
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4637077Z   RUST_BACKTRACE: short
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4637687Z   RUSTFLAGS: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4638334Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4639103Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4639849Z   _srt_toolchain: 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4640404Z   _srt_targets: 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4640960Z   _srt_components: 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4641526Z   _srt_override: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4642131Z   _srt_rust_src_dir: 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.4642710Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.7400665Z info: syncing channel updates for stable-aarch64-unknown-linux-gnu
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8226402Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8292384Z   stable-aarch64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8292969Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8348821Z info: override toolchain for /home/runner/work/vig/vig set to stable-aarch64-unknown-linux-gnu
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8374826Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=385]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8378903Z ##[start-action display=Print installed versions;id=__actions-rust-lang_setup-rust-toolchain.versions]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8418033Z ##[group]Run echo "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8418699Z ^[[36;1mecho "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8419210Z ^[[36;1mrustc --version --verbose^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8419705Z ^[[36;1mecho "cargo-version=$(cargo --version)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8420201Z ^[[36;1mcargo --version --verbose^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8421027Z ^[[36;1mecho "rustup-version=$(rustup --version)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8421520Z ^[[36;1mrustup --version^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8421866Z ^[[36;1m^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8422434Z ^[[36;1m_srt_DATE=$(rustc --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8423218Z ^[[36;1m_srt_HASH=$(rustc --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8423860Z ^[[36;1mecho "cachekey=$(echo $_srt_DATE$_srt_HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8476277Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8476791Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8477109Z   CARGO_INCREMENTAL: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8477460Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8477825Z   CARGO_TERM_COLOR: always
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8478201Z   RUST_BACKTRACE: short
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8478544Z   RUSTFLAGS: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8478910Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8479342Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8479744Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8720432Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8721549Z binary: rustc
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8722063Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8722549Z commit-date: 2026-10-13
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8722923Z host: aarch64-unknown-linux-gnu
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8723299Z release: 1.99.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:13.8738126Z LLVM version: 23.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0029771Z cargo 1.99.1 (5f94df478 2026-08-27)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0030295Z release: 1.99.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0030600Z commit-hash: 5f94df4789f005f9a352888e8355ffc645b7ed0e
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0030945Z commit-date: 2026-08-27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0031241Z host: aarch64-unknown-linux-gnu
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0032032Z libgit2: 1.9.6 (sys:0.21.0 vendored)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0032441Z libcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0032876Z ssl: OpenSSL 3.6.3 9 Jun 2026
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0033162Z os: Ubuntu 24.4.0 (noble) [64-bit]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0059198Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0134102Z info: the currently active `rustc` version is `rustc 1.99.1 (58cf8f9c3 2026-10-13)`
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0162247Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0162799Z rustup 1.29.2 (d8c92c676 2026-10-21)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0232853Z info: the currently active `rustc` version is `rustc 1.99.1 (58cf8f9c3 2026-10-13)`
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0460049Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.versions;outcome=success;conclusion=success;duration_ms=1208]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0464232Z ##[start-action display=Downgrade registry access protocol when needed;id=__actions-rust-lang_setup-rust-toolchain.__run_6]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0549043Z ##[group]Run # Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0549667Z ^[[36;1m# Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0550212Z ^[[36;1m# On versions 1.66, 1.67, and 1.68.0-nightly the value "sparse" is still unstable.^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0551237Z ^[[36;1m# https://github.com/dtolnay/rust-toolchain/pull/69#discussion_r1107268108^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0551881Z ^[[36;1m# If we detect an incompatible value, set it to "git" which is always supported.^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0552616Z ^[[36;1mif [[ "rustc 1.99.1 (58cf8f9c3 2026-10-13)" =~ ^rustc\ (1\.6[67]\.|1\.68\.0-nightly) && "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL}" == "sparse" ]]; then^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0553263Z ^[[36;1m  echo "Downgrade cargo registry protocol to git"^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0553699Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git" >> $GITHUB_ENV^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0554088Z ^[[36;1mfi^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0597103Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0597510Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0598016Z   CARGO_INCREMENTAL: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0598290Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0598575Z   CARGO_TERM_COLOR: always
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0598875Z   RUST_BACKTRACE: short
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0599118Z   RUSTFLAGS: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0599378Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0599704Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0600006Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0671487Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=20]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0674156Z ##[start-action display=Setup Rust Caching;id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0769873Z ##[group]Run Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0770342Z with:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0770575Z   cache-on-failure: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0770822Z   cache-bin: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0771052Z   cache-provider: github
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0771320Z   cache-all-crates: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0771600Z   cache-workspace-crates: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0771874Z   cache-targets: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0772119Z   save-if: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0772344Z   prefix-key: v0-rust
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0772588Z   add-job-id-key: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0772844Z   add-rust-environment-hash-key: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0773137Z   lookup-only: false
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0773364Z   cmd-format: {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0773578Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0773781Z   CARGO_INCREMENTAL: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0774024Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0774284Z   CARGO_TERM_COLOR: always
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0774619Z   RUST_BACKTRACE: short
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0774935Z   RUSTFLAGS: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0775213Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0776158Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.0776549Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.3099924Z (node:2799) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:15.3101030Z (Use `node --trace-deprecation ...` to show where the warning was created)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2246710Z ##[group]Cache Configuration
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2249256Z Cache Provider:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2250413Z     github
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2250676Z Workspaces:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2250902Z     /home/runner/work/vig/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2251142Z Cache Paths:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2251328Z     /home/runner/.cargo/bin
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2251556Z     /home/runner/.cargo/.crates.toml
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2251810Z     /home/runner/.cargo/.crates2.json
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2252057Z     /home/runner/.cargo/registry
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2252295Z     /home/runner/.cargo/git
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2252515Z     /home/runner/work/vig/vig/target
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2252785Z Restore Key:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2252983Z     v0-rust-build-Linux-arm64-005bd0d5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2253260Z Cache Key:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2253502Z     v0-rust-build-Linux-arm64-005bd0d5-d993fc43
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2253772Z .. Prefix:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2253952Z   - v0-rust-build-Linux-arm64
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2254185Z .. Environment considered:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2254401Z   - Rust Versions:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2254709Z     - 1.99.1 aarch64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2255181Z     - 1.99.1 aarch64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2255797Z   - CARGO_INCREMENTAL
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2256032Z   - CARGO_PROFILE_DEV_DEBUG
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2256266Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2256520Z   - CARGO_TERM_COLOR
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2256726Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2256958Z   - RUST_BACKTRACE
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2257153Z   - RUSTFLAGS
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2257341Z .. Lockfiles considered:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2257568Z   - /home/runner/work/vig/vig/Cargo.lock
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2258299Z   - /home/runner/work/vig/vig/Cargo.toml
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2258784Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2258893Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.2258980Z ... Restoring cache ...
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.4539351Z No cache found.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.4629178Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=1395]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	﻿2026-11-05T08:47:16.5093956Z ##[group]Run cargo build --locked --release --features vendored
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5094472Z ^[[36;1mcargo build --locked --release --features vendored^[[0m
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5128175Z shell: /usr/bin/bash -e {0}
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5128413Z env:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5128582Z   CARGO_INCREMENTAL: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5128798Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5129015Z   CARGO_TERM_COLOR: always
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5129235Z   RUST_BACKTRACE: short
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5129433Z   RUSTFLAGS: -D warnings
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5129648Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5129917Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5130177Z   CACHE_ON_FAILURE: true
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:16.5130370Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:19.0541993Z ^[[1m^[[92m    Updating^[[0m crates.io index
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.4994024Z ^[[1m^[[92m Downloading^[[0m crates ...
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.5886502Z ^[[1m^[[92m  Downloaded^[[0m futures-io v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.5930542Z ^[[1m^[[92m  Downloaded^[[0m futures-sink v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.5934812Z ^[[1m^[[92m  Downloaded^[[0m adler2 v2.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.5941829Z ^[[1m^[[92m  Downloaded^[[0m futures-core v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.5980457Z ^[[1m^[[92m  Downloaded^[[0m futures-channel v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.5991289Z ^[[1m^[[92m  Downloaded^[[0m http-body-util v0.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6008299Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.4.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6029368Z ^[[1m^[[92m  Downloaded^[[0m icu_properties v2.1.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6060978Z ^[[1m^[[92m  Downloaded^[[0m memmem v0.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6066201Z ^[[1m^[[92m  Downloaded^[[0m num-conv v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6070814Z ^[[1m^[[92m  Downloaded^[[0m option-ext v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6076004Z ^[[1m^[[92m  Downloaded^[[0m image v0.25.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6133555Z ^[[1m^[[92m  Downloaded^[[0m kasuari v0.4.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6144594Z ^[[1m^[[92m  Downloaded^[[0m linked-hash-map v0.5.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6151198Z ^[[1m^[[92m  Downloaded^[[0m heck v0.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6160149Z ^[[1m^[[92m  Downloaded^[[0m litemap v0.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6171261Z ^[[1m^[[92m  Downloaded^[[0m minimal-lexical v0.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6199526Z ^[[1m^[[92m  Downloaded^[[0m openssl-sys v0.9.111
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6232051Z ^[[1m^[[92m  Downloaded^[[0m itertools v0.14.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6277619Z ^[[1m^[[92m  Downloaded^[[0m memoffset v0.9.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6286319Z ^[[1m^[[92m  Downloaded^[[0m miette v7.6.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6319249Z ^[[1m^[[92m  Downloaded^[[0m hex v0.4.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6327884Z ^[[1m^[[92m  Downloaded^[[0m instability v0.3.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6341384Z ^[[1m^[[92m  Downloaded^[[0m num-derive v0.4.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6358319Z ^[[1m^[[92m  Downloaded^[[0m is_terminal_polyfill v1.70.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6364354Z ^[[1m^[[92m  Downloaded^[[0m lab v0.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6375848Z ^[[1m^[[92m  Downloaded^[[0m lazy_static v1.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6387146Z ^[[1m^[[92m  Downloaded^[[0m palette_derive v0.7.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6395290Z ^[[1m^[[92m  Downloaded^[[0m palette_math v0.7.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6416412Z ^[[1m^[[92m  Downloaded^[[0m http-body v1.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6416849Z ^[[1m^[[92m  Downloaded^[[0m inotify v0.10.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6427949Z ^[[1m^[[92m  Downloaded^[[0m instant v0.1.13
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6441749Z ^[[1m^[[92m  Downloaded^[[0m mac_address v1.1.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6450721Z ^[[1m^[[92m  Downloaded^[[0m notify-debouncer-mini v0.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6464200Z ^[[1m^[[92m  Downloaded^[[0m ordered-float v5.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6489266Z ^[[1m^[[92m  Downloaded^[[0m httparse v1.10.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6510717Z ^[[1m^[[92m  Downloaded^[[0m ident_case v1.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6516666Z ^[[1m^[[92m  Downloaded^[[0m itoa v1.0.17
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6526973Z ^[[1m^[[92m  Downloaded^[[0m number_prefix v0.4.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6533535Z ^[[1m^[[92m  Downloaded^[[0m outref v0.5.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6547462Z ^[[1m^[[92m  Downloaded^[[0m thiserror v1.0.69
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6601104Z ^[[1m^[[92m  Downloaded^[[0m thiserror v2.0.18
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6658464Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v1.0.69
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6675148Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.3.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6698418Z ^[[1m^[[92m  Downloaded^[[0m idna_adapter v1.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6704735Z ^[[1m^[[92m  Downloaded^[[0m kdl v6.7.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6900165Z ^[[1m^[[92m  Downloaded^[[0m num-traits v0.2.19
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6914053Z ^[[1m^[[92m  Downloaded^[[0m gethostname v1.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6919965Z ^[[1m^[[92m  Downloaded^[[0m icu_normalizer_data v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6932250Z ^[[1m^[[92m  Downloaded^[[0m icu_normalizer v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6951545Z ^[[1m^[[92m  Downloaded^[[0m icu_provider v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6967529Z ^[[1m^[[92m  Downloaded^[[0m indicatif v0.17.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.6987141Z ^[[1m^[[92m  Downloaded^[[0m litrs v1.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7004392Z ^[[1m^[[92m  Downloaded^[[0m notify-types v1.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7031684Z ^[[1m^[[92m  Downloaded^[[0m futures-task v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7041382Z ^[[1m^[[92m  Downloaded^[[0m half v2.7.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7059550Z ^[[1m^[[92m  Downloaded^[[0m wezterm-color-types v0.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7066649Z ^[[1m^[[92m  Downloaded^[[0m termwiz v0.23.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7146307Z ^[[1m^[[92m  Downloaded^[[0m ordered-float v4.6.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7155469Z ^[[1m^[[92m  Downloaded^[[0m want v0.3.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7162684Z ^[[1m^[[92m  Downloaded^[[0m icu_collections v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7200635Z ^[[1m^[[92m  Downloaded^[[0m unicode-truncate v2.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7210345Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v2.0.18
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7219779Z ^[[1m^[[92m  Downloaded^[[0m time-macros v0.2.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7235100Z ^[[1m^[[92m  Downloaded^[[0m tinystr v0.8.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7247158Z ^[[1m^[[92m  Downloaded^[[0m time-core v0.1.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7254348Z ^[[1m^[[92m  Downloaded^[[0m tower-layer v0.3.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7260237Z ^[[1m^[[92m  Downloaded^[[0m untrusted v0.9.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7270295Z ^[[1m^[[92m  Downloaded^[[0m wezterm-dynamic-derive v0.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7275489Z ^[[1m^[[92m  Downloaded^[[0m generic-array v0.14.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7284014Z ^[[1m^[[92m  Downloaded^[[0m lru v0.16.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7291724Z ^[[1m^[[92m  Downloaded^[[0m num_threads v0.1.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7297658Z ^[[1m^[[92m  Downloaded^[[0m openssl-probe v0.1.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7311208Z ^[[1m^[[92m  Downloaded^[[0m tower-service v0.3.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7316386Z ^[[1m^[[92m  Downloaded^[[0m utf8parse v0.2.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7322446Z ^[[1m^[[92m  Downloaded^[[0m bit-vec v0.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7334617Z ^[[1m^[[92m  Downloaded^[[0m wezterm-blob-leases v0.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7348824Z ^[[1m^[[92m  Downloaded^[[0m writeable v0.6.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7368367Z ^[[1m^[[92m  Downloaded^[[0m xattr v1.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7388276Z ^[[1m^[[92m  Downloaded^[[0m zerofrom v0.1.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7393643Z ^[[1m^[[92m  Downloaded^[[0m bit-set v0.5.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7400940Z ^[[1m^[[92m  Downloaded^[[0m utf8_iter v1.0.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7407065Z ^[[1m^[[92m  Downloaded^[[0m lru-slab v0.1.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7411565Z ^[[1m^[[92m  Downloaded^[[0m ref-cast-impl v1.0.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7416843Z ^[[1m^[[92m  Downloaded^[[0m inotify-sys v0.1.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7422457Z ^[[1m^[[92m  Downloaded^[[0m line-clipping v0.3.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7431746Z ^[[1m^[[92m  Downloaded^[[0m version_check v0.9.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7439664Z ^[[1m^[[92m  Downloaded^[[0m sync_wrapper v1.0.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7444891Z ^[[1m^[[92m  Downloaded^[[0m signal-hook-mio v0.2.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7452839Z ^[[1m^[[92m  Downloaded^[[0m try-lock v0.2.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7458781Z ^[[1m^[[92m  Downloaded^[[0m walkdir v2.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7469837Z ^[[1m^[[92m  Downloaded^[[0m zune-core v0.5.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7484007Z ^[[1m^[[92m  Downloaded^[[0m bit-set v0.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7493177Z ^[[1m^[[92m  Downloaded^[[0m castaway v0.2.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7501739Z ^[[1m^[[92m  Downloaded^[[0m clap_lex v1.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7509781Z ^[[1m^[[92m  Downloaded^[[0m jobserver v0.1.34
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7524266Z ^[[1m^[[92m  Downloaded^[[0m tinyvec_macros v0.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7529530Z ^[[1m^[[92m  Downloaded^[[0m unicase v2.9.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7546533Z ^[[1m^[[92m  Downloaded^[[0m urlencoding v2.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7552352Z ^[[1m^[[92m  Downloaded^[[0m vtparse v0.6.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7558004Z ^[[1m^[[92m  Downloaded^[[0m wezterm-dynamic v0.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7567582Z ^[[1m^[[92m  Downloaded^[[0m wezterm-input-types v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7578123Z ^[[1m^[[92m  Downloaded^[[0m wyz v0.5.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7583454Z ^[[1m^[[92m  Downloaded^[[0m yoke-derive v0.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7586822Z ^[[1m^[[92m  Downloaded^[[0m zerofrom-derive v0.1.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7593583Z ^[[1m^[[92m  Downloaded^[[0m zeroize v1.8.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7601456Z ^[[1m^[[92m  Downloaded^[[0m atomic v0.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7610054Z ^[[1m^[[92m  Downloaded^[[0m atomic-waker v1.1.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7617519Z ^[[1m^[[92m  Downloaded^[[0m base64-simd v0.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7626208Z ^[[1m^[[92m  Downloaded^[[0m bitflags v1.3.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7645130Z ^[[1m^[[92m  Downloaded^[[0m block-buffer v0.10.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7651747Z ^[[1m^[[92m  Downloaded^[[0m by_address v1.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7657246Z ^[[1m^[[92m  Downloaded^[[0m darling_macro v0.23.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7661494Z ^[[1m^[[92m  Downloaded^[[0m fax_derive v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7665341Z ^[[1m^[[92m  Downloaded^[[0m indoc v2.0.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7683825Z ^[[1m^[[92m  Downloaded^[[0m ipnet v2.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7693189Z ^[[1m^[[92m  Downloaded^[[0m pin-utils v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7699069Z ^[[1m^[[92m  Downloaded^[[0m radium v0.7.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7704160Z ^[[1m^[[92m  Downloaded^[[0m zipsign-api v0.1.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7714479Z ^[[1m^[[92m  Downloaded^[[0m anstyle v1.0.13
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7722652Z ^[[1m^[[92m  Downloaded^[[0m autocfg v1.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7732706Z ^[[1m^[[92m  Downloaded^[[0m bincode v1.3.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7744394Z ^[[1m^[[92m  Downloaded^[[0m quote v1.0.44
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7758847Z ^[[1m^[[92m  Downloaded^[[0m rustversion v1.0.22
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7772691Z ^[[1m^[[92m  Downloaded^[[0m semver v1.0.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7784634Z ^[[1m^[[92m  Downloaded^[[0m spki v0.7.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7794157Z ^[[1m^[[92m  Downloaded^[[0m tinyvec v1.10.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7809569Z ^[[1m^[[92m  Downloaded^[[0m tokio-rustls v0.26.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7820591Z ^[[1m^[[92m  Downloaded^[[0m typenum v1.19.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7836933Z ^[[1m^[[92m  Downloaded^[[0m ucd-trie v0.1.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7845585Z ^[[1m^[[92m  Downloaded^[[0m uuid v1.21.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7862206Z ^[[1m^[[92m  Downloaded^[[0m vsimd v0.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7873497Z ^[[1m^[[92m  Downloaded^[[0m wezterm-bidi v0.2.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7885657Z ^[[1m^[[92m  Downloaded^[[0m yaml-rust v0.4.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7899900Z ^[[1m^[[92m  Downloaded^[[0m yoke v0.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7909338Z ^[[1m^[[92m  Downloaded^[[0m zerovec-derive v0.11.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7916950Z ^[[1m^[[92m  Downloaded^[[0m zmij v1.0.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7927189Z ^[[1m^[[92m  Downloaded^[[0m zune-core v0.4.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7935695Z ^[[1m^[[92m  Downloaded^[[0m allocator-api2 v0.2.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7950138Z ^[[1m^[[92m  Downloaded^[[0m anstream v0.6.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7961660Z ^[[1m^[[92m  Downloaded^[[0m anstyle-parse v0.2.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7971810Z ^[[1m^[[92m  Downloaded^[[0m anstyle-query v1.1.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7978704Z ^[[1m^[[92m  Downloaded^[[0m anyhow v1.0.101
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.7999334Z ^[[1m^[[92m  Downloaded^[[0m base64ct v1.8.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8012557Z ^[[1m^[[92m  Downloaded^[[0m bit-vec v0.6.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8019703Z ^[[1m^[[92m  Downloaded^[[0m bitflags v2.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8041179Z ^[[1m^[[92m  Downloaded^[[0m bytemuck v1.25.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8058198Z ^[[1m^[[92m  Downloaded^[[0m csscolorparser v0.6.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8064813Z ^[[1m^[[92m  Downloaded^[[0m deranged v0.5.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8074076Z ^[[1m^[[92m  Downloaded^[[0m dirs-sys v0.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8080669Z ^[[1m^[[92m  Downloaded^[[0m errno v0.3.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8088596Z ^[[1m^[[92m  Downloaded^[[0m fastrand v2.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8095338Z ^[[1m^[[92m  Downloaded^[[0m fax v0.2.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8103250Z ^[[1m^[[92m  Downloaded^[[0m filedescriptor v0.8.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8108774Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.2.17
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8123968Z ^[[1m^[[92m  Downloaded^[[0m gif v0.14.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8133848Z ^[[1m^[[92m  Downloaded^[[0m hyper-rustls v0.27.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8146656Z ^[[1m^[[92m  Downloaded^[[0m lock_api v0.4.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8154232Z ^[[1m^[[92m  Downloaded^[[0m nom v7.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8182679Z ^[[1m^[[92m  Downloaded^[[0m notify v7.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8192410Z ^[[1m^[[92m  Downloaded^[[0m once_cell v1.21.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8205675Z ^[[1m^[[92m  Downloaded^[[0m quinn-udp v0.5.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8216083Z ^[[1m^[[92m  Downloaded^[[0m self_cell v1.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8221723Z ^[[1m^[[92m  Downloaded^[[0m signature v2.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8229509Z ^[[1m^[[92m  Downloaded^[[0m simd-adler32 v0.3.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8238992Z ^[[1m^[[92m  Downloaded^[[0m siphasher v1.0.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8245793Z ^[[1m^[[92m  Downloaded^[[0m terminfo v0.9.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8260075Z ^[[1m^[[92m  Downloaded^[[0m tower v0.5.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8310102Z ^[[1m^[[92m  Downloaded^[[0m tracing-core v0.1.36
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8325083Z ^[[1m^[[92m  Downloaded^[[0m unicode-ident v1.0.23
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8340345Z ^[[1m^[[92m  Downloaded^[[0m unicode-segmentation v1.12.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8358298Z ^[[1m^[[92m  Downloaded^[[0m url v2.5.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8373249Z ^[[1m^[[92m  Downloaded^[[0m vcpkg v0.2.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8617677Z ^[[1m^[[92m  Downloaded^[[0m weezl v0.1.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8630145Z ^[[1m^[[92m  Downloaded^[[0m zerocopy-derive v0.8.39
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8678762Z ^[[1m^[[92m  Downloaded^[[0m zerotrie v0.2.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8698034Z ^[[1m^[[92m  Downloaded^[[0m zerovec v0.11.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8725903Z ^[[1m^[[92m  Downloaded^[[0m zune-jpeg v0.4.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8742234Z ^[[1m^[[92m  Downloaded^[[0m zune-jpeg v0.5.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8761158Z ^[[1m^[[92m  Downloaded^[[0m arboard v3.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8775789Z ^[[1m^[[92m  Downloaded^[[0m base64 v0.22.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8797117Z ^[[1m^[[92m  Downloaded^[[0m color_quant v1.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8802266Z ^[[1m^[[92m  Downloaded^[[0m console v0.15.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8817166Z ^[[1m^[[92m  Downloaded^[[0m convert_case v0.10.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8826370Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.2.17
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8833404Z ^[[1m^[[92m  Downloaded^[[0m crypto-common v0.1.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8838677Z ^[[1m^[[92m  Downloaded^[[0m fdeflate v0.3.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8847356Z ^[[1m^[[92m  Downloaded^[[0m icu_locale_core v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8880391Z ^[[1m^[[92m  Downloaded^[[0m log v0.4.29
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8893800Z ^[[1m^[[92m  Downloaded^[[0m percent-encoding v2.3.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8898963Z ^[[1m^[[92m  Downloaded^[[0m phf v0.11.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8905598Z ^[[1m^[[92m  Downloaded^[[0m phf_codegen v0.11.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8910651Z ^[[1m^[[92m  Downloaded^[[0m pkg-config v0.3.32
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8918928Z ^[[1m^[[92m  Downloaded^[[0m pulldown-cmark-escape v0.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8922757Z ^[[1m^[[92m  Downloaded^[[0m ratatui-crossterm v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8928430Z ^[[1m^[[92m  Downloaded^[[0m ratatui-macros v0.7.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8936335Z ^[[1m^[[92m  Downloaded^[[0m same-file v1.0.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8943270Z ^[[1m^[[92m  Downloaded^[[0m scopeguard v1.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8949513Z ^[[1m^[[92m  Downloaded^[[0m self-replace v1.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8958085Z ^[[1m^[[92m  Downloaded^[[0m serde_derive v1.0.228
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8974935Z ^[[1m^[[92m  Downloaded^[[0m signal-hook-registry v1.4.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8981832Z ^[[1m^[[92m  Downloaded^[[0m tap v1.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.8986981Z ^[[1m^[[92m  Downloaded^[[0m tokio-util v0.7.18
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9026477Z ^[[1m^[[92m  Downloaded^[[0m tower-http v0.6.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9069770Z ^[[1m^[[92m  Downloaded^[[0m wide v1.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9104162Z ^[[1m^[[92m  Downloaded^[[0m winnow v0.7.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9154802Z ^[[1m^[[92m  Downloaded^[[0m aho-corasick v1.1.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9184663Z ^[[1m^[[92m  Downloaded^[[0m euclid v0.22.13
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9202771Z ^[[1m^[[92m  Downloaded^[[0m fnv v1.0.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9207605Z ^[[1m^[[92m  Downloaded^[[0m form_urlencoded v1.2.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9211812Z ^[[1m^[[92m  Downloaded^[[0m iri-string v0.7.10
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9250812Z ^[[1m^[[92m  Downloaded^[[0m miniz_oxide v0.8.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9264755Z ^[[1m^[[92m  Downloaded^[[0m pest_meta v2.8.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9278001Z ^[[1m^[[92m  Downloaded^[[0m pkcs8 v0.10.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9292171Z ^[[1m^[[92m  Downloaded^[[0m ratatui-core v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9325122Z ^[[1m^[[92m  Downloaded^[[0m self_update v0.42.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9339414Z ^[[1m^[[92m  Downloaded^[[0m serde_core v1.0.228
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9354403Z ^[[1m^[[92m  Downloaded^[[0m serde_json v1.0.149
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9393099Z ^[[1m^[[92m  Downloaded^[[0m slab v0.4.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9400382Z ^[[1m^[[92m  Downloaded^[[0m tempfile v3.25.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9413518Z ^[[1m^[[92m  Downloaded^[[0m time v0.3.47
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9482055Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.1.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9518176Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.2.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9554894Z ^[[1m^[[92m  Downloaded^[[0m webpki-roots v1.0.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9576891Z ^[[1m^[[92m  Downloaded^[[0m x11rb v0.13.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9623098Z ^[[1m^[[92m  Downloaded^[[0m zerocopy v0.8.39
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9735536Z ^[[1m^[[92m  Downloaded^[[0m bitvec v1.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9817388Z ^[[1m^[[92m  Downloaded^[[0m cfg-if v1.0.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9826754Z ^[[1m^[[92m  Downloaded^[[0m const-oid v0.9.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9846661Z ^[[1m^[[92m  Downloaded^[[0m crossterm v0.29.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9873004Z ^[[1m^[[92m  Downloaded^[[0m dirs v6.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9880079Z ^[[1m^[[92m  Downloaded^[[0m foldhash v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9886918Z ^[[1m^[[92m  Downloaded^[[0m image-webp v0.2.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9899570Z ^[[1m^[[92m  Downloaded^[[0m ratatui v0.30.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9920013Z ^[[1m^[[92m  Downloaded^[[0m ref-cast v1.0.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9934181Z ^[[1m^[[92m  Downloaded^[[0m rustc-hash v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9941151Z ^[[1m^[[92m  Downloaded^[[0m serde v1.0.228
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9960143Z ^[[1m^[[92m  Downloaded^[[0m socket2 v0.6.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9970820Z ^[[1m^[[92m  Downloaded^[[0m tar v0.4.46
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:20.9986667Z ^[[1m^[[92m  Downloaded^[[0m tracing v0.1.44
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0080202Z ^[[1m^[[92m  Downloaded^[[0m x11rb-protocol v0.13.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0157921Z ^[[1m^[[92m  Downloaded^[[0m chacha20 v0.10.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0171362Z ^[[1m^[[92m  Downloaded^[[0m document-features v0.2.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0178164Z ^[[1m^[[92m  Downloaded^[[0m fixedbitset v0.4.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0184630Z ^[[1m^[[92m  Downloaded^[[0m memchr v2.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0212888Z ^[[1m^[[92m  Downloaded^[[0m plist v1.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0227480Z ^[[1m^[[92m  Downloaded^[[0m rustc_version v0.4.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0234005Z ^[[1m^[[92m  Downloaded^[[0m rustls-webpki v0.103.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0251994Z ^[[1m^[[92m  Downloaded^[[0m strsim v0.11.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0259070Z ^[[1m^[[92m  Downloaded^[[0m strum v0.27.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0263513Z ^[[1m^[[92m  Downloaded^[[0m tiff v0.10.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0339700Z ^[[1m^[[92m  Downloaded^[[0m tokio v1.49.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0562224Z ^[[1m^[[92m  Downloaded^[[0m cc v1.2.56
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0579164Z ^[[1m^[[92m  Downloaded^[[0m cfg_aliases v0.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0584151Z ^[[1m^[[92m  Downloaded^[[0m crc32fast v1.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0594475Z ^[[1m^[[92m  Downloaded^[[0m darling_core v0.23.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0622019Z ^[[1m^[[92m  Downloaded^[[0m funty v2.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0626835Z ^[[1m^[[92m  Downloaded^[[0m hyper-util v0.1.20
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0659363Z ^[[1m^[[92m  Downloaded^[[0m mio v1.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0689573Z ^[[1m^[[92m  Downloaded^[[0m phf_generator v0.11.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0696038Z ^[[1m^[[92m  Downloaded^[[0m phf_shared v0.11.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0701265Z ^[[1m^[[92m  Downloaded^[[0m quantette v0.6.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0720481Z ^[[1m^[[92m  Downloaded^[[0m rustls v0.23.46
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0787500Z ^[[1m^[[92m  Downloaded^[[0m sha2 v0.10.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0801098Z ^[[1m^[[92m  Downloaded^[[0m subtle v2.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0807442Z ^[[1m^[[92m  Downloaded^[[0m clap v4.5.58
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0854381Z ^[[1m^[[92m  Downloaded^[[0m der v0.7.10
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0882064Z ^[[1m^[[92m  Downloaded^[[0m fancy-regex v0.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0900232Z ^[[1m^[[92m  Downloaded^[[0m indexmap v2.13.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0923878Z ^[[1m^[[92m  Downloaded^[[0m libm v0.2.16
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0978121Z ^[[1m^[[92m  Downloaded^[[0m parking_lot v0.12.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.0991595Z ^[[1m^[[92m  Downloaded^[[0m quinn v0.11.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1010884Z ^[[1m^[[92m  Downloaded^[[0m rustix v0.38.44
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1140571Z ^[[1m^[[92m  Downloaded^[[0m rustls-pki-types v1.14.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1153800Z ^[[1m^[[92m  Downloaded^[[0m ryu v1.0.23
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1171182Z ^[[1m^[[92m  Downloaded^[[0m serde_urlencoded v0.7.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1180095Z ^[[1m^[[92m  Downloaded^[[0m shlex v1.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1187269Z ^[[1m^[[92m  Downloaded^[[0m signal-hook v0.3.18
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1202836Z ^[[1m^[[92m  Downloaded^[[0m smallvec v1.15.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1214289Z ^[[1m^[[92m  Downloaded^[[0m stable_deref_trait v1.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1219498Z ^[[1m^[[92m  Downloaded^[[0m static_assertions v1.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1226923Z ^[[1m^[[92m  Downloaded^[[0m bytemuck_derive v1.12.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1234410Z ^[[1m^[[92m  Downloaded^[[0m bytes v1.11.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1256953Z ^[[1m^[[92m  Downloaded^[[0m compact_str v0.9.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1274944Z ^[[1m^[[92m  Downloaded^[[0m fancy-regex v0.16.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1295655Z ^[[1m^[[92m  Downloaded^[[0m potential_utf v0.1.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1301233Z ^[[1m^[[92m  Downloaded^[[0m rand_chacha v0.3.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1307499Z ^[[1m^[[92m  Downloaded^[[0m synstructure v0.13.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1313138Z ^[[1m^[[92m  Downloaded^[[0m byteorder-lite v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1319399Z ^[[1m^[[92m  Downloaded^[[0m clap_derive v4.5.55
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1331360Z ^[[1m^[[92m  Downloaded^[[0m derive_more-impl v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1359416Z ^[[1m^[[92m  Downloaded^[[0m displaydoc v0.2.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1374799Z ^[[1m^[[92m  Downloaded^[[0m equivalent v1.0.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1380614Z ^[[1m^[[92m  Downloaded^[[0m find-msvc-tools v0.1.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1389637Z ^[[1m^[[92m  Downloaded^[[0m http v1.4.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1409947Z ^[[1m^[[92m  Downloaded^[[0m idna v1.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1432268Z ^[[1m^[[92m  Downloaded^[[0m powerfmt v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1438686Z ^[[1m^[[92m  Downloaded^[[0m quick-error v2.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1445173Z ^[[1m^[[92m  Downloaded^[[0m rand_pcg v0.10.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1452521Z ^[[1m^[[92m  Downloaded^[[0m strum_macros v0.27.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1465262Z ^[[1m^[[92m  Downloaded^[[0m termios v0.3.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1474196Z ^[[1m^[[92m  Downloaded^[[0m colorchoice v1.0.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1480170Z ^[[1m^[[92m  Downloaded^[[0m darling v0.23.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1507246Z ^[[1m^[[92m  Downloaded^[[0m digest v0.10.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1516936Z ^[[1m^[[92m  Downloaded^[[0m either v1.15.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1524795Z ^[[1m^[[92m  Downloaded^[[0m filetime v0.2.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1533474Z ^[[1m^[[92m  Downloaded^[[0m finl_unicode v1.4.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1555907Z ^[[1m^[[92m  Downloaded^[[0m flate2 v1.1.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1581818Z ^[[1m^[[92m  Downloaded^[[0m futures-util v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1645555Z ^[[1m^[[92m  Downloaded^[[0m hashbrown v0.16.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1674138Z ^[[1m^[[92m  Downloaded^[[0m hyper v1.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1710692Z ^[[1m^[[92m  Downloaded^[[0m libssh2-sys v0.3.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1877558Z ^[[1m^[[92m  Downloaded^[[0m pest_derive v2.8.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1890691Z ^[[1m^[[92m  Downloaded^[[0m phf_macros v0.11.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1896158Z ^[[1m^[[92m  Downloaded^[[0m pin-project-lite v0.2.16
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1924032Z ^[[1m^[[92m  Downloaded^[[0m ppv-lite86 v0.2.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1931565Z ^[[1m^[[92m  Downloaded^[[0m rand_core v0.10.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1940178Z ^[[1m^[[92m  Downloaded^[[0m rand_xoshiro v0.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1950390Z ^[[1m^[[92m  Downloaded^[[0m ratatui-termwiz v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1955810Z ^[[1m^[[92m  Downloaded^[[0m h2 v0.4.13
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.1991986Z ^[[1m^[[92m  Downloaded^[[0m moxcms v0.7.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2043186Z ^[[1m^[[92m  Downloaded^[[0m parking_lot_core v0.9.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2054512Z ^[[1m^[[92m  Downloaded^[[0m pest_generator v2.8.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2063940Z ^[[1m^[[92m  Downloaded^[[0m png v0.18.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2087610Z ^[[1m^[[92m  Downloaded^[[0m reqwest v0.12.28
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2119657Z ^[[1m^[[92m  Downloaded^[[0m crossterm v0.28.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2155218Z ^[[1m^[[92m  Downloaded^[[0m ed25519 v2.2.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2164857Z ^[[1m^[[92m  Downloaded^[[0m icu_properties_data v2.1.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2217525Z ^[[1m^[[92m  Downloaded^[[0m derive_more v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2279315Z ^[[1m^[[92m  Downloaded^[[0m ed25519-dalek v2.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2297544Z ^[[1m^[[92m  Downloaded^[[0m git2 v0.20.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2342976Z ^[[1m^[[92m  Downloaded^[[0m proc-macro2 v1.0.106
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2358888Z ^[[1m^[[92m  Downloaded^[[0m pulldown-cmark v0.13.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2387615Z ^[[1m^[[92m  Downloaded^[[0m rand v0.8.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2406639Z ^[[1m^[[92m  Downloaded^[[0m rand v0.10.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2427375Z ^[[1m^[[92m  Downloaded^[[0m rand_core v0.6.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2434997Z ^[[1m^[[92m  Downloaded^[[0m quick-xml v0.37.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2465766Z ^[[1m^[[92m  Downloaded^[[0m quick-xml v0.38.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2498609Z ^[[1m^[[92m  Downloaded^[[0m regex v1.12.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2528276Z ^[[1m^[[92m  Downloaded^[[0m pest v2.8.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.2555327Z ^[[1m^[[92m  Downloaded^[[0m syn v1.0.109
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3142581Z ^[[1m^[[92m  Downloaded^[[0m clap_builder v4.5.58
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3178569Z ^[[1m^[[92m  Downloaded^[[0m nix v0.29.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3239256Z ^[[1m^[[92m  Downloaded^[[0m palette v0.7.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3302815Z ^[[1m^[[92m  Downloaded^[[0m portable-atomic v1.13.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3343535Z ^[[1m^[[92m  Downloaded^[[0m quinn-proto v0.11.17
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3382534Z ^[[1m^[[92m  Downloaded^[[0m rustix v1.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3518256Z ^[[1m^[[92m  Downloaded^[[0m curve25519-dalek v4.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3565623Z ^[[1m^[[92m  Downloaded^[[0m sysinfo v0.39.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3629892Z ^[[1m^[[92m  Downloaded^[[0m ratatui-widgets v0.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3671704Z ^[[1m^[[92m  Downloaded^[[0m syn v2.0.115
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3731450Z ^[[1m^[[92m  Downloaded^[[0m syn v3.0.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3791463Z ^[[1m^[[92m  Downloaded^[[0m regex-syntax v0.8.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3833075Z ^[[1m^[[92m  Downloaded^[[0m regex-automata v0.4.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.3915039Z ^[[1m^[[92m  Downloaded^[[0m libc v0.2.182
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.4114858Z ^[[1m^[[92m  Downloaded^[[0m libz-sys v1.1.23
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.4235668Z ^[[1m^[[92m  Downloaded^[[0m syntect v5.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.5091499Z ^[[1m^[[92m  Downloaded^[[0m pxfm v0.1.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.5231328Z ^[[1m^[[92m  Downloaded^[[0m ring v0.17.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.5466714Z ^[[1m^[[92m  Downloaded^[[0m libgit2-sys v0.18.3+1.9.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.5790638Z ^[[1m^[[92m  Downloaded^[[0m deltae v0.3.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.5884337Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.4.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.6159931Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.6486065Z ^[[1m^[[92m  Downloaded^[[0m icy_sixel v0.5.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.6741065Z ^[[1m^[[92m  Downloaded^[[0m ratatui-image v11.0.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.6931550Z ^[[1m^[[92m  Downloaded^[[0m openssl-src v300.5.5+3.5.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.9935755Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.182
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.9936495Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.106
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.9937826Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.23
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:21.9938495Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.44
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:32.0186429Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:32.2256192Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:33.7763137Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:34.4929439Z ^[[1m^[[92m   Compiling^[[0m jobserver v0.1.34
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:34.5058790Z ^[[1m^[[92m   Compiling^[[0m shlex v1.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:34.6911748Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.17
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:34.9192608Z ^[[1m^[[92m   Compiling^[[0m log v0.4.29
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:34.9697740Z ^[[1m^[[92m   Compiling^[[0m smallvec v1.15.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:35.0847297Z ^[[1m^[[92m   Compiling^[[0m cc v1.2.56
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:35.2476935Z ^[[1m^[[92m   Compiling^[[0m syn v2.0.115
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:35.5411158Z ^[[1m^[[92m   Compiling^[[0m mio v1.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:35.5412328Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:35.9272537Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:35.9528378Z ^[[1m^[[92m   Compiling^[[0m allocator-api2 v0.2.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.2079370Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.3046735Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.16.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.3970391Z ^[[1m^[[92m   Compiling^[[0m stable_deref_trait v1.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.4236710Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.5476676Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.6335987Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.8488965Z ^[[1m^[[92m   Compiling^[[0m libm v0.2.16
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.9086785Z ^[[1m^[[92m   Compiling^[[0m pin-project-lite v0.2.16
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.9436707Z ^[[1m^[[92m   Compiling^[[0m bytes v1.11.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:36.9846396Z ^[[1m^[[92m   Compiling^[[0m typenum v1.19.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:37.1337463Z ^[[1m^[[92m   Compiling^[[0m futures-core v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:37.1866965Z ^[[1m^[[92m   Compiling^[[0m pkg-config v0.3.32
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:37.4422014Z ^[[1m^[[92m   Compiling^[[0m thiserror v2.0.18
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:37.5176737Z ^[[1m^[[92m   Compiling^[[0m synstructure v0.13.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:37.6156848Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:37.7740652Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:37.9066062Z ^[[1m^[[92m   Compiling^[[0m autocfg v1.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:38.2296687Z ^[[1m^[[92m   Compiling^[[0m num-traits v0.2.19
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:38.4867494Z ^[[1m^[[92m   Compiling^[[0m zerofrom-derive v0.1.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:38.6466776Z ^[[1m^[[92m   Compiling^[[0m yoke-derive v0.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:38.9479166Z ^[[1m^[[92m   Compiling^[[0m zerovec-derive v0.11.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:39.8976780Z ^[[1m^[[92m   Compiling^[[0m displaydoc v0.2.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:39.8996317Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v2.0.18
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:39.9056284Z ^[[1m^[[92m   Compiling^[[0m zerofrom v0.1.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:39.9612547Z ^[[1m^[[92m   Compiling^[[0m yoke v0.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.0656704Z ^[[1m^[[92m   Compiling^[[0m zerovec v0.11.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.2036523Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.3236616Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.2.17
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.4426686Z ^[[1m^[[92m   Compiling^[[0m socket2 v0.6.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.5641773Z ^[[1m^[[92m   Compiling^[[0m futures-sink v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.6041791Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.228
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.7489119Z ^[[1m^[[92m   Compiling^[[0m vcpkg v0.2.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.8036704Z ^[[1m^[[92m   Compiling^[[0m zeroize v1.8.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.8709663Z ^[[1m^[[92m   Compiling^[[0m tokio v1.49.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:40.9387758Z ^[[1m^[[92m   Compiling^[[0m tinystr v0.8.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:41.2902476Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.2.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:41.4380146Z ^[[1m^[[92m   Compiling^[[0m rustversion v1.0.22
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:41.4731027Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:41.5997069Z ^[[1m^[[92m   Compiling^[[0m writeable v0.6.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:41.6117286Z ^[[1m^[[92m   Compiling^[[0m litemap v0.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:41.7116826Z ^[[1m^[[92m   Compiling^[[0m ryu v1.0.23
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:41.7234139Z ^[[1m^[[92m   Compiling^[[0m icu_locale_core v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:42.6020021Z ^[[1m^[[92m   Compiling^[[0m potential_utf v0.1.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:42.6696535Z ^[[1m^[[92m   Compiling^[[0m zerotrie v0.2.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:42.8936784Z ^[[1m^[[92m   Compiling^[[0m http v1.4.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.2707532Z ^[[1m^[[92m   Compiling^[[0m ring v0.17.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.5768101Z ^[[1m^[[92m   Compiling^[[0m crc32fast v1.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.6609038Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.7152149Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.228
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.8707217Z ^[[1m^[[92m   Compiling^[[0m simd-adler32 v0.3.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.8736466Z ^[[1m^[[92m   Compiling^[[0m icu_properties_data v2.1.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.9251055Z ^[[1m^[[92m   Compiling^[[0m percent-encoding v2.3.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.9324748Z ^[[1m^[[92m   Compiling^[[0m parking_lot_core v0.9.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:43.9621697Z ^[[1m^[[92m   Compiling^[[0m ident_case v1.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:44.0060749Z ^[[1m^[[92m   Compiling^[[0m slab v0.4.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:44.0456875Z ^[[1m^[[92m   Compiling^[[0m either v1.15.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:44.0483970Z ^[[1m^[[92m   Compiling^[[0m icu_normalizer_data v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:44.1086769Z ^[[1m^[[92m   Compiling^[[0m darling_core v0.23.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:44.2063410Z ^[[1m^[[92m   Compiling^[[0m icu_provider v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:44.4436753Z ^[[1m^[[92m   Compiling^[[0m icu_collections v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:45.1129362Z ^[[1m^[[92m   Compiling^[[0m bytemuck_derive v1.12.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:45.1576848Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:45.2235912Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:45.2746565Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.228
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:45.8296691Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.13.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:45.9186464Z ^[[1m^[[92m   Compiling^[[0m openssl-src v300.5.5+3.5.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.0577157Z ^[[1m^[[92m   Compiling^[[0m errno v0.3.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.1206581Z ^[[1m^[[92m   Compiling^[[0m adler2 v2.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.1766595Z ^[[1m^[[92m   Compiling^[[0m powerfmt v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.2896881Z ^[[1m^[[92m   Compiling^[[0m subtle v2.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.3729202Z ^[[1m^[[92m   Compiling^[[0m scopeguard v1.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.4064598Z ^[[1m^[[92m   Compiling^[[0m signal-hook v0.3.18
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.4898876Z ^[[1m^[[92m   Compiling^[[0m pin-utils v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.5166383Z ^[[1m^[[92m   Compiling^[[0m lock_api v0.4.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.5864712Z ^[[1m^[[92m   Compiling^[[0m deranged v0.5.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:46.6576659Z ^[[1m^[[92m   Compiling^[[0m miniz_oxide v0.8.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:47.3671391Z ^[[1m^[[92m   Compiling^[[0m signal-hook-registry v1.4.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:47.5225627Z ^[[1m^[[92m   Compiling^[[0m openssl-sys v0.9.111
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:47.5436637Z ^[[1m^[[92m   Compiling^[[0m bytemuck v1.25.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:47.5492934Z ^[[1m^[[92m   Compiling^[[0m darling_macro v0.23.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:47.7084847Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:47.8137438Z ^[[1m^[[92m   Compiling^[[0m castaway v0.2.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:47.8690629Z ^[[1m^[[92m   Compiling^[[0m itertools v0.14.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:48.0199984Z ^[[1m^[[92m   Compiling^[[0m http-body v1.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:48.0776453Z ^[[1m^[[92m   Compiling^[[0m strum_macros v0.27.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:48.1577024Z ^[[1m^[[92m   Compiling^[[0m libz-sys v1.1.23
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:48.3678193Z ^[[1m^[[92m   Compiling^[[0m rustls-pki-types v1.14.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:48.7506362Z ^[[1m^[[92m   Compiling^[[0m tracing-core v0.1.36
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.0276949Z ^[[1m^[[92m   Compiling^[[0m fnv v1.0.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.0566697Z ^[[1m^[[92m   Compiling^[[0m untrusted v0.9.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.0971992Z ^[[1m^[[92m   Compiling^[[0m num_threads v0.1.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.1729966Z ^[[1m^[[92m   Compiling^[[0m semver v1.0.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.2026862Z ^[[1m^[[92m   Compiling^[[0m static_assertions v1.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.2221003Z ^[[1m^[[92m   Compiling^[[0m time-core v0.1.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.2894014Z ^[[1m^[[92m   Compiling^[[0m unicode-segmentation v1.12.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.3376826Z ^[[1m^[[92m   Compiling^[[0m httparse v1.10.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.3426430Z ^[[1m^[[92m   Compiling^[[0m futures-task v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.4176771Z ^[[1m^[[92m   Compiling^[[0m base64 v0.22.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.4860715Z ^[[1m^[[92m   Compiling^[[0m indoc v2.0.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.5117498Z ^[[1m^[[92m   Compiling^[[0m num-conv v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.6490325Z ^[[1m^[[92m   Compiling^[[0m instability v0.3.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.6830031Z ^[[1m^[[92m   Compiling^[[0m futures-io v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.7356733Z ^[[1m^[[92m   Compiling^[[0m time v0.3.47
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.7646929Z ^[[1m^[[92m   Compiling^[[0m futures-util v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.8746697Z ^[[1m^[[92m   Compiling^[[0m unicode-truncate v2.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:49.9584565Z ^[[1m^[[92m   Compiling^[[0m convert_case v0.10.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:50.1004921Z ^[[1m^[[92m   Compiling^[[0m strum v0.27.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:50.1383267Z ^[[1m^[[92m   Compiling^[[0m rustc_version v0.4.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:50.2871693Z ^[[1m^[[92m   Compiling^[[0m compact_str v0.9.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:50.7838953Z ^[[1m^[[92m   Compiling^[[0m tracing v0.1.44
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:51.1309248Z ^[[1m^[[92m   Compiling^[[0m parking_lot v0.12.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:51.5826088Z ^[[1m^[[92m   Compiling^[[0m icu_properties v2.1.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:51.6904568Z ^[[1m^[[92m   Compiling^[[0m icu_normalizer v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:52.2203086Z ^[[1m^[[92m   Compiling^[[0m flate2 v1.1.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:52.4714503Z ^[[1m^[[92m   Compiling^[[0m darling v0.23.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:52.5284873Z ^[[1m^[[92m   Compiling^[[0m tokio-util v0.7.18
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:52.7457215Z ^[[1m^[[92m   Compiling^[[0m kasuari v0.4.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.2436651Z ^[[1m^[[92m   Compiling^[[0m lru v0.16.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.3397016Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.3746895Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.4596796Z ^[[1m^[[92m   Compiling^[[0m atomic-waker v1.1.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.5065114Z ^[[1m^[[92m   Compiling^[[0m zerocopy v0.8.39
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.5086140Z ^[[1m^[[92m   Compiling^[[0m tower-service v0.3.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.5473754Z ^[[1m^[[92m   Compiling^[[0m radium v0.7.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.6486708Z ^[[1m^[[92m   Compiling^[[0m rustls v0.23.46
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.7176691Z ^[[1m^[[92m   Compiling^[[0m try-lock v0.2.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.7426520Z ^[[1m^[[92m   Compiling^[[0m want v0.3.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.7776536Z ^[[1m^[[92m   Compiling^[[0m h2 v0.4.13
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.8226441Z ^[[1m^[[92m   Compiling^[[0m ratatui-core v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:53.9786672Z ^[[1m^[[92m   Compiling^[[0m rustls-webpki v0.103.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:54.9196788Z ^[[1m^[[92m   Compiling^[[0m signal-hook-mio v0.2.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:55.3346623Z ^[[1m^[[92m   Compiling^[[0m idna_adapter v1.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:55.3847265Z ^[[1m^[[92m   Compiling^[[0m curve25519-dalek v4.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:55.4946741Z ^[[1m^[[92m   Compiling^[[0m derive_more-impl v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:55.9692571Z ^[[1m^[[92m   Compiling^[[0m form_urlencoded v1.2.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.0746524Z ^[[1m^[[92m   Compiling^[[0m futures-channel v0.3.31
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.2126729Z ^[[1m^[[92m   Compiling^[[0m libssh2-sys v0.3.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.2707087Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.4250420Z ^[[1m^[[92m   Compiling^[[0m litrs v1.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.7208455Z ^[[1m^[[92m   Compiling^[[0m by_address v1.2.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.7386778Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.7646566Z ^[[1m^[[92m   Compiling^[[0m utf8_iter v1.0.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.8236502Z ^[[1m^[[92m   Compiling^[[0m rand_core v0.10.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.8963893Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.149
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:56.9847091Z ^[[1m^[[92m   Compiling^[[0m tap v1.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:57.0296508Z ^[[1m^[[92m   Compiling^[[0m ref-cast v1.0.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:57.1696679Z ^[[1m^[[92m   Compiling^[[0m wyz v0.5.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:57.2807251Z ^[[1m^[[92m   Compiling^[[0m idna v1.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:57.9926676Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:58.0837009Z ^[[1m^[[92m   Compiling^[[0m palette_derive v0.7.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:58.7004566Z ^[[1m^[[92m   Compiling^[[0m document-features v0.2.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:58.9926691Z ^[[1m^[[92m   Compiling^[[0m hyper v1.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:47:59.4416593Z ^[[1m^[[92m   Compiling^[[0m derive_more v2.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:03.7804910Z ^[[1m^[[92m   Compiling^[[0m signature v2.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:03.8376943Z ^[[1m^[[92m   Compiling^[[0m fdeflate v0.3.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:03.8436729Z ^[[1m^[[92m   Compiling^[[0m pxfm v0.1.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:04.2037022Z ^[[1m^[[92m   Compiling^[[0m ref-cast-impl v1.0.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:04.4676680Z ^[[1m^[[92m   Compiling^[[0m palette_math v0.7.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:04.5517905Z ^[[1m^[[92m   Compiling^[[0m sync_wrapper v1.0.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:04.5862225Z ^[[1m^[[92m   Compiling^[[0m filetime v0.2.27
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:04.6856641Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:04.7136579Z ^[[1m^[[92m   Compiling^[[0m line-clipping v0.3.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:04.8454259Z ^[[1m^[[92m   Compiling^[[0m tower-layer v0.3.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:05.0066716Z ^[[1m^[[92m   Compiling^[[0m color_quant v1.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:05.1175040Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:05.1766720Z ^[[1m^[[92m   Compiling^[[0m weezl v0.1.12
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:05.5616997Z ^[[1m^[[92m   Compiling^[[0m funty v2.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:05.8806512Z ^[[1m^[[92m   Compiling^[[0m zune-core v0.5.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.0256199Z ^[[1m^[[92m   Compiling^[[0m rustix v0.38.44
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.0356766Z ^[[1m^[[92m   Compiling^[[0m portable-atomic v1.13.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.1961313Z ^[[1m^[[92m   Compiling^[[0m ipnet v2.11.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.2676367Z ^[[1m^[[92m   Compiling^[[0m quick-error v2.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.3016902Z ^[[1m^[[92m   Compiling^[[0m byteorder-lite v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.4796713Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.5130614Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.6326946Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.25.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.6769590Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v0.2.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:06.7676825Z ^[[1m^[[92m   Compiling^[[0m image-webp v0.2.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:07.0066219Z ^[[1m^[[92m   Compiling^[[0m hyper-util v0.1.20
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:07.0597199Z ^[[1m^[[92m   Compiling^[[0m zune-jpeg v0.5.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:07.8726538Z ^[[1m^[[92m   Compiling^[[0m bitvec v1.1.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:08.0976688Z ^[[1m^[[92m   Compiling^[[0m moxcms v0.7.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:08.3323884Z ^[[1m^[[92m   Compiling^[[0m gif v0.14.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:09.0566729Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:09.3307008Z ^[[1m^[[92m   Compiling^[[0m tower v0.5.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:09.6926850Z ^[[1m^[[92m   Compiling^[[0m ratatui-widgets v0.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:09.7328671Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:10.0517812Z ^[[1m^[[92m   Compiling^[[0m palette v0.7.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:11.7049030Z ^[[1m^[[92m   Compiling^[[0m png v0.18.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:12.9387005Z ^[[1m^[[92m   Compiling^[[0m ed25519 v2.2.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:13.0191610Z ^[[1m^[[92m   Compiling^[[0m ppv-lite86 v0.2.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:13.2166970Z ^[[1m^[[92m   Compiling^[[0m tokio-rustls v0.26.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:14.5796830Z ^[[1m^[[92m   Compiling^[[0m crossterm v0.29.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:15.0217045Z ^[[1m^[[92m   Compiling^[[0m url v2.5.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:15.5546638Z ^[[1m^[[92m   Compiling^[[0m rand v0.10.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:15.9556660Z ^[[1m^[[92m   Compiling^[[0m rand_xoshiro v0.8.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:16.0026736Z ^[[1m^[[92m   Compiling^[[0m webpki-roots v1.0.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:16.0453369Z ^[[1m^[[92m   Compiling^[[0m wide v1.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:16.2276807Z ^[[1m^[[92m   Compiling^[[0m ordered-float v5.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:16.4086998Z ^[[1m^[[92m   Compiling^[[0m rand_core v0.6.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:16.5366814Z ^[[1m^[[92m   Compiling^[[0m libgit2-sys v0.18.3+1.9.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:16.7533080Z ^[[1m^[[92m   Compiling^[[0m inotify-sys v0.1.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:16.7886674Z ^[[1m^[[92m   Compiling^[[0m instant v0.1.13
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:16.8139223Z ^[[1m^[[92m   Compiling^[[0m iri-string v0.7.10
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:17.7770902Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.13
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:17.9116646Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:17.9488470Z ^[[1m^[[92m   Compiling^[[0m bit-vec v0.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.0986793Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.1310689Z ^[[1m^[[92m   Compiling^[[0m bitflags v1.3.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.1616565Z ^[[1m^[[92m   Compiling^[[0m thiserror v1.0.69
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.2836650Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.3108636Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.4.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.3502168Z ^[[1m^[[92m   Compiling^[[0m anstream v0.6.21
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.5877575Z ^[[1m^[[92m   Compiling^[[0m inotify v0.10.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.7687053Z ^[[1m^[[92m   Compiling^[[0m bit-set v0.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:18.8518493Z ^[[1m^[[92m   Compiling^[[0m tower-http v0.6.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:19.3024326Z ^[[1m^[[92m   Compiling^[[0m notify-types v1.0.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:19.4476548Z ^[[1m^[[92m   Compiling^[[0m rand_chacha v0.3.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:19.9086568Z ^[[1m^[[92m   Compiling^[[0m hyper-rustls v0.27.7
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:20.1462743Z ^[[1m^[[92m   Compiling^[[0m quantette v0.6.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:20.2196993Z ^[[1m^[[92m   Compiling^[[0m ratatui-crossterm v0.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:20.3136861Z ^[[1m^[[92m   Compiling^[[0m ed25519-dalek v2.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:20.4126907Z ^[[1m^[[92m   Compiling^[[0m image v0.25.9
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:20.5146821Z ^[[1m^[[92m   Compiling^[[0m ratatui-macros v0.7.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:20.8836595Z ^[[1m^[[92m   Compiling^[[0m serde_urlencoded v0.7.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:21.0346872Z ^[[1m^[[92m   Compiling^[[0m http-body-util v0.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:21.1886568Z ^[[1m^[[92m   Compiling^[[0m console v0.15.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:21.7556776Z ^[[1m^[[92m   Compiling^[[0m xattr v1.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:22.0097027Z ^[[1m^[[92m   Compiling^[[0m gethostname v1.1.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:22.0476696Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v1.0.69
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:22.3626418Z ^[[1m^[[92m   Compiling^[[0m quick-xml v0.38.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.2038760Z ^[[1m^[[92m   Compiling^[[0m self_update v0.42.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.2627931Z ^[[1m^[[92m   Compiling^[[0m number_prefix v0.4.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.2896447Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.3091893Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.101
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.4376578Z ^[[1m^[[92m   Compiling^[[0m x11rb-protocol v0.13.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.4518112Z ^[[1m^[[92m   Compiling^[[0m vsimd v0.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.6961521Z ^[[1m^[[92m   Compiling^[[0m pulldown-cmark v0.13.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.7786759Z ^[[1m^[[92m   Compiling^[[0m outref v0.5.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.8126672Z ^[[1m^[[92m   Compiling^[[0m linked-hash-map v0.5.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.9157912Z ^[[1m^[[92m   Compiling^[[0m option-ext v0.2.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:23.9424645Z ^[[1m^[[92m   Compiling^[[0m ratatui-image v11.0.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:24.0226639Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.1.14
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:24.1466997Z ^[[1m^[[92m   Compiling^[[0m miette v7.6.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:24.7894082Z ^[[1m^[[92m   Compiling^[[0m dirs-sys v0.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:24.9956935Z ^[[1m^[[92m   Compiling^[[0m yaml-rust v0.4.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:25.9926644Z ^[[1m^[[92m   Compiling^[[0m x11rb v0.13.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:26.9838343Z ^[[1m^[[92m   Compiling^[[0m base64-simd v0.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:27.2226939Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.5.58
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:28.2794434Z ^[[1m^[[92m   Compiling^[[0m indicatif v0.17.11
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:28.3986728Z ^[[1m^[[92m   Compiling^[[0m plist v1.8.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:29.2476639Z ^[[1m^[[92m   Compiling^[[0m tar v0.4.46
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:29.3956859Z ^[[1m^[[92m   Compiling^[[0m reqwest v0.12.28
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:30.2676582Z ^[[1m^[[92m   Compiling^[[0m icy_sixel v0.5.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:30.5926832Z ^[[1m^[[92m   Compiling^[[0m ratatui v0.30.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:30.8065795Z ^[[1m^[[92m   Compiling^[[0m zipsign-api v0.1.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:31.0893577Z ^[[1m^[[92m   Compiling^[[0m rand v0.8.8
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:31.2127367Z ^[[1m^[[92m   Compiling^[[0m notify v7.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:31.6886620Z ^[[1m^[[92m   Compiling^[[0m fancy-regex v0.16.2
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:32.7127032Z ^[[1m^[[92m   Compiling^[[0m self-replace v1.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:32.8247499Z ^[[1m^[[92m   Compiling^[[0m regex v1.12.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:33.1077037Z ^[[1m^[[92m   Compiling^[[0m bincode v1.3.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:33.3457369Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.5.55
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:33.3916679Z ^[[1m^[[92m   Compiling^[[0m quick-xml v0.37.5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:34.2176790Z ^[[1m^[[92m   Compiling^[[0m urlencoding v2.1.3
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:34.3186609Z ^[[1m^[[92m   Compiling^[[0m openssl-probe v0.1.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:34.4326788Z ^[[1m^[[92m   Compiling^[[0m unicase v2.9.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:34.5577123Z ^[[1m^[[92m   Compiling^[[0m winnow v0.7.15
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:34.6636571Z ^[[1m^[[92m   Compiling^[[0m self_cell v1.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:35.9866427Z ^[[1m^[[92m   Compiling^[[0m kdl v6.7.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:38.1566713Z ^[[1m^[[92m   Compiling^[[0m clap v4.5.58
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:38.1816602Z ^[[1m^[[92m   Compiling^[[0m syntect v5.3.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:38.5054717Z ^[[1m^[[92m   Compiling^[[0m notify-debouncer-mini v0.5.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:39.2086819Z ^[[1m^[[92m   Compiling^[[0m arboard v3.6.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:40.3665860Z ^[[1m^[[92m   Compiling^[[0m dirs v6.0.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:40.4267185Z ^[[1m^[[92m   Compiling^[[0m crossterm v0.28.1
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:48:41.3776578Z ^[[1m^[[92m   Compiling^[[0m sysinfo v0.39.6
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:49:24.6889296Z ^[[1m^[[92m   Compiling^[[0m git2 v0.20.4
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:49:27.0266977Z ^[[1m^[[92m   Compiling^[[0m vig v0.18.0 (/home/runner/work/vig/vig)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Build	2026-11-05T08:50:09.8775774Z ^[[1m^[[92m    Finished^[[0m `release` profile [optimized] target(s) in 2m 53s
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-11-05T08:50:10.0159601Z Post job cleanup.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.0163201Z ##[start-action display=Setup Rust Caching;id=__cbe1c983-abc9-45e6-9bf9-9bf578e78f98.__Swatinem_rust-cache]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.0209897Z Post job cleanup.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2494621Z ##[group]Cache Configuration
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2495028Z Cache Provider:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2495218Z     github
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2495503Z Workspaces:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2495720Z     /home/runner/work/vig/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2496605Z Cache Paths:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2496797Z     /home/runner/.cargo/bin
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2497022Z     /home/runner/.cargo/.crates.toml
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2497272Z     /home/runner/.cargo/.crates2.json
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2497514Z     /home/runner/.cargo/registry
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2497740Z     /home/runner/.cargo/git
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2497955Z     /home/runner/work/vig/vig/target
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2498179Z Restore Key:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2498372Z     v0-rust-build-Linux-arm64-005bd0d5
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2498608Z Cache Key:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2498875Z     v0-rust-build-Linux-arm64-005bd0d5-d993fc43
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2499140Z .. Prefix:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2499321Z   - v0-rust-build-Linux-arm64
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2499591Z .. Environment considered:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2500535Z   - Rust Versions:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2500864Z     - 1.99.1 aarch64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2501343Z     - 1.99.1 aarch64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2501693Z   - CARGO_INCREMENTAL
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2501896Z   - CARGO_PROFILE_DEV_DEBUG
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2502123Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2502368Z   - CARGO_TERM_COLOR
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2502572Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2502798Z   - RUST_BACKTRACE
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2502972Z   - RUSTFLAGS
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2503147Z .. Lockfiles considered:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2503366Z   - /home/runner/work/vig/vig/Cargo.lock
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2503626Z   - /home/runner/work/vig/vig/Cargo.toml
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2504064Z ##[endgroup]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2504169Z 
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2513708Z (node:18127) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:10.2514365Z (Use `node --trace-deprecation ...` to show where the warning was created)
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:11.6769739Z ... Cleaning /home/runner/work/vig/vig/target ...
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:11.6942537Z ... Cleaning cargo registry (cache-all-crates: false) ...
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:13.4730566Z ... Cleaning cargo/bin ...
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:13.4742574Z ... Cleaning cargo git cache ...
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:13.4746559Z ... Saving cache ...
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:13.4891557Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/vig/vig --files-from manifest.txt --use-compress-program zstdmt
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:16.3640923Z Sent 0 of 383943556 (0.0%), 0.0 MBs/sec
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:17.3640337Z Sent 48399236 of 383943556 (12.6%), 23.1 MBs/sec
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:17.7300470Z Sent 383943556 of 383943556 (100.0%), 154.8 MBs/sec
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:50:18.0459485Z ##[end-action id=__cbe1c983-abc9-45e6-9bf9-9bf578e78f98.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=8029]
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	﻿2026-11-05T08:50:18.0554625Z Post job cleanup.
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1306456Z [command]/usr/bin/git version
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1346093Z git version 2.56.0
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1391763Z Temporarily overriding HOME='/home/runner/work/_temp/16fd15c1-03b5-4cb5-b166-bc1e4b7bf176' before making global git config changes
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1392679Z Adding repository directory to the temporary git global config as a safe directory
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1393384Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1473677Z Removing SSH command configuration
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1474607Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1476361Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1688293Z Removing HTTP extra header
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1689054Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1720356Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1918954Z Removing includeIf entries pointing to credentials config files
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1926600Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1950240Z includeif.gitdir:/home/runner/work/vig/vig/.git.path
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1951218Z includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1952180Z includeif.gitdir:/github/workspace/.git.path
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1952796Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1960410Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git.path
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1983176Z /home/runner/work/_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.1995027Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2034808Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2059166Z /home/runner/work/_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2068315Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2105487Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2129290Z /github/runner_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2136992Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2172935Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2196455Z /github/runner_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2203573Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2247249Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Post Run actions/checkout@v6	2026-11-05T08:50:18.2446873Z Removing credentials config '/home/runner/work/_temp/git-credentials-be29a5f6-b33b-4556-a224-69f61bcd299b.config'
+build (aarch64-unknown-linux-gnu, ubuntu-24.04-arm)	Complete job	﻿2026-11-05T08:50:18.2618224Z Cleaning up orphan processes

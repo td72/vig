@@ -185,6 +185,8 @@ pub struct GhDetailViewPane {
     /// (`github-poll-interval`).
     poll_interval: Duration,
     keymap: Keymap<DetailAction>,
+    /// The signed-in login, highlighted in the header's people line.
+    viewer: Option<String>,
 }
 
 impl GhDetailViewPane {
@@ -207,7 +209,16 @@ impl GhDetailViewPane {
             watch_error: None,
             poll_interval: jobs::JOBS_POLL_INTERVAL,
             keymap: default_keymap(),
+            viewer: None,
         }
+    }
+
+    pub fn set_viewer(&mut self, login: Option<String>) {
+        self.viewer = login;
+    }
+
+    pub fn viewer(&self) -> Option<&str> {
+        self.viewer.as_deref()
     }
 
     pub fn set_keymap(&mut self, km: Keymap<DetailAction>) {

@@ -1,0 +1,1186 @@
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	﻿2026-11-05T08:47:08.0293875Z Current runner version: '2.338.2'
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0318829Z ##[group]Runner Image Provisioner
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0319839Z Hosted Compute Agent
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0320463Z Version: 20261021.618
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0321122Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0322131Z Build Date: 2026-10-21T00:45:21Z
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0322825Z Worker ID: {39a817cc-a5b7-4d10-9ae4-b508841ebc0f}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0323632Z Region: westus
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0324177Z Cloud: Azure
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0324776Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0326244Z ##[group]Operating System
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0326926Z Ubuntu
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0327525Z 26.04.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0328089Z LTS
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0328660Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0329214Z ##[group]Runner Image
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0329831Z Image: ubuntu-26.04
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0330435Z Version: 20261025.179.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0331492Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261025.179/images/ubuntu/Ubuntu2604-Readme.md
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0333521Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261025.179
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0334513Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0335663Z ##[group]GITHUB_TOKEN Permissions
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0337498Z Contents: read
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0338224Z Metadata: read
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0338819Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0340865Z Secret source: Actions
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0342247Z Cache mode: write
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0343015Z Prepare workflow directory
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0737108Z Prepare all required actions
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.0784134Z Getting action download info
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:08.5013492Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:09.0066736Z Download action repository 'actions-rust-lang/setup-rust-toolchain@v1' (SHA:166cdcfd11aee3cb47222f9ddb555ce30ddb9659)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:09.2657408Z Download action repository 'actions/upload-artifact@v6' (SHA:b7c566a772e6b6bfb58ed0dc250532a479d7789f)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:09.5396103Z Getting action download info
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:09.6706602Z Download action repository 'Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4' (SHA:c19371144df3bb44fab255c43d04cbc2ab54d1c4)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Set up job	2026-11-05T08:47:10.1601976Z Complete job name: build (x86_64-unknown-linux-gnu, ubuntu-latest)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	﻿2026-11-05T08:47:10.2613806Z ##[group]Run actions/checkout@v6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2615210Z with:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2616069Z   repository: td72/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2624415Z   token: ***
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2625303Z   ssh-strict: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2626186Z   ssh-user: git
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2627093Z   persist-credentials: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2628096Z   clean: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2629017Z   sparse-checkout-cone-mode: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2630092Z   fetch-depth: 1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2630981Z   fetch-tags: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2632024Z   show-progress: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2632935Z   lfs: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2634628Z   submodules: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2636069Z   set-safe-directory: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2637273Z   allow-unsafe-pr-checkout: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:10.2725270Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.6910663Z Syncing repository: td72/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.6912694Z ##[group]Getting Git version info
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.6913438Z Working directory is '/home/runner/work/vig/vig'
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.6945938Z [command]/usr/bin/git version
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7140116Z git version 2.56.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7170931Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7179963Z Temporarily overriding HOME='/home/runner/work/_temp/0f1915e1-b7e2-4d3c-b6c0-370bafd1450b' before making global git config changes
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7182001Z Adding repository directory to the temporary git global config as a safe directory
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7186609Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7659860Z Deleting the contents of '/home/runner/work/vig/vig'
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7661815Z ##[group]Determining repository object format
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7663221Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7663992Z ##[group]Initializing the repository
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.7664524Z [command]/usr/bin/git init /home/runner/work/vig/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8282868Z hint: Using 'master' as the name for the initial branch. This default branch name
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8284586Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8285776Z hint: to use in all of your new repositories, which will suppress this warning,
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8286606Z hint: call:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8287042Z hint:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8287607Z hint: 	git config --global init.defaultBranch <name>
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8288077Z hint:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8288519Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8289208Z hint: 'development'. The just-created branch can be renamed via this command:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8289737Z hint:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8290066Z hint: 	git branch -m <name>
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8290407Z hint:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8290861Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8488994Z Initialized empty Git repository in /home/runner/work/vig/vig/.git/
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8503262Z [command]/usr/bin/git remote add origin https://github.com/td72/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8819211Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8819797Z ##[group]Disabling automatic garbage collection
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8823584Z [command]/usr/bin/git config --local gc.auto 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8857284Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8858114Z ##[group]Setting up auth
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8858857Z Removing SSH command configuration
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8866285Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:13.8901158Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.1885717Z Removing HTTP extra header
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.1892898Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.1929940Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2194663Z Removing includeIf entries pointing to credentials config files
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2202196Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2235981Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2504841Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2553006Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2583028Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2685933Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2717511Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2747072Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2747813Z ##[group]Fetching the repository
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.2756361Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +81abbdd6441b3650fe2c84c6ab6cff72e40996f5:refs/remotes/pull/214/merge
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.9976153Z From https://github.com/td72/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:14.9976916Z  * [new ref]         81abbdd6441b3650fe2c84c6ab6cff72e40996f5 -> pull/214/merge
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.0002998Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.0004247Z ##[group]Determining the checkout info
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.0005222Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.0005819Z [command]/usr/bin/git sparse-checkout disable
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.0243026Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.0298579Z ##[group]Checking out the ref
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.0299402Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/214/merge
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9673086Z Note: switching to 'refs/remotes/pull/214/merge'.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9673644Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9674259Z You are in 'detached HEAD' state. You can look around, make experimental
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9675127Z changes and commit them, and you can discard any commits you make in this
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9675691Z state without impacting any branches by switching back to a branch.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9675979Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9676206Z If you want to create a new branch to retain commits you create, you may
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9676657Z do so (now or later) by using -c with the switch command. Example:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9676934Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9677053Z   git switch -c <new-branch-name>
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9677263Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9677374Z Or undo this operation with:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9677560Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9677656Z   git switch -
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9677807Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9678019Z Turn off this advice by setting config variable advice.detachedHead to false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9678335Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:15.9678683Z HEAD is now at 81abbdd Merge b72a36baa07ed9bff51603dc5fa127df5a7554cb into 120be50b353bbd3605987a910dc302dc4630cccd
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:16.0119075Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:16.0169270Z [command]/usr/bin/git log -1 --format=%H
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions/checkout@v6	2026-11-05T08:47:16.0197775Z 81abbdd6441b3650fe2c84c6ab6cff72e40996f5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-11-05T08:47:16.0719212Z ##[group]Run actions-rust-lang/setup-rust-toolchain@v1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0719587Z with:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0719796Z   cache: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0720013Z   cache-on-failure: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0720248Z   cache-bin: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0720467Z   cache-provider: github
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0720762Z   cache-all-crates: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0721019Z   cache-workspace-crates: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0721281Z   cache-save-if: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0721506Z   cache-targets: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0721949Z   matcher: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0722184Z   rustflags: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0722426Z   override: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0722641Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0784135Z ##[start-action display=Unbork mac;id=__actions-rust-lang_setup-rust-toolchain.__run]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0803325Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run;outcome=skipped;conclusion=skipped;duration_ms=0]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0856148Z ##[start-action display=Run : construct rustup command line;id=__actions-rust-lang_setup-rust-toolchain.flags]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0902561Z ##[group]Run : construct rustup command line
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0902955Z ^[[36;1m: construct rustup command line^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0903469Z ^[[36;1mecho "targets=$(for t in ${_srt_targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0904158Z ^[[36;1mecho "components=$(for c in ${_srt_components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0904686Z ^[[36;1mecho "downgrade=" >> $GITHUB_OUTPUT^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0940129Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0940495Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0940691Z   _srt_targets: 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0940905Z   _srt_components: 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.0941115Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1070367Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=21]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1078161Z ##[start-action display=Setting Environment Variables;id=__actions-rust-lang_setup-rust-toolchain.__run_2]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1109242Z ##[group]Run if [[ ! -v CARGO_INCREMENTAL ]]; then
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1109860Z ^[[36;1mif [[ ! -v CARGO_INCREMENTAL ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1110381Z ^[[36;1m  echo "CARGO_INCREMENTAL=0" >> $GITHUB_ENV^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1110685Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1111014Z ^[[36;1mif [[ ! -v CARGO_PROFILE_DEV_DEBUG ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1111405Z ^[[36;1m  echo "CARGO_PROFILE_DEV_DEBUG=0" >> $GITHUB_ENV^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1112076Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1112452Z ^[[36;1mif [[ ! -v CARGO_TERM_COLOR ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1112871Z ^[[36;1m  echo "CARGO_TERM_COLOR=always" >> $GITHUB_ENV^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1113176Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1113390Z ^[[36;1mif [[ ! -v RUST_BACKTRACE ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1113715Z ^[[36;1m  echo "RUST_BACKTRACE=short" >> $GITHUB_ENV^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1114003Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1114280Z ^[[36;1mif [[ ( ! -v RUSTFLAGS ) && $_srt_NEW_RUSTFLAGS != "" ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1114687Z ^[[36;1m  echo "RUSTFLAGS=$_srt_NEW_RUSTFLAGS" >> $GITHUB_ENV^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1114998Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1115227Z ^[[36;1m# Enable faster sparse index on nightly^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1115590Z ^[[36;1m# The value is ignored on stable and causes no problems^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1116120Z ^[[36;1m# https://internals.rust-lang.org/t/call-for-testing-cargo-sparse-registry/16862^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1116665Z ^[[36;1mif [[ ! -v CARGO_UNSTABLE_SPARSE_REGISTRY ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1117063Z ^[[36;1m  echo "CARGO_UNSTABLE_SPARSE_REGISTRY=true" >> $GITHUB_ENV^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1117403Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1117662Z ^[[36;1mif [[ ! -v CARGO_REGISTRIES_CRATES_IO_PROTOCOL ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1118092Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse" >> $GITHUB_ENV^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1118456Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1146754Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1147107Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1147314Z   _srt_NEW_RUSTFLAGS: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1147574Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1209990Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=13]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1213754Z ##[start-action display=Install Rust Problem Matcher;id=__actions-rust-lang_setup-rust-toolchain.__run_3]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1248142Z ##[group]Run echo "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1249447Z ^[[36;1mecho "::add-matcher::/home/runner/work/_actions/actions-rust-lang/setup-rust-toolchain/v1/rust.json"^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1286093Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1286671Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1287001Z   CARGO_INCREMENTAL: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1287389Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1287812Z   CARGO_TERM_COLOR: always
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1288208Z   RUST_BACKTRACE: short
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1288610Z   RUSTFLAGS: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1288937Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1289254Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1289549Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1411543Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_3;outcome=success;conclusion=success;duration_ms=19]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1416157Z ##[start-action display=Install rustup, if needed;id=__actions-rust-lang_setup-rust-toolchain.__run_4]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1447183Z ##[group]Run if ! command -v rustup &> /dev/null ; then
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1447823Z ^[[36;1mif ! command -v rustup &> /dev/null ; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1448906Z ^[[36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused -fsSL "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1450137Z ^[[36;1m^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1450580Z ^[[36;1m  # Resolve the correct CARGO_HOME path depending on OS^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1451206Z ^[[36;1m  if [[ "$RUNNER_OS" == "Windows" ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1452192Z ^[[36;1m    echo "${CARGO_HOME:-$USERPROFILE/.cargo}/bin" | sed 's|/|\\|g' >> $GITHUB_PATH^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1452900Z ^[[36;1m  else^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1453363Z ^[[36;1m    echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1453913Z ^[[36;1m  fi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1454295Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1492272Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1492668Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1492872Z   CARGO_INCREMENTAL: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1493108Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1493355Z   CARGO_TERM_COLOR: always
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1493593Z   RUST_BACKTRACE: short
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1494025Z   RUSTFLAGS: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1494449Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1494951Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1495436Z   RUNNER_OS: Linux
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1495782Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1568282Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=15]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1575246Z ##[start-action display=rustup toolchain install stable;id=__actions-rust-lang_setup-rust-toolchain.__run_5]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1607912Z ##[group]Run # Check if value is set
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1608238Z ^[[36;1m# Check if value is set^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1608515Z ^[[36;1mif [[ -n "$_srt_rust_src_dir" ]]^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1608982Z ^[[36;1mthen^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1609396Z ^[[36;1m  # If value is set the directory must exist^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1609936Z ^[[36;1m  if [[ -d "$_srt_rust_src_dir" ]]^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1610391Z ^[[36;1m  then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1610740Z ^[[36;1m    cd "$_srt_rust_src_dir"^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1611179Z ^[[36;1m  else^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1611909Z ^[[36;1m    echo "'rust-src-dir' does not point to an existing directory" >&2^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1612969Z ^[[36;1m    echo "The value of 'rust-src-dir' is: ${_srt_rust_src_dir}" >&2^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1613582Z ^[[36;1m    exit 1^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1613922Z ^[[36;1m  fi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1614239Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1614814Z ^[[36;1mif [[ -z "$_srt_toolchain" && ( -f "rust-toolchain" || -f "rust-toolchain.toml") ]]^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1615510Z ^[[36;1mthen^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1615951Z ^[[36;1m  # Install the toolchain as specified in the file^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1616673Z ^[[36;1m  # rustup show is the old way that implicitly installed a toolchain^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1617411Z ^[[36;1m  # rustup toolchain install is the new explicit way^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1618210Z ^[[36;1m  # https://github.com/rust-lang/rustup/issues/3635#issuecomment-2343511297^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1619092Z ^[[36;1m  rustup show active-toolchain || rustup toolchain install^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1619735Z ^[[36;1m  if [[ -n $_srt_components ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1620311Z ^[[36;1m    rustup component add ${_srt_components//,/ }^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1620837Z ^[[36;1m  fi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1621195Z ^[[36;1m  if [[ -n $_srt_targets ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1621894Z ^[[36;1m    rustup target add ${_srt_targets//,/ }^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1622386Z ^[[36;1m  fi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1622704Z ^[[36;1melse^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1623053Z ^[[36;1m  if [[ -z "$_srt_toolchain" ]]^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1623506Z ^[[36;1m  then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1623857Z ^[[36;1m    _srt_toolchain=stable^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1624292Z ^[[36;1m  fi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1624757Z ^[[36;1m  rustup toolchain install ${_srt_toolchain//,/ }  --profile minimal --no-self-update^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1625224Z ^[[36;1m  # Take the last element from the list^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1625546Z ^[[36;1m  if [[ "$_srt_override" == "true" ]]^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1625974Z ^[[36;1m  then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1626226Z ^[[36;1m    rustup override set ${_srt_toolchain//*,/ }^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1626526Z ^[[36;1m  fi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1626802Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1665439Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1666014Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1666343Z   CARGO_INCREMENTAL: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1666734Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1667142Z   CARGO_TERM_COLOR: always
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1667531Z   RUST_BACKTRACE: short
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1667907Z   RUSTFLAGS: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1668317Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1668818Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1669297Z   _srt_toolchain: 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1669632Z   _srt_targets: 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1669964Z   _srt_components: 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1670308Z   _srt_override: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1670664Z   _srt_rust_src_dir: 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:16.1671025Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.1254669Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4458885Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4538756Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.1 (58cf8f9c3 2026-10-13)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4539169Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4614349Z info: override toolchain for /home/runner/work/vig/vig set to stable-x86_64-unknown-linux-gnu
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4638662Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=3306]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4642295Z ##[start-action display=Print installed versions;id=__actions-rust-lang_setup-rust-toolchain.versions]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4666537Z ##[group]Run echo "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4667043Z ^[[36;1mecho "rustc-version=$(rustc --version)" >> $GITHUB_OUTPUT^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4667409Z ^[[36;1mrustc --version --verbose^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4667741Z ^[[36;1mecho "cargo-version=$(cargo --version)" >> $GITHUB_OUTPUT^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4668108Z ^[[36;1mcargo --version --verbose^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4668615Z ^[[36;1mecho "rustup-version=$(rustup --version)" >> $GITHUB_OUTPUT^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4668983Z ^[[36;1mrustup --version^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4669218Z ^[[36;1m^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4669671Z ^[[36;1m_srt_DATE=$(rustc --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4670325Z ^[[36;1m_srt_HASH=$(rustc --version --verbose | sed -ne 's/^commit-hash: //p')^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4670844Z ^[[36;1mecho "cachekey=$(echo $_srt_DATE$_srt_HASH | head -c12)" >> $GITHUB_OUTPUT^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4699431Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4699780Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4699985Z   CARGO_INCREMENTAL: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4700220Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4700466Z   CARGO_TERM_COLOR: always
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4700709Z   RUST_BACKTRACE: short
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4700955Z   RUSTFLAGS: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4701207Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4701514Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4702214Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4978621Z rustc 1.99.1 (58cf8f9c3 2026-10-13)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4978995Z binary: rustc
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4979275Z commit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4979605Z commit-date: 2026-10-13
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4979862Z host: x86_64-unknown-linux-gnu
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.4980115Z release: 1.99.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:19.5769278Z LLVM version: 23.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4585305Z cargo 1.99.1 (5f94df478 2026-08-27)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4586054Z release: 1.99.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4586567Z commit-hash: 5f94df4789f005f9a352888e8355ffc645b7ed0e
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4587115Z commit-date: 2026-08-27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4587534Z host: x86_64-unknown-linux-gnu
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4587986Z libgit2: 1.9.6 (sys:0.21.0 vendored)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4588931Z libcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4589596Z ssl: OpenSSL 3.6.3 9 Jun 2026
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4590040Z os: Ubuntu 26.4.0 (resolute) [64-bit]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4628053Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4719354Z info: the currently active `rustc` version is `rustc 1.99.1 (58cf8f9c3 2026-10-13)`
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4757251Z info: This is the version for the rustup toolchain manager, not the rustc compiler.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4757749Z rustup 1.29.2 (d8c92c676 2026-10-21)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.4842442Z info: the currently active `rustc` version is `rustc 1.99.1 (58cf8f9c3 2026-10-13)`
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5143603Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.versions;outcome=success;conclusion=success;duration_ms=1050]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5146384Z ##[start-action display=Downgrade registry access protocol when needed;id=__actions-rust-lang_setup-rust-toolchain.__run_6]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5167620Z ##[group]Run # Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5168194Z ^[[36;1m# Not all versions support setting CARGO_REGISTRIES_CRATES_IO_PROTOCOL^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5168725Z ^[[36;1m# On versions 1.66, 1.67, and 1.68.0-nightly the value "sparse" is still unstable.^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5169300Z ^[[36;1m# https://github.com/dtolnay/rust-toolchain/pull/69#discussion_r1107268108^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5169859Z ^[[36;1m# If we detect an incompatible value, set it to "git" which is always supported.^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5170592Z ^[[36;1mif [[ "rustc 1.99.1 (58cf8f9c3 2026-10-13)" =~ ^rustc\ (1\.6[67]\.|1\.68\.0-nightly) && "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL}" == "sparse" ]]; then^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5171229Z ^[[36;1m  echo "Downgrade cargo registry protocol to git"^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5171962Z ^[[36;1m  echo "CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git" >> $GITHUB_ENV^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5172486Z ^[[36;1mfi^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5200372Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5200724Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5201085Z   CARGO_INCREMENTAL: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5201328Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5201862Z   CARGO_TERM_COLOR: always
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5202115Z   RUST_BACKTRACE: short
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5202344Z   RUSTFLAGS: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5202599Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5202896Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5203184Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5255973Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=10]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5258153Z ##[start-action display=Setup Rust Caching;id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5306715Z ##[group]Run Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5307113Z with:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5307318Z   cache-on-failure: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5307551Z   cache-bin: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5307762Z   cache-provider: github
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5308003Z   cache-all-crates: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5308254Z   cache-workspace-crates: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5308505Z   cache-targets: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5308721Z   save-if: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5308929Z   prefix-key: v0-rust
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5309149Z   add-job-id-key: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5309391Z   add-rust-environment-hash-key: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5309673Z   lookup-only: false
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5309886Z   cmd-format: {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5310085Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5310279Z   CARGO_INCREMENTAL: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5310512Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5310758Z   CARGO_TERM_COLOR: always
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5311005Z   RUST_BACKTRACE: short
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5311239Z   RUSTFLAGS: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5311490Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5312145Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.5312437Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.9292228Z (node:2532) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:20.9293114Z (Use `node --trace-deprecation ...` to show where the warning was created)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7053540Z ##[group]Cache Configuration
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7054547Z Cache Provider:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7055334Z     github
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7055718Z Workspaces:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7056085Z     /home/runner/work/vig/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7056529Z Cache Paths:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7056881Z     /home/runner/.cargo/bin
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7057323Z     /home/runner/.cargo/.crates.toml
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7057844Z     /home/runner/.cargo/.crates2.json
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7058376Z     /home/runner/.cargo/registry
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7058860Z     /home/runner/.cargo/git
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7059388Z     /home/runner/work/vig/vig/target
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7059918Z Restore Key:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7060339Z     v0-rust-build-Linux-x64-8e2c72a2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7060832Z Cache Key:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7061274Z     v0-rust-build-Linux-x64-8e2c72a2-d993fc43
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7062113Z .. Prefix:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7062645Z   - v0-rust-build-Linux-x64
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7063140Z .. Environment considered:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7063473Z   - Rust Versions:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7064018Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7064624Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7065180Z   - CARGO_INCREMENTAL
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7065556Z   - CARGO_PROFILE_DEV_DEBUG
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7065910Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7066335Z   - CARGO_TERM_COLOR
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7066661Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7067072Z   - RUST_BACKTRACE
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7067420Z   - RUSTFLAGS
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7067711Z .. Lockfiles considered:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7068111Z   - /home/runner/work/vig/vig/Cargo.lock
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7068794Z   - /home/runner/work/vig/vig/Cargo.toml
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7069483Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7069637Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:21.7069797Z ... Restoring cache ...
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:22.0373106Z No cache found.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:47:22.0504258Z ##[end-action id=__actions-rust-lang_setup-rust-toolchain.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=1524]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	﻿2026-11-05T08:47:22.0560381Z ##[group]Run cargo build --locked --release --features vendored
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0560860Z ^[[36;1mcargo build --locked --release --features vendored^[[0m
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0589882Z shell: /usr/bin/bash -e {0}
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0590140Z env:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0590343Z   CARGO_INCREMENTAL: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0590585Z   CARGO_PROFILE_DEV_DEBUG: 0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0590841Z   CARGO_TERM_COLOR: always
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0591076Z   RUST_BACKTRACE: short
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0591322Z   RUSTFLAGS: -D warnings
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0591827Z   CARGO_UNSTABLE_SPARSE_REGISTRY: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0592146Z   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0592444Z   CACHE_ON_FAILURE: true
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.0592670Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:22.7140488Z ^[[1m^[[92m    Updating^[[0m crates.io index
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4175519Z ^[[1m^[[92m Downloading^[[0m crates ...
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4658002Z ^[[1m^[[92m  Downloaded^[[0m form_urlencoded v1.2.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4672828Z ^[[1m^[[92m  Downloaded^[[0m futures-core v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4686831Z ^[[1m^[[92m  Downloaded^[[0m adler2 v2.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4699900Z ^[[1m^[[92m  Downloaded^[[0m funty v2.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4708294Z ^[[1m^[[92m  Downloaded^[[0m futures-channel v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4723483Z ^[[1m^[[92m  Downloaded^[[0m half v2.7.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4748268Z ^[[1m^[[92m  Downloaded^[[0m h2 v0.4.13
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4816488Z ^[[1m^[[92m  Downloaded^[[0m http-body v1.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4826714Z ^[[1m^[[92m  Downloaded^[[0m icu_properties v2.1.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4847506Z ^[[1m^[[92m  Downloaded^[[0m idna_adapter v1.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4856221Z ^[[1m^[[92m  Downloaded^[[0m hashbrown v0.16.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4914731Z ^[[1m^[[92m  Downloaded^[[0m http-body-util v0.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4932599Z ^[[1m^[[92m  Downloaded^[[0m ident_case v1.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4940843Z ^[[1m^[[92m  Downloaded^[[0m heck v0.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4953568Z ^[[1m^[[92m  Downloaded^[[0m hex v0.4.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.4970615Z ^[[1m^[[92m  Downloaded^[[0m http v1.4.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5003963Z ^[[1m^[[92m  Downloaded^[[0m hyper v1.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5070277Z ^[[1m^[[92m  Downloaded^[[0m hyper-rustls v0.27.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5092425Z ^[[1m^[[92m  Downloaded^[[0m icu_locale_core v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5166893Z ^[[1m^[[92m  Downloaded^[[0m instant v0.1.13
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5182912Z ^[[1m^[[92m  Downloaded^[[0m inotify-sys v0.1.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5191435Z ^[[1m^[[92m  Downloaded^[[0m lru-slab v0.1.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5199836Z ^[[1m^[[92m  Downloaded^[[0m termios v0.3.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5218293Z ^[[1m^[[92m  Downloaded^[[0m tempfile v3.25.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5241882Z ^[[1m^[[92m  Downloaded^[[0m vcpkg v0.2.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5805996Z ^[[1m^[[92m  Downloaded^[[0m inotify v0.10.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5826057Z ^[[1m^[[92m  Downloaded^[[0m instability v0.3.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5841223Z ^[[1m^[[92m  Downloaded^[[0m lab v0.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5855926Z ^[[1m^[[92m  Downloaded^[[0m tar v0.4.46
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5883671Z ^[[1m^[[92m  Downloaded^[[0m crossterm v0.28.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5963056Z ^[[1m^[[92m  Downloaded^[[0m indoc v2.0.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.5992454Z ^[[1m^[[92m  Downloaded^[[0m notify-debouncer-mini v0.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6000968Z ^[[1m^[[92m  Downloaded^[[0m notify-types v1.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6032217Z ^[[1m^[[92m  Downloaded^[[0m rustc-hash v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6044183Z ^[[1m^[[92m  Downloaded^[[0m thiserror v2.0.18
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6104461Z ^[[1m^[[92m  Downloaded^[[0m zune-core v0.5.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6125420Z ^[[1m^[[92m  Downloaded^[[0m anyhow v1.0.101
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6162730Z ^[[1m^[[92m  Downloaded^[[0m base64-simd v0.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6175235Z ^[[1m^[[92m  Downloaded^[[0m bit-vec v0.6.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6186670Z ^[[1m^[[92m  Downloaded^[[0m futures-task v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6197200Z ^[[1m^[[92m  Downloaded^[[0m generic-array v0.14.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6210288Z ^[[1m^[[92m  Downloaded^[[0m mac_address v1.1.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6224293Z ^[[1m^[[92m  Downloaded^[[0m memmem v0.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6233251Z ^[[1m^[[92m  Downloaded^[[0m memoffset v0.9.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6244333Z ^[[1m^[[92m  Downloaded^[[0m num-conv v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6251866Z ^[[1m^[[92m  Downloaded^[[0m num-derive v0.4.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6267958Z ^[[1m^[[92m  Downloaded^[[0m num_threads v0.1.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6277508Z ^[[1m^[[92m  Downloaded^[[0m number_prefix v0.4.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6285945Z ^[[1m^[[92m  Downloaded^[[0m openssl-probe v0.1.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6296032Z ^[[1m^[[92m  Downloaded^[[0m option-ext v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6303706Z ^[[1m^[[92m  Downloaded^[[0m outref v0.5.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6314525Z ^[[1m^[[92m  Downloaded^[[0m palette v0.7.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6428102Z ^[[1m^[[92m  Downloaded^[[0m aho-corasick v1.1.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6476842Z ^[[1m^[[92m  Downloaded^[[0m futures-io v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6484551Z ^[[1m^[[92m  Downloaded^[[0m futures-sink v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6491268Z ^[[1m^[[92m  Downloaded^[[0m gethostname v1.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6500545Z ^[[1m^[[92m  Downloaded^[[0m is_terminal_polyfill v1.70.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6509262Z ^[[1m^[[92m  Downloaded^[[0m itoa v1.0.17
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6522475Z ^[[1m^[[92m  Downloaded^[[0m jobserver v0.1.34
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6540945Z ^[[1m^[[92m  Downloaded^[[0m lazy_static v1.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6557417Z ^[[1m^[[92m  Downloaded^[[0m line-clipping v0.3.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6570796Z ^[[1m^[[92m  Downloaded^[[0m linked-hash-map v0.5.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6580292Z ^[[1m^[[92m  Downloaded^[[0m lock_api v0.4.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6591870Z ^[[1m^[[92m  Downloaded^[[0m ref-cast v1.0.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6618871Z ^[[1m^[[92m  Downloaded^[[0m siphasher v1.0.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6631140Z ^[[1m^[[92m  Downloaded^[[0m sysinfo v0.39.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6744803Z ^[[1m^[[92m  Downloaded^[[0m ipnet v2.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6759267Z ^[[1m^[[92m  Downloaded^[[0m kasuari v0.4.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6779812Z ^[[1m^[[92m  Downloaded^[[0m lru v0.16.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6790272Z ^[[1m^[[92m  Downloaded^[[0m notify v7.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6805472Z ^[[1m^[[92m  Downloaded^[[0m ordered-float v4.6.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6819215Z ^[[1m^[[92m  Downloaded^[[0m ordered-float v5.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6835080Z ^[[1m^[[92m  Downloaded^[[0m quote v1.0.44
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6859888Z ^[[1m^[[92m  Downloaded^[[0m rand_xoshiro v0.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6878555Z ^[[1m^[[92m  Downloaded^[[0m rustc_version v0.4.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6890715Z ^[[1m^[[92m  Downloaded^[[0m self_cell v1.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6900358Z ^[[1m^[[92m  Downloaded^[[0m slab v0.4.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6912436Z ^[[1m^[[92m  Downloaded^[[0m smallvec v1.15.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6931404Z ^[[1m^[[92m  Downloaded^[[0m spki v0.7.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6948299Z ^[[1m^[[92m  Downloaded^[[0m stable_deref_trait v1.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6956655Z ^[[1m^[[92m  Downloaded^[[0m static_assertions v1.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6969761Z ^[[1m^[[92m  Downloaded^[[0m cfg_aliases v0.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6978741Z ^[[1m^[[92m  Downloaded^[[0m curve25519-dalek-derive v0.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6988166Z ^[[1m^[[92m  Downloaded^[[0m filedescriptor v0.8.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.6997153Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.2.17
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7024489Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.3.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7056422Z ^[[1m^[[92m  Downloaded^[[0m getrandom v0.4.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7091463Z ^[[1m^[[92m  Downloaded^[[0m gif v0.14.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7107729Z ^[[1m^[[92m  Downloaded^[[0m httparse v1.10.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7130988Z ^[[1m^[[92m  Downloaded^[[0m icu_collections v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7187915Z ^[[1m^[[92m  Downloaded^[[0m icu_normalizer v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7220390Z ^[[1m^[[92m  Downloaded^[[0m icu_provider v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7246726Z ^[[1m^[[92m  Downloaded^[[0m image-webp v0.2.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7271165Z ^[[1m^[[92m  Downloaded^[[0m indicatif v0.17.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7308010Z ^[[1m^[[92m  Downloaded^[[0m litemap v0.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7334226Z ^[[1m^[[92m  Downloaded^[[0m litrs v1.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7361851Z ^[[1m^[[92m  Downloaded^[[0m log v0.4.29
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7384724Z ^[[1m^[[92m  Downloaded^[[0m miniz_oxide v0.8.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7407917Z ^[[1m^[[92m  Downloaded^[[0m num-traits v0.2.19
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7432282Z ^[[1m^[[92m  Downloaded^[[0m once_cell v1.21.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7455722Z ^[[1m^[[92m  Downloaded^[[0m openssl-sys v0.9.111
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7508333Z ^[[1m^[[92m  Downloaded^[[0m palette_math v0.7.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7521128Z ^[[1m^[[92m  Downloaded^[[0m percent-encoding v2.3.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7529284Z ^[[1m^[[92m  Downloaded^[[0m phf_codegen v0.11.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7537437Z ^[[1m^[[92m  Downloaded^[[0m self_update v0.42.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7560948Z ^[[1m^[[92m  Downloaded^[[0m serde_urlencoded v0.7.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7576613Z ^[[1m^[[92m  Downloaded^[[0m signal-hook v0.3.18
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7604945Z ^[[1m^[[92m  Downloaded^[[0m signal-hook-mio v0.2.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7616606Z ^[[1m^[[92m  Downloaded^[[0m socket2 v0.6.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7633570Z ^[[1m^[[92m  Downloaded^[[0m chacha20 v0.10.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7656008Z ^[[1m^[[92m  Downloaded^[[0m darling v0.23.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7707292Z ^[[1m^[[92m  Downloaded^[[0m darling_core v0.23.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7758525Z ^[[1m^[[92m  Downloaded^[[0m fastrand v2.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7770399Z ^[[1m^[[92m  Downloaded^[[0m hyper-util v0.1.20
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7828658Z ^[[1m^[[92m  Downloaded^[[0m icu_normalizer_data v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7848814Z ^[[1m^[[92m  Downloaded^[[0m indexmap v2.13.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7888791Z ^[[1m^[[92m  Downloaded^[[0m memchr v2.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7938982Z ^[[1m^[[92m  Downloaded^[[0m minimal-lexical v0.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.7981797Z ^[[1m^[[92m  Downloaded^[[0m mio v1.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8036864Z ^[[1m^[[92m  Downloaded^[[0m palette_derive v0.7.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8053461Z ^[[1m^[[92m  Downloaded^[[0m parking_lot v0.12.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8080887Z ^[[1m^[[92m  Downloaded^[[0m parking_lot_core v0.9.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8097322Z ^[[1m^[[92m  Downloaded^[[0m pest_derive v2.8.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8119680Z ^[[1m^[[92m  Downloaded^[[0m pest_generator v2.8.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8134912Z ^[[1m^[[92m  Downloaded^[[0m phf v0.11.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8146241Z ^[[1m^[[92m  Downloaded^[[0m phf_generator v0.11.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8157216Z ^[[1m^[[92m  Downloaded^[[0m rand v0.10.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8191870Z ^[[1m^[[92m  Downloaded^[[0m ratatui v0.30.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8229007Z ^[[1m^[[92m  Downloaded^[[0m semver v1.0.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8250733Z ^[[1m^[[92m  Downloaded^[[0m serde_core v1.0.228
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8276491Z ^[[1m^[[92m  Downloaded^[[0m serde_derive v1.0.228
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8305010Z ^[[1m^[[92m  Downloaded^[[0m sha2 v0.10.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8328364Z ^[[1m^[[92m  Downloaded^[[0m shlex v1.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8340400Z ^[[1m^[[92m  Downloaded^[[0m signal-hook-registry v1.4.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8351414Z ^[[1m^[[92m  Downloaded^[[0m signature v2.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8364851Z ^[[1m^[[92m  Downloaded^[[0m strsim v0.11.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8376881Z ^[[1m^[[92m  Downloaded^[[0m tap v1.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8385730Z ^[[1m^[[92m  Downloaded^[[0m utf8parse v0.2.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8394708Z ^[[1m^[[92m  Downloaded^[[0m wezterm-color-types v0.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8402722Z ^[[1m^[[92m  Downloaded^[[0m dirs v6.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8414959Z ^[[1m^[[92m  Downloaded^[[0m dirs-sys v0.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8425280Z ^[[1m^[[92m  Downloaded^[[0m equivalent v1.0.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8434772Z ^[[1m^[[92m  Downloaded^[[0m errno v0.3.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8448631Z ^[[1m^[[92m  Downloaded^[[0m euclid v0.22.13
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8479428Z ^[[1m^[[92m  Downloaded^[[0m fancy-regex v0.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8510250Z ^[[1m^[[92m  Downloaded^[[0m fancy-regex v0.16.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8544254Z ^[[1m^[[92m  Downloaded^[[0m fixedbitset v0.4.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8556309Z ^[[1m^[[92m  Downloaded^[[0m icu_properties_data v2.1.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8652907Z ^[[1m^[[92m  Downloaded^[[0m idna v1.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8685975Z ^[[1m^[[92m  Downloaded^[[0m iri-string v0.7.10
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8756845Z ^[[1m^[[92m  Downloaded^[[0m itertools v0.14.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.8823352Z ^[[1m^[[92m  Downloaded^[[0m kdl v6.7.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9170791Z ^[[1m^[[92m  Downloaded^[[0m libm v0.2.16
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9272737Z ^[[1m^[[92m  Downloaded^[[0m miette v7.6.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9314756Z ^[[1m^[[92m  Downloaded^[[0m nom v7.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9363271Z ^[[1m^[[92m  Downloaded^[[0m pest_meta v2.8.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9384818Z ^[[1m^[[92m  Downloaded^[[0m phf_shared v0.11.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9393560Z ^[[1m^[[92m  Downloaded^[[0m pin-project-lite v0.2.16
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9446875Z ^[[1m^[[92m  Downloaded^[[0m pin-utils v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9458031Z ^[[1m^[[92m  Downloaded^[[0m pkcs8 v0.10.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9484702Z ^[[1m^[[92m  Downloaded^[[0m pkg-config v0.3.32
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9499228Z ^[[1m^[[92m  Downloaded^[[0m serde v1.0.228
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9531346Z ^[[1m^[[92m  Downloaded^[[0m tokio-rustls v0.26.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9550369Z ^[[1m^[[92m  Downloaded^[[0m tower v0.5.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9644200Z ^[[1m^[[92m  Downloaded^[[0m tower-layer v0.3.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9653442Z ^[[1m^[[92m  Downloaded^[[0m want v0.3.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9661221Z ^[[1m^[[92m  Downloaded^[[0m wezterm-dynamic v0.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9673942Z ^[[1m^[[92m  Downloaded^[[0m wyz v0.5.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9684861Z ^[[1m^[[92m  Downloaded^[[0m zerovec v0.11.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9735002Z ^[[1m^[[92m  Downloaded^[[0m zune-jpeg v0.4.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9762891Z ^[[1m^[[92m  Downloaded^[[0m base64 v0.22.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9797632Z ^[[1m^[[92m  Downloaded^[[0m bit-set v0.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9809886Z ^[[1m^[[92m  Downloaded^[[0m document-features v0.2.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9821544Z ^[[1m^[[92m  Downloaded^[[0m ed25519 v2.2.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9837956Z ^[[1m^[[92m  Downloaded^[[0m either v1.15.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9851412Z ^[[1m^[[92m  Downloaded^[[0m find-msvc-tools v0.1.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9866257Z ^[[1m^[[92m  Downloaded^[[0m finl_unicode v1.4.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9900225Z ^[[1m^[[92m  Downloaded^[[0m flate2 v1.1.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:23.9946595Z ^[[1m^[[92m  Downloaded^[[0m futures-util v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0067061Z ^[[1m^[[92m  Downloaded^[[0m git2 v0.20.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0144696Z ^[[1m^[[92m  Downloaded^[[0m moxcms v0.7.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0238452Z ^[[1m^[[92m  Downloaded^[[0m pest v2.8.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0281237Z ^[[1m^[[92m  Downloaded^[[0m plist v1.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0306562Z ^[[1m^[[92m  Downloaded^[[0m potential_utf v0.1.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0316125Z ^[[1m^[[92m  Downloaded^[[0m powerfmt v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0326538Z ^[[1m^[[92m  Downloaded^[[0m pulldown-cmark-escape v0.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0333469Z ^[[1m^[[92m  Downloaded^[[0m quick-error v2.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0345174Z ^[[1m^[[92m  Downloaded^[[0m radium v0.7.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0354302Z ^[[1m^[[92m  Downloaded^[[0m ratatui-widgets v0.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0423944Z ^[[1m^[[92m  Downloaded^[[0m serde_json v1.0.149
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0492149Z ^[[1m^[[92m  Downloaded^[[0m strum v0.27.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0500838Z ^[[1m^[[92m  Downloaded^[[0m strum_macros v0.27.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0523831Z ^[[1m^[[92m  Downloaded^[[0m time-core v0.1.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0535037Z ^[[1m^[[92m  Downloaded^[[0m tokio-util v0.7.18
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0609222Z ^[[1m^[[92m  Downloaded^[[0m tracing-core v0.1.36
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0634691Z ^[[1m^[[92m  Downloaded^[[0m urlencoding v2.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0644436Z ^[[1m^[[92m  Downloaded^[[0m wezterm-dynamic-derive v0.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0653614Z ^[[1m^[[92m  Downloaded^[[0m yaml-rust v0.4.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0676787Z ^[[1m^[[92m  Downloaded^[[0m zerotrie v0.2.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0709399Z ^[[1m^[[92m  Downloaded^[[0m zipsign-api v0.1.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0728041Z ^[[1m^[[92m  Downloaded^[[0m anstream v0.6.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0747203Z ^[[1m^[[92m  Downloaded^[[0m arboard v3.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0772325Z ^[[1m^[[92m  Downloaded^[[0m atomic v0.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0785810Z ^[[1m^[[92m  Downloaded^[[0m bytemuck_derive v1.12.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0798781Z ^[[1m^[[92m  Downloaded^[[0m darling_macro v0.23.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0805478Z ^[[1m^[[92m  Downloaded^[[0m foldhash v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0817181Z ^[[1m^[[92m  Downloaded^[[0m image v0.25.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0903501Z ^[[1m^[[92m  Downloaded^[[0m ppv-lite86 v0.2.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0916058Z ^[[1m^[[92m  Downloaded^[[0m proc-macro2 v1.0.106
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0943684Z ^[[1m^[[92m  Downloaded^[[0m quinn-udp v0.5.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0960291Z ^[[1m^[[92m  Downloaded^[[0m rand_chacha v0.3.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0971360Z ^[[1m^[[92m  Downloaded^[[0m rand_core v0.6.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0983920Z ^[[1m^[[92m  Downloaded^[[0m subtle v2.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.0994958Z ^[[1m^[[92m  Downloaded^[[0m atomic-waker v1.1.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1006187Z ^[[1m^[[92m  Downloaded^[[0m clap v4.5.58
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1095211Z ^[[1m^[[92m  Downloaded^[[0m nix v0.29.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1198920Z ^[[1m^[[92m  Downloaded^[[0m png v0.18.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1237901Z ^[[1m^[[92m  Downloaded^[[0m quantette v0.6.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1269721Z ^[[1m^[[92m  Downloaded^[[0m quinn v0.11.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1299806Z ^[[1m^[[92m  Downloaded^[[0m rand v0.8.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1331259Z ^[[1m^[[92m  Downloaded^[[0m rand_pcg v0.10.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1345239Z ^[[1m^[[92m  Downloaded^[[0m ref-cast-impl v1.0.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1352744Z ^[[1m^[[92m  Downloaded^[[0m rustix v0.38.44
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1594482Z ^[[1m^[[92m  Downloaded^[[0m sync_wrapper v1.0.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1602048Z ^[[1m^[[92m  Downloaded^[[0m block-buffer v0.10.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1612251Z ^[[1m^[[92m  Downloaded^[[0m by_address v1.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1620040Z ^[[1m^[[92m  Downloaded^[[0m pulldown-cmark v0.13.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1667271Z ^[[1m^[[92m  Downloaded^[[0m rand_core v0.10.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1682507Z ^[[1m^[[92m  Downloaded^[[0m ratatui-crossterm v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1691068Z ^[[1m^[[92m  Downloaded^[[0m ratatui-macros v0.7.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1705265Z ^[[1m^[[92m  Downloaded^[[0m ratatui-termwiz v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1713908Z ^[[1m^[[92m  Downloaded^[[0m rustls-pki-types v1.14.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1737142Z ^[[1m^[[92m  Downloaded^[[0m synstructure v0.13.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1746745Z ^[[1m^[[92m  Downloaded^[[0m unicase v2.9.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1759713Z ^[[1m^[[92m  Downloaded^[[0m url v2.5.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1783857Z ^[[1m^[[92m  Downloaded^[[0m zerofrom-derive v0.1.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1792463Z ^[[1m^[[92m  Downloaded^[[0m bitflags v1.3.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1822609Z ^[[1m^[[92m  Downloaded^[[0m bitflags v2.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1862362Z ^[[1m^[[92m  Downloaded^[[0m fnv v1.0.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1870738Z ^[[1m^[[92m  Downloaded^[[0m portable-atomic v1.13.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1938379Z ^[[1m^[[92m  Downloaded^[[0m same-file v1.0.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1951144Z ^[[1m^[[92m  Downloaded^[[0m scopeguard v1.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1962302Z ^[[1m^[[92m  Downloaded^[[0m self-replace v1.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1978213Z ^[[1m^[[92m  Downloaded^[[0m castaway v0.2.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.1991028Z ^[[1m^[[92m  Downloaded^[[0m cfg-if v1.0.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2003175Z ^[[1m^[[92m  Downloaded^[[0m clap_lex v1.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2013444Z ^[[1m^[[92m  Downloaded^[[0m color_quant v1.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2023085Z ^[[1m^[[92m  Downloaded^[[0m colorchoice v1.0.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2031354Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.2.17
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2044438Z ^[[1m^[[92m  Downloaded^[[0m cpufeatures v0.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2057936Z ^[[1m^[[92m  Downloaded^[[0m crypto-common v0.1.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2066900Z ^[[1m^[[92m  Downloaded^[[0m rustversion v1.0.22
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2092875Z ^[[1m^[[92m  Downloaded^[[0m clap_derive v4.5.55
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2113626Z ^[[1m^[[92m  Downloaded^[[0m quick-xml v0.37.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2163120Z ^[[1m^[[92m  Downloaded^[[0m quick-xml v0.38.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2214032Z ^[[1m^[[92m  Downloaded^[[0m tinyvec_macros v0.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2221277Z ^[[1m^[[92m  Downloaded^[[0m tower-service v0.3.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2229004Z ^[[1m^[[92m  Downloaded^[[0m bytes v1.11.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2268360Z ^[[1m^[[92m  Downloaded^[[0m console v0.15.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2295819Z ^[[1m^[[92m  Downloaded^[[0m const-oid v0.9.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2313385Z ^[[1m^[[92m  Downloaded^[[0m crc32fast v1.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2330357Z ^[[1m^[[92m  Downloaded^[[0m rustls-webpki v0.103.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2359102Z ^[[1m^[[92m  Downloaded^[[0m ryu v1.0.23
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2389445Z ^[[1m^[[92m  Downloaded^[[0m safe_arch v1.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2433718Z ^[[1m^[[92m  Downloaded^[[0m quinn-proto v0.11.17
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2496494Z ^[[1m^[[92m  Downloaded^[[0m reqwest v0.12.28
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2547181Z ^[[1m^[[92m  Downloaded^[[0m syn v1.0.109
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2870639Z ^[[1m^[[92m  Downloaded^[[0m regex v1.12.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2920501Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v1.0.69
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2933198Z ^[[1m^[[92m  Downloaded^[[0m vtparse v0.6.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2940624Z ^[[1m^[[92m  Downloaded^[[0m yoke-derive v0.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2949404Z ^[[1m^[[92m  Downloaded^[[0m anstyle v1.0.13
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2963272Z ^[[1m^[[92m  Downloaded^[[0m cc v1.2.56
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.2990644Z ^[[1m^[[92m  Downloaded^[[0m filetime v0.2.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3006051Z ^[[1m^[[92m  Downloaded^[[0m ratatui-core v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3061973Z ^[[1m^[[92m  Downloaded^[[0m syn v2.0.115
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3164885Z ^[[1m^[[92m  Downloaded^[[0m crossterm v0.29.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3229804Z ^[[1m^[[92m  Downloaded^[[0m libssh2-sys v0.3.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3546833Z ^[[1m^[[92m  Downloaded^[[0m utf8_iter v1.0.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3557847Z ^[[1m^[[92m  Downloaded^[[0m bitvec v1.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3714487Z ^[[1m^[[92m  Downloaded^[[0m clap_builder v4.5.58
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3774411Z ^[[1m^[[92m  Downloaded^[[0m try-lock v0.2.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3783793Z ^[[1m^[[92m  Downloaded^[[0m wezterm-blob-leases v0.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3793761Z ^[[1m^[[92m  Downloaded^[[0m fax v0.2.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3807594Z ^[[1m^[[92m  Downloaded^[[0m syn v3.0.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3907813Z ^[[1m^[[92m  Downloaded^[[0m wezterm-input-types v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3915186Z ^[[1m^[[92m  Downloaded^[[0m yoke v0.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3930960Z ^[[1m^[[92m  Downloaded^[[0m zerofrom v0.1.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3939610Z ^[[1m^[[92m  Downloaded^[[0m zerovec-derive v0.11.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3952954Z ^[[1m^[[92m  Downloaded^[[0m autocfg v1.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3970320Z ^[[1m^[[92m  Downloaded^[[0m bincode v1.3.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.3990726Z ^[[1m^[[92m  Downloaded^[[0m bit-set v0.5.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4000709Z ^[[1m^[[92m  Downloaded^[[0m convert_case v0.10.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4016312Z ^[[1m^[[92m  Downloaded^[[0m regex-syntax v0.8.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4079624Z ^[[1m^[[92m  Downloaded^[[0m uuid v1.21.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4107453Z ^[[1m^[[92m  Downloaded^[[0m version_check v0.9.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4119122Z ^[[1m^[[92m  Downloaded^[[0m anstyle-query v1.1.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4130028Z ^[[1m^[[92m  Downloaded^[[0m byteorder-lite v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4139870Z ^[[1m^[[92m  Downloaded^[[0m rustls v0.23.46
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4252453Z ^[[1m^[[92m  Downloaded^[[0m fax_derive v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4258133Z ^[[1m^[[92m  Downloaded^[[0m thiserror-impl v2.0.18
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4271693Z ^[[1m^[[92m  Downloaded^[[0m unicode-truncate v2.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4286739Z ^[[1m^[[92m  Downloaded^[[0m untrusted v0.9.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4302060Z ^[[1m^[[92m  Downloaded^[[0m walkdir v2.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4318670Z ^[[1m^[[92m  Downloaded^[[0m xattr v1.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4336372Z ^[[1m^[[92m  Downloaded^[[0m zmij v1.0.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4352642Z ^[[1m^[[92m  Downloaded^[[0m zune-core v0.4.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4367387Z ^[[1m^[[92m  Downloaded^[[0m csscolorparser v0.6.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4378528Z ^[[1m^[[92m  Downloaded^[[0m digest v0.10.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4395004Z ^[[1m^[[92m  Downloaded^[[0m displaydoc v0.2.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4423046Z ^[[1m^[[92m  Downloaded^[[0m simd-adler32 v0.3.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4439862Z ^[[1m^[[92m  Downloaded^[[0m thiserror v1.0.69
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4491638Z ^[[1m^[[92m  Downloaded^[[0m time-macros v0.2.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4512403Z ^[[1m^[[92m  Downloaded^[[0m allocator-api2 v0.2.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4536760Z ^[[1m^[[92m  Downloaded^[[0m rustix v1.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4789098Z ^[[1m^[[92m  Downloaded^[[0m ucd-trie v0.1.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4801871Z ^[[1m^[[92m  Downloaded^[[0m vsimd v0.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4821211Z ^[[1m^[[92m  Downloaded^[[0m weezl v0.1.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4844081Z ^[[1m^[[92m  Downloaded^[[0m writeable v0.6.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4860746Z ^[[1m^[[92m  Downloaded^[[0m zeroize v1.8.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4873654Z ^[[1m^[[92m  Downloaded^[[0m anstyle-parse v0.2.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4888463Z ^[[1m^[[92m  Downloaded^[[0m base64ct v1.8.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4911900Z ^[[1m^[[92m  Downloaded^[[0m bit-vec v0.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4926602Z ^[[1m^[[92m  Downloaded^[[0m fdeflate v0.3.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.4941588Z ^[[1m^[[92m  Downloaded^[[0m libc v0.2.182
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5299498Z ^[[1m^[[92m  Downloaded^[[0m phf_macros v0.11.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5308735Z ^[[1m^[[92m  Downloaded^[[0m terminfo v0.9.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5333562Z ^[[1m^[[92m  Downloaded^[[0m deranged v0.5.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5346928Z ^[[1m^[[92m  Downloaded^[[0m libz-sys v1.1.23
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5546889Z ^[[1m^[[92m  Downloaded^[[0m unicode-ident v1.0.23
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5572241Z ^[[1m^[[92m  Downloaded^[[0m tinystr v0.8.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5590297Z ^[[1m^[[92m  Downloaded^[[0m tinyvec v1.10.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5622040Z ^[[1m^[[92m  Downloaded^[[0m wezterm-bidi v0.2.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5649557Z ^[[1m^[[92m  Downloaded^[[0m bytemuck v1.25.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5695136Z ^[[1m^[[92m  Downloaded^[[0m typenum v1.19.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5731209Z ^[[1m^[[92m  Downloaded^[[0m zune-jpeg v0.5.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5780013Z ^[[1m^[[92m  Downloaded^[[0m compact_str v0.9.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5814661Z ^[[1m^[[92m  Downloaded^[[0m der v0.7.10
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5864769Z ^[[1m^[[92m  Downloaded^[[0m ed25519-dalek v2.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5894087Z ^[[1m^[[92m  Downloaded^[[0m zerocopy-derive v0.8.39
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.5983929Z ^[[1m^[[92m  Downloaded^[[0m derive_more v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6103050Z ^[[1m^[[92m  Downloaded^[[0m derive_more-impl v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6152000Z ^[[1m^[[92m  Downloaded^[[0m unicode-segmentation v1.12.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6179725Z ^[[1m^[[92m  Downloaded^[[0m regex-automata v0.4.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6310806Z ^[[1m^[[92m  Downloaded^[[0m tower-http v0.6.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6388481Z ^[[1m^[[92m  Downloaded^[[0m winnow v0.7.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6478399Z ^[[1m^[[92m  Downloaded^[[0m wide v1.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6536825Z ^[[1m^[[92m  Downloaded^[[0m x11rb v0.13.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6615262Z ^[[1m^[[92m  Downloaded^[[0m webpki-roots v1.0.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6646283Z ^[[1m^[[92m  Downloaded^[[0m time v0.3.47
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6766592Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.1.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6819716Z ^[[1m^[[92m  Downloaded^[[0m unicode-width v0.2.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.6874317Z ^[[1m^[[92m  Downloaded^[[0m zerocopy v0.8.39
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.7090579Z ^[[1m^[[92m  Downloaded^[[0m curve25519-dalek v4.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.7167621Z ^[[1m^[[92m  Downloaded^[[0m tracing v0.1.44
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.7316964Z ^[[1m^[[92m  Downloaded^[[0m termwiz v0.23.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.7438197Z ^[[1m^[[92m  Downloaded^[[0m pxfm v0.1.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.7733728Z ^[[1m^[[92m  Downloaded^[[0m x11rb-protocol v0.13.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.7856360Z ^[[1m^[[92m  Downloaded^[[0m ring v0.17.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.8251146Z ^[[1m^[[92m  Downloaded^[[0m syntect v5.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.8339497Z ^[[1m^[[92m  Downloaded^[[0m tokio v1.49.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.8749427Z ^[[1m^[[92m  Downloaded^[[0m libgit2-sys v0.18.3+1.9.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.9320226Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.4.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.9744704Z ^[[1m^[[92m  Downloaded^[[0m tiff v0.10.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:24.9848762Z ^[[1m^[[92m  Downloaded^[[0m deltae v0.3.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:25.0000469Z ^[[1m^[[92m  Downloaded^[[0m linux-raw-sys v0.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:25.0506935Z ^[[1m^[[92m  Downloaded^[[0m icy_sixel v0.5.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:25.0839657Z ^[[1m^[[92m  Downloaded^[[0m ratatui-image v11.0.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:25.1089275Z ^[[1m^[[92m  Downloaded^[[0m openssl-src v300.5.5+3.5.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:25.4321067Z ^[[1m^[[92m   Compiling^[[0m libc v0.2.182
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:25.4322111Z ^[[1m^[[92m   Compiling^[[0m proc-macro2 v1.0.106
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:25.4322946Z ^[[1m^[[92m   Compiling^[[0m quote v1.0.44
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:25.4323547Z ^[[1m^[[92m   Compiling^[[0m unicode-ident v1.0.23
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:28.4481117Z ^[[1m^[[92m   Compiling^[[0m cfg-if v1.0.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:28.6485621Z ^[[1m^[[92m   Compiling^[[0m bitflags v2.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:29.4093216Z ^[[1m^[[92m   Compiling^[[0m shlex v1.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:29.5443530Z ^[[1m^[[92m   Compiling^[[0m find-msvc-tools v0.1.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:29.8650211Z ^[[1m^[[92m   Compiling^[[0m itoa v1.0.17
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:30.0524283Z ^[[1m^[[92m   Compiling^[[0m log v0.4.29
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:30.2423146Z ^[[1m^[[92m   Compiling^[[0m allocator-api2 v0.2.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:30.5345597Z ^[[1m^[[92m   Compiling^[[0m foldhash v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:30.6397570Z ^[[1m^[[92m   Compiling^[[0m smallvec v1.15.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:30.7953753Z ^[[1m^[[92m   Compiling^[[0m equivalent v1.0.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:30.8322546Z ^[[1m^[[92m   Compiling^[[0m memchr v2.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:31.7422980Z ^[[1m^[[92m   Compiling^[[0m syn v2.0.115
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:31.8173733Z ^[[1m^[[92m   Compiling^[[0m jobserver v0.1.34
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:31.8262607Z ^[[1m^[[92m   Compiling^[[0m mio v1.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:31.8676846Z ^[[1m^[[92m   Compiling^[[0m hashbrown v0.16.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:32.1341852Z ^[[1m^[[92m   Compiling^[[0m cc v1.2.56
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:32.3293008Z ^[[1m^[[92m   Compiling^[[0m once_cell v1.21.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:32.5023500Z ^[[1m^[[92m   Compiling^[[0m stable_deref_trait v1.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:32.5493145Z ^[[1m^[[92m   Compiling^[[0m rustix v1.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:32.6406272Z ^[[1m^[[92m   Compiling^[[0m libm v0.2.16
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:32.7983063Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:32.8903678Z ^[[1m^[[92m   Compiling^[[0m pin-project-lite v0.2.16
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:32.9473796Z ^[[1m^[[92m   Compiling^[[0m bytes v1.11.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:33.6932922Z ^[[1m^[[92m   Compiling^[[0m thiserror v2.0.18
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:33.8023225Z ^[[1m^[[92m   Compiling^[[0m version_check v0.9.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:33.8772938Z ^[[1m^[[92m   Compiling^[[0m typenum v1.19.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:34.0483368Z ^[[1m^[[92m   Compiling^[[0m futures-core v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:34.0933069Z ^[[1m^[[92m   Compiling^[[0m pkg-config v0.3.32
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:34.1608255Z ^[[1m^[[92m   Compiling^[[0m generic-array v0.14.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:34.5314828Z ^[[1m^[[92m   Compiling^[[0m syn v3.0.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:36.2809417Z ^[[1m^[[92m   Compiling^[[0m synstructure v0.13.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:36.7477704Z ^[[1m^[[92m   Compiling^[[0m zerovec-derive v0.11.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:36.8193117Z ^[[1m^[[92m   Compiling^[[0m zerofrom-derive v0.1.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:36.8323656Z ^[[1m^[[92m   Compiling^[[0m yoke-derive v0.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:37.7459605Z ^[[1m^[[92m   Compiling^[[0m displaydoc v0.2.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:37.7623166Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v2.0.18
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:37.8213112Z ^[[1m^[[92m   Compiling^[[0m zerofrom v0.1.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:37.9113094Z ^[[1m^[[92m   Compiling^[[0m yoke v0.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:38.0833074Z ^[[1m^[[92m   Compiling^[[0m zerovec v0.11.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:38.2163180Z ^[[1m^[[92m   Compiling^[[0m autocfg v1.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:38.5383101Z ^[[1m^[[92m   Compiling^[[0m num-traits v0.2.19
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:38.6243039Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.2.17
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:38.7863024Z ^[[1m^[[92m   Compiling^[[0m socket2 v0.6.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:38.8103054Z ^[[1m^[[92m   Compiling^[[0m zeroize v1.8.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:38.8771902Z ^[[1m^[[92m   Compiling^[[0m vcpkg v0.2.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:38.9413053Z ^[[1m^[[92m   Compiling^[[0m futures-sink v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.0073405Z ^[[1m^[[92m   Compiling^[[0m serde_core v1.0.228
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.1943128Z ^[[1m^[[92m   Compiling^[[0m tokio v1.49.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.3325157Z ^[[1m^[[92m   Compiling^[[0m tinystr v0.8.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.5083009Z ^[[1m^[[92m   Compiling^[[0m ryu v1.0.23
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.5887504Z ^[[1m^[[92m   Compiling^[[0m heck v0.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.6943233Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.2.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.7413070Z ^[[1m^[[92m   Compiling^[[0m writeable v0.6.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.8863002Z ^[[1m^[[92m   Compiling^[[0m rustversion v1.0.22
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:39.8954790Z ^[[1m^[[92m   Compiling^[[0m litemap v0.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:40.0643387Z ^[[1m^[[92m   Compiling^[[0m icu_locale_core v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:40.8223561Z ^[[1m^[[92m   Compiling^[[0m potential_utf v0.1.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:40.9203128Z ^[[1m^[[92m   Compiling^[[0m zerotrie v0.2.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:41.2467838Z ^[[1m^[[92m   Compiling^[[0m bytemuck_derive v1.12.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:41.6514424Z ^[[1m^[[92m   Compiling^[[0m ring v0.17.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:41.9863430Z ^[[1m^[[92m   Compiling^[[0m http v1.4.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.3033153Z ^[[1m^[[92m   Compiling^[[0m either v1.15.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.4873192Z ^[[1m^[[92m   Compiling^[[0m icu_properties_data v2.1.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.5833152Z ^[[1m^[[92m   Compiling^[[0m ident_case v1.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.6513201Z ^[[1m^[[92m   Compiling^[[0m parking_lot_core v0.9.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.6782458Z ^[[1m^[[92m   Compiling^[[0m slab v0.4.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.7633080Z ^[[1m^[[92m   Compiling^[[0m serde v1.0.228
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.8183035Z ^[[1m^[[92m   Compiling^[[0m crc32fast v1.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.9283358Z ^[[1m^[[92m   Compiling^[[0m percent-encoding v2.3.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:42.9511108Z ^[[1m^[[92m   Compiling^[[0m strsim v0.11.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:43.0803291Z ^[[1m^[[92m   Compiling^[[0m simd-adler32 v0.3.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:43.1973234Z ^[[1m^[[92m   Compiling^[[0m icu_normalizer_data v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:43.2973199Z ^[[1m^[[92m   Compiling^[[0m darling_core v0.23.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:43.4333249Z ^[[1m^[[92m   Compiling^[[0m bytemuck v1.25.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:43.6543908Z ^[[1m^[[92m   Compiling^[[0m icu_provider v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:43.8837727Z ^[[1m^[[92m   Compiling^[[0m icu_collections v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:44.7028486Z ^[[1m^[[92m   Compiling^[[0m block-buffer v0.10.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:44.7743339Z ^[[1m^[[92m   Compiling^[[0m crypto-common v0.1.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:44.8356837Z ^[[1m^[[92m   Compiling^[[0m serde_derive v1.0.228
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:45.0551786Z ^[[1m^[[92m   Compiling^[[0m openssl-src v300.5.5+3.5.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:45.2553370Z ^[[1m^[[92m   Compiling^[[0m indexmap v2.13.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:45.4234706Z ^[[1m^[[92m   Compiling^[[0m errno v0.3.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:45.5012514Z ^[[1m^[[92m   Compiling^[[0m scopeguard v1.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:45.5555878Z ^[[1m^[[92m   Compiling^[[0m signal-hook v0.3.18
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:45.6513873Z ^[[1m^[[92m   Compiling^[[0m powerfmt v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:45.8329435Z ^[[1m^[[92m   Compiling^[[0m adler2 v2.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:45.9203110Z ^[[1m^[[92m   Compiling^[[0m subtle v2.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:46.0263097Z ^[[1m^[[92m   Compiling^[[0m pin-utils v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:46.0674828Z ^[[1m^[[92m   Compiling^[[0m miniz_oxide v0.8.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:46.1024587Z ^[[1m^[[92m   Compiling^[[0m deranged v0.5.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:47.0723561Z ^[[1m^[[92m   Compiling^[[0m lock_api v0.4.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:47.2943226Z ^[[1m^[[92m   Compiling^[[0m signal-hook-registry v1.4.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:47.4544228Z ^[[1m^[[92m   Compiling^[[0m darling_macro v0.23.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:47.5957077Z ^[[1m^[[92m   Compiling^[[0m openssl-sys v0.9.111
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:47.6503078Z ^[[1m^[[92m   Compiling^[[0m digest v0.10.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:47.8213024Z ^[[1m^[[92m   Compiling^[[0m castaway v0.2.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:48.2179764Z ^[[1m^[[92m   Compiling^[[0m http-body v1.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:48.2270581Z ^[[1m^[[92m   Compiling^[[0m itertools v0.14.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:48.2274735Z ^[[1m^[[92m   Compiling^[[0m strum_macros v0.27.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:48.3142945Z ^[[1m^[[92m   Compiling^[[0m libz-sys v1.1.23
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:48.4989178Z ^[[1m^[[92m   Compiling^[[0m rustls-pki-types v1.14.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:49.0703186Z ^[[1m^[[92m   Compiling^[[0m tracing-core v0.1.36
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:49.6953105Z ^[[1m^[[92m   Compiling^[[0m base64 v0.22.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:49.9703079Z ^[[1m^[[92m   Compiling^[[0m fnv v1.0.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.0206727Z ^[[1m^[[92m   Compiling^[[0m unicode-segmentation v1.12.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.0473019Z ^[[1m^[[92m   Compiling^[[0m indoc v2.0.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.1213367Z ^[[1m^[[92m   Compiling^[[0m untrusted v0.9.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.1942765Z ^[[1m^[[92m   Compiling^[[0m httparse v1.10.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.3203270Z ^[[1m^[[92m   Compiling^[[0m num_threads v0.1.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.3643025Z ^[[1m^[[92m   Compiling^[[0m futures-io v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.4398556Z ^[[1m^[[92m   Compiling^[[0m instability v0.3.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.4643133Z ^[[1m^[[92m   Compiling^[[0m time-core v0.1.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.4873393Z ^[[1m^[[92m   Compiling^[[0m static_assertions v1.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.5378086Z ^[[1m^[[92m   Compiling^[[0m num-conv v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.5859321Z ^[[1m^[[92m   Compiling^[[0m semver v1.0.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.6233373Z ^[[1m^[[92m   Compiling^[[0m futures-task v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.7325224Z ^[[1m^[[92m   Compiling^[[0m futures-util v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.8243172Z ^[[1m^[[92m   Compiling^[[0m convert_case v0.10.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.8548527Z ^[[1m^[[92m   Compiling^[[0m rustc_version v0.4.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:50.9804329Z ^[[1m^[[92m   Compiling^[[0m time v0.3.47
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:51.0747331Z ^[[1m^[[92m   Compiling^[[0m compact_str v0.9.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:51.8693060Z ^[[1m^[[92m   Compiling^[[0m unicode-truncate v2.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:51.9882953Z ^[[1m^[[92m   Compiling^[[0m strum v0.27.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:52.0513085Z ^[[1m^[[92m   Compiling^[[0m tracing v0.1.44
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:52.6913934Z ^[[1m^[[92m   Compiling^[[0m icu_normalizer v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:53.3673212Z ^[[1m^[[92m   Compiling^[[0m flate2 v1.1.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:53.4102814Z ^[[1m^[[92m   Compiling^[[0m parking_lot v0.12.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:53.7382805Z ^[[1m^[[92m   Compiling^[[0m icu_properties v2.1.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:54.0176381Z ^[[1m^[[92m   Compiling^[[0m darling v0.23.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:54.3761148Z ^[[1m^[[92m   Compiling^[[0m tokio-util v0.7.18
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:54.9404621Z ^[[1m^[[92m   Compiling^[[0m kasuari v0.4.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.0649817Z ^[[1m^[[92m   Compiling^[[0m lru v0.16.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.1694789Z ^[[1m^[[92m   Compiling^[[0m rustls v0.23.46
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.2428458Z ^[[1m^[[92m   Compiling^[[0m zmij v1.0.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.3704691Z ^[[1m^[[92m   Compiling^[[0m radium v0.7.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.4883124Z ^[[1m^[[92m   Compiling^[[0m atomic-waker v1.1.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.5524163Z ^[[1m^[[92m   Compiling^[[0m zerocopy v0.8.39
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.6741064Z ^[[1m^[[92m   Compiling^[[0m tower-service v0.3.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.7168360Z ^[[1m^[[92m   Compiling^[[0m try-lock v0.2.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.7616147Z ^[[1m^[[92m   Compiling^[[0m getrandom v0.4.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.7970072Z ^[[1m^[[92m   Compiling^[[0m want v0.3.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.8933614Z ^[[1m^[[92m   Compiling^[[0m h2 v0.4.13
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:55.9453173Z ^[[1m^[[92m   Compiling^[[0m ratatui-core v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:58.4079006Z ^[[1m^[[92m   Compiling^[[0m idna_adapter v1.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:58.4683071Z ^[[1m^[[92m   Compiling^[[0m signal-hook-mio v0.2.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:59.0966192Z ^[[1m^[[92m   Compiling^[[0m curve25519-dalek v4.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:59.1842673Z ^[[1m^[[92m   Compiling^[[0m derive_more-impl v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:59.6956582Z ^[[1m^[[92m   Compiling^[[0m form_urlencoded v1.2.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:59.7961173Z ^[[1m^[[92m   Compiling^[[0m futures-channel v0.3.31
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:59.8345223Z ^[[1m^[[92m   Compiling^[[0m libssh2-sys v0.3.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:59.9399576Z ^[[1m^[[92m   Compiling^[[0m aho-corasick v1.1.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:47:59.9999595Z ^[[1m^[[92m   Compiling^[[0m ref-cast v1.0.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:00.1488957Z ^[[1m^[[92m   Compiling^[[0m tap v1.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:00.2233074Z ^[[1m^[[92m   Compiling^[[0m by_address v1.2.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:00.2814087Z ^[[1m^[[92m   Compiling^[[0m utf8_iter v1.0.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:00.3783220Z ^[[1m^[[92m   Compiling^[[0m regex-syntax v0.8.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:02.6776858Z ^[[1m^[[92m   Compiling^[[0m cpufeatures v0.2.17
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:02.7059378Z ^[[1m^[[92m   Compiling^[[0m litrs v1.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:03.1212841Z ^[[1m^[[92m   Compiling^[[0m rand_core v0.10.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:03.2301156Z ^[[1m^[[92m   Compiling^[[0m serde_json v1.0.149
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:03.3304437Z ^[[1m^[[92m   Compiling^[[0m document-features v0.2.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:03.6047053Z ^[[1m^[[92m   Compiling^[[0m regex-automata v0.4.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:04.0274158Z ^[[1m^[[92m   Compiling^[[0m idna v1.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:04.8005730Z ^[[1m^[[92m   Compiling^[[0m palette_derive v0.7.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:05.2749544Z ^[[1m^[[92m   Compiling^[[0m wyz v0.5.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:05.4071922Z ^[[1m^[[92m   Compiling^[[0m hyper v1.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:07.3704522Z ^[[1m^[[92m   Compiling^[[0m derive_more v2.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:10.8683103Z ^[[1m^[[92m   Compiling^[[0m signature v2.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:10.9513068Z ^[[1m^[[92m   Compiling^[[0m safe_arch v1.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:11.7253091Z ^[[1m^[[92m   Compiling^[[0m rustls-webpki v0.103.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:12.4443277Z ^[[1m^[[92m   Compiling^[[0m fdeflate v0.3.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:13.0283029Z ^[[1m^[[92m   Compiling^[[0m pxfm v0.1.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:13.0353103Z ^[[1m^[[92m   Compiling^[[0m ref-cast-impl v1.0.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:13.3690982Z ^[[1m^[[92m   Compiling^[[0m curve25519-dalek-derive v0.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:13.7388376Z ^[[1m^[[92m   Compiling^[[0m palette_math v0.7.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:13.8263923Z ^[[1m^[[92m   Compiling^[[0m sync_wrapper v1.0.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:13.8662199Z ^[[1m^[[92m   Compiling^[[0m filetime v0.2.27
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:14.0093460Z ^[[1m^[[92m   Compiling^[[0m line-clipping v0.3.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:14.2088805Z ^[[1m^[[92m   Compiling^[[0m rustix v0.38.44
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:14.4153059Z ^[[1m^[[92m   Compiling^[[0m funty v2.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:15.1849216Z ^[[1m^[[92m   Compiling^[[0m color_quant v1.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:15.3623434Z ^[[1m^[[92m   Compiling^[[0m ipnet v2.11.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:16.1303140Z ^[[1m^[[92m   Compiling^[[0m utf8parse v0.2.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:16.2052400Z ^[[1m^[[92m   Compiling^[[0m same-file v1.0.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:16.2925706Z ^[[1m^[[92m   Compiling^[[0m tower-layer v0.3.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:16.5783066Z ^[[1m^[[92m   Compiling^[[0m quick-error v2.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:16.7062880Z ^[[1m^[[92m   Compiling^[[0m zune-core v0.5.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:17.0193167Z ^[[1m^[[92m   Compiling^[[0m portable-atomic v1.13.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:17.3453593Z ^[[1m^[[92m   Compiling^[[0m fastrand v2.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:17.5723019Z ^[[1m^[[92m   Compiling^[[0m weezl v0.1.12
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:18.1873165Z ^[[1m^[[92m   Compiling^[[0m byteorder-lite v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:18.4377855Z ^[[1m^[[92m   Compiling^[[0m image-webp v0.2.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:19.7383127Z ^[[1m^[[92m   Compiling^[[0m gif v0.14.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:20.4863066Z ^[[1m^[[92m   Compiling^[[0m tempfile v3.25.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:20.8742954Z ^[[1m^[[92m   Compiling^[[0m zune-jpeg v0.5.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:20.9765624Z ^[[1m^[[92m   Compiling^[[0m tower v0.5.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:21.5203099Z ^[[1m^[[92m   Compiling^[[0m tokio-rustls v0.26.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:21.7642989Z ^[[1m^[[92m   Compiling^[[0m walkdir v2.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:22.0553914Z ^[[1m^[[92m   Compiling^[[0m anstyle-parse v0.2.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:22.1343021Z ^[[1m^[[92m   Compiling^[[0m moxcms v0.7.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:22.1692916Z ^[[1m^[[92m   Compiling^[[0m hyper-util v0.1.20
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:22.2092920Z ^[[1m^[[92m   Compiling^[[0m bitvec v1.1.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:24.1743101Z ^[[1m^[[92m   Compiling^[[0m ratatui-widgets v0.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:25.0073685Z ^[[1m^[[92m   Compiling^[[0m palette v0.7.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:28.9512706Z ^[[1m^[[92m   Compiling^[[0m png v0.18.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:30.8163003Z ^[[1m^[[92m   Compiling^[[0m ppv-lite86 v0.2.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:31.1883332Z ^[[1m^[[92m   Compiling^[[0m wide v1.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:31.6722983Z ^[[1m^[[92m   Compiling^[[0m ed25519 v2.2.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:33.5123493Z ^[[1m^[[92m   Compiling^[[0m crossterm v0.29.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:34.9724120Z ^[[1m^[[92m   Compiling^[[0m url v2.5.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:36.3723156Z ^[[1m^[[92m   Compiling^[[0m rand_xoshiro v0.8.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:36.7973087Z ^[[1m^[[92m   Compiling^[[0m rand v0.10.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:37.4073094Z ^[[1m^[[92m   Compiling^[[0m sha2 v0.10.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:38.2452940Z ^[[1m^[[92m   Compiling^[[0m webpki-roots v1.0.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:38.3282943Z ^[[1m^[[92m   Compiling^[[0m ordered-float v5.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:38.6033048Z ^[[1m^[[92m   Compiling^[[0m rand_core v0.6.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:38.7734627Z ^[[1m^[[92m   Compiling^[[0m libgit2-sys v0.18.3+1.9.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:38.9857421Z ^[[1m^[[92m   Compiling^[[0m inotify-sys v0.1.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.0173672Z ^[[1m^[[92m   Compiling^[[0m instant v0.1.13
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.0542864Z ^[[1m^[[92m   Compiling^[[0m bit-vec v0.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.0823565Z ^[[1m^[[92m   Compiling^[[0m anstyle-query v1.1.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.1413117Z ^[[1m^[[92m   Compiling^[[0m iri-string v0.7.10
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.2832890Z ^[[1m^[[92m   Compiling^[[0m linux-raw-sys v0.4.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.5343023Z ^[[1m^[[92m   Compiling^[[0m bitflags v1.3.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.5773134Z ^[[1m^[[92m   Compiling^[[0m anstyle v1.0.13
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.6040633Z ^[[1m^[[92m   Compiling^[[0m is_terminal_polyfill v1.70.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.6593433Z ^[[1m^[[92m   Compiling^[[0m colorchoice v1.0.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.7164550Z ^[[1m^[[92m   Compiling^[[0m thiserror v1.0.69
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:39.7623736Z ^[[1m^[[92m   Compiling^[[0m anstream v0.6.21
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:40.0753285Z ^[[1m^[[92m   Compiling^[[0m inotify v0.10.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:40.3633326Z ^[[1m^[[92m   Compiling^[[0m bit-set v0.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:40.4918530Z ^[[1m^[[92m   Compiling^[[0m notify-types v1.0.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:40.7189503Z ^[[1m^[[92m   Compiling^[[0m rand_chacha v0.3.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:41.2073156Z ^[[1m^[[92m   Compiling^[[0m tower-http v0.6.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:41.5043087Z ^[[1m^[[92m   Compiling^[[0m quantette v0.6.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:41.8794092Z ^[[1m^[[92m   Compiling^[[0m hyper-rustls v0.27.7
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:42.2413751Z ^[[1m^[[92m   Compiling^[[0m ed25519-dalek v2.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:42.5422331Z ^[[1m^[[92m   Compiling^[[0m ratatui-crossterm v0.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:42.6903050Z ^[[1m^[[92m   Compiling^[[0m image v0.25.9
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:42.7333254Z ^[[1m^[[92m   Compiling^[[0m ratatui-macros v0.7.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:43.4693437Z ^[[1m^[[92m   Compiling^[[0m serde_urlencoded v0.7.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:43.7033187Z ^[[1m^[[92m   Compiling^[[0m http-body-util v0.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:43.9253097Z ^[[1m^[[92m   Compiling^[[0m console v0.15.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:44.7903415Z ^[[1m^[[92m   Compiling^[[0m gethostname v1.1.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:44.8363242Z ^[[1m^[[92m   Compiling^[[0m xattr v1.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:44.8562813Z ^[[1m^[[92m   Compiling^[[0m thiserror-impl v1.0.69
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:45.1973110Z ^[[1m^[[92m   Compiling^[[0m quick-xml v0.38.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:45.8504531Z ^[[1m^[[92m   Compiling^[[0m unicode-width v0.1.14
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.0643142Z ^[[1m^[[92m   Compiling^[[0m option-ext v0.2.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.1170740Z ^[[1m^[[92m   Compiling^[[0m number_prefix v0.4.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.2133408Z ^[[1m^[[92m   Compiling^[[0m clap_lex v1.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.3742999Z ^[[1m^[[92m   Compiling^[[0m linked-hash-map v0.5.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.4336721Z ^[[1m^[[92m   Compiling^[[0m anyhow v1.0.101
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.5423161Z ^[[1m^[[92m   Compiling^[[0m pulldown-cmark v0.13.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.6023119Z ^[[1m^[[92m   Compiling^[[0m self_update v0.42.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.6923549Z ^[[1m^[[92m   Compiling^[[0m ratatui-image v11.0.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:46.7847830Z ^[[1m^[[92m   Compiling^[[0m vsimd v0.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:47.1262905Z ^[[1m^[[92m   Compiling^[[0m x11rb-protocol v0.13.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:47.2335472Z ^[[1m^[[92m   Compiling^[[0m outref v0.5.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:47.2963343Z ^[[1m^[[92m   Compiling^[[0m base64-simd v0.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:47.6563485Z ^[[1m^[[92m   Compiling^[[0m clap_builder v4.5.58
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:53.5443065Z ^[[1m^[[92m   Compiling^[[0m x11rb v0.13.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:54.7852843Z ^[[1m^[[92m   Compiling^[[0m yaml-rust v0.4.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:54.7914417Z ^[[1m^[[92m   Compiling^[[0m indicatif v0.17.11
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:54.9763040Z ^[[1m^[[92m   Compiling^[[0m dirs-sys v0.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:55.2893009Z ^[[1m^[[92m   Compiling^[[0m miette v7.6.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:56.2473005Z ^[[1m^[[92m   Compiling^[[0m plist v1.8.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:56.3899582Z ^[[1m^[[92m   Compiling^[[0m tar v0.4.46
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:56.4253022Z ^[[1m^[[92m   Compiling^[[0m reqwest v0.12.28
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:57.4933093Z ^[[1m^[[92m   Compiling^[[0m ratatui v0.30.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:57.8133097Z ^[[1m^[[92m   Compiling^[[0m icy_sixel v0.5.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:57.9463099Z ^[[1m^[[92m   Compiling^[[0m zipsign-api v0.1.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:58.3477298Z ^[[1m^[[92m   Compiling^[[0m rand v0.8.8
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:58.3683411Z ^[[1m^[[92m   Compiling^[[0m notify v7.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:48:59.1315110Z ^[[1m^[[92m   Compiling^[[0m fancy-regex v0.16.2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:00.5332971Z ^[[1m^[[92m   Compiling^[[0m self-replace v1.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:00.6952995Z ^[[1m^[[92m   Compiling^[[0m regex v1.12.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:01.2203380Z ^[[1m^[[92m   Compiling^[[0m bincode v1.3.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:01.5043221Z ^[[1m^[[92m   Compiling^[[0m clap_derive v4.5.55
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:01.6523315Z ^[[1m^[[92m   Compiling^[[0m quick-xml v0.37.5
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:02.6932974Z ^[[1m^[[92m   Compiling^[[0m self_cell v1.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:02.7593058Z ^[[1m^[[92m   Compiling^[[0m winnow v0.7.15
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:03.1673129Z ^[[1m^[[92m   Compiling^[[0m urlencoding v2.1.3
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:03.3121127Z ^[[1m^[[92m   Compiling^[[0m unicase v2.9.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:03.8737968Z ^[[1m^[[92m   Compiling^[[0m openssl-probe v0.1.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:04.9196607Z ^[[1m^[[92m   Compiling^[[0m kdl v6.7.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:07.6993705Z ^[[1m^[[92m   Compiling^[[0m clap v4.5.58
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:08.2922060Z ^[[1m^[[92m   Compiling^[[0m syntect v5.3.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:10.3526662Z ^[[1m^[[92m   Compiling^[[0m notify-debouncer-mini v0.5.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:10.8842975Z ^[[1m^[[92m   Compiling^[[0m dirs v6.0.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:11.3682861Z ^[[1m^[[92m   Compiling^[[0m arboard v3.6.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:11.3802697Z ^[[1m^[[92m   Compiling^[[0m crossterm v0.28.1
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:49:12.8392852Z ^[[1m^[[92m   Compiling^[[0m sysinfo v0.39.6
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:50:30.8618586Z ^[[1m^[[92m   Compiling^[[0m git2 v0.20.4
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:50:33.2536306Z ^[[1m^[[92m   Compiling^[[0m vig v0.18.0 (/home/runner/work/vig/vig)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Build	2026-11-05T08:51:31.0963242Z ^[[1m^[[92m    Finished^[[0m `release` profile [optimized] target(s) in 4m 09s
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	﻿2026-11-05T08:51:31.2230641Z Post job cleanup.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.2234294Z ##[start-action display=Setup Rust Caching;id=__e2d2346e-1a43-4257-a6bb-561210739e69.__Swatinem_rust-cache]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.2276649Z Post job cleanup.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5115074Z ##[group]Cache Configuration
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5116202Z Cache Provider:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5116616Z     github
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5116959Z Workspaces:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5117361Z     /home/runner/work/vig/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5117968Z Cache Paths:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5121514Z     /home/runner/.cargo/bin
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5122629Z     /home/runner/.cargo/.crates.toml
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5123368Z     /home/runner/.cargo/.crates2.json
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5124042Z     /home/runner/.cargo/registry
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5125097Z     /home/runner/.cargo/git
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5125701Z     /home/runner/work/vig/vig/target
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5126724Z Restore Key:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5127063Z     v0-rust-build-Linux-x64-8e2c72a2
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5127469Z Cache Key:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5128676Z     v0-rust-build-Linux-x64-8e2c72a2-d993fc43
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5129421Z .. Prefix:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5129917Z   - v0-rust-build-Linux-x64
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5130371Z .. Environment considered:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5130734Z   - Rust Versions:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5131163Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5131916Z     - 1.99.1 x86_64-unknown-linux-gnu 58cf8f9c35b355199727627d07ae34a4e2846d67
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5132338Z   - CARGO_INCREMENTAL
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5132591Z   - CARGO_PROFILE_DEV_DEBUG
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5132866Z   - CARGO_REGISTRIES_CRATES_IO_PROTOCOL
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5133155Z   - CARGO_TERM_COLOR
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5133401Z   - CARGO_UNSTABLE_SPARSE_REGISTRY
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5133663Z   - RUST_BACKTRACE
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5133876Z   - RUSTFLAGS
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5134101Z .. Lockfiles considered:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5134462Z   - /home/runner/work/vig/vig/Cargo.lock
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5134950Z   - /home/runner/work/vig/vig/Cargo.toml
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5135698Z ##[endgroup]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5135906Z 
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5144406Z (node:18352) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:31.5145695Z (Use `node --trace-deprecation ...` to show where the warning was created)
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:33.5948987Z ... Cleaning /home/runner/work/vig/vig/target ...
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:33.6112640Z ... Cleaning cargo registry (cache-all-crates: false) ...
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:34.9614401Z ... Cleaning cargo/bin ...
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:34.9640611Z ... Cleaning cargo git cache ...
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:34.9645912Z ... Saving cache ...
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:34.9812588Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/vig/vig --files-from manifest.txt --use-compress-program zstdmt
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:38.9892187Z Sent 0 of 387759346 (0.0%), 0.0 MBs/sec
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:39.9899855Z Sent 320650482 of 387759346 (82.7%), 152.8 MBs/sec
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:40.1151894Z Sent 387759346 of 387759346 (100.0%), 173.9 MBs/sec
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions-rust-lang/setup-rust-toolchain@v1	2026-11-05T08:51:40.4474133Z ##[end-action id=__e2d2346e-1a43-4257-a6bb-561210739e69.__Swatinem_rust-cache;outcome=success;conclusion=success;duration_ms=9223]
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	﻿2026-11-05T08:51:40.4546637Z Post job cleanup.
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5430513Z [command]/usr/bin/git version
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5476427Z git version 2.56.0
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5522474Z Temporarily overriding HOME='/home/runner/work/_temp/b5e725c2-e423-412d-9cb8-aeb4f8dd347b' before making global git config changes
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5523855Z Adding repository directory to the temporary git global config as a safe directory
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5528316Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vig/vig
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5563046Z Removing SSH command configuration
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5570151Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5620652Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5932137Z Removing HTTP extra header
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5938788Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.5983264Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6304682Z Removing includeIf entries pointing to credentials config files
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6312446Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6340724Z includeif.gitdir:/home/runner/work/vig/vig/.git.path
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6342445Z includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6343258Z includeif.gitdir:/github/workspace/.git.path
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6344023Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6353581Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git.path
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6380573Z /home/runner/work/_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6392913Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git.path /home/runner/work/_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6431223Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6455653Z /home/runner/work/_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6466852Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/vig/vig/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6505105Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6530813Z /github/runner_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6544216Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6583448Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6606996Z /github/runner_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6616354Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6660013Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Post Run actions/checkout@v6	2026-11-05T08:51:40.6950476Z Removing credentials config '/home/runner/work/_temp/git-credentials-29daafef-fe8e-414a-b5ac-b200d1bf55e8.config'
+build (x86_64-unknown-linux-gnu, ubuntu-latest)	Complete job	﻿2026-11-05T08:51:40.7199292Z Cleaning up orphan processes

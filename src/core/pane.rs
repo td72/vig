@@ -148,6 +148,8 @@ pub enum PaneEvent {
     OpenRunLog,
     /// Issue / PR lists: show or hide closed and merged items (both lists).
     ToggleClosed,
+    /// Issue / PR lists: only the viewer's items, or all (both lists).
+    ToggleMine,
     /// PR list / detail: open this PR's diff in a window on top of the page.
     ShowPrDiff(u64),
     /// PR list / detail: fetch this PR's head into a worktree (`W`).

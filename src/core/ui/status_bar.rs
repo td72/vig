@@ -217,6 +217,9 @@ pub fn render_gh_header(f: &mut Frame, ctx: &AppContext, gh: &GitHubState, area:
             Style::default().fg(Color::DarkGray),
         ));
     }
+    if gh.mine_only() {
+        spans.push(Span::styled(" · mine", Style::default().fg(Color::Yellow)));
+    }
     render_header_common(f, ctx, spans, area);
 }
 

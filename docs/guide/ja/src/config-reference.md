@@ -34,6 +34,7 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`github-poll-interval`](#github-poll-interval) | `"5s"` | 置換 |
 | [`github-auto-refresh`](#github-auto-refresh) | `"on"` | 置換 |
 | [`github-show-closed`](#github-show-closed) | `"off"` | 置換 |
+| [`github-mine-only`](#github-mine-only) | `"off"` | 置換 |
 | [`github-login`](#github-login) | なし（`gh` に問い合わせ） | 置換 |
 | [`projects-poll-interval`](#projects-poll-interval) | `"30s"` | 置換 |
 | [`projects-board`](#projects-board) | なし（リンク済み全ボード） | 置換 |
@@ -63,6 +64,7 @@ procs-history "120"
 github-poll-interval "5s"
 github-auto-refresh "on"
 github-show-closed "off"
+github-mine-only "off"
 projects-poll-interval "30s"
 projects-hide-closed "off"
 worktree-dir "../"
@@ -82,7 +84,7 @@ colors "red"
 // → unknown top-level block "colors" (expected `theme`, `icons`,
 //   `image-preview`, `markdown-preview`, `procs-refresh-interval`,
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
-//   `github-show-closed`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
+//   `github-show-closed`, `github-mine-only`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
 //   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
 //   `repo-config`, `app`, `page`, or `window`)
@@ -297,10 +299,27 @@ open の一覧だけを残します。
 github-show-closed "on"
 ```
 
+### `github-mine-only`
+
+GitHub ページの issue / PR 一覧を、自分宛のもの — 自分が担当者、または
+自分のレビュー待ち — だけに絞った状態で始めるか。実行中はどちらの一覧でも
+`m` で切り替えられ、絞っている間はヘッダが `GitHub · mine` になります。
+取得済みの一覧を手元で絞るだけで、サインイン中のログイン名が分かって
+から効きます（[`github-login`](#github-login) を参照）。
+
+- **書式** — `github-mine-only "<mode>"` — `"on"` か `"off"`
+- **デフォルト** — `"off"`
+- **マージ** — デフォルトを置換。
+
+```kdl
+github-mine-only "on"
+```
+
 ### `github-login`
 
 「自分」が誰か: GitHub ページと Projects ページが閲覧者として扱うログイン
-名です（Projects のフィルタの `assignee:@me`）。未設定なら vig は `gh auth
+名です（GitHub ページの強調表示と `m`、Projects のフィルタの `assignee:@me`
+とカードの強調表示）。未設定なら vig は `gh auth
 login` が保存したアカウントを読みます — `gh config get -h github.com user`
 というローカルの参照で、リクエストは発生せず `gh auth switch` にも追従
 します。`gh` にそのホストの `user` エントリが無い場合（`user` 無しでトークン

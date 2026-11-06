@@ -130,6 +130,9 @@ pub enum GhDetailPane {
 
 pub enum GhBgMessage {
     AuthStatus(Result<(), String>),
+    /// The signed-in login (`github::domain::viewer::resolve`), `None`
+    /// when it could not be told.
+    Viewer(Option<String>),
     /// A list fetch; `show_closed` is the variant it asked for, so a
     /// result that no longer matches the pane (after `x`) is dropped.
     IssueList {
@@ -340,6 +343,13 @@ pub struct GitHubState {
     /// `x` / `github-show-closed`: the issue / PR lists include closed and
     /// merged items.
     show_closed: bool,
+    /// `m` / `github-mine-only`: the issue / PR lists keep only the
+    /// viewer's items.
+    mine_only: bool,
+    /// `github-login`, when configured; else the viewer is asked of `gh`.
+    github_login: Option<String>,
+    /// The signed-in login once resolved (`GhBgMessage::Viewer`).
+    viewer: Option<String>,
     list_watermark: client::ListWatermark,
     list_check_inflight: bool,
     last_list_check: Option<Instant>,
@@ -387,6 +397,8 @@ impl GitHubState {
         let page_cfg = cfg.github_page()?;
         let poll_interval = cfg.github_poll_interval()?;
         let show_closed = cfg.github_show_closed()?;
+        let mine_only = cfg.github_mine_only()?;
+        let github_login = cfg.github_login()?;
         let diff_window_cfg = cfg.diff_window()?;
         let theme = cfg.theme()?;
         let worktree_settings = cfg.pr_worktree()?;
@@ -408,10 +420,12 @@ impl GitHubState {
 
         let mut issue_list = issue_list::new_pane(ids.issue_list, ids.issue_detail, ids.pr_list);
         issue_list.show_closed = show_closed;
+        issue_list.mine_only = mine_only;
         issue_list.set_keymap(issue_list_km);
 
         let mut pr_list = pr_list::new_pane(ids.pr_list, ids.pr_detail, ids.issue_list);
         pr_list.show_closed = show_closed;
+        pr_list.mine_only = mine_only;
         pr_list.set_keymap(pr_list_km);
 
         let mut run_list = run_list::new_pane(ids.run_list, ids.run_detail, ids.pr_list);
@@ -465,6 +479,9 @@ impl GitHubState {
             poll_interval,
             rate_limit: None,
             show_closed,
+            mine_only,
+            github_login,
+            viewer: None,
             list_watermark: client::ListWatermark::default(),
             list_check_inflight: false,
             last_list_check: None,
@@ -613,6 +630,14 @@ impl GitHubState {
             let _ = tx_auth.send(GhBgMessage::AuthStatus(auth));
         });
 
+        // Who "me" is: `github-login`, else what `gh` stored (no request).
+        let tx_viewer = tx.clone();
+        let configured = self.github_login.clone();
+        std::thread::spawn(move || {
+            let login = crate::github::domain::viewer::resolve(configured.as_deref());
+            let _ = tx_viewer.send(GhBgMessage::Viewer(login));
+        });
+
         // Each pane loads its disk cache + spawns background fetch
         self.panes.issue_tab.list.initialize(&tx);
         self.panes.pr_tab.list.initialize(&tx);
@@ -697,6 +722,7 @@ impl GitHubState {
                 _ => fetch_ok |= fetch_succeeded(&msg),
             }
             match msg {
+                GhBgMessage::Viewer(login) => self.set_viewer(login),
                 GhBgMessage::AuthStatus(result) => match result {
                     Ok(()) => {
                         self.gh_available = Some(true);
@@ -933,6 +959,33 @@ impl GitHubState {
         self.show_closed
     }
 
+    /// The signed-in login, for the rows, the headers and `m`.
+    fn set_viewer(&mut self, login: Option<String>) {
+        self.viewer = login.clone();
+        self.panes.issue_tab.list.set_viewer(login.clone());
+        self.panes.pr_tab.list.set_viewer(login.clone());
+        self.panes.issue_tab.detail.set_viewer(login.clone());
+        self.panes.pr_tab.detail.set_viewer(login);
+    }
+
+    /// `m`: keep only the viewer's items in both lists, or all again. A
+    /// local refilter — nothing is fetched.
+    fn toggle_mine(&mut self) {
+        self.mine_only = !self.mine_only;
+        self.panes.issue_tab.list.set_mine_only(self.mine_only);
+        self.panes.pr_tab.list.set_mine_only(self.mine_only);
+    }
+
+    /// Whether the lists keep only the viewer's items (header marker).
+    pub fn mine_only(&self) -> bool {
+        self.mine_only
+    }
+
+    /// The signed-in login once resolved.
+    pub fn viewer(&self) -> Option<&str> {
+        self.viewer.as_deref()
+    }
+
     /// Age of the issue / PR lists for the status bar: `lists 12s ago`.
     pub fn lists_age(&self) -> Option<String> {
         let secs = self.lists_refreshed_at?.elapsed().as_secs() as i64;
@@ -1022,6 +1075,16 @@ impl GitHubState {
                     if let Some(tx) = self.bg_tx.clone() {
                         self.panes.run_tab.detail.open_selected_log(&tx);
                     }
+                }
+                PaneEvent::ToggleMine => {
+                    self.toggle_mine();
+                    ctx.status_message = Some(match (self.mine_only, self.viewer()) {
+                        (true, Some(me)) => format!("Only items for @{me} (m shows all)"),
+                        (true, None) => {
+                            "Only my items once the signed-in login is known (m shows all)".into()
+                        }
+                        (false, _) => "All items shown".into(),
+                    });
                 }
                 PaneEvent::ToggleClosed => {
                     self.toggle_closed();
@@ -1640,6 +1703,93 @@ mod kdl_regression {
         let cfg = Config::with_user(&doc, std::path::PathBuf::from("/u/config.kdl")).unwrap();
         let st = GitHubState::new(&cfg).expect("github page");
         assert!(st.show_closed() && st.panes.issue_tab.list.show_closed);
+    }
+
+    /// `m` keeps only the viewer's items in both lists — a local filter
+    /// over what was fetched, applied once the viewer is known — and the
+    /// config sets the start state.
+    #[test]
+    fn m_keeps_only_the_viewers_items() {
+        use crate::github::domain::types::{GhAuthor, GhIssueListItem};
+        fn issue(number: u64, assignee: &str) -> GhIssueListItem {
+            GhIssueListItem {
+                number,
+                title: format!("issue {number}"),
+                state: "OPEN".into(),
+                author: None,
+                labels: vec![],
+                created_at: String::new(),
+                parent: None,
+                assignees: vec![GhAuthor {
+                    login: assignee.into(),
+                }],
+            }
+        }
+        let mut st = state();
+        assert!(!st.mine_only());
+        st.panes.issue_tab.list.set_items(vec![
+            issue(1, "alice"),
+            issue(2, "bob"),
+            issue(3, "Alice"),
+        ]);
+        let mut c = AppContext {
+            should_quit: false,
+            active_page: 0,
+            page_labels: vec![],
+            page_keys: vec![],
+            show_help: false,
+            status_message: None,
+            error_dialog: None,
+            workdir: std::path::PathBuf::new(),
+            needs_full_redraw: false,
+            last_input: Instant::now(),
+            auto_refresh: true,
+            page_request: None,
+            select_worktree: None,
+        };
+        // Toggled before the viewer is known: nothing filtered yet.
+        st.process_events(&mut c, vec![PaneEvent::ToggleMine])
+            .unwrap();
+        assert!(st.mine_only() && st.panes.pr_tab.list.mine_only);
+        assert_eq!(st.panes.issue_tab.list.item_count(), 3);
+        assert!(c
+            .status_message
+            .as_deref()
+            .is_some_and(|m| m.contains("once the signed-in login")));
+        // The viewer arrives: the filter applies, case-insensitively.
+        let tx = st.bg_tx.clone().unwrap();
+        let (tx2, rx2) = mpsc::channel();
+        st.bg_rx = Some(rx2);
+        drop(tx);
+        tx2.send(GhBgMessage::Viewer(Some("alice".into()))).unwrap();
+        st.drain_bg_messages();
+        assert_eq!(st.viewer(), Some("alice"));
+        let numbers: Vec<u64> = st
+            .panes
+            .issue_tab
+            .list
+            .items
+            .iter()
+            .map(|i| i.number)
+            .collect();
+        assert_eq!(numbers, vec![1, 3]);
+        assert_eq!(st.panes.issue_tab.detail.viewer(), Some("alice"));
+        // A refresh keeps the filter; `m` again shows everything.
+        st.panes
+            .issue_tab
+            .list
+            .set_items(vec![issue(1, "alice"), issue(2, "bob")]);
+        assert_eq!(st.panes.issue_tab.list.item_count(), 1);
+        st.process_events(&mut c, vec![PaneEvent::ToggleMine])
+            .unwrap();
+        assert!(!st.mine_only());
+        assert_eq!(st.panes.issue_tab.list.item_count(), 2);
+        assert_eq!(c.status_message.as_deref(), Some("All items shown"));
+
+        let doc: kdl::KdlDocument = r#"github-mine-only "on""#.parse().unwrap();
+        let cfg = Config::with_user(&doc, std::path::PathBuf::from("/u/config.kdl")).unwrap();
+        let st = GitHubState::new(&cfg).expect("github page");
+        assert!(st.mine_only() && st.panes.issue_tab.list.mine_only);
     }
 
     /// The first `200` answer of the change check is only a baseline; a

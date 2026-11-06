@@ -45,6 +45,18 @@ Pull Request の行は状態とレビュー判定を先頭に置くので、列�
  ● ✗ #59 Release 0.17.0 @bob
 ```
 
+**自分宛** のものは目立ちます。自分が担当者の issue / PR と、自分の
+レビューを待っている PR は状態アイコンが黄色になり、自分のログイン名は
+出てくる場所すべて — 行と、詳細ヘッダの `Assignees:` / `Reviewers:`
+行 — で太字の黄色です。どちらの一覧でも `m` でそれらだけに絞り
+（ヘッダは `GitHub · mine`）、もう一度 `m` で全部に戻ります。取得済みの
+一覧を手元で絞るだけなので API は使いません。
+[`github-mine-only`](config-reference.md#github-mine-only) で最初から
+絞った状態で始められます。「自分」が誰かは
+[`github-login`](config-reference.md#github-login)、無ければ `gh auth
+login` が保存したアカウントです。それが分かるまでは何も強調されず、`m`
+も待ちます。
+
 Pull Request で `d` を押すと（一覧でも詳細でも）、その PR の diff をページ
 の上に重なるウィンドウで開きます。左に変更ファイルのツリー、右にサイド
 バイサイドの diff という、[Git view](views-git.md) が作業ツリーの差分を
@@ -130,6 +142,7 @@ tail のように追記されます。`]` / `[` で失敗ステップ間をジ�
 | `h` / `l`（詳細） | 本文 ↔ 右側のサブペイン。実行の場合は Jobs ↔ Log |
 | `w`（issue / PR の詳細） | watch モードの切り替え（表示中アイテムの自動再取得） |
 | `x`（issue / PR の一覧） | closed な issue / マージ済み・closed な PR を表示 / 非表示 |
+| `m`（issue / PR の一覧） | 自分宛の項目（担当、または自分のレビュー待ち）だけ / 全部 |
 | `d`（PR の一覧 / 詳細） | PR の diff をウィンドウで表示: 変更ファイル + サイドバイサイド diff（`q` / `Esc` で戻る、`b` Files タブ、`y` コピー、`e` / `o` / `O` でファイルを編集 / 起動、`r` 再取得） |
 | `W`（PR の一覧 / 詳細） | PR を worktree として開く: 確認後に head を `git fetch` + `git worktree add`、Worktrees view でその worktree へ |
 | `i` / `Enter`（実行の詳細・Jobs） | ジョブのログを表示（ステップ行ならそのステップへスクロール） |

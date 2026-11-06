@@ -46,6 +46,18 @@ same decision spelled out.
  ● ✗ #59 Release 0.17.0 @bob
 ```
 
+What is **yours** stands out. An issue or PR assigned to you, or a PR
+waiting for your review, gets a yellow state icon, and your login is bold
+yellow wherever it appears — in the rows and in the detail header's
+`Assignees:` / `Reviewers:` line. `m` on either list keeps only those
+items (the header reads `GitHub · mine`), and `m` again shows everything;
+it is a local filter over what was fetched, so it costs nothing.
+[`github-mine-only`](config-reference.md#github-mine-only) starts the
+page filtered. Who "you" are is
+[`github-login`](config-reference.md#github-login), else the account
+`gh auth login` stored; until that is known nothing is highlighted and
+`m` waits.
+
 `d` on a pull request — in the list or in its detail — opens the PR's diff
 in a window on top of the page: the changed files as a tree on the left,
 the side-by-side diff on the right, exactly as the [Git view](views-git.md)
@@ -133,6 +145,7 @@ following.
 | `h` / `l` (detail) | Body ↔ right-hand sub-panes; for a run: Jobs ↔ Log |
 | `w` (issue / PR detail) | Toggle watch mode (auto-refresh the open item) |
 | `x` (issue / PR list) | Show / hide closed issues and merged / closed PRs |
+| `m` (issue / PR list) | Only the items for you (assigned, or waiting for your review) / all items |
 | `d` (PR list / detail) | Show the PR's diff in a window: changed files + side-by-side diff (`q` / `Esc` back, `b` Files tab, `y` copy, `e` / `o` / `O` edit / open the file, `r` re-fetch) |
 | `W` (PR list / detail) | Open the PR as a worktree: `git fetch` its head + `git worktree add` after a confirmation, then jump to it on the Worktrees view |
 | `i` / `Enter` (run detail, Jobs) | Show the job's log (a step row scrolls to that step) |
