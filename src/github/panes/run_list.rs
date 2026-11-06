@@ -8,7 +8,7 @@ use crate::github::domain::actions::time::{
     duration_between, format_relative, now_secs, parse_iso8601,
 };
 use crate::github::domain::actions::types::{RunState, WorkflowRun};
-use crate::github::panes::gh_list::{GhListItem, GhListPane, TreePos};
+use crate::github::panes::gh_list::{dim_fg, GhListItem, GhListPane, RowCtx, TreePos};
 use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
 use ratatui::{
@@ -28,13 +28,14 @@ pub fn state_color(state: RunState) -> Color {
 }
 
 /// One list row for `run` as of `now` (Unix seconds).
-pub fn render_run_row(run: &WorkflowRun, now: i64) -> ListItem<'static> {
-    ListItem::new(Line::from(run_row_spans(run, now)))
+pub fn render_run_row(run: &WorkflowRun, now: i64, selected: bool) -> ListItem<'static> {
+    ListItem::new(Line::from(run_row_spans(run, now, selected)))
 }
 
-/// The styled cells of a run row.
-fn run_row_spans(run: &WorkflowRun, now: i64) -> Vec<Span<'static>> {
-    let dim = Style::default().fg(Color::DarkGray);
+/// The styled cells of a run row; `selected` keeps the dimmed cells
+/// legible on the selection background.
+fn run_row_spans(run: &WorkflowRun, now: i64, selected: bool) -> Vec<Span<'static>> {
+    let dim = Style::default().fg(dim_fg(selected));
     let state = run.state();
     let name_style = match state {
         RunState::InProgress => Style::default().add_modifier(Modifier::BOLD),
@@ -85,13 +86,8 @@ impl GhListItem for WorkflowRun {
         "No workflow runs"
     }
 
-    fn render_item(
-        &self,
-        _tree: &TreePos,
-        _width: u16,
-        _viewer: Option<&str>,
-    ) -> ListItem<'static> {
-        render_run_row(self, now_secs())
+    fn render_item(&self, _tree: &TreePos, ctx: &RowCtx) -> ListItem<'static> {
+        render_run_row(self, now_secs(), ctx.selected)
     }
 
     /// Runs are identified by their database id: the run *number* only
@@ -186,7 +182,7 @@ pub(crate) mod tests {
 
     fn row_text(run: &WorkflowRun) -> String {
         let now = parse_iso8601("2026-08-28T08:20:23Z").unwrap();
-        run_row_spans(run, now)
+        run_row_spans(run, now, false)
             .iter()
             .map(|s| s.content.as_ref())
             .collect()

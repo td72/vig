@@ -1,7 +1,7 @@
 use crate::core::pane::PaneEvent;
 use crate::github::domain::types::{logins, GhIssueListItem};
 use crate::github::domain::{client, disk_cache};
-use crate::github::panes::gh_list::{GhListItem, GhListPane, TreePos};
+use crate::github::panes::gh_list::{dim_fg, GhListItem, GhListPane, RowCtx, TreePos};
 use crate::github::panes::people;
 use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
@@ -20,7 +20,8 @@ impl GhListItem for GhIssueListItem {
         "No issues"
     }
 
-    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static> {
+    fn render_item(&self, tree: &TreePos, ctx: &RowCtx) -> ListItem<'static> {
+        let (width, viewer) = (ctx.width, ctx.viewer);
         let open = self.state == "OPEN";
         let assignees = logins(&self.assignees);
         let icon = if open { "●" } else { "✓" };
@@ -36,7 +37,7 @@ impl GhListItem for GhIssueListItem {
         let title_style = if open {
             Style::default()
         } else {
-            Style::default().fg(Color::DarkGray)
+            Style::default().fg(dim_fg(ctx.selected))
         };
 
         let people = people::row_spans(&assignees, &[], viewer);
