@@ -69,6 +69,27 @@ pub fn default_keymap(switch_key: KeyCode) -> Keymap<GhListAction> {
 
 // === Trait for item-specific behavior ===
 
+/// What a row is rendered with.
+pub struct RowCtx<'a> {
+    /// Columns available to the row.
+    pub width: u16,
+    /// The signed-in login, highlighted where it appears, when known.
+    pub viewer: Option<&'a str>,
+    /// Whether the row is drawn on the selection background.
+    pub selected: bool,
+}
+
+/// The color of dimmed text (closed items, secondary cells): `DarkGray`,
+/// which is also the selection background — so on the selected row it
+/// is `Gray`, still dimmer than the rest but legible.
+pub fn dim_fg(selected: bool) -> ratatui::style::Color {
+    if selected {
+        ratatui::style::Color::Gray
+    } else {
+        ratatui::style::Color::DarkGray
+    }
+}
+
 pub trait GhListItem: Sized + Send + Clone + 'static {
     fn pane_title() -> &'static str;
     fn empty_message() -> &'static str;
@@ -76,9 +97,9 @@ pub trait GhListItem: Sized + Send + Clone + 'static {
     /// item is nested under another one.
     /// The row, laid out for a list `width` columns wide (inside the
     /// borders).
-    /// The row, `width` columns wide; `viewer` is the signed-in login
-    /// (highlighted where it appears) when known.
-    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static>;
+    /// The row (see [`RowCtx`] for its width, the viewer and whether it
+    /// is the selected one).
+    fn render_item(&self, tree: &TreePos, ctx: &RowCtx) -> ListItem<'static>;
     /// Whether the item is for `viewer`: assigned to them, or waiting for
     /// their review. Runs are nobody's.
     fn is_mine(&self, _viewer: &str) -> bool {
@@ -371,11 +392,12 @@ impl<T: GhListItem> GhListPane<T> {
                     .enumerate()
                     .map(|(idx, item)| {
                         let tree = self.positions.get(idx).cloned().unwrap_or_default();
-                        let mut li = item.render_item(
-                            &tree,
-                            area.width.saturating_sub(2),
-                            self.viewer.as_deref(),
-                        );
+                        let ctx = RowCtx {
+                            width: area.width.saturating_sub(2),
+                            viewer: self.viewer.as_deref(),
+                            selected: selected == Some(idx),
+                        };
+                        let mut li = item.render_item(&tree, &ctx);
                         let hl = theme::search_highlight_for(match_set, current_match_idx, idx);
                         if hl.is_active() {
                             use ratatui::style::Style;

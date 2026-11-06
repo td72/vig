@@ -1,7 +1,7 @@
 use crate::core::pane::PaneEvent;
 use crate::github::domain::types::{logins, reviewer_handles, GhPrListItem};
 use crate::github::domain::{client, disk_cache};
-use crate::github::panes::gh_list::{GhListItem, GhListPane, TreePos};
+use crate::github::panes::gh_list::{dim_fg, GhListItem, GhListPane, RowCtx, TreePos};
 use crate::github::panes::people;
 use crate::github::state::GhBgMessage;
 use crossterm::event::KeyCode;
@@ -35,8 +35,8 @@ impl GhListItem for GhPrListItem {
         "No pull requests"
     }
 
-    fn render_item(&self, tree: &TreePos, width: u16, viewer: Option<&str>) -> ListItem<'static> {
-        ListItem::new(Line::from(row_spans(self, tree, width, viewer)))
+    fn render_item(&self, tree: &TreePos, ctx: &RowCtx) -> ListItem<'static> {
+        ListItem::new(Line::from(row_spans(self, tree, ctx)))
     }
 
     fn is_mine(&self, viewer: &str) -> bool {
@@ -121,12 +121,11 @@ impl GhListItem for GhPrListItem {
 
 /// The spans of one list row: state icon, review mark, number, title,
 /// people, then the stack note.
-fn row_spans(
-    item: &GhPrListItem,
-    tree: &TreePos,
-    width: u16,
-    viewer: Option<&str>,
-) -> Vec<Span<'static>> {
+fn row_spans(item: &GhPrListItem, tree: &TreePos, ctx: &RowCtx) -> Vec<Span<'static>> {
+    let (width, viewer) = (ctx.width, ctx.viewer);
+    // Dimmed text (merged / closed rows, the draft icon) must stay legible
+    // on the selection background.
+    let dim = dim_fg(ctx.selected);
     let open = item.state == "OPEN";
     let assignees = logins(&item.assignees);
     let reviewers = reviewer_handles(&item.review_requests);
@@ -136,7 +135,7 @@ fn row_spans(
         "CLOSED" => ("✓", Color::Red),
         // A draft is hollow and dimmed, as on GitHub; an open PR of the
         // viewer's takes their color.
-        _ if item.is_draft => (DRAFT_ICON, Color::DarkGray),
+        _ if item.is_draft => (DRAFT_ICON, dim),
         _ if mine => ("●", people::MINE_FG),
         _ => ("●", Color::Green),
     };
@@ -144,10 +143,10 @@ fn row_spans(
     let title_style = if open {
         Style::default()
     } else {
-        Style::default().fg(Color::DarkGray)
+        Style::default().fg(dim)
     };
     let (mark, mark_color) = review_mark(item.review_decision.as_deref());
-    let mark_color = if open { mark_color } else { Color::DarkGray };
+    let mark_color = if open { mark_color } else { dim };
 
     let mut spans = vec![
         Span::raw(" "),
@@ -221,15 +220,46 @@ mod tests {
         }
     }
 
-    fn row_text(item: &GhPrListItem) -> String {
+    fn row(item: &GhPrListItem, selected: bool) -> Vec<Span<'static>> {
         let tree = TreePos {
             depth: 0,
             prefix: String::new(),
         };
-        row_spans(item, &tree, 80, None)
+        let ctx = RowCtx {
+            width: 80,
+            viewer: None,
+            selected,
+        };
+        row_spans(item, &tree, &ctx)
+    }
+
+    fn row_text(item: &GhPrListItem) -> String {
+        row(item, false)
             .iter()
             .map(|s| s.content.as_ref())
             .collect()
+    }
+
+    /// A merged row is dimmed with the selection background's color, so
+    /// under the cursor its title, mark and a draft icon turn `Gray`.
+    #[test]
+    fn a_selected_closed_row_stays_legible() {
+        let mut item = pr(1, None);
+        item.state = "MERGED".into();
+        item.review_decision = Some("APPROVED".into());
+        let title = |spans: &[Span<'static>]| spans[8].style.fg;
+        let mark = |spans: &[Span<'static>]| spans[4].style.fg;
+        assert_eq!(title(&row(&item, false)), Some(Color::DarkGray));
+        assert_eq!(mark(&row(&item, false)), Some(Color::DarkGray));
+        assert_eq!(title(&row(&item, true)), Some(Color::Gray));
+        assert_eq!(mark(&row(&item, true)), Some(Color::Gray));
+        // An open row is not dimmed either way.
+        item.state = "OPEN".into();
+        assert_eq!(title(&row(&item, true)), None);
+        assert_eq!(mark(&row(&item, true)), Some(Color::Green));
+        item.is_draft = true;
+        assert_eq!(row(&item, false)[2].style.fg, Some(Color::DarkGray));
+        assert_eq!(row(&item, true)[2].style.fg, Some(Color::Gray));
     }
 
     /// The draft state and the review decision lead the row, so they
