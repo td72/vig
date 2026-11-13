@@ -203,10 +203,11 @@ delete、push、stash の変更、コンテナ操作、プロセスへのシグ�
 
 ### vig のアップデート方法は？
 
-`vig update` が最新リリースをダウンロードし、署名を検証してバイナリを
-置き換えます — ビルド済みバイナリからのインストール向けです。Homebrew
-や cargo で入れた場合は `brew upgrade vig` / `cargo install vig` を
-使ってください。
+`vig update` が最新リリースを `gh` で調べてダウンロードし、署名を検証して
+バイナリを置き換えます — ビルド済みバイナリからのインストール向けです。
+GitHub ビューと同じく、サインイン済みの GitHub CLI（`gh auth login`）が
+必要です。Homebrew や cargo で入れた場合は `brew upgrade vig` /
+`cargo install vig` を使ってください。
 
 ### `gh` や Docker が無くても動く？
 

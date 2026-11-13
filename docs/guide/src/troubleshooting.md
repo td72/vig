@@ -199,10 +199,11 @@ ships one intentionally unplaced pane
 
 ### How do I update vig?
 
-`vig update` downloads the latest release, verifies its signature and
-replaces the binary — meant for installs from the pre-built binaries. If
-you installed via Homebrew or cargo, use `brew upgrade vig` /
-`cargo install vig` instead.
+`vig update` finds the latest release through `gh`, downloads it, verifies
+its signature and replaces the binary — meant for installs from the
+pre-built binaries. It needs a signed-in GitHub CLI (`gh auth login`),
+like the GitHub view. If you installed via Homebrew or cargo, use
+`brew upgrade vig` / `cargo install vig` instead.
 
 ### Does vig work without `gh` / Docker?
 
