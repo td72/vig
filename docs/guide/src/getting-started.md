@@ -137,8 +137,9 @@ the active configuration. Press `?` or `Esc` to close it.
 vig update
 ```
 
-`vig update` downloads the latest release from GitHub, verifies its signature,
-and replaces the current binary. It is meant for installs from the pre-built
+`vig update` looks up the latest release through `gh` (so it needs a signed-in
+GitHub CLI, like the GitHub view), downloads it, verifies its signature, and
+replaces the current binary. It is meant for installs from the pre-built
 release binaries; if you installed through Homebrew or cargo, prefer
 `brew upgrade vig` or `cargo install vig` so your package manager stays in
 charge.

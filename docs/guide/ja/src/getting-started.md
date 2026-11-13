@@ -139,7 +139,8 @@ worktree と stash を一覧し、HEAD コミットや stash のパッチを Git
 vig update
 ```
 
-`vig update` は GitHub から最新リリースをダウンロードし、署名を検証して
+`vig update` は最新リリースを `gh` で調べ（GitHub ビューと同じく、サイン
+イン済みの GitHub CLI が必要です）、ダウンロードして署名を検証し、
 現在のバイナリを置き換えます。ビルド済みリリースバイナリでインストールした
 場合向けの機能です。Homebrew や cargo でインストールした場合は、パッケージ
 マネージャに任せるため `brew upgrade vig` / `cargo install vig` を使って
