@@ -123,7 +123,7 @@ impl GhListItem for GhPrListItem {
 /// people, then the stack note.
 fn row_spans(item: &GhPrListItem, tree: &TreePos, ctx: &RowCtx) -> Vec<Span<'static>> {
     let (width, viewer) = (ctx.width, ctx.viewer);
-    // Dimmed text (merged / closed rows, the draft icon) must stay legible
+    // Dimmed text (merged / closed rows) must stay legible
     // on the selection background.
     let dim = dim_fg(ctx.selected);
     let open = item.state == "OPEN";
@@ -133,10 +133,14 @@ fn row_spans(item: &GhPrListItem, tree: &TreePos, ctx: &RowCtx) -> Vec<Span<'sta
     let (icon, icon_color) = match item.state.as_str() {
         "MERGED" => ("⊕", Color::Magenta),
         "CLOSED" => ("✓", Color::Red),
-        // A draft is hollow and dimmed, as on GitHub; an open PR of the
-        // viewer's takes their color.
-        _ if item.is_draft => (DRAFT_ICON, dim),
-        _ if mine => ("●", people::MINE_FG),
+        // Shape says ready / draft, color says whose: a draft is hollow and
+        // cyan (dim gray would read as "ignore this row"), and a PR of the
+        // viewer's takes their color whether open or draft.
+        _ if mine => (
+            if item.is_draft { DRAFT_ICON } else { "●" },
+            people::MINE_FG,
+        ),
+        _ if item.is_draft => (DRAFT_ICON, Color::Cyan),
         _ => ("●", Color::Green),
     };
     // Merged / closed PRs (shown with `x`) are dimmed.
@@ -196,7 +200,7 @@ pub fn new_pane(pane_id: usize, detail_id: usize, switch_target: usize) -> GhPrL
 mod tests {
     use super::*;
 
-    use crate::github::domain::types::GhPrStackRef;
+    use crate::github::domain::types::{GhAuthor, GhPrStackRef};
 
     fn pr(number: u64, stack: Option<(u64, u32)>) -> GhPrListItem {
         GhPrListItem {
@@ -241,7 +245,7 @@ mod tests {
     }
 
     /// A merged row is dimmed with the selection background's color, so
-    /// under the cursor its title, mark and a draft icon turn `Gray`.
+    /// under the cursor its title and mark turn `Gray`.
     #[test]
     fn a_selected_closed_row_stays_legible() {
         let mut item = pr(1, None);
@@ -257,9 +261,38 @@ mod tests {
         item.state = "OPEN".into();
         assert_eq!(title(&row(&item, true)), None);
         assert_eq!(mark(&row(&item, true)), Some(Color::Green));
+        // A draft icon is never dimmed: cyan, selected or not.
         item.is_draft = true;
-        assert_eq!(row(&item, false)[2].style.fg, Some(Color::DarkGray));
-        assert_eq!(row(&item, true)[2].style.fg, Some(Color::Gray));
+        assert_eq!(row(&item, false)[2].style.fg, Some(Color::Cyan));
+        assert_eq!(row(&item, true)[2].style.fg, Some(Color::Cyan));
+    }
+
+    /// Shape says ready / draft, color says whose: a draft is a cyan `◌`,
+    /// and one assigned to the viewer is a yellow `◌`, as an open PR of
+    /// theirs is a yellow `●`.
+    #[test]
+    fn a_draft_is_cyan_unless_it_is_mine() {
+        let tree = TreePos {
+            depth: 0,
+            prefix: String::new(),
+        };
+        let ctx = RowCtx {
+            width: 80,
+            viewer: Some("me"),
+            selected: false,
+        };
+        let icon = |item: &GhPrListItem| {
+            let span = row_spans(item, &tree, &ctx).remove(2);
+            (span.content.to_string(), span.style.fg)
+        };
+        let mut item = pr(1, None);
+        assert_eq!(icon(&item), ("●".into(), Some(Color::Green)));
+        item.is_draft = true;
+        assert_eq!(icon(&item), ("◌".into(), Some(Color::Cyan)));
+        item.assignees = vec![GhAuthor { login: "me".into() }];
+        assert_eq!(icon(&item), ("◌".into(), Some(people::MINE_FG)));
+        item.is_draft = false;
+        assert_eq!(icon(&item), ("●".into(), Some(people::MINE_FG)));
     }
 
     /// The draft state and the review decision lead the row, so they
