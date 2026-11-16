@@ -33,7 +33,7 @@ Reviews sub-pane. The detail header repeats both lists in full
 matches assignees too — `/@alice` finds everything assigned to alice.
 
 A pull request's state and review decision lead its row, so a narrow
-column never cuts them off. A draft shows `◌` (dimmed) in place of the
+column never cuts them off. A draft shows a cyan `◌` in place of the
 green `●`; the one-column mark after the icon reads `✓` approved, `✗`
 changes requested or `◯` review required, and stays blank when there is
 no decision — nothing reviewed yet, or no branch protection asking for
