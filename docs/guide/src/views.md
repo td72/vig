@@ -1,7 +1,7 @@
 # Views
 
 vig is organized as a row of views — tabs in the header, numbered `1:Git`
-through `7:Projects`. Each view is a self-contained page with its own panes
+through `8:Claude`. Each view is a self-contained page with its own panes
 and key bindings; the following chapters cover them one by one.
 
 ## Read-only by design
@@ -21,6 +21,11 @@ project boards — is strictly read-only:
   environment variables.
 - The Worktrees view never applies, drops, or prunes anything.
 - The Projects view never adds, moves, edits, or deletes items.
+- The Claude view never writes to Claude Code's files or sends it anything.
+  To hear live events it opens one socket of its own, outside Claude Code's
+  directories (`claude-live "off"` opens none).
+  It reads responses and tool outputs only when you opt in with
+  `claude-text "full"`.
 
 You can leave vig open all day and it will not change your system. Destructive
 operations (merge, rebase, force delete, push) are not "hidden behind a
@@ -37,6 +42,7 @@ setting" — they do not exist in the code.
 | `5` | Switch to Procs View |
 | `6` | Switch to Worktrees View |
 | `7` | Switch to Projects View |
+| `8` | Switch to Claude View |
 
 The numbers are the position of the view in the header, which follows the
 `pages` list in the configuration — trim or reorder that list and the numbers

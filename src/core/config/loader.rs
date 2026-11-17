@@ -456,6 +456,7 @@ impl Config {
         self.procs_page()?;
         self.worktrees_page()?;
         self.projects_page()?;
+        self.claude_page()?;
         self.diff_window()?;
         self.app_entries()?;
         self.theme()?;
@@ -476,6 +477,9 @@ impl Config {
         self.projects_hide_closed()?;
         self.projects_roadmap()?;
         self.pr_worktree()?;
+        self.claude_text()?;
+        self.claude_projects_dir()?;
+        self.claude_live()?;
         self.repo_config()?;
         Ok(())
     }
@@ -1243,6 +1247,94 @@ impl Config {
         self.page("projects")
     }
 
+    pub fn claude_page(&self) -> Result<LoadedPageConfig> {
+        self.page("claude")
+    }
+
+    /// How much text the Claude page shows (`claude-text "title"` /
+    /// `"summary"` / `"full"`, default summary).
+    pub fn claude_text(&self) -> Result<crate::claude::domain::types::TextLevel> {
+        use crate::claude::domain::types::TextLevel;
+        let mode = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "claude-text")
+            .map(|n| {
+                n.get(0usize)
+                    .and_then(|v| v.as_string())
+                    .map(str::to_string)
+                    .ok_or_else(|| anyhow!("claude-text block missing level argument"))
+            })
+            .transpose()
+            .with_context(|| format!("invalid {}", self.describe()))?
+            .unwrap_or_else(|| "summary".to_string());
+        TextLevel::parse(&mode).ok_or_else(|| {
+            anyhow!(
+                "invalid {}: unknown claude-text level {mode:?}; expected one of: {}",
+                self.describe(),
+                TextLevel::NAMES.join(", ")
+            )
+        })
+    }
+
+    /// Whether the Claude page listens for live events from the
+    /// `iktinos-bridge` mod (`claude-live "on"` / `"off"`, default on).
+    pub fn claude_live(&self) -> Result<bool> {
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "claude-live")
+        else {
+            return Ok(true);
+        };
+        match node.get(0usize).and_then(|v| v.as_string()) {
+            Some("on") => Ok(true),
+            Some("off") => Ok(false),
+            _ => Err(anyhow!(
+                "invalid {}: claude-live expects \"on\" or \"off\"",
+                self.describe()
+            )),
+        }
+    }
+
+    /// Where the Claude page reads transcripts from
+    /// (`claude-projects-dir "~/.claude/projects"`; a leading `~/` is the
+    /// home directory). `None` when absent: Claude Code's own default
+    /// (`$CLAUDE_CONFIG_DIR/projects`, else `~/.claude/projects`).
+    pub fn claude_projects_dir(&self) -> Result<Option<std::path::PathBuf>> {
+        let Some(node) = self
+            .doc
+            .nodes()
+            .iter()
+            .find(|n| n.name().value() == "claude-projects-dir")
+        else {
+            return Ok(None);
+        };
+        let invalid = |what: &str| {
+            anyhow!(
+                "invalid {}: bad claude-projects-dir ({what}); expected one directory, e.g. `claude-projects-dir \"~/.claude/projects\"`",
+                self.describe()
+            )
+        };
+        let args = string_args(node).map_err(invalid)?;
+        let [dir] = args.as_slice() else {
+            return Err(invalid("expected exactly one string"));
+        };
+        let dir = dir.trim();
+        let path = match dir.strip_prefix("~/") {
+            Some(rest) => dirs::home_dir()
+                .ok_or_else(|| invalid("no home directory to expand ~ with"))?
+                .join(rest),
+            None => std::path::PathBuf::from(dir),
+        };
+        if !path.is_absolute() {
+            return Err(invalid("an absolute path or one under ~/ is required"));
+        }
+        Ok(Some(path))
+    }
+
     /// The `window "diff"` block: the layout and keys of the diff window a
     /// PR opens on top of the GitHub page (`d`). Not a page: it has no
     /// slot in `pages` and no `app` key, so it is loaded separately.
@@ -1962,6 +2054,99 @@ mod tests {
     }
 
     #[test]
+    fn claude_page_ids_keys_and_bindings() {
+        let cfg = Config::builtin().claude_page().unwrap();
+        assert_eq!(cfg.name, "claude");
+        assert_eq!(cfg.resolve_id("interactions"), Some(0));
+        assert_eq!(cfg.resolve_id("trace"), Some(1));
+        assert_eq!(cfg.resolve_id("detail"), Some(2));
+        assert_eq!(cfg.resolve_id("files"), Some(3));
+        assert_eq!(cfg.layout.tab_panes, vec![0, 1, 2, 3]);
+        assert!(cfg.bindings.is_empty());
+        for name in ["view", "interactions", "trace", "detail", "files"] {
+            assert!(
+                cfg.pane_keys.contains_key(name),
+                "missing pane keys for {name}"
+            );
+        }
+        // App block switches to it with "8".
+        let entries = Config::builtin().app_entries().unwrap();
+        assert!(entries.contains(&("8".to_string(), "page:claude".to_string())));
+    }
+
+    #[test]
+    fn claude_text_default_override_and_validation() {
+        use crate::claude::domain::types::TextLevel;
+        assert_eq!(Config::builtin().claude_text().unwrap(), TextLevel::Summary);
+        assert_eq!(
+            user(r#"claude-text "title""#)
+                .unwrap()
+                .claude_text()
+                .unwrap(),
+            TextLevel::Title
+        );
+        assert_eq!(
+            user(r#"claude-text "full""#)
+                .unwrap()
+                .claude_text()
+                .unwrap(),
+            TextLevel::Full
+        );
+        let msg = format!(
+            "{:#}",
+            user(r#"claude-text "everything""#).expect_err("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(
+            msg.contains("unknown claude-text level \"everything\""),
+            "{msg}"
+        );
+        assert!(msg.contains("title, summary, full"), "{msg}");
+    }
+
+    #[test]
+    fn claude_live_default_override_and_validation() {
+        assert!(Config::builtin().claude_live().unwrap());
+        assert!(!user(r#"claude-live "off""#).unwrap().claude_live().unwrap());
+        let msg = format!(
+            "{:#}",
+            user(r#"claude-live "maybe""#).expect_err("expected an error")
+        );
+        assert!(msg.contains("/u/config.kdl"), "{msg}");
+        assert!(msg.contains("claude-live expects"), "{msg}");
+    }
+
+    #[test]
+    fn claude_projects_dir_default_override_and_validation() {
+        assert_eq!(Config::builtin().claude_projects_dir().unwrap(), None);
+        assert_eq!(
+            user(r#"claude-projects-dir "/data/claude/projects""#)
+                .unwrap()
+                .claude_projects_dir()
+                .unwrap(),
+            Some(std::path::PathBuf::from("/data/claude/projects"))
+        );
+        if let Some(home) = dirs::home_dir() {
+            assert_eq!(
+                user(r#"claude-projects-dir "~/alt/projects""#)
+                    .unwrap()
+                    .claude_projects_dir()
+                    .unwrap(),
+                Some(home.join("alt/projects"))
+            );
+        }
+        for bad in [
+            r#"claude-projects-dir"#,
+            r#"claude-projects-dir "a" "b""#,
+            r#"claude-projects-dir "relative/dir""#,
+            r#"claude-projects-dir 3"#,
+        ] {
+            let msg = user(bad).expect_err(bad).to_string();
+            assert!(msg.contains("bad claude-projects-dir"), "{bad}: {msg}");
+        }
+    }
+
+    #[test]
     fn projects_page_ids_keys_and_bindings() {
         let cfg = Config::builtin().projects_page().unwrap();
         assert_eq!(cfg.name, "projects");
@@ -2538,7 +2723,7 @@ mod tests {
 
     // ── pages ─────────────────────────────────────────────────────────────
 
-    const ALL_PAGES: [&str; 7] = [
+    const ALL_PAGES: [&str; 8] = [
         "git",
         "github",
         "files",
@@ -2546,6 +2731,7 @@ mod tests {
         "procs",
         "worktrees",
         "projects",
+        "claude",
     ];
 
     #[test]

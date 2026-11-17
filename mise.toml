@@ -9,42 +9,42 @@ description = "Build vig for demo recording"
 hide = true
 
 [tasks.demo]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo.tape"
 depends = ["demo:build"]
 description = "Record demo GIF"
 
 [tasks."demo:yank"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-yank.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-yank.tape"
 depends = ["demo:build"]
 description = "Record yank demo GIF"
 
 [tasks."demo:branch"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-branch.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-branch.tape"
 depends = ["demo:build"]
 description = "Record branch selector demo GIF"
 
 [tasks."demo:search"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-search.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-search.tape"
 depends = ["demo:build"]
 description = "Record search demo GIF"
 
 [tasks."demo:reflog"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-reflog.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-reflog.tape"
 depends = ["demo:build"]
 description = "Record reflog demo GIF"
 
 [tasks."demo:github-issue"]
-run = "VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-github-issue.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-github-issue.tape"
 depends = ["demo:build"]
 description = "Record GitHub Issue demo GIF"
 
 [tasks."demo:github-pr"]
-run = "VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-github-pr.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-github-pr.tape"
 depends = ["demo:build"]
 description = "Record GitHub PR demo GIF"
 
 [tasks."demo:commit-log"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-commit-log.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-commit-log.tape"
 depends = ["demo:build"]
 description = "Record commit log demo GIF"
 
@@ -54,29 +54,34 @@ depends = ["demo:build"]
 description = "Record user config demo GIF"
 
 [tasks."demo:files"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-files.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-files.tape"
 depends = ["demo:build"]
 description = "Record Files view demo GIF"
 
 [tasks."demo:docker"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-docker.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-docker.tape"
 depends = ["demo:build"]
 description = "Record Docker view demo GIF (requires a running Docker daemon)"
 
 [tasks."demo:procs"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-procs.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-procs.tape"
 depends = ["demo:build"]
 description = "Record Procs view demo GIF"
 
 [tasks."demo:worktrees"]
-run = "PATH=$PWD/target/release:$PATH vhs tape/demo-worktrees.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl PATH=$PWD/target/release:$PATH vhs tape/demo-worktrees.tape"
 depends = ["demo:build"]
 description = "Record Worktrees view demo GIF"
 
 [tasks."demo:projects"]
-run = "VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-projects.tape"
+run = "VIG_CONFIG=$PWD/tape/demo.kdl VIG_GH_FIXTURE=$PWD/tape/fixtures PATH=$PWD/target/release:$PATH vhs tape/demo-projects.tape"
 depends = ["demo:build"]
 description = "Record Projects view demo GIF (from tape/fixtures, no API)"
+
+[tasks."demo:claude"]
+run = "VIG_CONFIG=$PWD/tape/demo.kdl VIG_CLAUDE_FIXTURE=$PWD/tape/claude-fixture.py PATH=$PWD/target/release:$PATH vhs tape/demo-claude.tape"
+depends = ["demo:build"]
+description = "Record Claude view demo GIF (from synthetic transcripts, no real session)"
 
 [tasks."demo:repo-config"]
 run = "PATH=$PWD/target/release:$PATH vhs tape/demo-repo-config.tape"
@@ -84,7 +89,7 @@ depends = ["demo:build"]
 description = "Record repo-local config demo GIF"
 
 [tasks."demo:all"]
-depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr", "demo:commit-log", "demo:config", "demo:repo-config", "demo:files", "demo:docker", "demo:procs", "demo:worktrees", "demo:projects"]
+depends = ["demo", "demo:yank", "demo:branch", "demo:search", "demo:reflog", "demo:github-issue", "demo:github-pr", "demo:commit-log", "demo:config", "demo:repo-config", "demo:files", "demo:docker", "demo:procs", "demo:worktrees", "demo:projects", "demo:claude"]
 description = "Record all demo GIFs"
 
 [tasks."fixtures:refresh"]
