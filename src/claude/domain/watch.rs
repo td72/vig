@@ -22,12 +22,12 @@ use super::types::{
     LiveStatus, SessionEntry, Snapshot, TextLevel, TouchedFile, Whole, WholeKey, WholeText,
 };
 use crate::worktrees::domain::worktree::list_worktrees;
-use iktinos::discover::{default_projects_dir, discover, SessionFiles};
-use iktinos::output::{read_response, read_tool_output};
-use iktinos::place::Place;
-use iktinos::record::{Record, OUTPUT_CHARS};
-use iktinos::session::{Session, SessionStore};
-use iktinos::tail::Tail;
+use iktinos_core::discover::{default_projects_dir, discover, SessionFiles};
+use iktinos_core::output::{read_response, read_tool_output};
+use iktinos_core::place::Place;
+use iktinos_core::record::{Record, OUTPUT_CHARS};
+use iktinos_core::session::{Session, SessionStore};
+use iktinos_core::tail::Tail;
 use iktinos_live::event::Event;
 use iktinos_live::merge::apply_event;
 use iktinos_live::server::Server;

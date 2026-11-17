@@ -5,9 +5,9 @@ pub mod trace;
 
 use crate::claude::domain::types::{SessionEntry, TextLevel, WholeKey};
 use crate::github::domain::actions::time::{format_duration, format_relative};
-use iktinos::record::Timestamp;
-use iktinos::session::{Cost, CostSource, LiveState, Session, Subagent, ToolCall};
-use iktinos::trace::{between, Interaction, Item, LlmRequest, SpanKind};
+use iktinos_core::record::Timestamp;
+use iktinos_core::session::{Cost, CostSource, LiveState, Session, Subagent, ToolCall};
+use iktinos_core::trace::{between, Interaction, Item, LlmRequest, SpanKind};
 use ratatui::{
     style::{Color, Style},
     text::{Line, Span},

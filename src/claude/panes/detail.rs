@@ -16,7 +16,7 @@ use crate::core::app::AppContext;
 use crate::core::keymap::{half_page_step, ActionHelp, Keymap, NavAction};
 use crate::core::pane::{Pane, PaneEvent, PaneShared};
 use crate::core::theme;
-use iktinos::session::ToolCall;
+use iktinos_core::session::ToolCall;
 use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -736,8 +736,8 @@ impl Pane<PaneEvent> for DetailPane {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use iktinos::record::Record;
-    use iktinos::session::SessionStore;
+    use iktinos_core::record::Record;
+    use iktinos_core::session::SessionStore;
 
     fn text(lines: &[Line]) -> String {
         lines

@@ -5,8 +5,8 @@
 //! command touched is not known.
 
 use super::types::{Touch, TouchedFile};
-use iktinos::record::Timestamp;
-use iktinos::session::Session;
+use iktinos_core::record::Timestamp;
+use iktinos_core::session::Session;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -69,8 +69,8 @@ fn home_relative(path: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use iktinos::record::Record;
-    use iktinos::session::SessionStore;
+    use iktinos_core::record::Record;
+    use iktinos_core::session::SessionStore;
 
     fn tool_use(n: u32, name: &str, input: &str) -> String {
         format!(

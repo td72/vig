@@ -159,7 +159,8 @@ Claude Code はセッションごとに 1 つの JSON Lines ファイルを
 セッションがこのリポジトリのものかどうかは作業ディレクトリで判定します:
 リポジトリの配下にあるか、同じ `.git` を共有する worktree の中にあるか
 です。
-読み取りは [iktinos](https://github.com/td72/iktinos) crate が行います。
+読み取りは [iktinos](https://github.com/td72/iktinos) の `iktinos-core` crate が
+行います。
 
 ディレクトリが無い場合や、このリポジトリのセッションがまだ無い場合は、
 空のペインの代わりにその旨を表示します。
