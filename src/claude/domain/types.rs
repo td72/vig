@@ -6,7 +6,7 @@
 //! (the whole of one output or response). [`TextLevel`] decides how much of
 //! the text is drawn, and whether tool outputs are kept at all.
 
-use iktinos::session::Session;
+use iktinos_core::session::Session;
 use std::path::PathBuf;
 use std::sync::Arc;
 

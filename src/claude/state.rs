@@ -27,7 +27,7 @@ use crate::core::ui::status_bar;
 use crate::github::domain::actions::time::format_duration;
 use anyhow::Result;
 use crossterm::event::KeyEvent;
-use iktinos::session::Session;
+use iktinos_core::session::Session;
 use ratatui::{
     layout::{Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -590,8 +590,8 @@ mod tests {
     };
     use crate::claude::domain::watch::{Listen, Watcher};
     use crossterm::event::{KeyCode, KeyModifiers};
-    use iktinos::record::Record;
-    use iktinos::session::SessionStore;
+    use iktinos_core::record::Record;
+    use iktinos_core::session::SessionStore;
     use ratatui::{backend::TestBackend, Terminal};
 
     fn text(line: &Line) -> String {
@@ -641,7 +641,7 @@ mod tests {
 
     #[test]
     fn session_line_shows_state_context_and_cost() {
-        let at = iktinos::record::Timestamp::parse("2026-11-02T10:00:00.000Z")
+        let at = iktinos_core::record::Timestamp::parse("2026-11-02T10:00:00.000Z")
             .unwrap()
             .as_millis();
         let line = text(&session_line(&session(&[]), at + 30_000));

@@ -14,8 +14,8 @@ use crate::core::keymap::{ActionHelp, Keymap, NavAction, SearchAction};
 use crate::core::pane::{self, Pane, PaneEvent, PaneShared};
 use crate::core::search::SearchMatch;
 use crate::core::theme;
-use iktinos::session::{Session, Subagent, ToolCall};
-use iktinos::trace::{Interaction, Item, Node, SpanKind};
+use iktinos_core::session::{Session, Subagent, ToolCall};
+use iktinos_core::trace::{Interaction, Item, Node, SpanKind};
 use ratatui::{
     layout::Rect,
     style::{Color, Style},

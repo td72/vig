@@ -155,7 +155,8 @@ view elsewhere. The files are read once a second while the view is shown —
 only what was appended — and the directory is listed again every few seconds.
 Whether a session belongs to the repository is told from its working
 directory: below the repository, or in a worktree that shares its `.git`.
-The reading is done by the [iktinos](https://github.com/td72/iktinos) crate.
+The reading is done by the `iktinos-core` crate of
+[iktinos](https://github.com/td72/iktinos).
 
 When the directory does not exist, or the repository has no session yet, the
 view says so instead of showing empty panes.
