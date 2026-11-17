@@ -122,6 +122,9 @@ the full schema — lives in the User Guide:
 | `6` | Switch to Worktrees View |
 | `7` | Switch to Projects View |
 
+The number keys follow the header: `1` … `9` switch to slots 1 … 9 and `0`
+to slot 10, so they keep matching after `pages` reorders or disables views.
+
 ### Pane Navigation
 
 | Key | Action |

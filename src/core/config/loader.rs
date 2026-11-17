@@ -634,9 +634,9 @@ impl Config {
     }
 
     /// A `page:<name>` binding written by the user must address an enabled
-    /// page. (Built-in bindings to pages the user disabled are dropped by
-    /// [`app_entries`](Self::app_entries) instead, so disabling a page does
-    /// not require unbinding its default key.)
+    /// page. (A built-in `page:` binding to a page the user disabled would be
+    /// dropped by [`app_entries`](Self::app_entries) instead; the built-in
+    /// number keys are `slot:<n>` bindings and need neither.)
     fn validate_user_app_bindings(&self, user: &KdlDocument, pages: &[String]) -> Result<()> {
         let Some(app) = user
             .nodes()
@@ -1264,8 +1264,8 @@ impl Config {
     }
 
     /// App-level `(key_str, action_str)` pairs. `page:<name>` entries whose
-    /// page exists but is not enabled by [`pages`](Self::pages) are dropped,
-    /// so the built-in slot keys of disabled pages simply do nothing.
+    /// page exists but is not enabled by [`pages`](Self::pages) are dropped
+    /// (`slot:<n>` entries are kept: `build_app_keymap` resolves them).
     pub fn app_entries(&self) -> Result<Vec<(String, String)>> {
         let entries = self
             .doc
@@ -1931,7 +1931,7 @@ mod tests {
         assert!(cfg.pane_keys["parent_dir"].is_empty());
         // App block switches to it with "3".
         let entries = Config::builtin().app_entries().unwrap();
-        assert!(entries.contains(&("3".to_string(), "page:files".to_string())));
+        assert!(entries.contains(&("3".to_string(), "slot:3".to_string())));
     }
 
     #[test]
@@ -1958,7 +1958,7 @@ mod tests {
         }
         // App block switches to it with "4".
         let entries = Config::builtin().app_entries().unwrap();
-        assert!(entries.contains(&("4".to_string(), "page:docker".to_string())));
+        assert!(entries.contains(&("4".to_string(), "slot:4".to_string())));
     }
 
     #[test]
@@ -2012,7 +2012,7 @@ mod tests {
         }
         // App block switches to it with "7".
         let entries = Config::builtin().app_entries().unwrap();
-        assert!(entries.contains(&("7".to_string(), "page:projects".to_string())));
+        assert!(entries.contains(&("7".to_string(), "slot:7".to_string())));
     }
 
     #[test]
@@ -2073,7 +2073,7 @@ mod tests {
         }
         // App block switches to it with "5".
         let entries = Config::builtin().app_entries().unwrap();
-        assert!(entries.contains(&("5".to_string(), "page:procs".to_string())));
+        assert!(entries.contains(&("5".to_string(), "slot:5".to_string())));
     }
 
     #[test]
@@ -2269,7 +2269,7 @@ mod tests {
         }
         // App block switches to it with "6".
         let entries = Config::builtin().app_entries().unwrap();
-        assert!(entries.contains(&("6".to_string(), "page:worktrees".to_string())));
+        assert!(entries.contains(&("6".to_string(), "slot:6".to_string())));
     }
 
     /// The diff window (`d` on a PR) is a `window` block, not a page: it
@@ -2571,26 +2571,36 @@ mod tests {
     fn user_pages_reorder_and_disable() {
         let cfg = user(r#"pages "files" "git""#).unwrap();
         assert_eq!(cfg.pages().unwrap(), ["files", "git"]);
-        // Built-in bindings to disabled pages are dropped; the rest keep
-        // addressing their page by name.
+        // The built-in number keys address slots, so they follow the new
+        // order; a slot with no page binds nothing.
         let entries = cfg.app_entries().unwrap();
-        let page_actions: Vec<&str> = entries
-            .iter()
-            .filter_map(|(_, a)| a.strip_prefix("page:"))
-            .collect();
-        assert_eq!(page_actions, ["git", "files"]);
         let pages = cfg.pages().unwrap();
         let names: Vec<&str> = pages.iter().map(String::as_str).collect();
         let km = crate::core::keymap::build_app_keymap(&entries, &names).unwrap();
         assert!(matches!(
             km.lookup(key("1")),
-            Some(crate::core::keymap::AppAction::SwitchPage(1))
-        ));
-        assert!(matches!(
-            km.lookup(key("3")),
             Some(crate::core::keymap::AppAction::SwitchPage(0))
         ));
-        assert!(km.lookup(key("2")).is_none(), "github is disabled");
+        assert!(matches!(
+            km.lookup(key("2")),
+            Some(crate::core::keymap::AppAction::SwitchPage(1))
+        ));
+        assert!(km.lookup(key("3")).is_none(), "there is no third slot");
+    }
+
+    /// A user's `page:<name>` binding keeps addressing the page by name,
+    /// wherever its slot is; a built-in one to a disabled page is dropped.
+    #[test]
+    fn page_bindings_follow_the_name_across_a_reorder() {
+        let cfg = user(r#"pages "files" "git"; app { "g" "page:git" }"#).unwrap();
+        let entries = cfg.app_entries().unwrap();
+        let pages = cfg.pages().unwrap();
+        let names: Vec<&str> = pages.iter().map(String::as_str).collect();
+        let km = crate::core::keymap::build_app_keymap(&entries, &names).unwrap();
+        assert!(matches!(
+            km.lookup(key("g")),
+            Some(crate::core::keymap::AppAction::SwitchPage(1))
+        ));
     }
 
     #[test]

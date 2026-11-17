@@ -95,8 +95,9 @@ app {
 }
 ```
 
-`app` actions are `"Quit"` and `"page:<name>"` — switching to a page works
-by *name*, so the binding keeps working when you reorder the tabs.
+`app` actions are `"Quit"`, `"page:<name>"` and `"slot:<n>"` — `page:`
+switches to a page by *name*, so the binding keeps working when you reorder
+the tabs; `slot:` switches to the n-th tab, whatever page is there.
 
 ### Remove a binding
 
@@ -161,11 +162,11 @@ Reordering works the same way:
 pages "github" "git" "files" "docker" "procs" "worktrees" "projects"
 ```
 
-Number keys are bindings *onto pages, by name* — after either config, the
-built-in `page:git` binding still reaches the Git view from its new
-position. Built-in keys of disabled pages are silently dropped; but a
-binding in *your own* `app` block to a page you did not list is an error,
-because it can never work:
+The number keys are bound to *slots* (`"1" "slot:1"`, …) — after either
+config, each key switches to the tab with that number in the header (`2` is
+Files in the first, Git in the second). A `page:` binding in *your own*
+`app` block to a page you did not list is an error, because it can never
+work:
 
 ```kdl,ignore
 pages "git" "files"

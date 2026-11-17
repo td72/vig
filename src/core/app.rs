@@ -600,7 +600,9 @@ mod tests {
         assert_eq!(look("5"), Some(AppAction::SwitchPage(procs_idx)));
         assert_eq!(look("6"), Some(AppAction::SwitchPage(worktrees_idx)));
         assert_eq!(look("7"), Some(AppAction::SwitchPage(projects_idx)));
-        assert_eq!(look("8"), None);
+        assert_eq!(look("8"), None, "no page in slot 8");
+        assert_eq!(look("9"), None);
+        assert_eq!(look("0"), None, "`0` is slot 10");
         assert_eq!(look("Ctrl+c"), Some(AppAction::Quit));
     }
 
@@ -660,35 +662,52 @@ mod tests {
     }
 
     /// `pages` reorders the slots: the header (`page_labels`) follows the
-    /// listed order while keys keep addressing pages by name.
+    /// listed order, and so do the built-in number keys (`slot:<n>`).
     #[test]
-    fn user_pages_reorder_slots_and_keep_keys_by_name() {
+    fn user_pages_reorder_slots_and_number_keys_follow() {
         let app = app_with(&user_config(r#"pages "files" "git""#));
         assert_eq!(labels(&app), ["Files", "Git"]);
         assert_eq!(page_index(&app, "files"), 0, "slot 1 is Files");
-        assert_eq!(app.ctx.page_keys, vec![vec!["3"], vec!["1"]]);
-        assert_eq!(app.active_help_bindings()[0].0, "3 / 1");
+        assert_eq!(app.ctx.page_keys, vec![vec!["1"], vec!["2"]]);
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 2");
 
         let mut app = app_with(&user_config(r#"pages "worktrees" "git""#));
         assert_eq!(labels(&app), ["Worktrees", "Git"]);
-        assert_eq!(app.active_help_bindings()[0].0, "6 / 1");
-        // Keys still switch to the page they name, wherever its slot is.
-        let ki: KeyInput = "1".parse().unwrap();
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 2");
+        let ki: KeyInput = "2".parse().unwrap();
         app.handle_key(KeyEvent::new(ki.code, ki.modifiers))
             .unwrap();
         assert_eq!(app.ctx.active_page, page_index(&app, "git"));
     }
 
-    /// Disabled pages are not constructed; their built-in keys are dropped
-    /// (so `2` does nothing) rather than being an error.
+    /// A `page:<name>` binding still switches to the page it names,
+    /// wherever its slot is.
+    #[test]
+    fn page_name_keys_follow_the_page_across_a_reorder() {
+        let mut app = app_with(&user_config(
+            r#"pages "worktrees" "git"; app { "w" "page:worktrees" }"#,
+        ));
+        assert_eq!(app.ctx.page_keys, vec![vec!["1", "w"], vec!["2"]]);
+        let two: KeyInput = "2".parse().unwrap();
+        app.handle_key(KeyEvent::new(two.code, two.modifiers))
+            .unwrap();
+        assert_eq!(app.ctx.active_page, 1);
+        let w: KeyInput = "w".parse().unwrap();
+        app.handle_key(KeyEvent::new(w.code, w.modifiers)).unwrap();
+        assert_eq!(app.ctx.active_page, page_index(&app, "worktrees"));
+    }
+
+    /// Disabled pages are not constructed; the number keys cover the pages
+    /// that are left, and a slot with no page binds nothing (`4` does
+    /// nothing) rather than being an error.
     #[test]
     fn user_pages_disable_pages() {
         let mut app = app_with(&user_config(r#"pages "git" "files" "worktrees""#));
         assert_eq!(labels(&app), ["Git", "Files", "Worktrees"]);
         assert_eq!(app.pages.len(), 3);
-        assert_eq!(app.ctx.page_keys, vec![vec!["1"], vec!["3"], vec!["6"]]);
-        assert_eq!(app.active_help_bindings()[0].0, "1 / 3 / 6");
-        let ki: KeyInput = "2".parse().unwrap();
+        assert_eq!(app.ctx.page_keys, vec![vec!["1"], vec!["2"], vec!["3"]]);
+        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3");
+        let ki: KeyInput = "4".parse().unwrap();
         assert!(app
             .app_keymap
             .lookup(KeyEvent::new(ki.code, ki.modifiers))
@@ -862,5 +881,39 @@ mod tests {
         assert_eq!(keys[1], vec!["2", "Space"]);
         assert!(keys[2].is_empty());
         assert_eq!(keys.len(), 3, "out-of-range page indices are ignored");
+    }
+
+    /// `slot:<n>` is the n-th page (1-based); a slot past the last page
+    /// binds nothing, and `slot:0` / a non-number is an error.
+    #[test]
+    fn slot_actions_resolve_by_position() {
+        let entries = |pairs: &[(&str, &str)]| -> Vec<(String, String)> {
+            pairs
+                .iter()
+                .map(|(k, a)| (k.to_string(), a.to_string()))
+                .collect()
+        };
+        let km = build_app_keymap(
+            &entries(&[("1", "slot:1"), ("2", "slot:2"), ("0", "slot:10")]),
+            &["a", "b"],
+        )
+        .unwrap();
+        assert_eq!(page_keys(&km, 2), vec![vec!["1"], vec!["2"]]);
+        let zero: KeyInput = "0".parse().unwrap();
+        assert!(km
+            .lookup(KeyEvent::new(zero.code, zero.modifiers))
+            .is_none());
+
+        // An empty slot also clears what the key was bound to before.
+        let km =
+            build_app_keymap(&entries(&[("x", "page:a"), ("x", "slot:3")]), &["a", "b"]).unwrap();
+        assert_eq!(page_keys(&km, 2), vec![Vec::<String>::new(), Vec::new()]);
+
+        for bad in ["slot:0", "slot:", "slot:two"] {
+            assert!(
+                build_app_keymap(&entries(&[("1", bad)]), &["a"]).is_err(),
+                "{bad}"
+            );
+        }
     }
 }

@@ -118,6 +118,9 @@ vig config path     # 設定レイヤー（builtin / user / repo-local）の状�
 | `6` | Worktrees View に切り替え |
 | `7` | Projects View に切り替え |
 
+数字キーはヘッダの番号に追従します: `1` … `9` がスロット 1 … 9、`0` が
+スロット 10 に切り替えるので、`pages` で並べ替えや無効化をしても一致します。
+
 ### ペイン操作
 
 | キー | 操作 |

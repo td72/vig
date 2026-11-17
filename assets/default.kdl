@@ -88,18 +88,24 @@ worktree-branch "pr/{n}"
 
 // Pages in tab order: the position here is the slot shown in the header
 // (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
-// wholesale; pages left out are disabled. `app` bindings address pages by name.
+// wholesale; pages left out are disabled.
 pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
 
+// `slot:<n>` switches to the page in the n-th slot, so the number keys follow
+// the header whatever `pages` says (a slot with no page binds nothing).
+// `page:<name>` addresses a page by name instead, wherever its slot is.
 app {
     "Ctrl+c" "Quit"
-    "1" "page:git"
-    "2" "page:github"
-    "3" "page:files"
-    "4" "page:docker"
-    "5" "page:procs"
-    "6" "page:worktrees"
-    "7" "page:projects"
+    "1" "slot:1"
+    "2" "slot:2"
+    "3" "slot:3"
+    "4" "slot:4"
+    "5" "slot:5"
+    "6" "slot:6"
+    "7" "slot:7"
+    "8" "slot:8"
+    "9" "slot:9"
+    "0" "slot:10"
 }
 
 page "git" {
