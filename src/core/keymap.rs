@@ -577,8 +577,8 @@ impl FromStr for AppAction {
     /// - `"Quit"` → `AppAction::Quit`
     /// - `"SwitchPage:<n>"` → `AppAction::SwitchPage(n)`
     ///
-    /// Note: `"page:<name>"` strings from the KDL config are **not** handled here.
-    /// `build_app_keymap` resolves page names to indices and constructs
+    /// Note: `"page:<name>"` and `"slot:<n>"` strings from the KDL config are
+    /// **not** handled here. `build_app_keymap` resolves them to indices and constructs
     /// `AppAction::SwitchPage` directly, without going through `FromStr`.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s == "Quit" {
@@ -597,6 +597,8 @@ impl FromStr for AppAction {
 /// Build an app-level keymap from `(key_str, action_str)` pairs.
 ///
 /// Page-name strings like `"page:git"` are resolved to indices using `page_names`.
+/// `"slot:<n>"` is the page in the n-th slot (1-based, the number the header
+/// shows); a slot past the last page binds nothing.
 /// `"None"` removes the binding for that key (used by user configs to unbind).
 /// Returns `Err` on the first invalid key, unknown page name, or invalid action.
 pub fn build_app_keymap(
@@ -614,6 +616,19 @@ pub fn build_app_keymap(
         }
         let action = if action_str == "Quit" {
             AppAction::Quit
+        } else if let Some(n) = action_str.strip_prefix("slot:") {
+            let slot = n
+                .parse::<usize>()
+                .ok()
+                .filter(|slot| *slot >= 1)
+                .ok_or_else(|| format!("invalid slot in app keymap: {n:?} (expected 1, 2, …)"))?;
+            if slot > page_names.len() {
+                // No page in that slot: the key is left unbound, so it
+                // reaches the active page like any other key.
+                km = km.unbind(ki.code, ki.modifiers);
+                continue;
+            }
+            AppAction::SwitchPage(slot - 1)
         } else if let Some(name) = action_str.strip_prefix("page:") {
             let idx = page_names
                 .iter()

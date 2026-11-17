@@ -52,7 +52,7 @@ Conventions used below:
 | [`claude-live`](#claude-live) | `"on"` | replaced |
 | [`pages`](#pages) | all eight pages | replaced wholesale |
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
-| [`app`](#app) | `Ctrl+c` quit, `1`…`8` page switch | merged per key |
+| [`app`](#app) | `Ctrl+c` quit, `1`…`9` / `0` slot switch | merged per key |
 | [`page`](#the-page-block) | see [Pages and panes](#pages-and-panes) | per element, see below |
 | [`window`](#window-diff) | the diff window `d` opens on a PR | per element, like `page` |
 
@@ -634,11 +634,11 @@ pages "git" "files" "worktrees"
 
 gives a three-tab vig with `1:Git 2:Files 3:Worktrees`.
 
-Keys are bindings *onto* pages, not slots: `app { "<key>" "page:<name>" }`
-keeps addressing a page by name wherever it sits, so the built-in `1` … `8`
-still switch to the same pages after reordering. Built-in keys of disabled
-pages are dropped; a binding in *your* `app { }` block to a page that is
-not listed in `pages` is an error (see [`app`](#app)).
+The built-in number keys are bound to slots (`"1" "slot:1"` … `"9" "slot:9"`,
+`"0" "slot:10"`), so they follow the header after reordering: `2` above is
+Files. To pin a key to a page wherever it sits, bind it by name with
+`app { "<key>" "page:<name>" }`; such a binding in *your* `app { }` block to
+a page that is not listed in `pages` is an error (see [`app`](#app)).
 
 ```kdl,ignore
 pages "git" "filez"
@@ -688,14 +688,15 @@ repo-config "off"
 Global key bindings that work on every page.
 
 - **Form** — `app { "<key>" "<action>" ... }`
-- **Default** — `"Ctrl+c" "Quit"` and `"1"` … `"8"` bound to the eight
-  pages by name
+- **Default** — `"Ctrl+c" "Quit"`, `"1"` … `"9"` bound to `slot:1` …
+  `slot:9` and `"0"` to `slot:10`
 - **Merge** — merged per key: a key you set replaces the default binding
   for that key; keys you do not mention keep theirs.
 
 | Action | Meaning |
 |---|---|
 | `"Quit"` | Quit vig |
+| `"slot:<n>"` | Switch to the page in the n-th slot (`1` is the first), the number the header shows. A slot with no page binds nothing: the key reaches the active page. |
 | `"page:<name>"` | Switch to that page — `page:git`, `page:github`, `page:files`, `page:docker`, `page:procs`, `page:worktrees`, `page:projects`, `page:claude`. The page must be listed in [`pages`](#pages). |
 | `"None"` | Remove the binding for that key |
 
@@ -703,13 +704,12 @@ Global key bindings that work on every page.
 app {
     "q" "Quit"            // quit from anywhere, not only from a pane
     "Ctrl+g" "page:git"   // jump to the Git view
-    "7" "None"            // unbind the built-in Projects switch
+    "7" "None"            // unbind the built-in slot 7 switch
 }
 ```
 
 A `page:` binding of your own naming a page that exists but is not enabled
-is an error (built-in bindings of disabled pages are silently dropped
-instead):
+is an error:
 
 ```kdl,ignore
 pages "git" "files"

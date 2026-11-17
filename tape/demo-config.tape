@@ -66,6 +66,8 @@ Type@1ms `theme "Solarized (dark)"`
 Enter
 Type@1ms `github-auto-refresh "off"   // manual r only (shown in the header)`
 Enter
+Type@1ms `pages "git" "files" "worktrees"   // three tabs; 1 / 2 / 3 follow the header`
+Enter
 Type@1ms ""
 Enter
 Type@1ms `page "git" {`
@@ -150,6 +152,14 @@ Sleep 500ms
 Tab
 Sleep 1.5s
 Tab
+Sleep 1.5s
+
+# Number keys follow the slots: 2 is Files now, 3 is Worktrees
+Type "2"
+Sleep 2s
+Type "3"
+Sleep 2s
+Type "1"
 Sleep 1.5s
 
 # Quit
