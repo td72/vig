@@ -9,7 +9,7 @@
 
 use super::{
     ago, count, duration, field, now_ms, outcome, tokens, usd, wrap, AgentSummary, Chosen,
-    InteractionSummary, RequestDetail, SessionSummary,
+    InteractionSummary, RequestDetail, SessionSummary, UsageRow,
 };
 use crate::claude::domain::types::{TextLevel, Whole, WholeKey, WholeText};
 use crate::core::app::AppContext;
@@ -462,6 +462,51 @@ fn session_lines(summary: &SessionSummary, now: i64) -> Vec<Line<'static>> {
     lines.push(field("tools", count(facts.tool_calls, "call")));
     lines.push(field("subagents", facts.subagents.to_string()));
     lines.push(field("files", facts.files.to_string()));
+    lines.extend(usage_lines("by model", &facts.by_model));
+    lines.extend(usage_lines("by source", &facts.by_source));
+    lines
+}
+
+/// What a session used, one entry for each model or source: its requests
+/// and estimated cost, then its tokens.
+fn usage_lines(heading: &str, rows: &[UsageRow]) -> Vec<Line<'static>> {
+    if rows.is_empty() {
+        return Vec::new();
+    }
+    let mut lines = vec![
+        Line::raw(""),
+        Line::styled(
+            heading.to_owned(),
+            Style::default().add_modifier(Modifier::BOLD),
+        ),
+    ];
+    for row in rows {
+        let cost = match row.usd {
+            Some(amount) if row.partly_unpriced => {
+                format!("~{}, without the requests of an unknown model", usd(amount))
+            }
+            Some(amount) => format!("~{}", usd(amount)),
+            None => "cost unknown".to_owned(),
+        };
+        lines.push(Line::styled(
+            row.name.clone(),
+            Style::default().fg(Color::Cyan),
+        ));
+        lines.push(field(
+            "",
+            format!("{}, {cost}", count(row.requests, "request")),
+        ));
+        lines.push(field(
+            "",
+            format!(
+                "in {}, out {}, cache {} read, {} written",
+                tokens(row.input),
+                tokens(row.output),
+                tokens(row.cache_read),
+                tokens(row.cache_written)
+            ),
+        ));
+    }
     lines
 }
 
@@ -835,5 +880,74 @@ mod tests {
         pane.show(Chosen::Nothing);
         assert!(pane.whole.is_none());
         assert_eq!(pane.toggle_whole(), WholeRequest::Nothing);
+    }
+
+    #[test]
+    fn a_sessions_usage_is_broken_down_by_model_and_by_source() {
+        use crate::claude::domain::types::SessionEntry;
+        use crate::claude::panes::session_summary;
+        use std::sync::Arc;
+
+        let request = |id: &str, source: &str| {
+            format!(
+                r#"{{"type":"api-request","id":"{id}","timestamp":"2026-11-02T10:00:00.000Z","querySource":"{source}"}}"#
+            )
+        };
+        let response = |n: u32, model: &str, request: &str, output: u64| {
+            format!(
+                r#"{{"type":"assistant","uuid":"a{n}","timestamp":"2026-11-02T10:00:0{n}.000Z","requestRef":"{request}","message":{{"id":"m{n}","model":"{model}","usage":{{"input_tokens":100,"output_tokens":{output},"cache_read_input_tokens":5000,"cache_creation_input_tokens":2000}},"content":[{{"type":"text","text":"SYNTHETIC"}}]}}}}"#
+            )
+        };
+        let mut store = SessionStore::new();
+        for line in [
+            request("r1", "repl_main_thread"),
+            response(1, "claude-fable-5-2", "r1", 4000),
+            request("r2", "agent:builtin:Explore"),
+            response(2, "claude-haiku-5-5", "r2", 300),
+            request("r3", "repl_main_thread"),
+            response(3, "made-up-model-9", "r3", 50),
+        ] {
+            store.apply("s1", &Record::parse(&line));
+        }
+        let entry = SessionEntry {
+            id: "s1".into(),
+            place: ".".into(),
+            modified_ms: None,
+            session: Some(Arc::new(store.get("s1").unwrap().clone())),
+            files: Vec::new(),
+        };
+        let summary = session_summary(&entry, false, 0);
+        let facts = summary.read.as_ref().unwrap();
+        // The most expensive first; the model nothing is known of last.
+        let models: Vec<&str> = facts.by_model.iter().map(|r| r.name.as_str()).collect();
+        assert_eq!(models, ["fable-5-2", "haiku-5-5", "made-up-model-9"]);
+        assert_eq!(facts.by_model[2].usd, None);
+        let sources: Vec<(&str, u64)> = facts
+            .by_source
+            .iter()
+            .map(|r| (r.name.as_str(), r.requests))
+            .collect();
+        assert_eq!(
+            sources,
+            [("repl_main_thread", 2), ("agent:builtin:Explore", 1)]
+        );
+        // The main thread's estimate leaves out the model without a price.
+        assert!(facts.by_source[0].partly_unpriced);
+
+        let shown = text(&session_lines(&summary, 0));
+        assert!(shown.contains("by model\nfable-5-2\n"), "{shown}");
+        assert!(
+            shown.contains("in 100, out 4k, cache 5k read, 2k written"),
+            "{shown}"
+        );
+        assert!(
+            shown.contains("made-up-model-9\n          1 request, cost unknown"),
+            "{shown}"
+        );
+        assert!(shown.contains("by source\nrepl_main_thread\n"), "{shown}");
+        assert!(
+            shown.contains("without the requests of an unknown model"),
+            "{shown}"
+        );
     }
 }
