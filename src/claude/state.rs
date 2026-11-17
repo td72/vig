@@ -302,6 +302,14 @@ impl ClaudeState {
                     self.panes.detail.loaded(*whole);
                     continue;
                 }
+                // Live events: news nobody asked for, so the poll that is
+                // out is still out.
+                ClaudeBgMessage::Heard(snapshot) => {
+                    self.apply(*snapshot);
+                    continue;
+                }
+                // Only waited for when the page goes away.
+                ClaudeBgMessage::Stopped => continue,
                 ClaudeBgMessage::Update(snapshot) => self.apply(*snapshot),
                 ClaudeBgMessage::Unchanged => {}
                 ClaudeBgMessage::Unavailable(why) => {
@@ -404,6 +412,31 @@ impl ClaudeState {
                 .map(|l| Line::from(Span::styled(format!("  {l}"), dim))),
         );
         f.render_widget(Paragraph::new(out), area);
+    }
+}
+
+/// How long the page waits, on its way out, for the reader to remove its
+/// socket. A reader in the middle of a long read is left behind: the next
+/// consumer to start removes a socket nobody listens on.
+const STOP_WAIT: Duration = Duration::from_millis(500);
+
+impl Drop for ClaudeState {
+    /// Ends the reader and waits a moment for it: a thread that is merely
+    /// abandoned when vig exits removes nothing.
+    fn drop(&mut self) {
+        let (Some(tx), Some(rx)) = (self.cmd_tx.take(), self.bg_rx.take()) else {
+            return;
+        };
+        if tx.send(Command::Stop).is_err() {
+            return;
+        }
+        let deadline = Instant::now() + STOP_WAIT;
+        while let Some(left) = deadline.checked_duration_since(Instant::now()) {
+            match rx.recv_timeout(left) {
+                Ok(ClaudeBgMessage::Stopped) | Err(_) => break,
+                Ok(_) => {}
+            }
+        }
     }
 }
 

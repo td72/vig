@@ -13,7 +13,8 @@
 //! (`~/.local/state/iktinos/sockets/<pid>.sock`, removed when vig exits).
 //! It only listens: nothing is sent back but the HTTP status. Events say
 //! what a session is doing right now; they are applied to the sessions
-//! that are read. What a tool returned is kept (its start) only at
+//! that are read as they arrive, between the polls of the transcripts,
+//! and the page is told at once. What a tool returned is kept (its start) only at
 //! `claude-text "full"`; the whole of one output or response is read again
 //! from the transcript when the page asks for it, and kept nowhere here.
 
@@ -70,8 +71,8 @@ pub enum Listen {
     In(PathBuf),
 }
 
-/// What the page asks of the reader.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// What the reader is asked: by the page, and by its own socket.
+#[derive(Debug, Clone, PartialEq)]
 pub enum Command {
     /// Read what was appended.
     Poll,
@@ -81,6 +82,10 @@ pub enum Command {
     Open(String),
     /// Read the whole of one output or response of this session.
     ReadWhole(String, WholeKey),
+    /// A live event arrived on the socket.
+    Heard(Box<Event>),
+    /// The page is going away: drop the socket and end.
+    Stop,
 }
 
 pub enum ClaudeBgMessage {
@@ -91,6 +96,10 @@ pub enum ClaudeBgMessage {
     Unavailable(String),
     /// The answer to [`Command::ReadWhole`].
     Whole(Box<Whole>),
+    /// Live events arrived: not asked for, and no answer to a poll.
+    Heard(Box<Snapshot>),
+    /// The answer to [`Command::Stop`]: the socket is removed.
+    Stopped,
 }
 
 /// Where the transcripts are: the demo / test override, then
@@ -103,8 +112,10 @@ pub fn projects_dir(configured: Option<PathBuf>) -> Option<PathBuf> {
 }
 
 /// Start the reader thread. It answers every poll or refresh with one
-/// message, every [`Command::ReadWhole`] with one more, and ends when the
-/// page drops its sender.
+/// message and every [`Command::ReadWhole`] with one more; live events
+/// make it speak unasked ([`ClaudeBgMessage::Heard`]). On
+/// [`Command::Stop`] it removes its socket, says
+/// [`ClaudeBgMessage::Stopped`] and ends.
 pub fn spawn(
     projects_dir: Option<PathBuf>,
     workdir: PathBuf,
@@ -113,34 +124,65 @@ pub fn spawn(
 ) -> (mpsc::Sender<Command>, mpsc::Receiver<ClaudeBgMessage>) {
     let (cmd_tx, cmd_rx) = mpsc::channel::<Command>();
     let (msg_tx, msg_rx) = mpsc::channel();
+    let heard_tx = cmd_tx.clone();
     std::thread::spawn(move || {
         let mut watcher = Watcher::new(projects_dir, workdir, level, listen);
+        // The socket's events join the page's commands, so the reader
+        // waits for both at once and uses no time while neither comes.
+        // The forwarder ends when the socket is dropped.
+        if let Some(events) = watcher.take_events() {
+            std::thread::spawn(move || {
+                for event in events {
+                    if heard_tx.send(Command::Heard(Box::new(event))).is_err() {
+                        break;
+                    }
+                }
+            });
+        }
         while let Ok(first) = cmd_rx.recv() {
-            // Polls queued while the last command ran collapse into one.
+            // What queued up while the last command ran is taken together:
+            // polls collapse into one, a burst of events into one answer.
             let queued: Vec<Command> = std::iter::once(first).chain(cmd_rx.try_iter()).collect();
+            if queued.contains(&Command::Stop) {
+                break;
+            }
             let mut answers = Vec::new();
-            for command in &queued {
-                if let Command::Open(id) = command {
-                    watcher.open(id);
-                }
-            }
-            if queued.iter().any(|c| !matches!(c, Command::ReadWhole(..))) {
-                answers.push(watcher.poll(queued.contains(&Command::Refresh)));
-            }
+            let mut events = Vec::new();
+            let mut whole = Vec::new();
+            let (mut poll, mut refresh) = (false, false);
             for command in queued {
-                if let Command::ReadWhole(id, key) = command {
-                    answers.push(ClaudeBgMessage::Whole(Box::new(
-                        watcher.read_whole(&id, key),
-                    )));
+                match command {
+                    Command::Poll => poll = true,
+                    Command::Refresh => (poll, refresh) = (true, true),
+                    Command::Open(id) => {
+                        watcher.open(&id);
+                        poll = true;
+                    }
+                    Command::ReadWhole(id, key) => whole.push((id, key)),
+                    Command::Heard(event) => events.push(*event),
+                    Command::Stop => {}
                 }
+            }
+            if poll {
+                answers.push(watcher.poll_hearing(refresh, events));
+            } else if let Some(snapshot) = watcher.heard(events) {
+                answers.push(ClaudeBgMessage::Heard(Box::new(snapshot)));
+            }
+            for (id, key) in whole {
+                answers.push(ClaudeBgMessage::Whole(Box::new(
+                    watcher.read_whole(&id, key),
+                )));
             }
             if answers
                 .into_iter()
                 .any(|answer| msg_tx.send(answer).is_err())
             {
-                break;
+                return;
             }
         }
+        // The socket goes with the watcher; then the page may leave.
+        drop(watcher);
+        let _ = msg_tx.send(ClaudeBgMessage::Stopped);
     });
     (cmd_tx, msg_rx)
 }
@@ -175,9 +217,11 @@ fn last_modified(files: &SessionFiles) -> Option<SystemTime> {
 }
 
 /// Opens the live socket, where the page is to listen.
-fn listen_for_events(listen: Listen) -> (Option<(Server, mpsc::Receiver<Event>)>, LiveStatus) {
+fn listen_for_events(
+    listen: Listen,
+) -> (Option<Server>, Option<mpsc::Receiver<Event>>, LiveStatus) {
     let started = match listen {
-        Listen::Off => return (None, LiveStatus::Off),
+        Listen::Off => return (None, None, LiveStatus::Off),
         Listen::Shared => match std::env::var_os(SOCKET_DIR_ENV) {
             Some(dir) if !dir.is_empty() => Server::start_in(Path::new(&dir)),
             _ => Server::start(),
@@ -193,9 +237,9 @@ fn listen_for_events(listen: Listen) -> (Option<(Server, mpsc::Receiver<Event>)>
                 last_ms: None,
                 rejected: 0,
             };
-            (Some((server, events)), live)
+            (Some(server), Some(events), live)
         }
-        Err(e) => (None, LiveStatus::Failed(e.to_string())),
+        Err(e) => (None, None, LiveStatus::Failed(e.to_string())),
     }
 }
 
@@ -291,9 +335,11 @@ pub struct Watcher {
     /// What the page was last told, in short: each session, when it was
     /// written to and whether it is read. `None` before the first answer.
     told: Option<Vec<(String, Option<SystemTime>, bool)>>,
-    /// The live socket and the events it hands over. Dropping it removes
-    /// the socket.
-    server: Option<(Server, mpsc::Receiver<Event>)>,
+    /// The live socket. Dropping it removes the socket.
+    server: Option<Server>,
+    /// The events the socket hands over, until someone else takes them
+    /// ([`Watcher::take_events`]).
+    events: Option<mpsc::Receiver<Event>>,
     live: LiveStatus,
 }
 
@@ -304,9 +350,10 @@ impl Watcher {
         level: TextLevel,
         listen: Listen,
     ) -> Self {
-        let (server, live) = listen_for_events(listen);
+        let (server, events, live) = listen_for_events(listen);
         Self {
             server,
+            events,
             live,
             place: Place::new(&workdir),
             roots: repo_roots(&workdir),
@@ -328,7 +375,39 @@ impl Watcher {
         }
     }
 
+    /// Hands over the socket's events: whoever takes them passes them
+    /// back as they arrive ([`Watcher::heard`]). Left here, they are taken
+    /// at each poll.
+    pub fn take_events(&mut self) -> Option<mpsc::Receiver<Event>> {
+        self.events.take()
+    }
+
+    /// A poll by itself: the events are taken from the socket here.
+    #[cfg(test)]
     pub fn poll(&mut self, refresh: bool) -> ClaudeBgMessage {
+        self.poll_hearing(refresh, Vec::new())
+    }
+
+    /// Live events arrived between polls: applies them and, where they
+    /// changed anything the page shows, says what there is now. The
+    /// transcripts are not read.
+    pub fn heard(&mut self, events: Vec<Event>) -> Option<Snapshot> {
+        if !self.hear(events) {
+            return None;
+        }
+        for (id, active) in &mut self.active {
+            if std::mem::take(&mut active.heard) {
+                active.shown = active
+                    .store
+                    .get(id)
+                    .map(|session| (Arc::new(session.clone()), touched(session, &self.roots)));
+            }
+        }
+        Some(self.snapshot())
+    }
+
+    /// A poll, with the live `events` that arrived since the last one.
+    pub fn poll_hearing(&mut self, refresh: bool, events: Vec<Event>) -> ClaudeBgMessage {
         let Some(dir) = self.projects_dir.clone() else {
             return ClaudeBgMessage::Unavailable(
                 "cannot locate the Claude Code projects directory (no home directory)".into(),
@@ -366,21 +445,25 @@ impl Watcher {
         }
         self.polls = self.polls.wrapping_add(1);
 
-        let heard = self.hear();
+        let heard = self.hear(events);
         match self.read(heard) {
             Some(snapshot) => ClaudeBgMessage::Update(Box::new(snapshot)),
             None => ClaudeBgMessage::Unchanged,
         }
     }
 
-    /// Takes the live events that arrived and applies them to the sessions
-    /// that are read. `true` when any arrived: the counts changed.
-    fn hear(&mut self) -> bool {
-        let Some((server, events)) = &self.server else {
+    /// Applies live events to the sessions that are read. `true` when any
+    /// arrived, or the socket turned a request away: the counts changed.
+    fn hear(&mut self, mut events: Vec<Event>) -> bool {
+        let Some(server) = &self.server else {
             return false;
         };
+        // Nobody took the events: they wait here.
+        if let Some(waiting) = &self.events {
+            events.extend(waiting.try_iter());
+        }
         let mut arrived = 0;
-        for event in events.try_iter() {
+        for event in events {
             arrived += 1;
             // An event of a session that is not read is counted, no more:
             // applying it would make a session of its own out of it.
@@ -459,6 +542,11 @@ impl Watcher {
             return None;
         }
         self.told = Some(telling);
+        Some(self.snapshot())
+    }
+
+    /// What there is to show now.
+    fn snapshot(&self) -> Snapshot {
         let sessions = self
             .found
             .iter()
@@ -474,10 +562,10 @@ impl Watcher {
                 }
             })
             .collect();
-        Some(Snapshot {
+        Snapshot {
             sessions,
             live: self.live.clone(),
-        })
+        }
     }
 
     /// Where a session runs, from the repository: `.` for its root, a
@@ -609,6 +697,8 @@ pub(crate) mod tests {
             ClaudeBgMessage::Unchanged => panic!("expected an update, got Unchanged"),
             ClaudeBgMessage::Unavailable(e) => panic!("expected an update, got {e}"),
             ClaudeBgMessage::Whole(_) => panic!("expected an update, got a whole text"),
+            ClaudeBgMessage::Heard(_) => panic!("expected an update, got live events"),
+            ClaudeBgMessage::Stopped => panic!("expected an update, got the end"),
         }
     }
 
@@ -900,6 +990,63 @@ pub(crate) mod tests {
         // Not listening: no socket, and the page is told so.
         drop(watcher);
         assert!(!socket.exists(), "the socket is removed with the reader");
+        let _ = fs::remove_dir_all(&sockets);
+    }
+
+    /// The reader thread as the page uses it: an event is told to the
+    /// page when it arrives, no poll asked for, and stopping the reader
+    /// removes the socket.
+    #[test]
+    fn the_reader_speaks_when_an_event_arrives_and_cleans_up_when_stopped() {
+        use std::time::Duration;
+        let scratch = Scratch::new("heard");
+        let repo = scratch.0.join("repo");
+        fs::create_dir_all(&repo).unwrap();
+        let projects = scratch.0.join("projects");
+        write_lines(
+            &projects.join("-repo/gggg.jsonl"),
+            &[user("u1", "2026-11-02T10:00:00.000Z", &repo)],
+        );
+        let sockets = std::env::temp_dir().join(format!("vig-h{}", std::process::id()));
+        let _ = fs::remove_dir_all(&sockets);
+        let (tx, rx) = spawn(
+            Some(projects),
+            repo,
+            TextLevel::Summary,
+            Listen::In(sockets.clone()),
+        );
+        let wait = || rx.recv_timeout(Duration::from_secs(5)).expect("an answer");
+
+        tx.send(Command::Poll).unwrap();
+        let ClaudeBgMessage::Update(first) = wait() else {
+            panic!("the first poll is an update");
+        };
+        let LiveStatus::Listening { socket, .. } = first.live.clone() else {
+            panic!("listening: {:?}", first.live);
+        };
+
+        // No poll is sent: the event alone makes the reader speak.
+        let event = r#"{"v":1,"session_id":"gggg","ts":1793613602000,"type":"tool.check","tool":"Bash","tool_use_id":"t1","decision":"ask"}"#;
+        assert!(post(&socket, event).starts_with("HTTP/1.1 200"));
+        let ClaudeBgMessage::Heard(snapshot) = wait() else {
+            panic!("an event is told unasked");
+        };
+        assert!(matches!(
+            snapshot.live,
+            LiveStatus::Listening { events: 1, .. }
+        ));
+        let live = only(*snapshot).live.clone().expect("the event was applied");
+        assert_eq!(live.awaiting_approval.as_ref().unwrap().name, "Bash");
+
+        // Nothing more is said until something happens.
+        assert!(rx.recv_timeout(Duration::from_millis(200)).is_err());
+
+        tx.send(Command::Stop).unwrap();
+        assert!(matches!(wait(), ClaudeBgMessage::Stopped));
+        assert!(
+            !socket.exists(),
+            "the socket is removed when the reader stops"
+        );
         let _ = fs::remove_dir_all(&sockets);
     }
 }
