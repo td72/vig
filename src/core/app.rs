@@ -579,7 +579,8 @@ mod tests {
                 "Docker",
                 "Procs",
                 "Worktrees",
-                "Projects"
+                "Projects",
+                "Claude"
             ],
             "builtin `pages` order defines the slots"
         );
@@ -600,7 +601,10 @@ mod tests {
         assert_eq!(look("5"), Some(AppAction::SwitchPage(procs_idx)));
         assert_eq!(look("6"), Some(AppAction::SwitchPage(worktrees_idx)));
         assert_eq!(look("7"), Some(AppAction::SwitchPage(projects_idx)));
-        assert_eq!(look("8"), None, "no page in slot 8");
+        assert_eq!(
+            look("8"),
+            Some(AppAction::SwitchPage(page_index(&app, "claude")))
+        );
         assert_eq!(look("9"), None);
         assert_eq!(look("0"), None, "`0` is slot 10");
         assert_eq!(look("Ctrl+c"), Some(AppAction::Quit));
@@ -627,14 +631,15 @@ mod tests {
                 vec!["4"],
                 vec!["5"],
                 vec!["6"],
-                vec!["7"]
+                vec!["7"],
+                vec!["8"]
             ]
         );
         let help = app.active_help_bindings();
         assert_eq!(
             help[0],
             (
-                "1 / 2 / 3 / 4 / 5 / 6 / 7".to_string(),
+                "1 / 2 / 3 / 4 / 5 / 6 / 7 / 8".to_string(),
                 "Switch view".to_string()
             )
         );
@@ -650,7 +655,7 @@ mod tests {
         assert_eq!(app.ctx.page_keys[idx], vec!["6", "w"]);
         assert_eq!(
             app.active_help_bindings()[0].0,
-            "1 / 2 / 3 / 4 / 5 / 6 / w / 7"
+            "1 / 2 / 3 / 4 / 5 / 6 / w / 7 / 8"
         );
 
         // Unbinding the built-in key leaves only the user's key, so the
@@ -658,7 +663,10 @@ mod tests {
         let app = app_with(&user_config(r#"app { "6" "None"; "w" "page:worktrees" }"#));
         let idx = page_index(&app, "worktrees");
         assert_eq!(app.ctx.page_keys[idx], vec!["w"]);
-        assert_eq!(app.active_help_bindings()[0].0, "1 / 2 / 3 / 4 / 5 / w / 7");
+        assert_eq!(
+            app.active_help_bindings()[0].0,
+            "1 / 2 / 3 / 4 / 5 / w / 7 / 8"
+        );
     }
 
     /// `pages` reorders the slots: the header (`page_labels`) follows the

@@ -66,9 +66,9 @@ vig
   （`--config <path>`、`$VIG_CONFIG`、または `~/.config/vig/config.kdl`）。
   詳しくは設定の章を参照してください。
 
-## 7 つのビューのツアー
+## 8 つのビューのツアー
 
-vig には 7 つのビューがあります。それぞれ [ビュー](views.md) の章で詳しく
+vig には 8 つのビューがあります。それぞれ [ビュー](views.md) の章で詳しく
 説明します。ここでは 30 秒版のツアーです。
 
 ### 1 — Git
@@ -127,6 +127,14 @@ worktree と stash を一覧し、HEAD コミットや stash のパッチを Git
 カンバン列、ソートできるテーブルモード、全プロジェクトフィールドを表示する
 アイテム詳細。
 
+### 8 — Claude
+
+![claude demo](../../../../assets/demo-claude.gif)
+
+リポジトリで作業中の Claude Code セッションを transcript から表示します:
+インタラクションを LLM リクエスト・ツール呼び出し・サブエージェントの
+ツリーとして時間軸つきで、触ったファイル、コンテキスト使用量とコスト。
+
 ## vig 内でヘルプを見る
 
 どのビューでも `?` でヘルプオーバーレイが開き、現在のビューの全キー
@@ -158,6 +166,7 @@ vig 本体は Git リポジトリさえあれば動きます。一部のビュ�
 | Projects | `gh` のトークンに `project` スコープ — `gh auth refresh -s project` を実行 | スコープ不足の案内を表示 |
 | Docker | `docker` CLI と起動中のデーモン | ペインの代わりに案内を表示 |
 | Procs | 追加不要（ポート取得に macOS は `lsof`、Linux は `ss`） | ポート情報が空になることがある |
+| Claude | Claude Code の transcript（`~/.claude/projects`） | ビューに通知を表示 |
 
 その他のメモ:
 

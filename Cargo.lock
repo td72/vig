@@ -1316,6 +1316,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "iktinos"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3691cfd682ddcbef3274504f37a1e5c93d9af88cbad3987e53abe5d36d5b3de2"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "iktinos-live"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9aee9cc6041e80b05e5b19510d0a93dcc1dd14439db6b6bc674082a09bc163d"
+dependencies = [
+ "iktinos",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "image"
 version = "0.25.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3623,6 +3646,8 @@ dependencies = [
  "crossterm 0.28.1",
  "dirs",
  "git2",
+ "iktinos",
+ "iktinos-live",
  "image",
  "kdl",
  "notify",

@@ -1,3 +1,4 @@
+mod claude;
 mod core;
 mod diff_window;
 mod docker;

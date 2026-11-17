@@ -46,6 +46,9 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
             | "worktree-dir"
             | "worktree-name"
             | "worktree-branch"
+            | "claude-text"
+            | "claude-projects-dir"
+            | "claude-live"
             | "pages"
             | "repo-config" => replace_single(default, unode),
             "projects-view" => replace_named(default, unode),
@@ -57,7 +60,7 @@ pub fn merge_user_config(default: &mut KdlDocument, user: &KdlDocument) -> Resul
                 "unknown top-level block {other:?} (expected `theme`, `icons`, `image-preview`, \
                  `markdown-preview`, `procs-refresh-interval`, `procs-history`, `github-poll-interval`, `github-auto-refresh`, `github-show-closed`, `github-mine-only`, `github-login`, \
                  `projects-poll-interval`, `projects-board`, `projects-view`, `projects-filter`, `projects-hide-closed`, `projects-roadmap`, \
-                 `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`, `repo-config`, `app`, `page`, or `window`)"
+                 `worktree-dir`, `worktree-name`, `worktree-branch`, `claude-text`, `claude-projects-dir`, `claude-live`, `pages`, `repo-config`, `app`, `page`, or `window`)"
             ))
             }
         }

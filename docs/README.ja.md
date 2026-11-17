@@ -26,6 +26,7 @@ busy なリポジトリを見張るための**閲覧専用 TUI コックピッ�
 - **Procs View** — 読み取り専用のプロセスツリー（CPU / メモリ）、LISTEN 中のポートとその所有プロセス、システム CPU / メモリ履歴グラフ、CPU / RSS スパークライン付きプロセス詳細
 - **Worktrees View** — git worktree と stash を一覧し、HEAD コミットや stash の差分（サイドバイサイド）をプレビュー
 - **Projects View** — リポジトリにリンクされた GitHub Projects (v2) のボード。`Status` ごとのカンバン列、ソートできるテーブルモード、プロジェクトフィールドをすべて表示するアイテム詳細。`gh` CLI 使用（読み取り専用）
+- **Claude View** — リポジトリで作業中の Claude Code セッションを transcript から表示: インタラクション（プロンプトと、それに答えるために行われたすべて）を LLM リクエスト・ツール呼び出し・サブエージェントのツリーとして時間軸つきで、触ったファイル、コンテキスト使用量とコスト（読み取り専用。応答とツールの出力を読むのは `claude-text "full"` のときだけ）
 - `~/.config/vig/config.kdl` でレイアウト・キーバインド・ハイライトテーマをカスタマイズ可能
 
 ## インストール
@@ -117,6 +118,7 @@ vig config path     # 設定レイヤー（builtin / user / repo-local）の状�
 | `5` | Procs View に切り替え |
 | `6` | Worktrees View に切り替え |
 | `7` | Projects View に切り替え |
+| `8` | Claude View に切り替え |
 
 数字キーはヘッダの番号に追従します: `1` … `9` がスロット 1 … 9、`0` が
 スロット 10 に切り替えるので、`pages` で並べ替えや無効化をしても一致します。
@@ -428,6 +430,55 @@ GitHub View と同じ issue / PR の本文とコメントを表示します（dr
 | `Tab` / `Shift+Tab` | ペイン切り替え: Board → Detail |
 | `/` `n` `N` | 検索（列をまたいだアイテムのタイトル / 番号） |
 | `r` | リンク済みプロジェクト・ボード・表示中アイテムを再取得 |
+
+### Claude View
+
+![claude demo](../assets/demo-claude.gif)
+
+このリポジトリで Claude Code が何をしているかを、transcript
+（`~/.claude/projects`）から読み取って表示します。作業ディレクトリが
+リポジトリかその worktree の配下にあるセッションをすべて並べます。最後に
+更新された 3 つは最初から読み、それ以外は行を開いたときに読みます。ペインの
+上の行に、選択中のセッションのタイトル・モデル・状態（`● active` /
+`○ quiet 5m` / `■ exited`）・コンテキスト使用量・コスト（`~` は見積り）・
+ブランチが出ます。
+
+**Interactions** はセッションと、その下に直近のインタラクション（プロンプトと、
+それに答えるために行われたすべて）を並べ、LLM リクエスト数・ツール
+呼び出し数・所要時間・状態を表示します。**Trace** は選択中のインタラクション
+のツリーです: 各 LLM リクエスト、それが呼んだツール、その呼び出しが起動した
+サブエージェントとその中身を、インタラクションの長さの時間軸上のバーつきで
+並べます。**Detail** は選んでいるものの詳細です: インタラクションの時間と
+トークンの内訳、リクエストのトークンとコスト、ツール呼び出しのコマンド全体。
+**Files** はセッションが読んだ / 編集した / 書いたファイルです。
+
+各プロンプトは 1 行目、各ツール呼び出しは実行したもの、各サブエージェントは
+タスクを表示します。画面共有などで隠したいときは `claude-text "title"` で、
+セッションのタイトル・ツール名・ファイルパスだけになります。
+`claude-text "full"` では各応答の 1 行目と、各ツール呼び出しが返したものの
+先頭も表示し、`o` でその全文を transcript から読みます。Claude Code に何かを
+書いたり送ったりはしません。
+
+Claude Code の [`iktinos-bridge`](https://github.com/td72/iktinos/tree/main/mods/iktinos-bridge)
+mod を入れていると、セッションがいま何をしているか（`● working`、
+`● running Bash`、`▲ approve Bash?`、`○ waiting for input`）とレートリミットも
+分かります。vig は自分用の Unix ソケットで待ち受け（受信のみ。
+`claude-live "off"` で無効）、受け取った内容をステータスバーに出します
+（`live 128 events, last 3s ago`）。
+
+| キー | 操作 |
+|------|------|
+| `Tab` / `Shift+Tab` | ペイン切り替え: Interactions → Trace → Detail → Files |
+| `j` / `k` | 選択移動（Detail ではスクロール） |
+| `Enter` / `i`（interactions） | インタラクションのツリーに入る。セッションでは読み込み / 折りたたみ |
+| `Space` / `t`（interactions） | セッションを折りたたむ / 全インタラクションをまとめて表示 |
+| `Space`（trace） | サブエージェントの中身を表示 / 隠す |
+| `Enter` / `i` / `l`（trace） | 詳細に入る |
+| `h` / `Esc`（trace・detail） | 戻る |
+| `o`（trace・detail） | 出力 / 応答の全文を読む（`claude-text "full"`） |
+| `y`（files） | パスをコピー |
+| `/` `n` `N` | フォーカス中のペインを検索 |
+| `r` | セッションを再列挙し、transcript を読み直す |
 
 ### その他
 

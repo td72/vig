@@ -3,7 +3,8 @@
 vig is a **read-only TUI cockpit** for a repository and everything working
 around it: git (side-by-side diffs, log, reflog), GitHub issues / pull
 requests / Actions runs / Projects boards, a file browser, Docker containers,
-running processes, and worktrees / stashes — with vim-style keybindings
+running processes, worktrees / stashes, and the Claude Code session at work
+in it — with vim-style keybindings
 throughout. It is built for keeping an eye on busy repositories, including
 ones where AI agents do the work.
 
@@ -17,7 +18,7 @@ ones where AI agents do the work.
 ## What's in this guide
 
 - **[Getting Started](getting-started.md)** — installation, your first run, a
-  tour of the seven views, and what vig needs from your environment.
+  tour of the eight views, and what vig needs from your environment.
 - **[Views](views.md)** — one chapter per view: what it shows, every key
   binding, and each view's constraints.
 - **[Configuration Basics](configuration-basics.md)** — where config files

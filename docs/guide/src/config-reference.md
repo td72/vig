@@ -47,7 +47,10 @@ Conventions used below:
 | [`worktree-dir`](#worktree-dir) | `"../"` | replaced |
 | [`worktree-name`](#worktree-name) | `"{repo}-pr-{n}"` | replaced |
 | [`worktree-branch`](#worktree-branch) | `"pr/{n}"` | replaced |
-| [`pages`](#pages) | all seven pages | replaced wholesale |
+| [`claude-text`](#claude-text) | `"summary"` | replaced |
+| [`claude-projects-dir`](#claude-projects-dir) | absent (Claude Code's own) | replaced |
+| [`claude-live`](#claude-live) | `"on"` | replaced |
+| [`pages`](#pages) | all eight pages | replaced wholesale |
 | [`repo-config`](#repo-config) | `"on"` | replaced (user config only) |
 | [`app`](#app) | `Ctrl+c` quit, `1`…`9` / `0` slot switch | merged per key |
 | [`page`](#the-page-block) | see [Pages and panes](#pages-and-panes) | per element, see below |
@@ -72,7 +75,9 @@ projects-hide-closed "off"
 worktree-dir "../"
 worktree-name "{repo}-pr-{n}"
 worktree-branch "pr/{n}"
-pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
+claude-text "summary"
+claude-live "on"
+pages "git" "github" "files" "docker" "procs" "worktrees" "projects" "claude"
 repo-config "on"
 app {
     "Ctrl+c" "Quit"
@@ -88,7 +93,8 @@ colors "red"
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
 //   `github-show-closed`, `github-mine-only`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
-//   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
+//   `worktree-dir`, `worktree-name`, `worktree-branch`, `claude-text`,
+//   `claude-projects-dir`, `claude-live`, `pages`,
 //   `repo-config`, `app`, `page`, or `window`)
 ```
 
@@ -545,6 +551,67 @@ worktree-branch "review/{n}"
 - **Merge** — replaced.
 - **Errors** — missing or empty string, more than one argument, no `{n}`.
 
+### `claude-text`
+
+How much text the [Claude view](views-claude.md) shows.
+
+- **Form** — `claude-text "<level>"` — `"title"`, `"summary"` or `"full"`
+- **Default** — `"summary"`: the session title, the first line of each
+  prompt, what each tool call ran (its command, path or pattern, one line),
+  file paths and each subagent's task.
+- **Merge** — replaced.
+
+`"title"` leaves only the session title, tool names and file paths — for a
+shared screen. `"full"` also shows the first line of each response and the
+start of what each tool call returned (up to 4000 characters), and lets `o`
+read all of either from the transcript. Below `"full"` responses and tool
+outputs are not read at all. A tool's output is shown as it was printed:
+whatever a command wrote, secrets included, is on screen at `"full"`.
+
+```kdl
+claude-text "title"
+```
+
+```kdl,ignore
+claude-text "everything"
+// → unknown claude-text level "everything"; expected one of: title,
+//   summary, full
+```
+
+### `claude-projects-dir`
+
+Where the [Claude view](views-claude.md) reads Claude Code's transcripts
+from: an absolute path, or one under `~/`.
+
+- **Default** — absent: Claude Code's own location,
+  `$CLAUDE_CONFIG_DIR/projects` when that variable is set, else
+  `~/.claude/projects`.
+- **Merge** — replaced.
+- **Errors** — missing or empty string, more than one argument, a relative
+  path.
+
+```kdl
+claude-projects-dir "~/.config/claude/projects"
+```
+
+### `claude-live`
+
+Whether the [Claude view](views-claude.md#live-events) listens for live events
+from the `iktinos-bridge` Claude Code mod.
+
+- **Form** — `claude-live "on"` or `claude-live "off"`
+- **Default** — `"on"`: once the view has been opened, vig listens on a Unix
+  socket of its own under `~/.local/state/iktinos/sockets/` (removed on
+  exit). It only receives.
+- **Merge** — replaced.
+- **Errors** — anything but `"on"` / `"off"`.
+
+`"off"` opens no socket; the view then works from the transcripts alone.
+
+```kdl
+claude-live "off"
+```
+
 ### `pages`
 
 Which pages are enabled, in tab order. The position in the list is the
@@ -552,9 +619,10 @@ page's *slot* — the number shown in the header (`1:Git`, `2:GitHub`, …) and
 the position `Tab` cycling reaches.
 
 - **Form** — `pages "<name>" "<name>" ...` — names from `git`, `github`,
-  `files`, `docker`, `procs`, `worktrees`, `projects`; at least one, no
+  `files`, `docker`, `procs`, `worktrees`, `projects`, `claude`; at least
+  one, no
   repeats
-- **Default** — all seven, in that order
+- **Default** — all eight, in that order
 - **Merge** — replaces the default list **wholesale**.
 
 Pages you leave out are disabled — not started, no tab, no background
@@ -575,7 +643,7 @@ a page that is not listed in `pages` is an error (see [`app`](#app)).
 ```kdl,ignore
 pages "git" "filez"
 // → pages: unknown page "filez"; expected one of: git, github, files,
-//   docker, procs, worktrees, projects
+//   docker, procs, worktrees, projects, claude
 
 pages "git" "git"
 // → pages: page "git" listed twice
@@ -629,7 +697,7 @@ Global key bindings that work on every page.
 |---|---|
 | `"Quit"` | Quit vig |
 | `"slot:<n>"` | Switch to the page in the n-th slot (`1` is the first), the number the header shows. A slot with no page binds nothing: the key reaches the active page. |
-| `"page:<name>"` | Switch to that page — `page:git`, `page:github`, `page:files`, `page:docker`, `page:procs`, `page:worktrees`, `page:projects`. The page must be listed in [`pages`](#pages). |
+| `"page:<name>"` | Switch to that page — `page:git`, `page:github`, `page:files`, `page:docker`, `page:procs`, `page:worktrees`, `page:projects`, `page:claude`. The page must be listed in [`pages`](#pages). |
 | `"None"` | Remove the binding for that key |
 
 ```kdl
@@ -1053,6 +1121,26 @@ page "projects" {
 | | `OpenBrowser` | `o` | open the item in the browser |
 
 On the board, `Esc` returns to the project list when it is placed.
+
+### Page `claude`
+
+Panes: `interactions`, `trace`, `detail`, `files` — all placed. The line
+describing the session sits above the layout and is not a pane.
+
+| Pane | Action | Default key | Meaning |
+|---|---|---|---|
+| `view` | `Quit` / `Help` / `Refresh` | `q` / `?` / `r` | page-wide; `Refresh` re-lists the sessions and re-reads the transcripts |
+| | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | cycle the panes |
+| `interactions` (nav, search) | `Open` | `Enter`, `i` | on an interaction: into its tree; on a session: read it, fold / unfold it |
+| | `ToggleFold` | `Space` | fold / unfold the session the selection is in |
+| | `ToggleFlat` | `t` | list the interactions by session / all together |
+| `trace` (nav, search) | `ToggleFold` | `Space` | show / hide a subagent's spans |
+| | `Open` | `Enter`, `i`, `l` | into the detail |
+| | `Back` | `h` | back to the interactions (`Esc` too, once the search is cleared) |
+| | `ReadWhole` | `o` | read the whole output / response of the row; again, back to its start |
+| `detail` (nav scrolls) | `ReadWhole` | `o` | the same, for what the pane shows |
+| | `Back` | `h`, `Esc` | back to the pane it was entered from |
+| `files` (nav, search) | `CopyPath` | `y` | copy the file's path |
 
 ## Startup errors
 

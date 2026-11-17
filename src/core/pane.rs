@@ -162,6 +162,11 @@ pub enum PaneEvent {
     JumpToProcess(u32),
     /// Toggle the graphs pane between the CPU history and per-core bars.
     ToggleCpuCores,
+    // Claude-specific
+    /// Read the whole output / response of what the Detail pane shows.
+    ReadWhole,
+    /// Read this session: its row was opened.
+    LoadSession(String),
 }
 
 pub struct PaneShared {

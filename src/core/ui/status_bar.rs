@@ -1,3 +1,4 @@
+use crate::claude::state::ClaudeState;
 use crate::core::app::AppContext;
 use crate::diff_window::DiffWindowState;
 use crate::docker::state::DockerState;
@@ -282,6 +283,108 @@ pub fn render_files_status_bar(f: &mut Frame, ctx: &AppContext, files: &FilesSta
         Line::from(spans)
     };
     f.render_widget(Paragraph::new(line), area);
+}
+
+pub fn render_claude_header(f: &mut Frame, ctx: &AppContext, area: Rect) {
+    render_header_common(
+        f,
+        ctx,
+        vec![Span::styled(
+            " Claude ",
+            Style::default()
+                .fg(Color::Black)
+                .bg(Color::Rgb(217, 119, 87)),
+        )],
+        area,
+    );
+}
+
+/// How long the live socket may be silent while a session is busy before
+/// the status bar says so in colour.
+const CLAUDE_LIVE_QUIET_MS: i64 = 60_000;
+
+/// Whether the Claude page listens for live events, and what it has heard:
+/// an open socket alone says nothing about a mod that sends.
+fn claude_live_span(cl: &ClaudeState) -> Span<'static> {
+    use crate::claude::domain::types::LiveStatus;
+    let warn = Style::default().fg(Color::Yellow);
+    match &cl.live {
+        LiveStatus::Off => Span::styled("live off", Style::default().fg(Color::DarkGray)),
+        LiveStatus::Failed(_) => Span::styled("live failed", Style::default().fg(Color::Red)),
+        LiveStatus::Listening { last_ms: None, .. } => Span::styled("live on, no events yet", warn),
+        LiveStatus::Listening {
+            events,
+            last_ms: Some(at),
+            ..
+        } => {
+            let now = crate::claude::panes::now_ms();
+            let quiet = cl.busy && now - at > CLAUDE_LIVE_QUIET_MS;
+            Span::styled(
+                format!(
+                    "live {events} event{}, last {}",
+                    if *events == 1 { "" } else { "s" },
+                    crate::claude::panes::ago(Some(*at), now)
+                ),
+                if quiet {
+                    warn
+                } else {
+                    Style::default().fg(Color::Green)
+                },
+            )
+        }
+    }
+}
+
+pub fn render_claude_status_bar(f: &mut Frame, ctx: &AppContext, cl: &ClaudeState, area: Rect) {
+    if cl.pane.search.active {
+        render_search_prompt(f, &cl.pane.search.input, area);
+        return;
+    }
+    let dim = Style::default().fg(Color::DarkGray);
+    let mut spans = Vec::new();
+    if cl.unavailable.is_some() {
+        spans.push(Span::styled(" No transcripts", dim));
+    } else if cl.is_loading() {
+        spans.push(Span::styled(" Loading...", dim));
+    } else if let Some(id) = cl.session_id() {
+        let plural = |n: u64| if n == 1 { "" } else { "s" };
+        spans.push(Span::styled(
+            format!(" session {id}"),
+            Style::default().fg(Color::White),
+        ));
+        match cl.counts() {
+            Some(counts) => spans.push(Span::styled(
+                format!(
+                    "  {} tool call{}  {} file{}  {} subagent{}",
+                    counts.tool_calls,
+                    plural(counts.tool_calls),
+                    counts.files,
+                    plural(counts.files as u64),
+                    counts.subagents,
+                    plural(counts.subagents as u64),
+                ),
+                Style::default().fg(Color::White),
+            )),
+            None => spans.push(Span::styled("  not read", dim)),
+        }
+        let sessions = cl.session_count() as u64;
+        spans.push(Span::styled(
+            format!("  {sessions} session{} here", plural(sessions)),
+            dim,
+        ));
+        spans.push(Span::raw("  "));
+        spans.push(claude_live_span(cl));
+    } else {
+        spans.push(Span::styled(" No session", dim));
+    }
+    if let Some(ref msg) = ctx.status_message {
+        spans.push(Span::raw("  "));
+        spans.push(Span::styled(
+            msg.clone(),
+            Style::default().fg(Color::Yellow),
+        ));
+    }
+    f.render_widget(Paragraph::new(Line::from(spans)), area);
 }
 
 pub fn render_docker_header(f: &mut Frame, ctx: &AppContext, area: Rect) {

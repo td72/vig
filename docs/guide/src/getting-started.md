@@ -66,9 +66,9 @@ A few things worth knowing on day one:
   a single KDL file does it (`--config <path>`, `$VIG_CONFIG`, or
   `~/.config/vig/config.kdl`) — see the configuration chapters.
 
-## A tour of the seven views
+## A tour of the eight views
 
-vig ships with seven views. Each gets its own chapter in [Views](views.md);
+vig ships with eight views. Each gets its own chapter in [Views](views.md);
 this is the thirty-second version.
 
 ### 1 — Git
@@ -125,6 +125,14 @@ patch shown in the same side-by-side diff view as the Git view.
 The GitHub Projects (v2) boards linked to the repository: kanban columns by
 `Status`, a sortable table mode, and an item detail with every project field.
 
+### 8 — Claude
+
+![claude demo](../../../assets/demo-claude.gif)
+
+The Claude Code session working in the repository, read from its transcripts:
+its interactions as trees of LLM requests, tool calls and subagents on a time
+axis, the files it touched, context fill and cost.
+
 ## Getting help inside vig
 
 Press `?` in any view to open the help overlay. It lists every key binding of
@@ -156,6 +164,7 @@ tools when present:
 | Projects | `gh` with the `project` token scope — run `gh auth refresh -s project` | the view shows a notice explaining the missing scope |
 | Docker | `docker` CLI and a running daemon | the view shows a notice |
 | Procs | nothing extra (`lsof` on macOS / `ss` on Linux for ports) | port info may be empty |
+| Claude | Claude Code's transcripts (`~/.claude/projects`) | the view shows a notice |
 
 Two smaller notes:
 

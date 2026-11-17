@@ -1,0 +1,4 @@
+// The user config every demo tape records with (`VIG_CONFIG`, set by the
+// mise demo tasks), so a recording never depends on the config of the
+// machine it is made on. Only what the built-in defaults leave to taste.
+theme "base16-eighties.dark"

@@ -30,6 +30,7 @@ pub fn build_pages(
             "procs" => crate::procs::page::new_page(cfg)?,
             "worktrees" => crate::worktrees::page::new_page(&workdir, cfg)?,
             "projects" => crate::projects::page::new_page(cfg)?,
+            "claude" => crate::claude::page::new_page(&workdir, cfg)?,
             other => {
                 // `Config::pages` validates against the built-in `page` blocks,
                 // so this only fires when a page has a KDL block but no

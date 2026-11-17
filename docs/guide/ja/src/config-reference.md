@@ -45,7 +45,10 @@ vig の KDL 設定の完全なリファレンスです: 設定ファイルが受
 | [`worktree-dir`](#worktree-dir) | `"../"` | 置換 |
 | [`worktree-name`](#worktree-name) | `"{repo}-pr-{n}"` | 置換 |
 | [`worktree-branch`](#worktree-branch) | `"pr/{n}"` | 置換 |
-| [`pages`](#pages) | 全 7 ページ | 丸ごと置換 |
+| [`claude-text`](#claude-text) | `"summary"` | 置換 |
+| [`claude-projects-dir`](#claude-projects-dir) | なし（Claude Code 自身の場所） | 置換 |
+| [`claude-live`](#claude-live) | `"on"` | 置換 |
+| [`pages`](#pages) | 全 8 ページ | 丸ごと置換 |
 | [`repo-config`](#repo-config) | `"on"` | 置換（ユーザー設定のみ） |
 | [`app`](#app) | `Ctrl+c` 終了、`1`…`9` / `0` スロット切替 | キー単位マージ |
 | [`page`](#page-ブロック) | [ページとペイン](#ページとペイン) 参照 | 要素ごと（後述） |
@@ -70,7 +73,9 @@ projects-hide-closed "off"
 worktree-dir "../"
 worktree-name "{repo}-pr-{n}"
 worktree-branch "pr/{n}"
-pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
+claude-text "summary"
+claude-live "on"
+pages "git" "github" "files" "docker" "procs" "worktrees" "projects" "claude"
 repo-config "on"
 app {
     "Ctrl+c" "Quit"
@@ -86,7 +91,8 @@ colors "red"
 //   `procs-history`, `github-poll-interval`, `github-auto-refresh`,
 //   `github-show-closed`, `github-mine-only`, `github-login`, `projects-poll-interval`, `projects-board`, `projects-view`,
 //   `projects-filter`, `projects-hide-closed`, `projects-roadmap`,
-//   `worktree-dir`, `worktree-name`, `worktree-branch`, `pages`,
+//   `worktree-dir`, `worktree-name`, `worktree-branch`, `claude-text`,
+//   `claude-projects-dir`, `claude-live`, `pages`,
 //   `repo-config`, `app`, `page`, or `window`)
 ```
 
@@ -535,6 +541,65 @@ worktree-branch "review/{n}"
 - **マージ** — 置換。
 - **エラー** — 文字列がない・空、引数が 2 つ以上、`{n}` がない。
 
+### `claude-text`
+
+[Claude ビュー](views-claude.md) がどこまでテキストを表示するか。
+
+- **書式** — `claude-text "<level>"` — `"title"`、`"summary"`、`"full"`
+- **デフォルト** — `"summary"`: セッションのタイトル、各プロンプトの
+  1 行目、各ツール呼び出しが実行したもの（コマンド・パス・パターンの
+  1 行）、ファイルパス、各サブエージェントのタスク。
+- **マージ** — 置換。
+
+`"title"` はセッションのタイトル・ツール名・ファイルパスだけにします
+（画面共有向け）。`"full"` は各応答の 1 行目と、各ツール呼び出しが返した
+ものの先頭（4000 文字まで）も表示し、`o` でその全文を transcript から
+読めるようにします。`"full"` 未満では、応答とツールの出力はそもそも
+読みません。ツールの出力は出力されたとおりに表示します。コマンドが
+書き出したものは、秘密情報を含めて `"full"` では画面に出ます。
+
+```kdl
+claude-text "title"
+```
+
+```kdl,ignore
+claude-text "everything"
+// → unknown claude-text level "everything"; expected one of: title,
+//   summary, full
+```
+
+### `claude-projects-dir`
+
+[Claude ビュー](views-claude.md) が Claude Code の transcript を読む場所。
+絶対パスか、`~/` で始まるパスです。
+
+- **デフォルト** — なし: Claude Code 自身の場所。`$CLAUDE_CONFIG_DIR` が
+  あれば `$CLAUDE_CONFIG_DIR/projects`、なければ `~/.claude/projects`。
+- **マージ** — 置換。
+- **エラー** — 文字列がない・空、引数が 2 つ以上、相対パス。
+
+```kdl
+claude-projects-dir "~/.config/claude/projects"
+```
+
+### `claude-live`
+
+[Claude ビュー](views-claude.md#ライブイベント)が、Claude Code の
+`iktinos-bridge` mod からのライブイベントを待ち受けるかどうか。
+
+- **書式** — `claude-live "on"` または `claude-live "off"`
+- **デフォルト** — `"on"`: ビューを一度開くと、vig は
+  `~/.local/state/iktinos/sockets/` の下の自分用 Unix ソケット（終了時に
+  削除）で待ち受けます。受け取るだけです。
+- **マージ** — 置換。
+- **エラー** — `"on"` / `"off"` 以外。
+
+`"off"` ではソケットを開かず、ビューは transcript だけで動きます。
+
+```kdl
+claude-live "off"
+```
+
 ### `pages`
 
 有効にするページを、タブ順で並べます。リスト内の位置がページの
@@ -542,9 +607,10 @@ worktree-branch "review/{n}"
 巡回の到達位置です。
 
 - **書式** — `pages "<name>" "<name>" ...` — 名前は `git`、`github`、
-  `files`、`docker`、`procs`、`worktrees`、`projects` から。最低 1 つ、
+  `files`、`docker`、`procs`、`worktrees`、`projects`、`claude` から。
+  最低 1 つ、
   重複なし
-- **デフォルト** — この順で全 7 ページ
+- **デフォルト** — この順で全 8 ページ
 - **マージ** — デフォルトのリストを**丸ごと**置換。
 
 書かなかったページは無効です — 起動されず、タブもバックグラウンドの
@@ -566,7 +632,7 @@ pages "git" "files" "worktrees"
 ```kdl,ignore
 pages "git" "filez"
 // → pages: unknown page "filez"; expected one of: git, github, files,
-//   docker, procs, worktrees, projects
+//   docker, procs, worktrees, projects, claude
 
 pages "git" "git"
 // → pages: page "git" listed twice
@@ -619,7 +685,7 @@ repo-config "off"
 |---|---|
 | `"Quit"` | vig を終了 |
 | `"slot:<n>"` | n 番目のスロット（`1` が先頭）のページへ切り替え。ヘッダに出る番号と同じ。ページの無いスロットは何もバインドしない: キーは表示中のページに届く。 |
-| `"page:<name>"` | そのページへ切り替え — `page:git`、`page:github`、`page:files`、`page:docker`、`page:procs`、`page:worktrees`、`page:projects`。[`pages`](#pages) に載っているページに限る。 |
+| `"page:<name>"` | そのページへ切り替え — `page:git`、`page:github`、`page:files`、`page:docker`、`page:procs`、`page:worktrees`、`page:projects`、`page:claude`。[`pages`](#pages) に載っているページに限る。 |
 | `"None"` | そのキーのバインドを削除 |
 
 ```kdl
@@ -1045,6 +1111,26 @@ page "projects" {
 | | `OpenBrowser` | `o` | アイテムをブラウザで開く |
 
 ボードでの `Esc` は、プロジェクト一覧が置かれていればそこへ戻ります。
+
+### ページ `claude`
+
+ペイン: `interactions`、`trace`、`detail`、`files` — すべて配置済み。
+セッションの概要行はレイアウトの上にあり、ペインではありません。
+
+| ペイン | アクション | デフォルトキー | 意味 |
+|---|---|---|---|
+| `view` | `Quit` / `Help` / `Refresh` | `q` / `?` / `r` | ページ全体。`Refresh` はセッションを再列挙し transcript を読み直す |
+| | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | ペインを巡回 |
+| `interactions` (nav, search) | `Open` | `Enter`、`i` | インタラクションではツリーに入る。セッションでは読み込み、折りたたみ / 展開 |
+| | `ToggleFold` | `Space` | 選択がいるセッションを折りたたむ / 開く |
+| | `ToggleFlat` | `t` | インタラクションをセッションごと / まとめて表示 |
+| `trace` (nav, search) | `ToggleFold` | `Space` | サブエージェントの中身を表示 / 隠す |
+| | `Open` | `Enter`、`i`、`l` | 詳細に入る |
+| | `Back` | `h` | インタラクション一覧へ戻る（検索を消したあとの `Esc` も同じ） |
+| | `ReadWhole` | `o` | その行の出力 / 応答の全文を読む。もう一度押すと先頭だけに戻る |
+| `detail` (nav はスクロール) | `ReadWhole` | `o` | 同じ操作を、表示中のものに対して行う |
+| | `Back` | `h`、`Esc` | 入ってきたペインへ戻る |
+| `files` (nav, search) | `CopyPath` | `y` | ファイルのパスをコピー |
 
 ## 起動時エラー
 

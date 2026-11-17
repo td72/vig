@@ -213,6 +213,8 @@ GitHub ビューと同じく、サインイン済みの GitHub CLI（`gh auth lo
 
 動きます。ビューは独立に劣化します: `gh` が無ければ GitHub と Projects
 ビューが案内を表示し、Docker デーモンが無ければ Docker ビューが表示
-します。Git・Files・Procs・Worktrees ビューはどちらも必要としません。
+します。Git・Files・Procs・Worktrees ビューはどちらも必要としません。Claude
+ビューに必要なのは Claude Code の transcript だけで、無ければ通知を
+表示します。
 使わないビューは [`pages`](config-reference.md#pages) で丸ごと無効化
 できます。

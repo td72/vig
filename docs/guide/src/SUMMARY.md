@@ -11,6 +11,7 @@
   - [Procs View](views-procs.md)
   - [Worktrees View](views-worktrees.md)
   - [Projects View](views-projects.md)
+  - [Claude View](views-claude.md)
 - [Configuration Basics](configuration-basics.md)
 - [Config Recipes](config-recipes.md)
 - [Config Reference](config-reference.md)
