@@ -59,7 +59,11 @@ Add retry with backoff to the fetcher · opus-5-5 · ● active · ctx ▓▓▓
   system prompt or tools differ. On the right, each row is a bar on a time
   axis as long as the interaction (left out in a narrow pane).
 - **Detail** — what is chosen. On a session's row: its id, where it runs,
-  branch, model, state, context and cost. On an interaction: how long it
+  branch, model, state, context and cost, then what it used by model and by
+  source (who asked: `repl_main_thread`, `agent:builtin:Explore`, …) — the
+  requests, the estimated cost and the input / output / cache tokens of
+  each, the most expensive first. A model the price table does not know
+  reads `cost unknown`, never zero. On an interaction: how long it
   took and where the time went (LLM requests, tool calls, the
   rest), its subagents, tokens and estimated cost. With the focus in Trace:
   the row — a request's model, stop reason, tokens and cost; a tool call's

@@ -485,8 +485,9 @@ prompt and everything done to answer it) under it, with their LLM requests,
 tool calls, duration and state. **Trace** is the selected interaction as a
 tree: each LLM request, the tool calls it made, the subagents the calls
 spawned and what they did, each with a bar on a time axis as long as the
-interaction. **Detail** describes what is chosen: where an interaction's time
-and tokens went, a request's tokens and cost, a tool call's whole command.
+interaction. **Detail** describes what is chosen: a session's tokens and cost by
+model and by source, where an interaction's time and tokens went, a request's
+tokens and cost, a tool call's whole command.
 **Files** lists the files the session read / edited / wrote.
 
 Each prompt shows its first line, each tool call what it ran and each

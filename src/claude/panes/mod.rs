@@ -6,7 +6,7 @@ pub mod trace;
 use crate::claude::domain::types::{SessionEntry, TextLevel, WholeKey};
 use crate::github::domain::actions::time::{format_duration, format_relative};
 use iktinos_core::record::Timestamp;
-use iktinos_core::session::{Cost, CostSource, LiveState, Session, Subagent, ToolCall};
+use iktinos_core::session::{Cost, CostSource, LiveState, ModelUsage, Session, Subagent, ToolCall};
 use iktinos_core::trace::{between, Interaction, Item, LlmRequest, SpanKind};
 use ratatui::{
     style::{Color, Style},
@@ -479,6 +479,57 @@ pub struct SessionFacts {
     pub tool_calls: u64,
     pub subagents: usize,
     pub files: usize,
+    /// What the session used, by model, the most expensive first.
+    pub by_model: Vec<UsageRow>,
+    /// The same by who asked: the main thread, each kind of subagent, ….
+    pub by_source: Vec<UsageRow>,
+}
+
+/// What one model, or one source of requests, used.
+#[derive(Debug, Clone, PartialEq)]
+pub struct UsageRow {
+    pub name: String,
+    pub requests: u64,
+    pub input: u64,
+    pub output: u64,
+    pub cache_read: u64,
+    pub cache_written: u64,
+    /// The price-table estimate. `None` when nothing of it could be
+    /// priced: an unknown model costs "unknown", never zero.
+    pub usd: Option<f64>,
+    /// Some of its requests were of a model the price table lacks: the
+    /// estimate leaves them out.
+    pub partly_unpriced: bool,
+}
+
+/// `usage` as rows, the most expensive first, then the most tokens.
+fn usage_rows<'a>(usage: impl IntoIterator<Item = (&'a String, &'a ModelUsage)>) -> Vec<UsageRow> {
+    let mut rows: Vec<(u64, UsageRow)> = usage
+        .into_iter()
+        .filter(|(_, usage)| usage.responses > 0)
+        .map(|(name, usage)| {
+            let usd = usage.estimated_cost();
+            let row = UsageRow {
+                name: name.strip_prefix("claude-").unwrap_or(name).to_owned(),
+                requests: usage.responses,
+                input: usage.input_tokens,
+                output: usage.output_tokens,
+                cache_read: usage.cache_read_tokens,
+                cache_written: usage.cache_write_5m_tokens + usage.cache_write_1h_tokens,
+                usd,
+                partly_unpriced: usd.is_some() && usage.unpriced_responses > 0,
+            };
+            (usage.total_tokens(), row)
+        })
+        .collect();
+    rows.sort_by(|(a_tokens, a), (b_tokens, b)| {
+        b.usd
+            .partial_cmp(&a.usd)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(b_tokens.cmp(a_tokens))
+            .then_with(|| a.name.cmp(&b.name))
+    });
+    rows.into_iter().map(|(_, row)| row).collect()
 }
 
 pub fn session_summary(entry: &SessionEntry, opening: bool, now_ms: i64) -> SessionSummary {
@@ -524,6 +575,8 @@ pub fn session_summary(entry: &SessionEntry, opening: bool, now_ms: i64) -> Sess
             tool_calls: session.tool_calls,
             subagents: session.subagents.len(),
             files: entry.files.len(),
+            by_model: usage_rows(&session.usage.by_model),
+            by_source: usage_rows(&session.usage.by_query_source),
         }),
     }
 }
