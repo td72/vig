@@ -146,6 +146,7 @@ says nothing about a mod that sends:
 | `live on, no events yet` | Listening, and nothing has arrived: the mod is not installed, is disabled, or no session has done anything since |
 | `live 128 events, last 3s ago` | Receiving. Yellow when a session is busy and nothing has arrived for a minute |
 
+An event is shown when it arrives, not at the next read of the transcripts.
 The count is of every session on the machine; events of sessions of other
 repositories, and of sessions that are not read, are counted and not used.
 Without the mod the view works from the transcripts alone.
