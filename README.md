@@ -30,6 +30,7 @@ is happening — including ones where AI agents do it. (The name comes from
 - **Procs View** — read-only process tree with CPU / memory, listening ports and their owners, system CPU / memory history graphs and a per-process detail with CPU / RSS sparklines
 - **Worktrees View** — git worktrees and stashes at a glance, with the HEAD commit or the stash diff (side-by-side) in a preview pane
 - **Projects View** — the GitHub Projects (v2) boards linked to the repository: kanban columns by `Status`, a sortable table mode and an item detail with every project field, via the `gh` CLI (read-only)
+- **Claude View** — the Claude Code session working in the repository, read from its transcripts: its interactions (a prompt and everything done to answer it) as trees of LLM requests, tool calls and subagents on a time axis, the files it touched, context fill and cost (read-only; responses and tool outputs are read only with `claude-text "full"`)
 - Configurable layout, key bindings, and highlighting theme via `~/.config/vig/config.kdl`
 
 ## Installation
@@ -121,6 +122,7 @@ the full schema — lives in the User Guide:
 | `5` | Switch to Procs View |
 | `6` | Switch to Worktrees View |
 | `7` | Switch to Projects View |
+| `8` | Switch to Claude View |
 
 ### Pane Navigation
 
@@ -462,6 +464,55 @@ press `r`. Nothing in this view adds, moves, edits or deletes anything.
 | `Tab` / `Shift+Tab` | Cycle panes: Board → Detail |
 | `/` `n` `N` | Search item titles / numbers across columns |
 | `r` | Re-read the linked projects, the board and the shown item |
+
+### Claude View
+
+![claude demo](assets/demo-claude.gif)
+
+What Claude Code is doing in this repository, read from its transcripts
+(`~/.claude/projects`). The view lists every session whose working directory
+is under the repository or one of its worktrees; the three most recently
+updated are read to begin with, any other when its row is opened. The line
+above the panes shows the selected session's title, model, state (`● active`
+/ `○ quiet 5m` / `■ exited`), context fill, cost (`~` marks an estimate) and
+branch.
+
+**Interactions** lists the sessions, each with its latest interactions (a
+prompt and everything done to answer it) under it, with their LLM requests,
+tool calls, duration and state. **Trace** is the selected interaction as a
+tree: each LLM request, the tool calls it made, the subagents the calls
+spawned and what they did, each with a bar on a time axis as long as the
+interaction. **Detail** describes what is chosen: where an interaction's time
+and tokens went, a request's tokens and cost, a tool call's whole command.
+**Files** lists the files the session read / edited / wrote.
+
+Each prompt shows its first line, each tool call what it ran and each
+subagent its task. `claude-text "title"` hides those and leaves the session
+title, tool names and file paths — for a shared screen. `claude-text "full"`
+also shows the first line of each response and the start of what each tool
+call returned, and `o` reads all of either from the transcript. Nothing is
+written or sent to Claude Code.
+
+With the [`iktinos-bridge`](https://github.com/td72/iktinos/tree/main/mods/iktinos-bridge)
+Claude Code mod installed, the view also knows what a session is doing right
+now (`● working`, `● running Bash`, `▲ approve Bash?`, `○ waiting for input`)
+and its rate limits: vig listens on a Unix socket of its own (receive only;
+`claude-live "off"` disables it) and the status bar says what it has heard
+(`live 128 events, last 3s ago`).
+
+| Key | Action |
+|-----|--------|
+| `Tab` / `Shift+Tab` | Cycle panes: Interactions → Trace → Detail → Files |
+| `j` / `k` | Move selection (scroll in Detail) |
+| `Enter` / `i` (interactions) | Into the interaction's tree; on a session, read it / fold it |
+| `Space` / `t` (interactions) | Fold the session / list all interactions together |
+| `Space` (trace) | Show / hide a subagent's spans |
+| `Enter` / `i` / `l` (trace) | Into the detail |
+| `h` / `Esc` (trace, detail) | Back |
+| `o` (trace, detail) | Read the whole output / response (`claude-text "full"`) |
+| `y` (files) | Copy the path |
+| `/` `n` `N` | Search the focused pane |
+| `r` | Re-list the sessions and re-read the transcripts |
 
 ### Other
 

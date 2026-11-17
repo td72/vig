@@ -33,6 +33,10 @@ clap = { version = "4", features = ["derive"] }
 self_update = { version = "0.42", default-features = false, features = ["archive-tar", "compression-flate2", "rustls", "signatures"] }
 kdl = "6.7.1"
 sysinfo = { version = "0.39", default-features = false, features = ["system", "user"] }
+# Claude page domain. Pinned to a revision until a release carries the tool
+# call summaries (td72/iktinos#29); switch to the crates.io version before merge.
+iktinos = { git = "https://github.com/td72/iktinos", rev = "9d6e008adce8ae4080ad051e985db332670b6036" }
+iktinos-live = { git = "https://github.com/td72/iktinos", rev = "9d6e008adce8ae4080ad051e985db332670b6036" }
 
 [features]
 vendored = ["git2/vendored-libgit2", "git2/vendored-openssl"]

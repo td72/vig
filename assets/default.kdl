@@ -86,10 +86,31 @@ worktree-branch "pr/{n}"
 //     group-by "Status"
 // }
 
+// How much text the Claude page shows: "summary" (the first line of each
+// prompt, what a tool call ran - its command, path or pattern - and a
+// subagent's task), "title" (only the session title, tool names and file
+// paths: for a shared screen) or "full" (also the first line of each
+// response and what a tool call returned; `o` reads all of either from the
+// transcript). Below "full" responses and tool outputs are not read.
+claude-text "summary"
+
+// Where the Claude page reads Claude Code's transcripts from. Absent:
+// Claude Code's own location ($CLAUDE_CONFIG_DIR/projects, else
+// ~/.claude/projects).
+// claude-projects-dir "~/.claude/projects"
+
+// Whether the Claude page listens for live events from the iktinos-bridge
+// Claude Code mod: "on" or "off". Listening opens a Unix socket of vig's own
+// under ~/.local/state/iktinos/sockets (removed on exit) and only receives;
+// with it the page knows what a session is doing right now (working, running
+// a tool, waiting for approval or for input) and its rate limits. Without the
+// mod, or with "off", the page works from the transcripts alone.
+claude-live "on"
+
 // Pages in tab order: the position here is the slot shown in the header
 // (`1:Git`, `2:GitHub`, ...). A user config's `pages` replaces this list
 // wholesale; pages left out are disabled. `app` bindings address pages by name.
-pages "git" "github" "files" "docker" "procs" "worktrees" "projects"
+pages "git" "github" "files" "docker" "procs" "worktrees" "projects" "claude"
 
 app {
     "Ctrl+c" "Quit"
@@ -100,6 +121,7 @@ app {
     "5" "page:procs"
     "6" "page:worktrees"
     "7" "page:projects"
+    "8" "page:claude"
 }
 
 page "git" {
@@ -711,6 +733,76 @@ page "projects" {
             "h" "Back"
             "Left" "Back"
             "o" "OpenBrowser"
+            "Esc" "Esc"
+        }
+    }
+}
+
+page "claude" {
+    layout {
+        split direction="horizontal" {
+            split direction="vertical" size="60%" {
+                place "interactions" size="35%"
+                place "trace" size="min:5"
+            }
+            split direction="vertical" size="min:30" {
+                place "detail" size="65%"
+                place "files" size="min:5"
+            }
+        }
+    }
+    tabs "interactions" "trace" "detail" "files"
+
+    pane "view" {
+        keys {
+            "q" "Quit"
+            "?" "Help"
+            "r" "Refresh"
+            "Tab" "CyclePaneForward"
+            "BackTab" "CyclePaneBackward"
+        }
+    }
+
+    pane "interactions" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Enter" "Open"
+            "i" "Open"
+            "Space" "ToggleFold"
+            "t" "ToggleFlat"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "trace" {
+        keys {
+            preset "nav"
+            preset "search"
+            "Space" "ToggleFold"
+            "Enter" "Open"
+            "i" "Open"
+            "l" "Open"
+            "h" "Back"
+            "o" "ReadWhole"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "detail" {
+        keys {
+            preset "nav"
+            "o" "ReadWhole"
+            "h" "Back"
+            "Esc" "Esc"
+        }
+    }
+
+    pane "files" {
+        keys {
+            preset "nav"
+            preset "search"
+            "y" "CopyPath"
             "Esc" "Esc"
         }
     }

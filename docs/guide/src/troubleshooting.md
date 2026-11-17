@@ -209,5 +209,6 @@ like the GitHub view. If you installed via Homebrew or cargo, use
 
 Yes. Views degrade independently: without `gh` the GitHub and Projects
 views show a notice; without a Docker daemon the Docker view does; the
-Git, Files, Procs and Worktrees views never need them. Disable unused
+Git, Files, Procs and Worktrees views never need them. The Claude view
+needs only Claude Code's transcripts and shows a notice when there are none. Disable unused
 views entirely with [`pages`](config-reference.md#pages).
