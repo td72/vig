@@ -2,6 +2,7 @@
 //! preview) rooted at the repository working directory.
 
 use crate::core::app::{AppContext, PageState};
+use crate::core::browser;
 use crate::core::config::{Config, LoadedPageConfig};
 use crate::core::keymap::{Keymap, ViewAction};
 use crate::core::layout::{split_page_frame, PageLayoutConfig};
@@ -158,16 +159,34 @@ impl FilesState {
         self.panes.tab.sync_detail();
     }
 
-    /// Open the selected entry with the OS default application, or with
-    /// `app`. Directories open in the system file manager (Finder,
-    /// Explorer, ...) because that is what `open` / `explorer` /
-    /// `xdg-open` do with a directory path.
+    /// Open the marked entries — or the selected one when nothing is marked
+    /// — with the OS default application, or with `app`. Directories open
+    /// in the system file manager (Finder, Explorer, ...) because that is
+    /// what `open` / `explorer` / `xdg-open` do with a directory path.
     fn open_selected(&self, ctx: &mut AppContext, app: Option<&str>) {
-        let Some(entry) = self.selected() else {
-            ctx.status_message = Some("No entry selected".to_string());
-            return;
-        };
-        ctx.status_message = Some(open_path_message(&entry.path, app));
+        let targets = self.panes.tab.list.targets();
+        ctx.status_message = Some(match &targets[..] {
+            [] => "No entry selected".to_string(),
+            [path] => open_path_message(path, app),
+            paths => {
+                // Open them all; a failure is reported once, by its message.
+                let mut error = None;
+                for path in paths {
+                    let result = match app {
+                        Some(app) => browser::open_path_with(app, path),
+                        None => browser::open_path(path),
+                    };
+                    if let Err(e) = result {
+                        error.get_or_insert(e);
+                    }
+                }
+                match (error, app) {
+                    (Some(e), _) => e,
+                    (None, Some(app)) => format!("Opening {} entries with {app}...", paths.len()),
+                    (None, None) => format!("Opening {} entries...", paths.len()),
+                }
+            }
+        });
     }
 
     /// Forward the preview pane's full-redraw request to the app.
@@ -260,7 +279,7 @@ impl FilesState {
                     return Ok(PageAction::None);
                 }
                 ViewAction::OpenWith => {
-                    if self.selected().is_some() {
+                    if !self.panes.tab.list.targets().is_empty() {
                         self.open_with.start();
                     } else {
                         ctx.status_message = Some("No entry selected".to_string());

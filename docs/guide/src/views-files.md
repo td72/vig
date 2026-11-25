@@ -51,6 +51,19 @@ the only view with an "open with" concept:
 - `O` prompts for an application name and opens the entry with it
   (`open -a <app>` on macOS).
 
+## Marking several entries
+
+`Space` marks the selected entry (a yellow bar appears in front of it) and
+moves down, so repeated presses mark a run; pressing it on a marked entry
+unmarks it. Marks are kept while you move between directories, and the
+status bar shows how many there are. While anything is marked, `o` and `O`
+open every marked entry instead of the selected one, and `y` / `Y` copy
+their paths to the clipboard, one per line — relative to the repository
+root with `y`, absolute with `Y`. With nothing marked, the same keys act on
+the selected entry. `Esc` clears the search first, then the marks; a mark
+also goes away when its file disappears. `e` always opens just the selected
+file.
+
 ## Key bindings
 
 | Key | Action |
@@ -65,8 +78,11 @@ the only view with an "open with" concept:
 | `Esc` (preview) | Clear the search / back to the file list |
 | `/` `n` `N` | Search file names |
 | `e` | Open selected file in external editor |
-| `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |
-| `O` | Open selected entry with an app you name (`open -a <app>` on macOS) |
+| `Space` | Mark / unmark the selected entry and move down |
+| `o` | Open the marked entries — or the selected file or directory — with the OS default app (`open` / `xdg-open` / `explorer`) |
+| `O` | Open them with an app you name (`open -a <app>` on macOS) |
+| `y` / `Y` | Copy their paths, one per line: relative to the repository root / absolute |
+| `Esc` | Clear the search, then the marks |
 | `m` | Toggle Markdown rendering in the preview |
 | `r` | Re-read the current directory |
 
@@ -74,5 +90,6 @@ the only view with an "open with" concept:
 
 - The browser is rooted at the repository — it does not wander above the
   repository root.
-- Strictly read-only: no create, rename, delete, copy, or move. Handing a file
-  to `$EDITOR` or the OS opener is as far as it goes.
+- Strictly read-only: no create, rename, delete, copy, or move of files.
+  Handing a file to `$EDITOR` or the OS opener, and copying a path to the
+  clipboard, is as far as it goes.

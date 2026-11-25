@@ -25,7 +25,7 @@ is happening — including ones where AI agents do it. (The name comes from
 - Live file watching with auto-refresh
 - Open files in external editor (`$EDITOR`)
 - **GitHub View** — Browse Issues, Pull Requests (body, comments, reviews, CI status) and Actions workflow runs (jobs / steps, job logs) via `gh` CLI, read-only
-- **Files View** — yazi-like three-column file browser (parent / current / preview) with syntax-highlighted previews
+- **Files View** — yazi-like three-column file browser (parent / current / preview) with syntax-highlighted previews; mark several entries to open them or copy their paths together
 - **Docker View** — Containers grouped by compose project, images, inspect summary and a live log tail via the `docker` CLI (read-only)
 - **Procs View** — read-only process tree with CPU / memory, listening ports and their owners, system CPU / memory history graphs and a per-process detail with CPU / RSS sparklines
 - **Worktrees View** — git worktrees and stashes at a glance, with the HEAD commit or the stash diff (side-by-side) in a preview pane
@@ -310,9 +310,11 @@ default.
 | `Esc` (preview) | Clear the search / back to the file list |
 | `/` `n` `N` | Search file names |
 | `e` | Open selected file in external editor |
-| `o` / `O` | Open the selected file with the default app / with an app you name (as in the Files view) |
-| `o` | Open selected file or directory with the OS default app (`open` / `xdg-open` / `explorer`) |
-| `O` | Open selected entry with an app you name (`open -a <app>` on macOS) |
+| `Space` | Mark / unmark the selected entry and move down (marks are kept across directories; the status bar counts them) |
+| `o` | Open the marked entries — or the selected file or directory — with the OS default app (`open` / `xdg-open` / `explorer`) |
+| `O` | Open them with an app you name (`open -a <app>` on macOS) |
+| `y` / `Y` | Copy their paths, one per line: relative to the repository root / absolute |
+| `Esc` | Clear the search, then the marks |
 | `m` | Toggle Markdown rendering in the preview |
 | `r` | Re-read the current directory |
 

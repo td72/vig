@@ -270,6 +270,13 @@ pub fn render_files_status_bar(f: &mut Frame, ctx: &AppContext, files: &FilesSta
             format!(" {n} item{}", if n == 1 { "" } else { "s" }),
             Style::default().fg(Color::White),
         )];
+        let marked = list.mark_count();
+        if marked > 0 {
+            spans.push(Span::styled(
+                format!("  {marked} marked"),
+                Style::default().fg(Color::Yellow),
+            ));
+        }
         if let Some(e) = files.selected() {
             spans.push(Span::raw("  "));
             spans.push(Span::styled(

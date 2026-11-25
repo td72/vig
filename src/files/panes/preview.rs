@@ -627,7 +627,7 @@ impl Pane<PaneEvent> for PreviewPane {
                     .iter()
                     .skip(self.scroll)
                     .take(height)
-                    .map(|e| entry_line(e, width, self.icons))
+                    .map(|e| entry_line(e, width, self.icons, false))
                     .collect(),
                 Preview::Image(_) => self.image_lines(dim),
                 Preview::Binary => vec![Line::from(Span::styled("  (binary file)", dim))],
