@@ -1022,11 +1022,13 @@ Panes: `parent_dir`, `dir_list`, `preview` — all placed. `parent_dir` is
 | `view` | `Quit` / `Help` / `Refresh` | `q` / `?` / `r` | page-wide |
 | | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | cycle `dir_list` and `preview` |
 | | `OpenEditor` | `e` | open the selected file in `$EDITOR` |
-| | `OpenDefault` | `o` | open with the OS default app |
-| | `OpenWith` | `O` | open with an app you name |
+| | `OpenDefault` | `o` | open the marked entries (or the selected one) with the OS default app |
+| | `OpenWith` | `O` | open them with an app you name |
 | `dir_list` (nav, search) | `Enter` | `l`, `Right`, `Enter` | enter directory / focus preview |
 | | `Parent` | `h`, `Left`, `Backspace` | go to the parent directory |
 | | `FocusPreview` | `i` | focus the preview |
+| | `ToggleMark` | `Space` | mark / unmark the selected entry and move down (`Esc` clears the marks) |
+| | `CopyPath` / `CopyAbsPath` | `y` / `Y` | copy the paths of the marked entries (or the selected one), relative to the repository root / absolute |
 | `preview` (nav, search) | `ScrollLeft` / `ScrollRight` | `h`, `Left` / `l`, `Right` | scroll long lines horizontally |
 | | `Back` | — | back to the file list (unbound by default: `Esc` / `Tab` get there) |
 

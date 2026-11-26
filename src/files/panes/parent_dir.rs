@@ -77,7 +77,7 @@ impl Pane<PaneEvent> for ParentDirPane {
         let items: Vec<ListItem> = self
             .entries
             .iter()
-            .map(|e| ListItem::new(entry_line(e, width, self.icons)))
+            .map(|e| ListItem::new(entry_line(e, width, self.icons, false)))
             .collect();
         let list = List::new(items)
             .block(block)

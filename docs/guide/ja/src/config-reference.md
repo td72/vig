@@ -1012,11 +1012,13 @@ window "diff" {
 | `view` | `Quit` / `Help` / `Refresh` | `q` / `?` / `r` | ページ全体 |
 | | `CyclePaneForward` / `CyclePaneBackward` | `Tab` / `BackTab` | `dir_list` と `preview` を巡回 |
 | | `OpenEditor` | `e` | 選択中ファイルを `$EDITOR` で開く |
-| | `OpenDefault` | `o` | OS の既定アプリで開く |
-| | `OpenWith` | `O` | アプリ名を指定して開く |
+| | `OpenDefault` | `o` | マークしたエントリ（なければ選択中のもの）を OS の既定アプリで開く |
+| | `OpenWith` | `O` | それらをアプリ名を指定して開く |
 | `dir_list` (nav, search) | `Enter` | `l`、`Right`、`Enter` | ディレクトリに入る / プレビューにフォーカス |
 | | `Parent` | `h`、`Left`、`Backspace` | 親ディレクトリへ |
 | | `FocusPreview` | `i` | プレビューにフォーカス |
+| | `ToggleMark` | `Space` | 選択中のエントリをマーク / 解除して次へ移動（`Esc` でマークをクリア） |
+| | `CopyPath` / `CopyAbsPath` | `y` / `Y` | マークしたエントリ（なければ選択中のもの）のパスをコピー: リポジトリルートからの相対パス / 絶対パス |
 | `preview` (nav, search) | `ScrollLeft` / `ScrollRight` | `h`、`Left` / `l`、`Right` | 長い行を横スクロール |
 | | `Back` | — | ファイル一覧に戻る（既定では未割り当て。`Esc` / `Tab` で戻れる） |
 

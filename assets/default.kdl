@@ -439,6 +439,11 @@ page "files" {
             "Left" "Parent"
             "Backspace" "Parent"
             "i" "FocusPreview"
+            // Marked entries are what `o` / `O` / `y` / `Y` act on; with
+            // nothing marked they act on the selected entry.
+            "Space" "ToggleMark"
+            "y" "CopyPath"
+            "Y" "CopyAbsPath"
             "Esc" "Esc"
         }
     }

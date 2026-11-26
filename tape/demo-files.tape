@@ -198,13 +198,37 @@ Sleep 2s
 Escape
 Sleep 800ms
 
-# Open-with prompt (O): type an app name, then cancel
+# Mark entries with Space (the cursor steps down; the status bar counts
+# them), also across directories; `y` copies their paths
+Space
+Sleep 800ms
+Space
+Sleep 1.2s
+Type "g"
+Sleep 600ms
+Type "j"
+Sleep 600ms
+Type "l"
+Sleep 1s
+Type "j"
+Sleep 600ms
+Space
+Sleep 1.5s
+Type "y"
+Sleep 2s
+
+# Open-with prompt (O) acts on every marked entry: type an app name,
+# then cancel
 Type "O"
 Sleep 1s
 Type "Preview"
 Sleep 1.5s
 Escape
 Sleep 800ms
+
+# Esc clears the marks
+Escape
+Sleep 1.5s
 
 # Quit
 Type "q"
